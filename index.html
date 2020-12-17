@@ -208,7 +208,7 @@ function gotDevices(deviceInfos) {
     const option = document.createElement('option');
     option.value = deviceInfo.deviceId;
     if (deviceInfo.kind.startsWith('audio')) {
-      option.text = deviceInfo.lable;
+      option.text = deviceInfo.label;
       audioOutputSelect.appendChild(option);
     }  else {
       console.log('Some other kind of source/device: ', deviceInfo);
