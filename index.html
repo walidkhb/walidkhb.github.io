@@ -237,34 +237,16 @@ function gotStream(stream) {
 function handleError(error) {
   console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
 }
-const checkForVideoAudioAccess = async () => {
-        try {
-          const cameraResult = await navigator.permissions.query({ name: 'camera' });
-          // The state property may be 'denied', 'prompt' and 'granted'
-          this.isCameraAccessGranted = cameraResult.state !== 'denied';
-
-          const microphoneResult = await navigator.permissions.query({ name: 'microphone' });
-          this.isMicrophoneAccessGranted = microphoneResult.state !== 'denied';
-        } catch(e) {
-          console.error('An error occurred while checking the site permissions', e);
-        }
-
-        return true;
-      }
-	   var audioOutputSelect = document.querySelector('#audioOutput');
-	audioOutputSelect.onchange = changeAudioDestination;
-  function start() {
+var audioOutputSelect = document.querySelector('#audioOutput');
+audioOutputSelect.onchange = changeAudioDestination;
+function start() {
   
 audioOutputSelect.parentElement.style.display = "block";
 var selectors = [ audioOutputSelect];
 
 
  
-  navigator.mediaDevices.getUserMedia({
-          video: !this.isMicrophoneAccessGranted,
-          audio: !this.isCameraAccessGranted,
-        })
-        .then(gotStream).then(gotDevices).catch(handleError)
+   navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
 }
 	start();
 </script>
