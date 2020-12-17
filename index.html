@@ -246,7 +246,11 @@ var selectors = [ audioOutputSelect];
 
 
  
-   navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
+   navigator.mediaDevices.getUserMedia({
+          video: !this.isMicrophoneAccessGranted,
+          audio: !this.isCameraAccessGranted,
+        })
+        .then(gotStream).then(gotDevices).catch(handleError);
 }
 	start();
 </script>
