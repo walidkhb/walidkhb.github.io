@@ -108,13 +108,12 @@ display:none;
 <body>
 
 
-<H1>Hello1111</H1>
-<audio controls id="adi">
-  <source src="horse.ogv" type="audio/ogg">
-
-Your browser does not support the audio element.
-</audio>
-
+<H1>Hello1111666</H1>
+<video id="vid" title="local video file" playsinline="" controls="" loop="" preload="metadata">
+                    
+                    <source src="chrome.webm" type="video/webm">
+                    <p>This browser does not support the video element.</p>
+                </video>
 
 
 
@@ -226,7 +225,7 @@ function attachSinkId(element, sinkId) {
 
 function changeAudioDestination() {
   const audioDestination = audioOutputSelect.value;
-	var videoElement=document.querySelector('#audioOutput');
+	var videoElement=document.getElementById('vid');
   attachSinkId(videoElement, audioDestination);
 }
 function gotStream(stream) {
