@@ -1,0 +1,305 @@
+<html>
+<head>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <meta charset="utf8">
+    <title>Space Widget Demo</title>
+    <script src="https://code.s4d.io/widget-space/production/bundle.js"></script>
+    <link rel="stylesheet" href="https://code.s4d.io/widget-space/production/main.css">
+  <
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {font-family: Arial, Helvetica, sans-serif;}
+* {box-sizing: border-box;}
+
+/* Button used to open the chat form - fixed at the bottom of the page */
+.open-button {
+  background-color: #555;
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+  position: fixed;
+  bottom: 23px;
+  right: 28px;
+  width: 280px;
+}
+md-button.md-button--circle[class*='--68'] {
+    width: 4.25rem;
+    height: 4.25rem;
+    min-width: 0;
+    min-height: 0;
+    font-size: 1.75rem;
+    line-height: 1.75rem;
+}
+/* The popup chat - hidden by default */
+.chat-popup {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  right: 15px;
+  border: 3px solid #f1f1f1;
+  z-index: 9;
+}
+
+/* Add styles to the form container */
+.form-container {
+     height: 500px;
+    width: 400px;
+  padding: 0px;
+  background-color: white;
+}
+
+/* Full-width textarea */
+.form-container textarea {
+  width: 100%;
+  padding: 15px;
+  margin: 5px 0 22px 0;
+  border: none;
+  background: #f1f1f1;
+  resize: none;
+  min-height: 200px;
+}
+
+/* When the textarea gets focus, do something */
+.form-container textarea:focus {
+  background-color: #ddd;
+  outline: none;
+}
+
+/* Set a style for the submit/send button */
+.form-container .btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom:10px;
+  opacity: 0.8;
+}
+.webex-title-bar-wrapper{
+display:none;
+}
+.md-avatar{
+display:none;
+}
+.call-person-name{
+display:none;
+}
+/* Add a red background color to the cancel button */
+.form-container .cancel {
+  background-color: red;
+}
+
+/* Add some hover effects to buttons */
+.form-container .btn:hover, .open-button:hover {
+  opacity: 1;
+}
+#flip-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  padding: 10px 20px;
+  
+}
+</style>
+</head>
+<body>
+<body>
+
+
+<div id="container">
+
+    
+
+
+ 
+</div>
+
+
+
+
+
+
+
+<button class="open-button" onclick="openForm()">Chat</button>
+ <button disabled id="flip-btn">
+      Flip Camera
+    </button>
+<div class="chat-popup" id="myForm">
+  <form class="form-container">
+      <div class="select" style="display:none;">
+        <label for="audioOutput">Audio output destination: </label><select id="audioOutput"></select>
+    </div>
+
+<div id="my-webex-widget" />
+<script>
+// camera stream video element
+let videoElm = document.querySelector('.widget-space--video');
+// flip button element
+let flipBtn = document.querySelector('#flip-btn');
+
+// default user media options
+let defaultsOpts = { audio: false, video: true }
+let shouldFaceUser = true;
+
+// check whether we can use facingMode
+let supports = navigator.mediaDevices.getSupportedConstraints();
+if( supports['facingMode'] === true ) {
+  flipBtn.disabled = false;
+}
+
+let stream = null;
+
+function capture() {
+  defaultsOpts.video = { facingMode: shouldFaceUser ? 'user' : 'environment' }
+  navigator.mediaDevices.getUserMedia(defaultsOpts)
+    .then(function(_stream) {
+      stream  = _stream;
+      videoElm.srcObject = stream;
+      videoElm.play();
+    })
+    .catch(function(err) {
+      console.log(err)
+    });
+}
+
+flipBtn.addEventListener('click', function(){
+  if( stream == null ) return
+  // we need to flip, stop everything
+  stream.getTracks().forEach(t => {
+    t.stop();
+  });
+  // toggle / flip
+  shouldFaceUser = !shouldFaceUser;
+  capture();
+})
+
+
+  var widgetEl = document.getElementById('my-webex-widget');
+  // Init a new widget
+  webex.widget(widgetEl).spaceWidget({
+    guestToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJndWVzdC11c2VyLTczNDkiLCJuYW1lIjoiR3Vlc3QgVXNlcidzIERpc3BsYXkgTmFtZSIsImlzcyI6IlkybHpZMjl6Y0dGeWF6b3ZMM1Z6TDA5U1IwRk9TVnBCVkVsUFRpODFNbVV6Wm1Sak9DMWtaVGd5TFRSbFpHVXRPV1l3TXkwMlpXRmxPR1prT0RRMVlURSIsImlhdCI6MTYwODIxNzAyMCwiZXhwIjoxNjA4MjE3MDUwfQ.tZg_gPQgU57BOTUVaMd5NdquG4c-5PukC240Jg4F4Y8',
+    destinationId: '8932@voice.saib.com.sa',
+    destinationType: 'email',
+    spaceActivities: {"files":false,"meet":true,"message":false,"people":false},
+    initialActivity: 'meet',
+	startCall:true,
+	call: start,
+    secondaryActivitiesFullWidth: true,
+    composerActions: {"files":false,"meet":false,"message":false,"people":false}
+  });
+  'use strict';
+
+
+
+
+
+function gotDevices(deviceInfos) {
+	
+	 console.log(deviceInfos);
+  // Handles being called several times to update labels. Preserve values.
+  
+  for (let i = 0; i !== deviceInfos.length; ++i) {
+	  
+    const deviceInfo = deviceInfos[i];
+	 console.log('Some other kind of source/device: ', deviceInfo.label);
+    const option = document.createElement('option');
+    option.value = deviceInfo.deviceId;
+    if (deviceInfo.kind === 'audiooutput') {
+      option.text = deviceInfo.label || 'speaker ${audioOutputSelect.length + 1}';
+      audioOutputSelect.appendChild(option);
+    }  else {
+      console.log('Some other kind of source/device: ', deviceInfo);
+    }
+  }
+ 
+}
+
+
+
+// Attach audio output device to video element using device/sink ID.
+function attachSinkId(element, sinkId) {
+  if (typeof element.sinkId !== 'undefined') {
+    element.setSinkId(sinkId)
+        .then(() => {
+          console.log(`Success, audio output device attached: ${sinkId}`);
+        })
+        .catch(error => {
+          let errorMessage = error;
+          if (error.name === 'SecurityError') {
+            errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
+          }
+          console.error(errorMessage);
+          // Jump back to first output device in the list as it's the default.
+          audioOutputSelect.selectedIndex = 0;
+        });
+  } else {
+    console.warn('Browser does not support output device selection.');
+  }
+}
+
+function changeAudioDestination() {
+  const audioDestination = audioOutputSelect.value;
+  attachSinkId(videoElement, audioDestination);
+}
+function gotStream(stream) {
+ 
+  // Refresh button list in case labels have become available
+  return navigator.mediaDevices.enumerateDevices();
+}
+
+function handleError(error) {
+  console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
+}
+const checkForVideoAudioAccess = async () => {
+        try {
+          const cameraResult = await navigator.permissions.query({ name: 'camera' });
+          // The state property may be 'denied', 'prompt' and 'granted'
+          this.isCameraAccessGranted = cameraResult.state !== 'denied';
+
+          const microphoneResult = await navigator.permissions.query({ name: 'microphone' });
+          this.isMicrophoneAccessGranted = microphoneResult.state !== 'denied';
+        } catch(e) {
+          console.error('An error occurred while checking the site permissions', e);
+        }
+
+        return true;
+      }
+	   var audioOutputSelect = document.querySelector('#audioOutput');
+  function start() {
+  
+audioOutputSelect.parentElement.style.display = "block";
+var selectors = [ audioOutputSelect];
+
+
+ 
+  navigator.mediaDevices.getUserMedia({
+          video: !this.isMicrophoneAccessGranted,
+          audio: !this.isCameraAccessGranted,
+        })
+        .then(gotStream).then(gotDevices).catch(handleError)
+}
+</script>
+
+
+    <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+  </form>
+</div>
+
+<script>
+function openForm() {
+  document.getElementById("myForm").style.display = "block";
+}
+
+function closeForm() {
+  document.getElementById("myForm").style.display = "none";
+}
+</script>
+
+</body>
+</html>
