@@ -108,7 +108,7 @@ display:none;
 <body>
 
 
-<H1>Hello1111666</H1>
+<H1>Hello1111669996</H1>
 <video id="vid" title="local video file" playsinline="" controls="" loop="" preload="metadata">
                     
                     <source src="chrome.webm" type="video/webm">
@@ -204,7 +204,7 @@ function gotDevices(deviceInfos) {
 
 // Attach audio output device to video element using device/sink ID.
 function attachSinkId(element, sinkId) {
-  if (typeof element.sinkId !== 'undefined') {
+ 
     element.setSinkId(sinkId)
         .then(() => {
           console.log(`Success, audio output device attached: ${sinkId}`);
@@ -218,9 +218,7 @@ function attachSinkId(element, sinkId) {
           // Jump back to first output device in the list as it's the default.
           audioOutputSelect.selectedIndex = 0;
         });
-  } else {
-    console.warn('Browser does not support output device selection.');
-  }
+  
 }
 
 function changeAudioDestination() {
