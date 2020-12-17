@@ -109,7 +109,7 @@ display:none;
 
 
 <H1>Hello</H1>
-<audio controls>
+<audio controls id="adi">
   <source src="horse.ogv" type="audio/ogg">
 
 Your browser does not support the audio element.
@@ -226,6 +226,7 @@ function attachSinkId(element, sinkId) {
 
 function changeAudioDestination() {
   const audioDestination = audioOutputSelect.value;
+	var videoElement=document.querySelector('#audioOutput');
   attachSinkId(videoElement, audioDestination);
 }
 function gotStream(stream) {
