@@ -3,9 +3,9 @@
 
     <meta charset="utf8">
     <title>Space Widget Demo</title>
-    <script src="https://code.s4d.io/widget-space/production/bundle.js"></script>
-    <link rel="stylesheet" href="https://code.s4d.io/widget-space/production/main.css">
+ 
   
+ <script src='https://meet.jit.si/external_api.js'></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {font-family: Arial, Helvetica, sans-serif;}
@@ -112,8 +112,7 @@ display:none;
 
 <H1>Hello Rq</H1>
 	
-	<iframe width="560" height="315" src="https://www.youtube.com/embed/843Rpqza_6o" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-<video id="vid" title="local video file" playsinline="" controls="" loop="" preload="metadata">
+	<div id="meet></div>
                     
                     <source src="chrome.webm" type="video/webm">
                     <p>This browser does not support the video element.</p>
@@ -132,6 +131,15 @@ display:none;
 
 <div id="my-webex-widget" />
 <script>
+			 
+const domain = 'meet.jit.si';
+const options = {
+    roomName: 'SAIBMEETRRR',
+    width: 700,
+    height: 700,
+    parentNode: document.querySelector('#meet')
+};
+const api = new JitsiMeetExternalAPI(domain, options);
 // camera stream video element
 let videoElm = document.querySelector('.widget-space--video');
 // flip button element
@@ -244,7 +252,13 @@ function start() {
 audioOutputSelect.parentElement.style.display = "block";
 var selectors = [ audioOutputSelect];
 
-
+const constraints = navigator.userAgent.includes("iPhone") ? {video:true} : {
+audio:true,
+  video: {
+      width: { ideal: 640 },
+      height: {ideal: 400 }
+      }    
+};
  
    navigator.mediaDevices.getUserMedia({
           video: !this.isMicrophoneAccessGranted,
