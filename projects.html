@@ -483,6 +483,165 @@
         </div>
       </div>
 
+      <!-- 10: ICAP Fund Transfer -->
+      <div class="case-study fade-in">
+        <span class="overline">10 &mdash; B2B API Integration &amp; Core Banking</span>
+        <h3 class="mb-3">ICAP Fund Redemption Transfer: Real-Time B2B Settlement</h3>
+        <hr class="divider">
+
+        <p class="case-label">Business Challenge</p>
+        <p>Istithmar Capital (ICAP) needed to programmatically settle mutual fund redemption proceeds into SAIB customer accounts in real time. The existing process was a manual daily file exchange&mdash;slow, error-prone, and incapable of supporting the growth in fund transaction volumes. The integration had to bridge a modern REST API with a legacy AS/400 core banking system speaking fixed-length binary messages over IBM MQ.</p>
+
+        <p class="case-label" style="margin-top: 1.5rem;">Organizational Change</p>
+        <p>This project established the template for how SAIB approaches all B2B API integrations. Before this, every partner integration was a bespoke effort with no standardized security model, no reusable patterns, and no governance. After this, SAIB had a <strong>repeatable B2B integration model</strong> with defined security profiles, documented patterns, and a governance process that new partner teams could follow.</p>
+
+        <p class="case-label" style="margin-top: 1.5rem;">Architecture &amp; Standards Applied</p>
+        <div class="arch-block">
+          ICAP System &rarr; JWT Bearer + JWS Detached Signature<br>
+          &rarr; SAIB API Gateway (IBM API Connect)<br>
+          &rarr; ESB (IBM ACE 12) &mdash; JSON &harr; MQ binary transformation<br>
+          &rarr; ICS Core Banking (AS/400) via IBM MQ<br>
+          <br>
+          Security: FAPI 2.0 profile, mTLS, JWS detached signatures<br>
+          Resilience: Circuit breaker (50% threshold), 3-attempt exponential backoff<br>
+          Idempotency: Redis-backed, 24h TTL<br>
+          Observability: OpenTelemetry, W3C Trace Context
+        </div>
+
+        <p class="case-label" style="margin-top: 1.5rem;">What Was Delivered</p>
+        <ul class="case-list">
+          <li>Full lifecycle deliverables: Architecture Proposal, ADR, Functional Requirements, HLD, LLD, Backend Spec, OpenAPI 3.1 specification</li>
+          <li>Fund Transfer API (500520/500521) with idempotency and circuit breaker protection</li>
+          <li>Rate Enquiry API (970800/970801) for real-time FX rate lookup</li>
+          <li>FAPI 2.0 security model: JWT + JWS + mTLS + timestamp replay defense</li>
+          <li>Established reusable B2B integration pattern for future partner onboarding</li>
+        </ul>
+
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary); margin-top: 1rem;"><strong style="color: var(--color-text);">Institutional impact:</strong> Created the B2B API integration playbook that all future partner integrations follow. The governance model, security profile, and documentation standards from this project became organizational standards.</p>
+
+        <div class="mt-4">
+          <span class="skill-tag">IBM ACE 12</span>
+          <span class="skill-tag">IBM MQ</span>
+          <span class="skill-tag">API Connect</span>
+          <span class="skill-tag">FAPI 2.0</span>
+          <span class="skill-tag">JWS</span>
+          <span class="skill-tag">OpenAPI 3.1</span>
+          <span class="skill-tag">Redis</span>
+          <span class="skill-tag">Circuit Breaker</span>
+          <span class="skill-tag">Core Banking AS/400</span>
+        </div>
+      </div>
+
+      <!-- 11: Payment Hub / IPS -->
+      <div class="case-study fade-in">
+        <span class="overline">11 &mdash; SAMA Payment Schemes &amp; Real-Time Settlement</span>
+        <h3 class="mb-3">Payment Hub: IPS, BPS &amp; SADAD Core Banking Integration</h3>
+        <hr class="divider">
+
+        <p class="case-label">Business Challenge</p>
+        <p>SAMA mandated adoption of the Instant Payment System (IPS)&mdash;requiring Saudi banks to process payments in real time with immediate settlement. SAIB's payment hub (TMS/X eMcREY) needed an ESB integration layer to connect to the ICS core banking system for three critical payment schemes: IPS (instant), BPS (bulk), and SADAD (biller). The challenge was building a two-step verify-and-post protocol that holds funds atomically while maintaining the bank's regulatory compliance posture.</p>
+
+        <p class="case-label" style="margin-top: 1.5rem;">Organizational Change</p>
+        <p>This project established the <strong>payment integration operating model</strong> at SAIB. It defined clear domain boundaries: the Payment Hub owns payment orchestration and scheme routing; Core Banking owns account balances and ledger entries; the ESB owns protocol transformation and resilience. These boundaries, documented in domain specifications, eliminated the ownership confusion that had delayed previous payment initiatives.</p>
+
+        <p class="case-label" style="margin-top: 1.5rem;">Architecture &amp; Standards Applied</p>
+        <div class="arch-block">
+          TMS/X Payment Hub (REST/JSON)<br>
+          &rarr; SAIB API Gateway<br>
+          &rarr; ESB (IBM ACE 12) &mdash; two-step protocol orchestration<br>
+          &rarr; ICS Core Banking (IBM MQ binary AP2154-2)<br>
+          <br>
+          Step 1: POST /payments/verify (501500) &rarr; Fund verification + hold<br>
+          Step 2: POST /payments/{id}/post (501510) &rarr; Release hold + commit<br>
+          <br>
+          Schemes: IPS (ISO 20022), BPS (ISO 20022), SADAD (Proprietary+ISO 20022)<br>
+          10 REST endpoints across Payments, Accounting, Accounts, Customers
+        </div>
+
+        <p class="case-label" style="margin-top: 1.5rem;">What Was Delivered</p>
+        <ul class="case-list">
+          <li>10 REST API endpoints: payment verify, post, status, list; direct accounting; balance inquiry; transaction history; customer info; fee inquiry</li>
+          <li>Two-step atomic protocol: verify (creates hold) &rarr; post (releases hold + posts transaction) with dual-mode support (PSTTRX / HLDRMV)</li>
+          <li>Full ISO 20022 messaging alignment for IPS and BPS payment schemes</li>
+          <li>SADAD biller integration for government and commercial bill payments</li>
+          <li>Complete deliverables: 10 documents including Proposal, Plan, FDD, HLD, LLD, Backend Spec, OpenAPI, and IPS/BPS/SADAD function design documents</li>
+          <li>Domain boundary documentation establishing ownership between Payment Hub, Core Banking, and ESB</li>
+        </ul>
+
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary); margin-top: 1rem;"><strong style="color: var(--color-text);">Institutional impact:</strong> This is SAMA-mandated infrastructure. The domain ownership model and payment integration patterns established here will govern every future payment scheme the bank adopts. The operating model ensures regulatory compliance is structural, not ad-hoc.</p>
+
+        <div class="mt-4">
+          <span class="skill-tag">IPS</span>
+          <span class="skill-tag">BPS</span>
+          <span class="skill-tag">SADAD</span>
+          <span class="skill-tag">ISO 20022</span>
+          <span class="skill-tag">IBM ACE 12</span>
+          <span class="skill-tag">IBM MQ</span>
+          <span class="skill-tag">Two-Step Settlement</span>
+          <span class="skill-tag">SAMA Compliance</span>
+          <span class="skill-tag">Domain-Driven Design</span>
+        </div>
+      </div>
+
+      <!-- 12: Integration Framework -->
+      <div class="case-study fade-in">
+        <span class="overline">12 &mdash; Enterprise Standards &amp; Governance</span>
+        <h3 class="mb-3">SAIB Integration Framework: 10 Enterprise Standards</h3>
+        <hr class="divider">
+
+        <p class="case-label">Business Challenge</p>
+        <p>Every integration at SAIB was built differently. Different teams used different patterns, different security models, different error handling, different documentation formats. There was no institutional standard. Code reviews couldn't enforce quality because there was no agreed definition of quality. New team members had no reference architecture. Regulatory audits required collecting evidence from dozens of inconsistent implementations.</p>
+
+        <p class="case-label" style="margin-top: 1.5rem;">Organizational Change</p>
+        <p>I authored and established a <strong>comprehensive integration framework</strong>&mdash;10 non-negotiable standards documents that govern all integration work at SAIB. This is not documentation for documentation's sake. These are enforceable standards embedded into the development lifecycle, review gates, and CI/CD pipelines.</p>
+
+        <p class="case-label" style="margin-top: 1.5rem;">The 10 Standards</p>
+        <ul class="case-list">
+          <li><strong>01 Integration Principles</strong> &mdash; Domain ownership, thin ESB mediation, security perimeter, idempotency, replaceability</li>
+          <li><strong>02 API Standards</strong> &mdash; REST/OpenAPI 3.1, URL structure, resource naming, pagination, versioning (Richardson Maturity Level 3)</li>
+          <li><strong>03 Security Standards</strong> &mdash; FAPI 2.0 profiles, OAuth 2.0/OIDC, JWT/JWS, mTLS, TLS 1.3, DPoP, PKCE, PAR, JARM</li>
+          <li><strong>04 Integration Patterns</strong> &mdash; 7 canonical patterns: Sync REST, ESB Mediation, Async Events, ISO 20022, Open Banking TPP, File/SFTP, Webhooks</li>
+          <li><strong>05 Documentation Standards</strong> &mdash; Mandatory templates, review gates, governance checkpoints</li>
+          <li><strong>06 Observability Standards</strong> &mdash; OpenTelemetry, W3C Trace Context, SLIs/SLOs, Prometheus metrics, alerting</li>
+          <li><strong>07 Error Handling Standards</strong> &mdash; RFC 7807 Problem Details, circuit breakers (Resilience4j), idempotency keys, retry logic</li>
+          <li><strong>08 Data Standards</strong> &mdash; ISO 8583, ISO 20022, IBAN validation, field naming conventions</li>
+          <li><strong>09 Testing Standards</strong> &mdash; Contract testing, integration testing, security testing, test environments</li>
+          <li><strong>10 Governance</strong> &mdash; Architecture Decision Records (ADRs), integration registry, review gates, compliance checkpoints</li>
+        </ul>
+
+        <div class="case-metrics">
+          <div class="case-metric">
+            <div class="case-metric__value">10</div>
+            <div class="case-metric__label">Standards Documents</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">3,500+</div>
+            <div class="case-metric__label">Lines of Standards</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">12</div>
+            <div class="case-metric__label">Reusable Templates</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">Enforceable</div>
+            <div class="case-metric__label">In CI/CD Pipeline</div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary); margin-top: 1rem;"><strong style="color: var(--color-text);">Institutional impact:</strong> This framework is the institutional memory of SAIB's integration capability. When someone leaves, the knowledge stays. When a new team member joins, they have a complete reference. When an auditor asks how integrations are governed, there's a definitive answer. Standards that are enforced in pipelines, not locked in SharePoint, are standards that actually work.</p>
+
+        <div class="mt-4">
+          <span class="skill-tag">TOGAF ADM</span>
+          <span class="skill-tag">FAPI 2.0</span>
+          <span class="skill-tag">OpenAPI 3.1</span>
+          <span class="skill-tag">ISO 20022</span>
+          <span class="skill-tag">OpenTelemetry</span>
+          <span class="skill-tag">RFC 7807</span>
+          <span class="skill-tag">ADRs</span>
+          <span class="skill-tag">Enterprise Governance</span>
+        </div>
+      </div>
+
     </div>
   </section>
 
