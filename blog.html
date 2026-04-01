@@ -52,6 +52,42 @@
   <section>
     <div class="container container--narrow">
 
+      <!-- Insight 6 -->
+      <div class="insight-full fade-in">
+        <div class="insight-card__date">Enterprise AI Strategy</div>
+        <h3 class="insight-card__title" style="margin-bottom: 1.5rem;">AI Without Infrastructure: Why Most Banking AI Projects Are Set Up to Fail</h3>
+        <div class="insight-full__body">
+          <p>Every bank in KSA is now running an AI initiative. Fraud detection models. Credit decisioning engines. Customer service copilots. Generative AI pilots in operations. The investment is real and accelerating. So is the disappointment rate.</p>
+          <p>The pattern is familiar: a proof of concept impresses leadership, budget is approved, a production deployment is attempted&mdash;and the project stalls. Not because the model was wrong. Because the data wasn't there.</p>
+
+          <blockquote><p>AI is only as intelligent as the data it can reach. In most banks, that data is locked behind thirty years of point-to-point integrations, batch files, and undocumented core banking APIs that nobody wants to touch.</p></blockquote>
+
+          <p>The AI strategy conversation in banking should start with a different question: not "which model do we use?" but "can our systems actually deliver the data the model needs, in real time, at the quality level required?"</p>
+
+          <p class="insight-section">The integration gap nobody is talking about</p>
+          <p>A fraud detection model needs real-time transaction data, device fingerprints, behavioral patterns, and account history&mdash;assembled in milliseconds. A credit decisioning engine needs normalized financial data from multiple core systems, reconciled to a single customer view, with a complete audit trail. A customer service copilot needs contextual data across deposits, cards, loans, and service history&mdash;served through a coherent API, not seven separate screen scrapes.</p>
+          <p>In most banks, this data exists. But it lives in <strong>systems that were never designed to expose it this way</strong>. Core banking platforms speak batch. Card processors have proprietary APIs with rate limits. Risk systems have data that isn't synchronized with the customer data warehouse. The integration layer between these systems and the AI layer is not a footnote&mdash;it is the product.</p>
+          <p>When an AI project fails in production, the post-mortem usually finds the same root causes: data latency higher than the model requires, missing fields that were present in training data but unavailable in production, inconsistent identifiers that prevent joining customer records across systems, and no event-driven mechanism to trigger model inference in real time.</p>
+          <p>None of these are AI problems. They are <strong>integration architecture problems</strong>.</p>
+
+          <p class="insight-section">What the foundation actually requires</p>
+          <p>Building a bank that can run AI at scale requires the same investment that building a bank that can run digital products at scale requires: a well-designed integration platform, governed data contracts, and real-time data access patterns. The AI use case just makes the gaps visible faster.</p>
+          <p><strong>Event streaming as infrastructure.</strong> AI inference in fraud, credit, and personalization cannot wait for batch processes. Banks need an event backbone&mdash;a streaming platform that propagates state changes from core systems in real time. When a transaction posts, a model should be able to consume that event within seconds. Most banks are still reconciling yesterday's transactions at 3am.</p>
+          <p><strong>API-first data access.</strong> The data that AI models need should be accessible through governed, versioned APIs with clear ownership. Not direct database queries. Not CSV exports. Not ETL pipelines that break when the source schema changes. When the integration layer is designed for API-first consumption, the cost of connecting a new AI use case drops dramatically.</p>
+          <p><strong>A single customer identity layer.</strong> Every AI use case that touches customer data&mdash;personalization, credit, churn prediction, fraud&mdash;requires a coherent view of the customer across systems. If account IDs in core banking don't reconcile with card IDs, loan IDs, and mobile banking IDs, the model is learning from noise. Identity resolution is not a data science problem. It is an integration and MDM problem.</p>
+          <p><strong>Data quality governance.</strong> AI models are sensitive to data drift, schema changes, and population shifts in ways that traditional applications are not. A well-governed integration platform with data quality checks, contract versioning, and change notification is not optional infrastructure for AI&mdash;it is the difference between a model that improves over time and one that silently degrades.</p>
+
+          <p class="insight-section">The sequencing question</p>
+          <p>Banks face a genuine tension here. The business wants AI results now. The architecture team knows the foundation isn't ready. The typical resolution is to build AI point solutions on top of inadequate data infrastructure&mdash;which produces demos, not durable capabilities.</p>
+          <p>The executives who get this right are the ones who <strong>use the AI mandate to fund the integration work</strong>. The business case for a real-time event platform is hard to approve in isolation. The business case for "enabling AI-powered fraud detection" is easy to approve&mdash;and the event platform is the prerequisite. The AI use case creates the political capital to fix the infrastructure that should have been fixed years ago.</p>
+          <p>That is not cynicism. It is how institutional change happens. The technology enables the conversation. The conversation enables the investment. The investment enables the capability. Done in the right sequence, the AI initiative pays for itself twice: once in the use case it enables, and once in the platform it forces the organization to build.</p>
+
+          <p class="insight-section">What I focus on</p>
+          <p>When I assess an AI readiness problem, I am not evaluating the models&mdash;that is a data science question. I am evaluating whether the <strong>integration architecture can support the data demands of production AI</strong>: latency characteristics, data freshness guarantees, API maturity, event streaming capability, and the governance structures that keep data quality from eroding as systems evolve.</p>
+          <p>If the integration foundation is not there, the AI initiative will stall&mdash;not because the data science is wrong, but because the systems that need to feed the model were never designed to do so at the speed and quality that production AI requires. Fix the foundation first. The models will follow.</p>
+        </div>
+      </div>
+
       <!-- Insight 1 -->
       <div class="insight-full fade-in">
         <div class="insight-card__date">Enterprise Strategy</div>
