@@ -25,7 +25,7 @@
     .case-label { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); margin-bottom: 0.5rem; font-weight: 600; }
     .case-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
     .case-metric { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.25rem; text-align: center; }
-    .case-metric__value { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--color-accent); line-height: 1; margin-bottom: 0.375rem; }
+    .case-metric__value { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--color-accent); line-height: 1.2; margin-bottom: 0.375rem; word-break: break-word; overflow-wrap: break-word; }
     .case-metric__label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
     .case-list { list-style: none; padding: 0; }
     .case-list li { padding-left: 1.25rem; position: relative; margin-bottom: 0.5rem; font-size: 0.9375rem; color: var(--color-text-secondary); }
@@ -556,62 +556,34 @@
         </div>
       </div>
 
-      <!-- 12: Integration Framework -->
+      <!-- 12: Enterprise Standards & Governance -->
       <div class="case-study fade-in">
         <span class="overline">12 &mdash; Enterprise Standards &amp; Governance</span>
-        <h3 class="mb-3">SAIB Integration Framework: 10 Enterprise Standards</h3>
+        <h3 class="mb-3">Building an Enterprise Integration Framework from Scratch</h3>
         <hr class="divider">
 
         <p class="case-label">Business Challenge</p>
-        <p>Every integration at SAIB was built differently. Different teams used different patterns, different security models, different error handling, different documentation formats. There was no institutional standard. Code reviews couldn't enforce quality because there was no agreed definition of quality. New team members had no reference architecture. Regulatory audits required collecting evidence from dozens of inconsistent implementations.</p>
+        <p>Every integration was built differently. Different teams used different patterns, different security models, different error handling, different documentation formats. There was no institutional standard. Quality was subjective. New team members had no reference architecture. Regulatory audits required collecting evidence from dozens of inconsistent implementations.</p>
 
         <p class="case-label" style="margin-top: 1.5rem;">Organizational Change</p>
-        <p>I authored and established a <strong>comprehensive integration framework</strong>&mdash;10 non-negotiable standards documents that govern all integration work at SAIB. This is not documentation for documentation's sake. These are enforceable standards embedded into the development lifecycle, review gates, and CI/CD pipelines.</p>
+        <p>I authored and established a <strong>comprehensive enterprise integration framework</strong>&mdash;covering everything from architectural principles and API design standards to security profiles, observability requirements, error handling patterns, data standards, testing methodology, and governance processes. These are not shelf-ware documents. They are enforceable standards embedded into the development lifecycle and automated review gates.</p>
 
-        <p class="case-label" style="margin-top: 1.5rem;">The 10 Standards</p>
+        <p class="case-label" style="margin-top: 1.5rem;">What Was Delivered</p>
         <ul class="case-list">
-          <li><strong>01 Integration Principles</strong> &mdash; Domain ownership, thin ESB mediation, security perimeter, idempotency, replaceability</li>
-          <li><strong>02 API Standards</strong> &mdash; REST/OpenAPI 3.1, URL structure, resource naming, pagination, versioning (Richardson Maturity Level 3)</li>
-          <li><strong>03 Security Standards</strong> &mdash; Financial-grade security profiles, identity and access management, certificate-based authentication, transport security</li>
-          <li><strong>04 Integration Patterns</strong> &mdash; 7 canonical patterns: Sync REST, ESB Mediation, Async Events, ISO 20022, Open Banking TPP, File/SFTP, Webhooks</li>
-          <li><strong>05 Documentation Standards</strong> &mdash; Mandatory templates, review gates, governance checkpoints</li>
-          <li><strong>06 Observability Standards</strong> &mdash; Distributed tracing, service level indicators/objectives, metrics collection, alerting</li>
-          <li><strong>07 Error Handling Standards</strong> &mdash; Standardized error models, circuit breakers, idempotency enforcement, retry logic</li>
-          <li><strong>08 Data Standards</strong> &mdash; ISO 8583, ISO 20022, IBAN validation, field naming conventions</li>
-          <li><strong>09 Testing Standards</strong> &mdash; Contract testing, integration testing, security testing, test environments</li>
-          <li><strong>10 Governance</strong> &mdash; Architecture Decision Records (ADRs), integration registry, review gates, compliance checkpoints</li>
+          <li>Complete integration framework spanning principles, API design, security, integration patterns, documentation, observability, error handling, data standards, testing, and governance</li>
+          <li>Reusable templates for every deliverable in the integration lifecycle</li>
+          <li>Automated enforcement through development pipelines&mdash;standards are checked before code reaches review</li>
+          <li>Architecture Decision Records ensuring institutional knowledge persists beyond any individual</li>
+          <li>Review gates and compliance checkpoints aligned with regulatory requirements</li>
         </ul>
 
-        <div class="case-metrics">
-          <div class="case-metric">
-            <div class="case-metric__value">10</div>
-            <div class="case-metric__label">Standards Documents</div>
-          </div>
-          <div class="case-metric">
-            <div class="case-metric__value">3,500+</div>
-            <div class="case-metric__label">Lines of Standards</div>
-          </div>
-          <div class="case-metric">
-            <div class="case-metric__value">12</div>
-            <div class="case-metric__label">Reusable Templates</div>
-          </div>
-          <div class="case-metric">
-            <div class="case-metric__value">Enforceable</div>
-            <div class="case-metric__label">In CI/CD Pipeline</div>
-          </div>
-        </div>
-
-        <p style="font-size: 0.9375rem; color: var(--color-text-secondary); margin-top: 1rem;"><strong style="color: var(--color-text);">Institutional impact:</strong> This framework is the institutional memory of SAIB's integration capability. When someone leaves, the knowledge stays. When a new team member joins, they have a complete reference. When an auditor asks how integrations are governed, there's a definitive answer. Standards that are enforced in pipelines, not locked in SharePoint, are standards that actually work.</p>
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary); margin-top: 1rem;"><strong style="color: var(--color-text);">Institutional impact:</strong> When someone leaves, the knowledge stays. When a new team member joins, they have a complete reference. When an auditor asks how integrations are governed, there is a definitive answer. Standards that are automated and enforced are standards that actually work.</p>
 
         <div class="mt-4">
-          <span class="skill-tag">TOGAF ADM</span>
-          <span class="skill-tag">Financial-Grade Security</span>
-          <span class="skill-tag">API Design Standards</span>
-          <span class="skill-tag">Payment Messaging Standards</span>
-          <span class="skill-tag">Enterprise Observability</span>
-          <span class="skill-tag">Error Handling Standards</span>
-          <span class="skill-tag">ADRs</span>
-          <span class="skill-tag">Enterprise Governance</span>
+          <span class="skill-tag">Enterprise Standards</span>
+          <span class="skill-tag">Architecture Governance</span>
+          <span class="skill-tag">Automated Compliance</span>
+          <span class="skill-tag">Institutional Knowledge</span>
         </div>
       </div>
 
