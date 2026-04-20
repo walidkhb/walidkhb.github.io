@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab — Waleed Albadawi</title>
+  <meta name="description" content="Technical writing on integration architecture, API design, platform engineering, and solution patterns from hands-on work in KSA financial services.">
+  <link rel="canonical" href="https://www.wbadawi.info/technical.html">
+  <meta property="og:title" content="Lab — Waleed Albadawi">
+  <meta property="og:description" content="Technical writing on integration architecture, API design, platform engineering, and solution patterns.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.wbadawi.info/technical.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Lab — Waleed Albadawi">
+  <meta name="twitter:description" content="Technical writing on integration architecture, API design, and platform engineering.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/favicon-192.png">
+  <link rel="apple-touch-icon" href="assets/img/favicon-192.png">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "Lab — Waleed Albadawi",
+    "url": "https://www.wbadawi.info/technical.html",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info"
+    },
+    "description": "Technical writing on integration architecture, API design, platform engineering, and solution patterns."
+  }
+  </script>
+  <style>
+    /* ── Post layout ── */
+    .tech-post { margin-bottom: 4rem; padding-bottom: 4rem; border-bottom: 1px solid var(--color-border); }
+    .tech-post:last-child { border-bottom: none; }
+
+    /* ── Meta line (tags + date) ── */
+    .tech-post__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .tech-post__tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 3px;
+      background: var(--color-accent-glow);
+      border: 1px solid var(--color-accent-border);
+      color: var(--color-accent);
+    }
+    .tech-post__date {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    /* ── Title ── */
+    .tech-post__title { font-size: 1.45rem; margin-bottom: 1.5rem; line-height: 1.35; }
+
+    /* ── Body text ── */
+    .tech-post__body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .tech-post__body p strong { color: var(--color-text); }
+
+    /* ── Section headings ── */
+    .tech-section {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-accent);
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* ── Blockquote ── */
+    .tech-post__body blockquote {
+      border-left: 2px solid var(--color-accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      background: var(--color-surface);
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .tech-post__body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+
+    /* ── Code: inline ── */
+    .tech-post__body code {
+      font-family: var(--font-mono);
+      font-size: 0.82em;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      padding: 0.1em 0.4em;
+      color: var(--color-accent);
+    }
+
+    /* ── Code: blocks ── */
+    .tech-post__body pre {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+    .tech-post__body pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 0.83rem;
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+    }
+    .tech-post__body pre .cm { color: var(--color-text-muted); font-style: italic; } /* comment */
+    .tech-post__body pre .k  { color: var(--color-accent); }                         /* keyword / key */
+    .tech-post__body pre .s  { color: #a8d8a8; }                                     /* string value */
+    .tech-post__body pre .n  { color: #c4b5fd; }                                     /* number */
+    .tech-post__body pre .b  { color: #f59e0b; }                                     /* boolean */
+
+    /* ── Callout boxes ── */
+    .tech-note {
+      border-left: 2px solid var(--color-accent-border);
+      padding: 0.85rem 1.25rem;
+      margin: 1.5rem 0;
+      background: var(--color-surface);
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .tech-note p { margin-bottom: 0; color: var(--color-text-secondary) !important; font-size: 0.875rem !important; }
+    .tech-note strong { color: var(--color-text) !important; }
+    .tech-note--warn { border-left-color: #f59e0b; }
+    .tech-note--error { border-left-color: #ef4444; }
+
+    /* ── Severity badges ── */
+    .sev { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+           padding: 0.15rem 0.45rem; border-radius: 3px; vertical-align: middle; margin-right: 0.3rem; }
+    .sev--critical { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .sev--high     { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .sev--medium   { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+  </style>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="about.html">About</a>
+        <a href="experience.html">Experience</a>
+        <a href="projects.html">Initiatives</a>
+        <a href="expertise.html">Expertise</a>
+        <a href="resume.html">Resume</a>
+        <a href="blog.html">Insights</a>
+        <a href="technical.html" class="active">Lab</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <span class="overline">Lab</span>
+      <h1>Technical depth.</h1>
+      <p class="lead">Architecture decisions, API design, integration patterns, and solution write-ups from hands-on work. Where the executive perspective meets the implementation detail.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+
+      <!-- Post 1 -->
+      <div class="tech-post fade-in">
+        <div class="tech-post__meta">
+          <span class="tech-post__tag">API Design</span>
+          <span class="tech-post__tag">Payment Systems</span>
+          <span class="tech-post__date">April 20, 2026</span>
+        </div>
+        <h3 class="tech-post__title">Three Conformance Gap Patterns in Real-Time Payment API Integration</h3>
+        <div class="tech-post__body">
+          <p>Integrating against a published payment scheme API specification should be straightforward: read the spec, implement to it, test conformance. In practice, gap analysis work consistently surfaces the same categories of divergence between what a specification documents and what an implementation delivers. These gaps are rarely visible at the conceptual level&mdash;they appear when you compare payloads field by field. Three patterns appear most reliably.</p>
+
+          <p class="tech-section">Pattern 1 — Token Propagation Gaps</p>
+          <p>Real-time payment schemes use session or transaction tokens to correlate requests across the lookup, initiation, and confirmation phases of a payment flow. A common gap: the token issued in the lookup response is not required&mdash;or not validated&mdash;in the subsequent API call that uses the lookup result. The specification may document the token as mandatory; the implementation silently accepts requests without it. This matters because the token is the mechanism that prevents stale lookup data from being used in a payment initiation. Without enforcement, a client can initiate a payment against a beneficiary record that has been modified or invalidated since the lookup was performed.</p>
+
+          <div class="tech-note tech-note--error">
+            <p><strong>Gap class: <span class="sev sev--critical">Critical</span></strong> — a missing token validation at the proxy/intermediary layer means the enforcement exists only in the final destination system, or not at all. If the intermediary accepts the call, the destination system may never see the original token to validate against.</p>
+          </div>
+
+          <p>The fix is not just adding a validation rule. It requires deciding where in the processing chain the token must be present and enforced, because the token's purpose is to protect the transition between two separate API calls. Both the proxy layer and the destination must be aligned on this.</p>
+
+          <p class="tech-section">Pattern 2 — Incomplete Fee Response Schemas</p>
+          <p>Fee enquiry responses in payment APIs often carry fields that are critical for customer-facing display but are documented as optional in the base specification. Two fields that commonly go missing: the VAT component of the fee, and the value dates (settlement date, posting date) that determine when the transaction will actually clear. Consider a fee response that returns total fee correctly but omits the VAT breakdown:</p>
+
+          <pre><code><span class="cm">// What the spec requires</span>
+{
+  <span class="k">"transactionFee"</span>: <span class="n">12.00</span>,
+  <span class="k">"vatAmount"</span>:      <span class="n">1.80</span>,   <span class="cm">// 15% VAT — required for consumer disclosure</span>
+  <span class="k">"settlementDate"</span>: <span class="s">"2026-04-21"</span>,
+  <span class="k">"postingDate"</span>:    <span class="s">"2026-04-21"</span>
+}
+
+<span class="cm">// What the implementation returns</span>
+{
+  <span class="k">"transactionFee"</span>: <span class="n">12.00</span>
+  <span class="cm">// vatAmount absent — not populated</span>
+  <span class="cm">// date fields absent — not populated</span>
+}</code></pre>
+
+          <p>The consuming channel application cannot derive the VAT component from the total fee alone without knowing the applicable rate and whether the fee itself is VAT-inclusive or exclusive&mdash;assumptions that vary. The channel is forced to either display an incomplete fee to the customer, hard-code a VAT rate (incorrect if the rate changes), or make a separate VAT calculation call that the spec does not define. Any of these outcomes is a conformance failure even if the payment itself processes correctly.</p>
+
+          <div class="tech-note tech-note--warn">
+            <p><strong>Gap class: <span class="sev sev--high">High</span></strong> — in regulated markets where consumer fee disclosure requirements are statutory, an incomplete fee response is not a cosmetic issue. It is a compliance gap that the channel application cannot fully compensate for.</p>
+          </div>
+
+          <p class="tech-section">Pattern 3 — Type Inconsistency Across Related APIs</p>
+          <p>In a payment scheme with multiple related API operations (lookup, initiate, confirm, status), the same logical field may be typed differently depending on which endpoint you are calling. A common instance: an amount field that is typed as <code>string</code> in one endpoint and <code>number</code> in another. Or a currency code that is a two-character code in one response and a three-character ISO 4217 code in another.</p>
+
+          <pre><code><span class="cm">// Lookup response — amount as string</span>
+{ <span class="k">"amount"</span>: <span class="s">"500.00"</span>, <span class="k">"currency"</span>: <span class="s">"SAR"</span> }
+
+<span class="cm">// Initiation request — same field as number</span>
+{ <span class="k">"amount"</span>: <span class="n">500.00</span>,  <span class="k">"currency"</span>: <span class="s">"SAR"</span> }
+
+<span class="cm">// Status response — amount back as string, different precision</span>
+{ <span class="k">"amount"</span>: <span class="s">"500"</span>,    <span class="k">"currency"</span>: <span class="s">"SAR"</span> }</code></pre>
+
+          <p>Each individual response parses correctly. The problem surfaces in a client that reads the lookup amount, passes it into the initiation request, and later validates the status response amount against the original. If the client preserves type through the flow&mdash;as it should&mdash;it will need explicit coercion logic at each transition. If it does not, it risks passing a string where a number is expected or failing a numeric equality check against a value that was serialised differently.</p>
+          <p>This pattern is particularly common in APIs that evolved incrementally&mdash;where early endpoints were defined by one team and later endpoints by another, with no shared type contract enforced across the API surface. The fix requires a canonical type definition for each field used across multiple endpoints, enforced at the schema level rather than documented as a convention.</p>
+
+          <p class="tech-section">Why These Patterns Persist</p>
+          <p>All three gaps share a structural cause: the specification was reviewed as a document rather than validated as a contract. A document review confirms that the required fields are listed. A contract validation confirms that the implementation actually returns those fields, with the right types, in every code path. The difference is that document review can be done by reading; contract validation requires executing the API against a test harness that checks every field in every response against the specification schema.</p>
+          <p>For real-time payment schemes specifically, the cost of finding these gaps after go-live is high: failed transactions have immediate customer impact, and the fix requires a coordinated change across the specification owner, the implementing institution, and any intermediary layer sitting between them. The same gap found during a structured pre-integration review is a document update and a development ticket. The asymmetry in remediation cost is the argument for building schema-level conformance testing into the integration programme before test environments are stood up.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section--dark">
+    <div class="container text-center">
+      <span class="overline">Have a technical problem to solve?</span>
+      <h2 class="mb-3">Architecture is better designed in conversation.</h2>
+      <p class="lead" style="max-width: 560px; margin: 0 auto 2rem;">If you're working through a similar design challenge, I'm happy to think through it together.</p>
+      <a href="contact.html" class="btn btn--accent">Get in Touch</a>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
