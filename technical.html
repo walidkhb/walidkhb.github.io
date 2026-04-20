@@ -186,70 +186,7 @@
   <section>
     <div class="container container--narrow">
 
-      <!-- Post 1 -->
-      <div class="tech-post fade-in">
-        <div class="tech-post__meta">
-          <span class="tech-post__tag">API Design</span>
-          <span class="tech-post__tag">Payment Systems</span>
-          <span class="tech-post__date">April 20, 2026</span>
-        </div>
-        <h3 class="tech-post__title">Three Conformance Gap Patterns in Real-Time Payment API Integration</h3>
-        <div class="tech-post__body">
-          <p>Integrating against a published payment scheme API specification should be straightforward: read the spec, implement to it, test conformance. In practice, gap analysis work consistently surfaces the same categories of divergence between what a specification documents and what an implementation delivers. These gaps are rarely visible at the conceptual level&mdash;they appear when you compare payloads field by field. Three patterns appear most reliably.</p>
-
-          <p class="tech-section">Pattern 1 — Token Propagation Gaps</p>
-          <p>Real-time payment schemes use session or transaction tokens to correlate requests across the lookup, initiation, and confirmation phases of a payment flow. A common gap: the token issued in the lookup response is not required&mdash;or not validated&mdash;in the subsequent API call that uses the lookup result. The specification may document the token as mandatory; the implementation silently accepts requests without it. This matters because the token is the mechanism that prevents stale lookup data from being used in a payment initiation. Without enforcement, a client can initiate a payment against a beneficiary record that has been modified or invalidated since the lookup was performed.</p>
-
-          <div class="tech-note tech-note--error">
-            <p><strong>Gap class: <span class="sev sev--critical">Critical</span></strong> — a missing token validation at the proxy/intermediary layer means the enforcement exists only in the final destination system, or not at all. If the intermediary accepts the call, the destination system may never see the original token to validate against.</p>
-          </div>
-
-          <p>The fix is not just adding a validation rule. It requires deciding where in the processing chain the token must be present and enforced, because the token's purpose is to protect the transition between two separate API calls. Both the proxy layer and the destination must be aligned on this.</p>
-
-          <p class="tech-section">Pattern 2 — Incomplete Fee Response Schemas</p>
-          <p>Fee enquiry responses in payment APIs often carry fields that are critical for customer-facing display but are documented as optional in the base specification. Two fields that commonly go missing: the VAT component of the fee, and the value dates (settlement date, posting date) that determine when the transaction will actually clear. Consider a fee response that returns total fee correctly but omits the VAT breakdown:</p>
-
-          <pre><code><span class="cm">// What the spec requires</span>
-{
-  <span class="k">"transactionFee"</span>: <span class="n">12.00</span>,
-  <span class="k">"vatAmount"</span>:      <span class="n">1.80</span>,   <span class="cm">// 15% VAT — required for consumer disclosure</span>
-  <span class="k">"settlementDate"</span>: <span class="s">"2026-04-21"</span>,
-  <span class="k">"postingDate"</span>:    <span class="s">"2026-04-21"</span>
-}
-
-<span class="cm">// What the implementation returns</span>
-{
-  <span class="k">"transactionFee"</span>: <span class="n">12.00</span>
-  <span class="cm">// vatAmount absent — not populated</span>
-  <span class="cm">// date fields absent — not populated</span>
-}</code></pre>
-
-          <p>The consuming channel application cannot derive the VAT component from the total fee alone without knowing the applicable rate and whether the fee itself is VAT-inclusive or exclusive&mdash;assumptions that vary. The channel is forced to either display an incomplete fee to the customer, hard-code a VAT rate (incorrect if the rate changes), or make a separate VAT calculation call that the spec does not define. Any of these outcomes is a conformance failure even if the payment itself processes correctly.</p>
-
-          <div class="tech-note tech-note--warn">
-            <p><strong>Gap class: <span class="sev sev--high">High</span></strong> — in regulated markets where consumer fee disclosure requirements are statutory, an incomplete fee response is not a cosmetic issue. It is a compliance gap that the channel application cannot fully compensate for.</p>
-          </div>
-
-          <p class="tech-section">Pattern 3 — Type Inconsistency Across Related APIs</p>
-          <p>In a payment scheme with multiple related API operations (lookup, initiate, confirm, status), the same logical field may be typed differently depending on which endpoint you are calling. A common instance: an amount field that is typed as <code>string</code> in one endpoint and <code>number</code> in another. Or a currency code that is a two-character code in one response and a three-character ISO 4217 code in another.</p>
-
-          <pre><code><span class="cm">// Lookup response — amount as string</span>
-{ <span class="k">"amount"</span>: <span class="s">"500.00"</span>, <span class="k">"currency"</span>: <span class="s">"SAR"</span> }
-
-<span class="cm">// Initiation request — same field as number</span>
-{ <span class="k">"amount"</span>: <span class="n">500.00</span>,  <span class="k">"currency"</span>: <span class="s">"SAR"</span> }
-
-<span class="cm">// Status response — amount back as string, different precision</span>
-{ <span class="k">"amount"</span>: <span class="s">"500"</span>,    <span class="k">"currency"</span>: <span class="s">"SAR"</span> }</code></pre>
-
-          <p>Each individual response parses correctly. The problem surfaces in a client that reads the lookup amount, passes it into the initiation request, and later validates the status response amount against the original. If the client preserves type through the flow&mdash;as it should&mdash;it will need explicit coercion logic at each transition. If it does not, it risks passing a string where a number is expected or failing a numeric equality check against a value that was serialised differently.</p>
-          <p>This pattern is particularly common in APIs that evolved incrementally&mdash;where early endpoints were defined by one team and later endpoints by another, with no shared type contract enforced across the API surface. The fix requires a canonical type definition for each field used across multiple endpoints, enforced at the schema level rather than documented as a convention.</p>
-
-          <p class="tech-section">Why These Patterns Persist</p>
-          <p>All three gaps share a structural cause: the specification was reviewed as a document rather than validated as a contract. A document review confirms that the required fields are listed. A contract validation confirms that the implementation actually returns those fields, with the right types, in every code path. The difference is that document review can be done by reading; contract validation requires executing the API against a test harness that checks every field in every response against the specification schema.</p>
-          <p>For real-time payment schemes specifically, the cost of finding these gaps after go-live is high: failed transactions have immediate customer impact, and the fix requires a coordinated change across the specification owner, the implementing institution, and any intermediary layer sitting between them. The same gap found during a structured pre-integration review is a document update and a development ticket. The asymmetry in remediation cost is the argument for building schema-level conformance testing into the integration programme before test environments are stood up.</p>
-        </div>
-      </div>
+      <!-- Posts go here -->
 
     </div>
   </section>
