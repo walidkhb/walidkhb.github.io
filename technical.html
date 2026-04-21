@@ -12,16 +12,16 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lab — Waleed Albadawi</title>
-  <meta name="description" content="Technical writing on integration architecture, API design, platform engineering, and solution patterns from hands-on work in KSA financial services.">
+  <meta name="description" content="Technical write-ups on building production systems in financial services — event-driven architecture, distributed caching, integration patterns, API security, and more.">
   <link rel="canonical" href="https://www.wbadawi.info/technical.html">
   <meta property="og:title" content="Lab — Waleed Albadawi">
-  <meta property="og:description" content="Technical writing on integration architecture, API design, platform engineering, and solution patterns.">
+  <meta property="og:description" content="Technical write-ups on building production systems in financial services.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.wbadawi.info/technical.html">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Lab — Waleed Albadawi">
-  <meta name="twitter:description" content="Technical writing on integration architecture, API design, and platform engineering.">
+  <meta name="twitter:description" content="Technical write-ups on building production systems in financial services.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -30,128 +30,36 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/img/favicon-192.png">
   <link rel="apple-touch-icon" href="assets/img/favicon-192.png">
   <link rel="stylesheet" href="assets/css/style.css">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Blog",
-    "name": "Lab — Waleed Albadawi",
-    "url": "https://www.wbadawi.info/technical.html",
-    "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info"
-    },
-    "description": "Technical writing on integration architecture, API design, platform engineering, and solution patterns."
-  }
-  </script>
   <style>
-    /* ── Post layout ── */
-    .tech-post { margin-bottom: 4rem; padding-bottom: 4rem; border-bottom: 1px solid var(--color-border); }
-    .tech-post:last-child { border-bottom: none; }
-
-    /* ── Meta line (tags + date) ── */
-    .tech-post__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
-    .tech-post__tag {
+    .lab-card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+    }
+    .lab-card__meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+    }
+    .lab-card__soon {
       font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      padding: 0.2rem 0.55rem;
-      border-radius: 3px;
-      background: var(--color-accent-glow);
-      border: 1px solid var(--color-accent-border);
-      color: var(--color-accent);
-    }
-    .tech-post__date {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
       color: var(--color-text-muted);
-      margin-left: auto;
     }
-
-    /* ── Title ── */
-    .tech-post__title { font-size: 1.45rem; margin-bottom: 1.5rem; line-height: 1.35; }
-
-    /* ── Body text ── */
-    .tech-post__body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
-    .tech-post__body p strong { color: var(--color-text); }
-
-    /* ── Section headings ── */
-    .tech-section {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+    .lab-card__arrow {
+      font-size: 1rem;
       color: var(--color-accent);
-      margin-top: 2rem;
-      margin-bottom: 0.75rem;
-      font-weight: 600;
+      transition: transform var(--transition);
     }
-
-    /* ── Blockquote ── */
-    .tech-post__body blockquote {
-      border-left: 2px solid var(--color-accent);
-      padding: 1rem 1.5rem;
-      margin: 1.5rem 0;
-      background: var(--color-surface);
-      border-radius: 0 var(--radius) var(--radius) 0;
-    }
-    .tech-post__body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
-
-    /* ── Code: inline ── */
-    .tech-post__body code {
-      font-family: var(--font-mono);
-      font-size: 0.82em;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 3px;
-      padding: 0.1em 0.4em;
-      color: var(--color-accent);
-    }
-
-    /* ── Code: blocks ── */
-    .tech-post__body pre {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius);
-      padding: 1.25rem 1.5rem;
-      overflow-x: auto;
-      margin: 1.5rem 0;
-    }
-    .tech-post__body pre code {
-      background: none;
-      border: none;
-      padding: 0;
-      font-size: 0.83rem;
-      color: var(--color-text-secondary);
-      line-height: 1.7;
-    }
-    .tech-post__body pre .cm { color: var(--color-text-muted); font-style: italic; } /* comment */
-    .tech-post__body pre .k  { color: var(--color-accent); }                         /* keyword / key */
-    .tech-post__body pre .s  { color: #a8d8a8; }                                     /* string value */
-    .tech-post__body pre .n  { color: #c4b5fd; }                                     /* number */
-    .tech-post__body pre .b  { color: #f59e0b; }                                     /* boolean */
-
-    /* ── Callout boxes ── */
-    .tech-note {
-      border-left: 2px solid var(--color-accent-border);
-      padding: 0.85rem 1.25rem;
-      margin: 1.5rem 0;
-      background: var(--color-surface);
-      border-radius: 0 var(--radius) var(--radius) 0;
-    }
-    .tech-note p { margin-bottom: 0; color: var(--color-text-secondary) !important; font-size: 0.875rem !important; }
-    .tech-note strong { color: var(--color-text) !important; }
-    .tech-note--warn { border-left-color: #f59e0b; }
-    .tech-note--error { border-left-color: #ef4444; }
-
-    /* ── Severity badges ── */
-    .sev { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-           padding: 0.15rem 0.45rem; border-radius: 3px; vertical-align: middle; margin-right: 0.3rem; }
-    .sev--critical { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
-    .sev--high     { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
-    .sev--medium   { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+    .lab-card:hover .lab-card__arrow { transform: translateX(4px); }
+    .lab-card .card__text { margin-bottom: 0; }
   </style>
 </head>
 <body>
@@ -178,8 +86,154 @@
   <section class="page-header">
     <div class="container">
       <span class="overline">Lab</span>
-      <h1>Coming soon.</h1>
-      <p class="lead">Deep technical write-ups on building production systems in financial services&mdash;event-driven architecture, distributed caching, integration implementation, data synchronisation, API security, and the engineering decisions behind reliable, regulated platforms.</p>
+      <h1>Technical depth.</h1>
+      <p class="lead">Deep technical write-ups on building production systems in financial services&mdash;event-driven architecture, distributed caching, integration patterns, API security, and the engineering decisions behind reliable, regulated platforms.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="grid grid--3" style="gap: 1.5rem;">
+
+        <a href="lab/api-gateway.html" class="card lab-card">
+          <div class="card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <rect x="2" y="7" width="20" height="10" rx="2"/>
+              <path d="M6 12h12M6 10v4M18 10v4"/>
+            </svg>
+          </div>
+          <div class="card__title">API Gateway</div>
+          <p class="card__text">Rate limiting, routing, transformation, and policy enforcement at the edge. Gateway patterns for high-throughput financial services.</p>
+          <div class="lab-card__meta">
+            <span class="lab-card__soon">Coming soon</span>
+            <span class="lab-card__arrow">→</span>
+          </div>
+        </a>
+
+        <a href="lab/event-driven.html" class="card lab-card">
+          <div class="card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <polyline points="13 2 13 9 20 9"/>
+              <path d="M11 2H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-7"/>
+              <path d="M9 15l3-3 3 3 3-3"/>
+            </svg>
+          </div>
+          <div class="card__title">Event-Driven Architecture</div>
+          <p class="card__text">Event sourcing, pub/sub, broker design, and async processing patterns for real-time financial systems.</p>
+          <div class="lab-card__meta">
+            <span class="lab-card__soon">Coming soon</span>
+            <span class="lab-card__arrow">→</span>
+          </div>
+        </a>
+
+        <a href="lab/integration-patterns.html" class="card lab-card">
+          <div class="card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/>
+              <path d="M7 6h10M6 8l6 8M18 8l-6 8"/>
+            </svg>
+          </div>
+          <div class="card__title">Integration Design Patterns</div>
+          <p class="card__text">Enterprise integration patterns, choreography vs orchestration, canonical data models, and adapter design for complex financial ecosystems.</p>
+          <div class="lab-card__meta">
+            <span class="lab-card__soon">Coming soon</span>
+            <span class="lab-card__arrow">→</span>
+          </div>
+        </a>
+
+        <a href="lab/data-streaming.html" class="card lab-card">
+          <div class="card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div class="card__title">Data Streaming</div>
+          <p class="card__text">Real-time data pipelines, stream processing, and high-throughput event handling for financial data flows and market feeds.</p>
+          <div class="lab-card__meta">
+            <span class="lab-card__soon">Coming soon</span>
+            <span class="lab-card__arrow">→</span>
+          </div>
+        </a>
+
+        <a href="lab/legacy-integration.html" class="card lab-card">
+          <div class="card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18M9 21V9"/>
+            </svg>
+          </div>
+          <div class="card__title">Legacy Integration</div>
+          <p class="card__text">Strangler fig patterns, adapter layers, and modernisation strategies for integrating with core banking and legacy financial systems.</p>
+          <div class="lab-card__meta">
+            <span class="lab-card__soon">Coming soon</span>
+            <span class="lab-card__arrow">→</span>
+          </div>
+        </a>
+
+        <a href="lab/distributed-caching.html" class="card lab-card">
+          <div class="card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/>
+              <path d="M3 5v4c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+              <path d="M3 9v6c0 1.66 4 3 9 3s9-1.34 9-3V9"/>
+              <path d="M3 15v4c0 1.66 4 3 9 3s9-1.34 9-3v-4"/>
+            </svg>
+          </div>
+          <div class="card__title">Distributed Caching</div>
+          <p class="card__text">Cache topology, consistency models, invalidation strategies, and distributed state management for low-latency financial applications.</p>
+          <div class="lab-card__meta">
+            <span class="lab-card__soon">Coming soon</span>
+            <span class="lab-card__arrow">→</span>
+          </div>
+        </a>
+
+        <a href="lab/api-security.html" class="card lab-card">
+          <div class="card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="card__title">API Security</div>
+          <p class="card__text">OAuth flows, mTLS, token design, zero-trust patterns, and securing APIs in regulated financial environments.</p>
+          <div class="lab-card__meta">
+            <span class="lab-card__soon">Coming soon</span>
+            <span class="lab-card__arrow">→</span>
+          </div>
+        </a>
+
+        <a href="lab/data-sync.html" class="card lab-card">
+          <div class="card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <polyline points="1 4 1 10 7 10"/>
+              <polyline points="23 20 23 14 17 14"/>
+              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+            </svg>
+          </div>
+          <div class="card__title">Data Synchronisation</div>
+          <p class="card__text">Change data capture, dual-write patterns, eventual consistency, and keeping distributed financial data in sync across systems.</p>
+          <div class="lab-card__meta">
+            <span class="lab-card__soon">Coming soon</span>
+            <span class="lab-card__arrow">→</span>
+          </div>
+        </a>
+
+        <a href="lab/devops.html" class="card lab-card">
+          <div class="card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+              <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+            </svg>
+          </div>
+          <div class="card__title">DevOps &amp; Platform Engineering</div>
+          <p class="card__text">CI/CD for integration platforms, environment management, observability pipelines, and release patterns for regulated industries.</p>
+          <div class="lab-card__meta">
+            <span class="lab-card__soon">Coming soon</span>
+            <span class="lab-card__arrow">→</span>
+          </div>
+        </a>
+
+      </div>
     </div>
   </section>
 
