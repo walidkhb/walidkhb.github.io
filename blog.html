@@ -36,18 +36,23 @@
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
     .insight-card {
-      display: block;
+      display: flex;
+      flex-direction: column;
       text-decoration: none;
       color: inherit;
       position: relative;
     }
+    .insight-card .card__icon { align-self: flex-start; }
     .insight-card__meta {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 1.25rem;
+      margin-top: auto;
       padding-top: 1rem;
       border-top: 1px solid var(--color-border);
+    }
+    .insight-card__meta-divider {
+      margin-top: 1.25rem;
     }
     .insight-card__count {
       font-family: var(--font-mono);
