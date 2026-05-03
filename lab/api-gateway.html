@@ -5,24 +5,24 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>API Gateway — Lab — Waleed Albadawi</title>
-  <meta name="description" content="Technical articles on API gateway patterns — rate limiting, routing, transformation, and policy enforcement for financial services platforms.">
+  <title>API Gateway &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Articles on API gateway architecture, rate limiting, routing, transformation, and policy enforcement at the edge for high-throughput, regulated financial services platforms.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="API Gateway — Lab — Waleed Albadawi">
-  <meta property="og:description" content="Technical articles on API gateway patterns — rate limiting, routing, transformation, and policy enforcement for financial services platforms.">
+  <meta property="og:title" content="API Gateway &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Articles on API gateway architecture for financial services.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.wbadawi.info/lab/api-gateway.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="API Gateway — Lab — Waleed Albadawi">
-  <meta name="twitter:description" content="Technical articles on API gateway patterns — rate limiting, routing, transformation, and policy enforcement for financial services platforms.">
+  <meta name="twitter:title" content="API Gateway &mdash; Lab &mdash; Waleed Albadawi">
+  <meta name="twitter:description" content="Articles on API gateway architecture for financial services.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/api-gateway.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
@@ -32,16 +32,13 @@
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 0.4rem; }
-    .coming-soon-state { text-align: center; padding: 5rem 0; }
-    .coming-soon-state .overline { display: block; margin-bottom: 1rem; }
-    .coming-soon-state p { color: var(--color-text-muted); font-size: 0.9375rem; max-width: 480px; margin: 0 auto; }
   </style>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "API Gateway",
-    "description": "Technical articles on API gateway patterns — rate limiting, routing, transformation, and policy enforcement for financial services platforms.",
+    "name": "API Gateway &mdash; Lab",
+    "description": "Articles on API gateway architecture for financial services platforms.",
     "url": "https://www.wbadawi.info/lab/api-gateway.html",
     "isPartOf": {"@type": "WebSite", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
     "breadcrumb": {
@@ -51,8 +48,7 @@
         {"@type": "ListItem", "position": 2, "name": "Lab", "item": "https://www.wbadawi.info/technical.html"},
         {"@type": "ListItem", "position": 3, "name": "API Gateway", "item": "https://www.wbadawi.info/lab/api-gateway.html"}
       ]
-    },
-    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"}
+    }
   }
   </script>
 </head>
@@ -78,8 +74,9 @@
   </header>
 
   <section class="page-header">
-    <div class="container">
+    <div class="container container--narrow">
       <div class="breadcrumb"><a href="../technical.html">Lab</a><span>/</span>API Gateway</div>
+      <span class="overline">Lab Topic</span>
       <h1>API Gateway</h1>
       <p class="lead">Rate limiting, routing, transformation, and policy enforcement at the edge. Gateway architecture patterns for high-throughput, regulated financial services platforms.</p>
     </div>
@@ -87,10 +84,42 @@
 
   <section>
     <div class="container container--narrow">
-      <div class="coming-soon-state">
-        <span class="overline">Coming Soon</span>
-        <h3 style="margin-bottom: 1rem;">Articles in progress</h3>
-        <p>Technical write-ups on API gateway design for financial services are being prepared. Check back shortly.</p>
+      <div class="article-list">
+
+        <a href="api-gateway/ibm-api-connect.html" class="article-list__item">
+          <div class="article-list__meta">
+            <span>Lab article</span>
+            <span class="article-list__meta-divider">&middot;</span>
+            <span>~15 min read</span>
+          </div>
+          <h2 class="article-list__title">IBM API Gateway: Production Architecture</h2>
+          <p class="article-list__excerpt">A practical walkthrough of IBM API Connect and DataPower Gateway: components, request lifecycle, deployment via the apic CLI, OpenAPI assembly policies, OAuth and mTLS, HA topology, and the operational patterns that keep regulated financial APIs reliable at scale.</p>
+          <div class="article-list__tags">
+            <span class="skill-tag">IBM API Connect</span>
+            <span class="skill-tag">DataPower</span>
+            <span class="skill-tag">OAuth 2.0</span>
+            <span class="skill-tag">mTLS</span>
+            <span class="skill-tag">Financial Services</span>
+          </div>
+          <div class="article-list__arrow">Read article &rarr;</div>
+        </a>
+
+        <div class="article-list__item article-list__item--soon">
+          <div class="article-list__meta">
+            <span>Coming soon</span>
+          </div>
+          <h2 class="article-list__title">Kong &amp; Envoy at the edge</h2>
+          <p class="article-list__excerpt">Open-source gateway alternatives for cloud-native and service-mesh architectures, and migration patterns from commercial gateways.</p>
+        </div>
+
+        <div class="article-list__item article-list__item--soon">
+          <div class="article-list__meta">
+            <span>Coming soon</span>
+          </div>
+          <h2 class="article-list__title">AWS API Gateway for regulated workloads</h2>
+          <p class="article-list__excerpt">VPC integration, WAF coupling, custom authorisers, and the configuration choices that pass a financial services security review.</p>
+        </div>
+
       </div>
     </div>
   </section>

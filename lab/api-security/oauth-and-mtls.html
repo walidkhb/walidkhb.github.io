@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Security &mdash; OAuth 2.1 &amp; mTLS &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Production API security for financial services: OAuth 2.1 flows, OpenID Connect, mTLS, JWT validation, FAPI 2.0 profile, token binding, and the patterns that satisfy regulators while keeping latency low.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="API Security &mdash; OAuth 2.1 &amp; mTLS &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="OAuth, OIDC, mTLS, JWT, FAPI &mdash; production security for financial services APIs.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/api-security/oauth-and-mtls.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="API Security &mdash; Production Patterns">
+  <meta name="twitter:description" content="OAuth, mTLS, JWT for regulated financial services.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/api-security/oauth-and-mtls.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>OAuth &amp; mTLS</div>
+          <span class="overline">Lab Article</span>
+          <h1>API Security: OAuth 2.1 &amp; mTLS</h1>
+          <p class="lead">OAuth 2.1 flows, OpenID Connect, mutual TLS, JWT validation, the FAPI 2.0 profile, token binding, and the layered defence that secures regulated financial APIs without sacrificing latency.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#layers">Defence layers</a></li>
+            <li><a href="#flows">OAuth flows</a></li>
+            <li><a href="#client-cred">Client credentials</a></li>
+            <li><a href="#auth-code">Authorization code + PKCE</a></li>
+            <li><a href="#mtls">mTLS</a></li>
+            <li><a href="#jwt">JWT validation</a></li>
+            <li><a href="#fapi">FAPI 2.0</a></li>
+            <li><a href="#scopes">Scope design</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Keycloak / OAuth 2.1 / OIDC / FAPI 2.0</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>API security is multi-layered: TLS at the wire, mutual TLS for partner traffic, OAuth bearer tokens for delegated access, and scopes for fine-grained authorisation. None of these layers is sufficient on its own. They compose &mdash; and the FAPI 2.0 profile (Financial-grade API) is the regulator&rsquo;s answer for how they should compose.</p>
+          <p>This article covers the patterns that hold up in production: which OAuth flow to use when, how to validate a JWT correctly, how to deploy mTLS without an operational nightmare, and what FAPI 2.0 actually requires.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Don&rsquo;t roll your own</div>
+            <p>The single largest source of API security incidents in financial services is custom auth code. Use a battle-tested IdP (Keycloak, Ping, ForgeRock, Okta) and a battle-tested client library (<code>org.springframework.security</code>, <code>passport</code>, <code>auth0</code>). Custom JWT verification, custom session encryption, custom signature checking &mdash; all consistently fail security review.</p>
+          </div>
+
+          <h2 id="layers">Defence layers</h2>
+
+          <div class="diagram" role="img" aria-label="Layered defence stack from network to application">
+            <div class="diagram__inner">
+              <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="as1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <rect x="40" y="40" width="700" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="60" y="60" fill="#00d4aa" font-size="11" font-weight="600">L1 NETWORK</text>
+                <text x="60" y="78" fill="#71717a" font-size="9">WAF &middot; DDoS scrubbing &middot; IP allow-list (partners)</text>
+
+                <rect x="40" y="100" width="700" height="50" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="60" y="120" fill="#a78bfa" font-size="11" font-weight="600">L2 TRANSPORT</text>
+                <text x="60" y="138" fill="#71717a" font-size="9">TLS 1.3 &middot; mTLS for partners &middot; HSTS &middot; certificate pinning</text>
+
+                <rect x="40" y="160" width="700" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="60" y="180" fill="#fbbf24" font-size="11" font-weight="600">L3 IDENTITY</text>
+                <text x="60" y="198" fill="#71717a" font-size="9">OAuth 2.1 access token &middot; OIDC ID token &middot; client credentials &middot; PKCE</text>
+
+                <rect x="40" y="220" width="700" height="50" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="60" y="240" fill="#4a9eff" font-size="11" font-weight="600">L4 AUTHORIZATION</text>
+                <text x="60" y="258" fill="#71717a" font-size="9">scopes &middot; claims-based policies &middot; per-resource ABAC &middot; rate limit + quotas</text>
+
+                <line x1="390" y1="90" x2="390" y2="98" stroke="#00d4aa" stroke-width="1" marker-end="url(#as1)"/>
+                <line x1="390" y1="150" x2="390" y2="158" stroke="#00d4aa" stroke-width="1" marker-end="url(#as1)"/>
+                <line x1="390" y1="210" x2="390" y2="218" stroke="#00d4aa" stroke-width="1" marker-end="url(#as1)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Layered defence stack &mdash; each layer addresses a different attacker class</div>
+          </div>
+
+          <h2 id="flows">OAuth flows</h2>
+          <p>OAuth 2.1 (the IETF consolidation, dropping deprecated grants) leaves four flows in active use. Pick by client type, not by familiarity.</p>
+
+          <table>
+            <thead>
+              <tr><th>Flow</th><th>Client</th><th>Token type</th><th>When to use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Authorization code + PKCE</strong></td><td>SPA, mobile, web app with backend</td><td>Access + refresh + ID</td><td>User-facing apps</td></tr>
+              <tr><td><strong>Client credentials</strong></td><td>Server-to-server, no user</td><td>Access</td><td>Service-to-service, batch jobs</td></tr>
+              <tr><td><strong>Device code</strong></td><td>TVs, kiosks, no keyboard</td><td>Access + refresh</td><td>ATM apps, branch tablets without password input</td></tr>
+              <tr><td><strong>Token exchange (RFC 8693)</strong></td><td>Service A acting on behalf of user</td><td>Access</td><td>Microservice chains under user identity</td></tr>
+            </tbody>
+          </table>
+
+          <p><strong>Implicit, password, and client credentials with shared secret in URL</strong> are deprecated. If a vendor or framework wants you to use them in 2026, push back.</p>
+
+          <h2 id="client-cred">Client credentials</h2>
+          <p>The simplest server-to-server flow. Service A authenticates to the AS with its client credentials, gets an access token, calls Service B.</p>
+
+          <div class="diagram" role="img" aria-label="Client credentials flow with service A getting token from authorization server then calling service B">
+            <div class="diagram__inner">
+              <svg width="780" height="200" viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="as2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="80" width="120" height="60" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="80" y="105" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Service A</text>
+                <text x="80" y="123" text-anchor="middle" fill="#71717a" font-size="9">caller</text>
+
+                <rect x="320" y="40" width="140" height="60" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="390" y="65" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Auth Server</text>
+                <text x="390" y="83" text-anchor="middle" fill="#71717a" font-size="9">Keycloak / Ping</text>
+
+                <rect x="640" y="80" width="120" height="60" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="700" y="105" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Service B</text>
+                <text x="700" y="123" text-anchor="middle" fill="#71717a" font-size="9">resource</text>
+
+                <line x1="140" y1="100" x2="318" y2="80" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#as2)"/>
+                <text x="200" y="80" fill="#71717a" font-size="9">1. POST /token</text>
+                <text x="200" y="92" fill="#71717a" font-size="9">&nbsp;&nbsp;&nbsp;client_credentials</text>
+
+                <line x1="318" y1="80" x2="142" y2="100" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#as2)" stroke-dasharray="3 2"/>
+                <text x="200" y="125" fill="#71717a" font-size="9">2. access_token (JWT)</text>
+                <text x="200" y="137" fill="#71717a" font-size="9">&nbsp;&nbsp;&nbsp;ttl=300s</text>
+
+                <line x1="140" y1="115" x2="638" y2="115" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#as2)"/>
+                <text x="490" y="105" fill="#71717a" font-size="9">3. GET /accounts &middot; Authorization: Bearer ...</text>
+
+                <line x1="638" y1="125" x2="142" y2="125" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#as2)" stroke-dasharray="3 2"/>
+                <text x="490" y="155" fill="#71717a" font-size="9">4. 200 OK + payload</text>
+
+                <text x="700" y="185" text-anchor="middle" fill="#71717a" font-size="9">B verifies JWT signature against AS jwks_uri (cached locally)</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Client credentials flow</div>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>get-service-token.sh</span><span class="code-block__lang">bash</span></div>
+<pre><code><span class="tok-c"># client_secret_basic: id:secret in HTTP Basic; bytes don&rsquo;t leak in logs</span>
+curl -sS <span class="tok-s">https://idp.acme-bank.com/realms/prod/protocol/openid-connect/token</span> \
+  -u <span class="tok-s">"$CLIENT_ID:$CLIENT_SECRET"</span> \
+  -d <span class="tok-s">"grant_type=client_credentials"</span> \
+  -d <span class="tok-s">"scope=accounts.read"</span> \
+  -d <span class="tok-s">"audience=accounts-api"</span></code></pre>
+          </div>
+
+          <p>For higher assurance, replace <code>client_secret_basic</code> with <code>private_key_jwt</code>: the client signs an assertion JWT with its private key. The AS verifies via the registered public key. No shared secret leaves the client &mdash; this is the FAPI 2.0 default.</p>
+
+          <h2 id="auth-code">Authorization code + PKCE</h2>
+          <p>The user-facing flow. The browser redirects to the AS, the user authenticates, the AS redirects back with a short-lived code, the client exchanges the code (plus a PKCE verifier) for tokens.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>auth-redirect.txt</span><span class="code-block__lang">http</span></div>
+<pre><code><span class="tok-c"># 1. Browser redirect to AS</span>
+GET /authorize?
+  response_type=<span class="tok-s">code</span>
+  &amp;client_id=<span class="tok-s">acme-mobile-app</span>
+  &amp;redirect_uri=<span class="tok-s">https://app.acme-bank.com/callback</span>
+  &amp;scope=<span class="tok-s">openid accounts.read payments.write</span>
+  &amp;state=<span class="tok-s">7fd92e1...</span>             <span class="tok-c"># CSRF protection</span>
+  &amp;code_challenge=<span class="tok-s">E9Melh...</span>     <span class="tok-c"># SHA-256 of verifier</span>
+  &amp;code_challenge_method=<span class="tok-s">S256</span>
+  &amp;nonce=<span class="tok-s">a3b1c...</span>               <span class="tok-c"># OIDC replay protection</span>
+
+<span class="tok-c"># 2. After auth, AS redirects back</span>
+HTTP/1.1 302 Found
+Location: <span class="tok-s">https://app.acme-bank.com/callback?code=eyJhbGc...&amp;state=7fd92e1...</span>
+
+<span class="tok-c"># 3. Client exchanges code + verifier for tokens</span>
+POST /token
+  grant_type=<span class="tok-s">authorization_code</span>
+  &amp;client_id=<span class="tok-s">acme-mobile-app</span>
+  &amp;code=<span class="tok-s">eyJhbGc...</span>
+  &amp;redirect_uri=<span class="tok-s">https://app.acme-bank.com/callback</span>
+  &amp;code_verifier=<span class="tok-s">dBjftJeZ...</span>     <span class="tok-c"># original random string</span></code></pre>
+          </div>
+
+          <p>PKCE is mandatory in OAuth 2.1, even for confidential clients. <code>code_challenge_method=S256</code> only; <code>plain</code> is unsafe.</p>
+
+          <h2 id="mtls">mTLS</h2>
+          <p>Mutual TLS authenticates both sides at the transport layer. The bank presents a server certificate as usual; the partner presents a client certificate signed by a CA the bank trusts.</p>
+          <ul>
+            <li><strong>For external partners:</strong> mTLS is the contract. No client cert &rarr; no connection. The cert is the credential.</li>
+            <li><strong>For internal east-west traffic:</strong> mTLS via service mesh (Istio, Linkerd) is the modern default. Operations run mTLS for everything; developers don&rsquo;t see it.</li>
+            <li><strong>For OAuth client authentication:</strong> <code>tls_client_auth</code> uses the same client cert to authenticate the OAuth client at the token endpoint &mdash; no shared secret needed.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>nginx-mtls.conf</span><span class="code-block__lang">nginx</span></div>
+<pre><code>server {
+    listen <span class="tok-n">443</span> ssl;
+    server_name <span class="tok-s">api.acme-bank.com</span>;
+
+    ssl_certificate           <span class="tok-s">/etc/ssl/server.crt</span>;
+    ssl_certificate_key       <span class="tok-s">/etc/ssl/server.key</span>;
+    ssl_protocols             <span class="tok-s">TLSv1.3</span>;
+
+    <span class="tok-c"># Trust partner CA bundle</span>
+    ssl_client_certificate    <span class="tok-s">/etc/ssl/partners-ca-bundle.crt</span>;
+    ssl_verify_client         <span class="tok-s">on</span>;
+    ssl_verify_depth          <span class="tok-n">2</span>;
+
+    <span class="tok-c"># Pass cert details to backend for binding token to cert</span>
+    proxy_set_header X-Client-Cert-DN  <span class="tok-s">$ssl_client_s_dn</span>;
+    proxy_set_header X-Client-Cert-Fp  <span class="tok-s">$ssl_client_fingerprint</span>;
+    proxy_set_header X-Client-Verify   <span class="tok-s">$ssl_client_verify</span>;
+
+    location / { proxy_pass <span class="tok-s">http://api-backend</span>; }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Cert lifecycle is the operational pain</div>
+            <p>mTLS works perfectly until a cert expires at 2am on a bank holiday. Build automated rotation (cert-manager, Vault PKI), alert on expiry &gt; 30 days out, and require automation for partner cert rotation, not email exchanges. The mTLS protocol is not the problem; cert lifecycle is.</p>
+          </div>
+
+          <h2 id="jwt">JWT validation</h2>
+          <p>A JWT validation that fails open is worse than no validation. The check must include <em>all</em> of:</p>
+          <ol>
+            <li>Signature verification against the AS&rsquo;s JWKS (key cached, refreshed on key rotation).</li>
+            <li>Algorithm pinning &mdash; <em>never</em> trust the <code>alg</code> in the header. Pin to <code>RS256</code> or <code>ES256</code>; reject <code>none</code> and <code>HS256</code> (which would let an attacker forge with the public key).</li>
+            <li>Issuer claim matches the expected <code>iss</code>.</li>
+            <li>Audience claim contains your service identifier.</li>
+            <li>Not-before (<code>nbf</code>) and expiry (<code>exp</code>) windows are valid with a small clock skew tolerance (60s).</li>
+            <li>Required scopes/roles for the called endpoint are present.</li>
+          </ol>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>JwtValidator.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public</span> JwtClaimsSet validate(<span class="tok-t">String</span> token) {
+  <span class="tok-t">SignedJWT</span> jwt = SignedJWT.parse(token);
+
+  <span class="tok-c">// 1. Algorithm pinning &mdash; reject anything else</span>
+  <span class="tok-k">if</span> (!JWSAlgorithm.RS256.equals(jwt.getHeader().getAlgorithm())) {
+    <span class="tok-k">throw new</span> SecurityException(<span class="tok-s">"unsupported alg"</span>);
+  }
+
+  <span class="tok-c">// 2. Signature against JWKS (cached, with rotation)</span>
+  <span class="tok-t">JWK</span> key = jwks.findByKid(jwt.getHeader().getKeyID())
+      .orElseThrow(() -&gt; <span class="tok-k">new</span> SecurityException(<span class="tok-s">"unknown kid"</span>));
+  <span class="tok-k">if</span> (!jwt.verify(<span class="tok-k">new</span> RSASSAVerifier((RSAKey) key))) {
+    <span class="tok-k">throw new</span> SecurityException(<span class="tok-s">"bad signature"</span>);
+  }
+
+  <span class="tok-c">// 3, 4, 5. iss, aud, exp, nbf with 60s skew</span>
+  <span class="tok-t">JwtClaimsSet</span> c = jwt.getJWTClaimsSet();
+  <span class="tok-k">if</span> (!ISSUER.equals(c.getIssuer())) <span class="tok-k">throw new</span> SecurityException(<span class="tok-s">"iss"</span>);
+  <span class="tok-k">if</span> (!c.getAudience().contains(AUDIENCE)) <span class="tok-k">throw new</span> SecurityException(<span class="tok-s">"aud"</span>);
+  <span class="tok-t">long</span> now = Instant.now().getEpochSecond();
+  <span class="tok-k">if</span> (now &gt; c.getExpirationTime().getTime() / <span class="tok-n">1000</span> + <span class="tok-n">60</span>) <span class="tok-k">throw new</span> SecurityException(<span class="tok-s">"exp"</span>);
+  <span class="tok-k">if</span> (c.getNotBeforeTime() != <span class="tok-k">null</span>
+        &amp;&amp; now + <span class="tok-n">60</span> &lt; c.getNotBeforeTime().getTime() / <span class="tok-n">1000</span>) {
+    <span class="tok-k">throw new</span> SecurityException(<span class="tok-s">"nbf"</span>);
+  }
+
+  <span class="tok-k">return</span> c;
+}</code></pre>
+          </div>
+
+          <h2 id="fapi">FAPI 2.0</h2>
+          <p>FAPI (Financial-grade API) is the OpenID Foundation profile that hardens OAuth and OIDC for financial services. FAPI 2.0 is what regulators in the UK, Australia, Brazil, and Saudi Arabia (Open Banking) reference.</p>
+          <p>Key requirements:</p>
+          <ul>
+            <li><strong>PAR (Pushed Authorization Requests).</strong> Authorization parameters POSTed to the AS over a back channel before the redirect &mdash; eliminates parameter tampering in the front channel.</li>
+            <li><strong>JAR (JWT-Secured Authorization Requests).</strong> The authorization request is itself a signed JWT.</li>
+            <li><strong>Sender-constrained tokens.</strong> Tokens are bound to the client&rsquo;s mTLS cert (RFC 8705) or to a DPoP key. A stolen token is useless without the binding.</li>
+            <li><strong>Private key JWT</strong> for client authentication (no shared secret).</li>
+            <li><strong>PS256 / ES256</strong> algorithms only; no <code>RS256</code> in FAPI 2.0.</li>
+          </ul>
+
+          <h2 id="scopes">Scope design</h2>
+          <p>Scopes are coarse-grained. Use them to express &ldquo;this client can read accounts&rdquo;, not &ldquo;this client can read account 12345&rdquo;. Per-resource authorisation belongs in the application, not in the scope.</p>
+          <ul>
+            <li><strong>Two-part scopes:</strong> <code>resource.action</code> &mdash; <code>accounts.read</code>, <code>payments.write</code>, <code>kyc.admin</code>. Predictable and parseable.</li>
+            <li><strong>No <code>*</code> scopes in production clients.</strong> A client requesting all scopes is a credential theft amplifier.</li>
+            <li><strong>One scope per endpoint group.</strong> Don&rsquo;t require five scopes for one call.</li>
+            <li><strong>Per-claim authorisation.</strong> &ldquo;The token holds a list of authorised account IDs&rdquo; is a claim, not a scope. Use <code>aud</code>/<code>resource</code> claims for FAPI-style fine-grained delegation.</li>
+          </ul>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Algorithm confusion</div>
+            <p>Verifying a JWT with the algorithm from the header is the canonical CVE in JWT libraries. Pin algorithms server-side; never trust client-provided <code>alg</code>. <code>none</code> and <code>HS256</code> against an RSA public key are the two well-known exploits.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Long-lived bearer tokens</div>
+            <p>Access tokens with 24-hour TTL turn token theft into a one-day breach. Keep access tokens short (5&ndash;15 minutes); use refresh tokens with rotation for long sessions; use sender-constrained binding for high-value APIs.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">JWKS without caching or rotation handling</div>
+            <p>Refetching JWKS on every request hammers the IdP. Caching forever means a key rotation breaks production. Cache for 10 minutes, refresh on unknown <code>kid</code>, alert on cache misses.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Storing tokens in localStorage</div>
+            <p>SPAs that store access tokens in <code>localStorage</code> expose them to any XSS. Use the BFF (Backend-For-Frontend) pattern: keep tokens server-side in an HTTP-only cookie session; the browser never sees the token.</p>
+          </div>
+
+          <h2 id="checklist">Production checklist</h2>
+          <ol>
+            <li>TLS 1.3 only on external endpoints. Disable TLS 1.0/1.1; alert on TLS 1.2 usage trend.</li>
+            <li>HSTS with <code>preload</code> on all consumer-facing endpoints.</li>
+            <li>OAuth 2.1, PKCE mandatory, no implicit/password grants.</li>
+            <li>Private key JWT or mTLS for confidential client auth.</li>
+            <li>Sender-constrained tokens for high-value APIs (mTLS or DPoP).</li>
+            <li>Algorithm pinning in JWT validation.</li>
+            <li>JWKS caching with rotation handling.</li>
+            <li>Short access token TTL; refresh rotation.</li>
+            <li>Token revocation endpoint wired and tested.</li>
+            <li>Per-endpoint scope enforcement.</li>
+            <li>Rate limiting at the gateway by client_id, not just IP.</li>
+            <li>Cert lifecycle automation; no manual partner cert email exchanges.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="../distributed-caching.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Distributed Caching</div>
+            </a>
+            <a href="../data-sync.html" class="article-nav__next">
+              <div class="article-nav__label">Next article</div>
+              <div class="article-nav__title">Data Synchronisation &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

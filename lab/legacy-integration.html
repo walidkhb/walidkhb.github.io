@@ -5,24 +5,24 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Legacy Integration — Lab — Waleed Albadawi</title>
-  <meta name="description" content="Technical articles on legacy integration — strangler fig patterns, adapter layers, and modernisation strategies for core banking and legacy financial systems.">
+  <title>Legacy Integration &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Articles on modernising integration with core banking and legacy financial systems: strangler fig pattern, anti-corruption layer, MQ-CICS bridges, COBOL adapters, and the migration patterns that keep the bank running.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Legacy Integration — Lab — Waleed Albadawi">
-  <meta property="og:description" content="Technical articles on legacy integration — strangler fig patterns, adapter layers, and modernisation strategies for core banking and legacy financial systems.">
+  <meta property="og:title" content="Legacy Integration &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Strangler fig and adapter patterns for legacy core banking integration.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.wbadawi.info/lab/legacy-integration.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Legacy Integration — Lab — Waleed Albadawi">
-  <meta name="twitter:description" content="Technical articles on legacy integration — strangler fig patterns, adapter layers, and modernisation strategies for core banking and legacy financial systems.">
+  <meta name="twitter:title" content="Legacy Integration &mdash; Lab &mdash; Waleed Albadawi">
+  <meta name="twitter:description" content="Strangler fig and adapter patterns for legacy systems.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
@@ -32,29 +32,7 @@
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 0.4rem; }
-    .coming-soon-state { text-align: center; padding: 5rem 0; }
-    .coming-soon-state .overline { display: block; margin-bottom: 1rem; }
-    .coming-soon-state p { color: var(--color-text-muted); font-size: 0.9375rem; max-width: 480px; margin: 0 auto; }
   </style>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": "Legacy Integration",
-    "description": "Technical articles on legacy integration — strangler fig patterns, adapter layers, and modernisation strategies for core banking and legacy financial systems.",
-    "url": "https://www.wbadawi.info/lab/legacy-integration.html",
-    "isPartOf": {"@type": "WebSite", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
-    "breadcrumb": {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.wbadawi.info/"},
-        {"@type": "ListItem", "position": 2, "name": "Lab", "item": "https://www.wbadawi.info/technical.html"},
-        {"@type": "ListItem", "position": 3, "name": "Legacy Integration", "item": "https://www.wbadawi.info/lab/legacy-integration.html"}
-      ]
-    },
-    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"}
-  }
-  </script>
 </head>
 <body>
 
@@ -78,19 +56,52 @@
   </header>
 
   <section class="page-header">
-    <div class="container">
+    <div class="container container--narrow">
       <div class="breadcrumb"><a href="../technical.html">Lab</a><span>/</span>Legacy Integration</div>
+      <span class="overline">Lab Topic</span>
       <h1>Legacy Integration</h1>
-      <p class="lead">Strangler fig patterns, adapter layers, and modernisation strategies for integrating with core banking and legacy financial systems. Evolving without the big-bang rewrite.</p>
+      <p class="lead">Strangler fig patterns, adapter layers, and modernisation strategies for integrating with core banking and legacy financial systems &mdash; without taking the bank offline.</p>
     </div>
   </section>
 
   <section>
     <div class="container container--narrow">
-      <div class="coming-soon-state">
-        <span class="overline">Coming Soon</span>
-        <h3 style="margin-bottom: 1rem;">Articles in progress</h3>
-        <p>Technical write-ups on legacy integration for financial services are being prepared. Check back shortly.</p>
+      <div class="article-list">
+
+        <a href="legacy-integration/strangler-and-cics.html" class="article-list__item">
+          <div class="article-list__meta">
+            <span>Lab article</span>
+            <span class="article-list__meta-divider">&middot;</span>
+            <span>~14 min read</span>
+          </div>
+          <h2 class="article-list__title">Legacy Integration: Strangler Fig &amp; CICS</h2>
+          <p class="article-list__excerpt">Modernising integration with core banking: strangler fig, anti-corruption layer, MQ-CICS bridges, COBOL adapters, COMMAREA marshalling, EBCDIC handling, and cutover patterns.</p>
+          <div class="article-list__tags">
+            <span class="skill-tag">Strangler Fig</span>
+            <span class="skill-tag">IBM MQ</span>
+            <span class="skill-tag">CICS</span>
+            <span class="skill-tag">COBOL</span>
+            <span class="skill-tag">Anti-Corruption Layer</span>
+          </div>
+          <div class="article-list__arrow">Read article &rarr;</div>
+        </a>
+
+        <div class="article-list__item article-list__item--soon">
+          <div class="article-list__meta">
+            <span>Coming soon</span>
+          </div>
+          <h2 class="article-list__title">Mainframe modernisation roadmap</h2>
+          <p class="article-list__excerpt">Sequencing a multi-year migration: dependency analysis, capability slicing, parallel run patterns, and the metrics that prove progress.</p>
+        </div>
+
+        <div class="article-list__item article-list__item--soon">
+          <div class="article-list__meta">
+            <span>Coming soon</span>
+          </div>
+          <h2 class="article-list__title">CDC from legacy DB2 to modern services</h2>
+          <p class="article-list__excerpt">IBM IIDR and Debezium against z/OS and IBM i, schema mapping, and the patterns for keeping legacy as system-of-record while shipping new product.</p>
+        </div>
+
       </div>
     </div>
   </section>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distributed Caching &mdash; Redis Cluster &amp; Sentinel &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Cache topology, consistency models, invalidation strategies, and distributed state management for low-latency financial applications: Redis Cluster, Sentinel, cache patterns (cache-aside, write-through, write-behind), and the operational patterns to avoid cache stampedes.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Distributed Caching &mdash; Redis Cluster &amp; Sentinel">
+  <meta property="og:description" content="Production cache patterns for low-latency financial applications.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/distributed-caching/redis-cluster.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Distributed Caching &mdash; Production Patterns">
+  <meta name="twitter:description" content="Redis Cluster and Sentinel patterns for financial services.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/distributed-caching/redis-cluster.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Redis Cluster</div>
+          <span class="overline">Lab Article</span>
+          <h1>Distributed Caching: Redis Cluster &amp; Sentinel</h1>
+          <p class="lead">Cache patterns (cache-aside, write-through, write-behind), Redis topology choices (Cluster vs Sentinel), invalidation strategies, the cache stampede that has felled more banking platforms than any disk failure, and the operational patterns to keep p99 latency in the millisecond range.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#patterns">Cache patterns</a></li>
+            <li><a href="#topology">Topology</a></li>
+            <li><a href="#cluster-vs-sentinel">Cluster vs Sentinel</a></li>
+            <li><a href="#deploy">Deploying Redis</a></li>
+            <li><a href="#config">Configuration</a></li>
+            <li><a href="#invalidation">Invalidation</a></li>
+            <li><a href="#stampede">Stampede protection</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When not to cache</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Redis 7 / Lettuce / Spring Cache</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>A distributed cache is a network-accessible, in-memory key/value store shared across application instances. In financial services it solves three problems: <strong>read latency</strong> (sub-millisecond access to reference data), <strong>backend protection</strong> (absorbing read fan-out from a 5x traffic spike), and <strong>session state</strong> (because session stickiness on a load balancer is fragile).</p>
+          <p>Redis dominates this space. Two deployment topologies cover almost every requirement: <strong>Sentinel</strong> for HA on a single primary, <strong>Cluster</strong> when data exceeds the memory of one node.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Cache, not database</div>
+            <p>A cache is a derived view of authoritative data. If losing the cache means losing data, it is a database, not a cache &mdash; and a different set of design rules applies (durability, replication semantics, RPO). Resist the urge to use Redis as a primary store for anything you cannot recompute.</p>
+          </div>
+
+          <h2 id="patterns">Cache patterns</h2>
+          <p>Five patterns cover almost every cache use case. The choice is determined by who writes the cache and when.</p>
+
+          <table>
+            <thead>
+              <tr><th>Pattern</th><th>Read</th><th>Write</th><th>When to use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Cache-aside</strong></td><td>App checks cache, falls through to DB on miss</td><td>App writes DB, invalidates cache</td><td>Default; most read-heavy use cases</td></tr>
+              <tr><td><strong>Read-through</strong></td><td>Cache fetches from DB on miss</td><td>Same as cache-aside</td><td>When the cache layer can wrap the DB call</td></tr>
+              <tr><td><strong>Write-through</strong></td><td>App reads cache</td><td>App writes cache, cache writes DB synchronously</td><td>Strong read-after-write consistency</td></tr>
+              <tr><td><strong>Write-behind</strong></td><td>App reads cache</td><td>App writes cache, cache writes DB async</td><td>Burst-write workloads, can tolerate loss</td></tr>
+              <tr><td><strong>Refresh-ahead</strong></td><td>App reads cache</td><td>Cache pre-emptively refreshes hot keys</td><td>Predictable hot data, can spare CPU</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="topology">Topology</h2>
+
+          <div class="diagram" role="img" aria-label="Redis Cluster topology with three primaries and three replicas, app pool, and Sentinel comparison">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="dc1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <text x="200" y="25" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">REDIS CLUSTER</text>
+
+                <rect x="20" y="50" width="120" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="80" y="72" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">App pool</text>
+                <text x="80" y="88" text-anchor="middle" fill="#71717a" font-size="9">Lettuce client</text>
+
+                <rect x="180" y="50" width="100" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="230" y="72" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">primary-A</text>
+                <text x="230" y="88" text-anchor="middle" fill="#71717a" font-size="9">slots 0&ndash;5460</text>
+
+                <rect x="300" y="50" width="100" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="350" y="72" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">primary-B</text>
+                <text x="350" y="88" text-anchor="middle" fill="#71717a" font-size="9">slots 5461&ndash;10922</text>
+
+                <rect x="420" y="50" width="100" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="470" y="72" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">primary-C</text>
+                <text x="470" y="88" text-anchor="middle" fill="#71717a" font-size="9">slots 10923&ndash;16383</text>
+
+                <rect x="180" y="130" width="100" height="50" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="230" y="152" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">replica-A</text>
+                <text x="230" y="168" text-anchor="middle" fill="#71717a" font-size="9">async sync</text>
+
+                <rect x="300" y="130" width="100" height="50" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="350" y="152" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">replica-B</text>
+                <text x="350" y="168" text-anchor="middle" fill="#71717a" font-size="9">async sync</text>
+
+                <rect x="420" y="130" width="100" height="50" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="470" y="152" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">replica-C</text>
+                <text x="470" y="168" text-anchor="middle" fill="#71717a" font-size="9">async sync</text>
+
+                <line x1="140" y1="75" x2="178" y2="75" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dc1)"/>
+                <line x1="140" y1="75" x2="298" y2="75" stroke="#00d4aa" stroke-width="1.5" stroke-dasharray="3 2"/>
+                <line x1="140" y1="75" x2="418" y2="75" stroke="#00d4aa" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+                <line x1="230" y1="100" x2="230" y2="128" stroke="#71717a" stroke-width="1" stroke-dasharray="3 2"/>
+                <line x1="350" y1="100" x2="350" y2="128" stroke="#71717a" stroke-width="1" stroke-dasharray="3 2"/>
+                <line x1="470" y1="100" x2="470" y2="128" stroke="#71717a" stroke-width="1" stroke-dasharray="3 2"/>
+
+                <text x="270" y="220" text-anchor="middle" fill="#71717a" font-size="9">key &rarr; CRC16(key) % 16384 &rarr; slot &rarr; primary</text>
+                <text x="270" y="236" text-anchor="middle" fill="#71717a" font-size="9">replica failover via gossip; no external arbiter</text>
+
+                <line x1="20" y1="260" x2="540" y2="260" stroke="#71717a" stroke-dasharray="3 3"/>
+
+                <text x="270" y="285" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">REDIS SENTINEL</text>
+
+                <rect x="20" y="305" width="120" height="50" rx="6" fill="#16161f" stroke="#a78bfa"/>
+                <text x="80" y="327" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">App pool</text>
+                <text x="80" y="343" text-anchor="middle" fill="#71717a" font-size="9">asks Sentinel</text>
+
+                <rect x="180" y="305" width="100" height="50" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="230" y="327" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">primary</text>
+                <text x="230" y="343" text-anchor="middle" fill="#71717a" font-size="9">all data</text>
+
+                <rect x="300" y="305" width="100" height="50" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="350" y="327" text-anchor="middle" fill="#71717a" font-size="10">replica-1</text>
+                <rect x="420" y="305" width="100" height="50" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="470" y="327" text-anchor="middle" fill="#71717a" font-size="10">replica-2</text>
+
+                <rect x="560" y="305" width="200" height="50" rx="6" fill="#0f0f16" stroke="#fbbf24"/>
+                <text x="660" y="325" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">3 Sentinel processes</text>
+                <text x="660" y="343" text-anchor="middle" fill="#71717a" font-size="9">monitor, failover, notify</text>
+
+                <line x1="140" y1="328" x2="178" y2="328" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#dc1)"/>
+                <line x1="280" y1="328" x2="298" y2="328" stroke="#71717a" stroke-width="1" stroke-dasharray="3 2"/>
+                <line x1="400" y1="328" x2="418" y2="328" stroke="#71717a" stroke-width="1" stroke-dasharray="3 2"/>
+                <line x1="520" y1="328" x2="558" y2="328" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3 2"/>
+
+                <text x="650" y="200" fill="#71717a" font-size="9">CLUSTER:</text>
+                <text x="650" y="215" fill="#71717a" font-size="9">&bull; sharded across primaries</text>
+                <text x="650" y="230" fill="#71717a" font-size="9">&bull; horizontal scale</text>
+                <text x="650" y="245" fill="#71717a" font-size="9">&bull; multi-key ops limited</text>
+
+                <text x="650" y="60" fill="#71717a" font-size="9">SENTINEL:</text>
+                <text x="650" y="75" fill="#71717a" font-size="9">&bull; single dataset</text>
+                <text x="650" y="90" fill="#71717a" font-size="9">&bull; vertical scale only</text>
+                <text x="650" y="105" fill="#71717a" font-size="9">&bull; full multi-key + Lua</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Redis Cluster (sharded) vs Sentinel (single primary, HA)</div>
+          </div>
+
+          <h2 id="cluster-vs-sentinel">Cluster vs Sentinel</h2>
+
+          <table>
+            <thead>
+              <tr><th>Property</th><th>Cluster</th><th>Sentinel</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Data size</td><td>Up to N&times; node memory (sharded)</td><td>One node&rsquo;s memory</td></tr>
+              <tr><td>Multi-key operations</td><td>Same hash slot only (use <code>{tag}</code>)</td><td>Unrestricted</td></tr>
+              <tr><td>Lua scripts</td><td>Keys must be in same slot</td><td>Unrestricted</td></tr>
+              <tr><td>Failover</td><td>Built-in via gossip</td><td>External Sentinel processes</td></tr>
+              <tr><td>Client complexity</td><td>Cluster-aware client (Lettuce, Jedis)</td><td>Sentinel-aware client</td></tr>
+              <tr><td>Best fit</td><td>&gt; 100 GB working set</td><td>&lt; 100 GB working set, simpler ops</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="deploy">Deploying Redis</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Size the working set</h4>
+              <p>Production Redis should run at &lt; 60% of <code>maxmemory</code>. Anything more and eviction churn destroys p99 latency. Pick node memory based on data size + 60% headroom + replica overhead.</p>
+            </li>
+            <li>
+              <h4>Pick the eviction policy</h4>
+              <p><code>allkeys-lru</code> for general cache, <code>volatile-ttl</code> when only some keys have TTL and you want them prioritised for eviction, <code>noeviction</code> for systems where stale-but-not-evicted is the right choice.</p>
+            </li>
+            <li>
+              <h4>Configure persistence</h4>
+              <p>For pure cache: disable AOF, keep RDB snapshots for crash recovery. For Redis-as-database: AOF with <code>appendfsync everysec</code>. The choice has performance implications.</p>
+            </li>
+            <li>
+              <h4>Deploy with anti-affinity</h4>
+              <p>Primary and its replica must never be on the same physical host or the same AZ. Use Kubernetes pod anti-affinity or explicit node selectors.</p>
+            </li>
+            <li>
+              <h4>Wire monitoring</h4>
+              <p>Hit rate, eviction rate, connection count, memory fragmentation, replication lag, slow log. Without these you discover problems by latency complaints.</p>
+            </li>
+          </ol>
+
+          <h2 id="config">Configuration</h2>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>redis.conf</span><span class="code-block__lang">conf</span></div>
+<pre><code><span class="tok-c"># Memory</span>
+maxmemory <span class="tok-n">12gb</span>
+maxmemory-policy <span class="tok-s">allkeys-lru</span>
+maxmemory-samples <span class="tok-n">10</span>
+
+<span class="tok-c"># Persistence: cache mode</span>
+appendonly <span class="tok-s">no</span>
+save <span class="tok-s">""</span>                              <span class="tok-c"># disable RDB during normal ops</span>
+save <span class="tok-n">3600 1</span>                          <span class="tok-c"># light snapshot once an hour</span>
+
+<span class="tok-c"># Replication</span>
+replica-read-only <span class="tok-s">yes</span>
+repl-backlog-size <span class="tok-n">256mb</span>
+replica-lazy-flush <span class="tok-s">yes</span>
+
+<span class="tok-c"># Cluster</span>
+cluster-enabled <span class="tok-s">yes</span>
+cluster-config-file <span class="tok-s">nodes.conf</span>
+cluster-node-timeout <span class="tok-n">5000</span>
+cluster-require-full-coverage <span class="tok-s">no</span>
+
+<span class="tok-c"># Slow log threshold (microseconds)</span>
+slowlog-log-slower-than <span class="tok-n">10000</span>
+slowlog-max-len <span class="tok-n">256</span>
+
+<span class="tok-c"># Latency monitor</span>
+latency-monitor-threshold <span class="tok-n">100</span>
+
+<span class="tok-c"># TLS</span>
+tls-port <span class="tok-n">6379</span>
+port <span class="tok-n">0</span>
+tls-cert-file <span class="tok-s">/etc/redis/server.crt</span>
+tls-key-file <span class="tok-s">/etc/redis/server.key</span>
+tls-ca-cert-file <span class="tok-s">/etc/redis/ca.crt</span>
+tls-auth-clients <span class="tok-s">yes</span></code></pre>
+          </div>
+
+          <h3>Cache-aside in Java with Lettuce</h3>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>AccountCache.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public</span> Account get(<span class="tok-t">String</span> id) {
+  <span class="tok-t">String</span> key = <span class="tok-s">"account:"</span> + id;
+  <span class="tok-t">String</span> cached = redis.sync().get(key);
+  <span class="tok-k">if</span> (cached != <span class="tok-k">null</span>) {
+    <span class="tok-k">return</span> Account.fromJson(cached);
+  }
+
+  <span class="tok-c">// miss path: load from DB, populate cache with TTL + jitter</span>
+  <span class="tok-t">Account</span> a = accountRepo.findById(id)
+      .orElseThrow(() -&gt; <span class="tok-k">new</span> NotFoundException(id));
+
+  <span class="tok-t">long</span> ttl = <span class="tok-n">300</span> + ThreadLocalRandom.current().nextInt(<span class="tok-n">60</span>);  <span class="tok-c">// 300&ndash;360 s</span>
+  redis.sync().setex(key, ttl, a.toJson());
+  <span class="tok-k">return</span> a;
+}
+
+<span class="tok-k">public void</span> invalidate(<span class="tok-t">String</span> id) {
+  redis.sync().del(<span class="tok-s">"account:"</span> + id);
+}</code></pre>
+          </div>
+
+          <p>The <strong>jitter</strong> on the TTL (300&ndash;360 seconds rather than a fixed 300) is the simplest defence against synchronised expiry. Without it, a cohort of keys all written together expire together, and the resulting flood of misses hits the database simultaneously &mdash; the classic stampede.</p>
+
+          <h2 id="invalidation">Invalidation</h2>
+          <p>Phil Karlton: &ldquo;there are only two hard things in computer science: cache invalidation and naming things.&rdquo; Three patterns work in practice:</p>
+          <ul>
+            <li><strong>TTL only.</strong> Simplest. Tolerable staleness window equals the TTL. Use for reference data that changes daily or slower.</li>
+            <li><strong>TTL + explicit invalidation on write.</strong> Application code that updates the underlying record also calls <code>DEL</code> on the cache key. Use for typical cache-aside.</li>
+            <li><strong>Event-driven invalidation.</strong> A CDC stream of database changes drives a cache-invalidation consumer. Use when the writer doesn&rsquo;t know to invalidate (e.g., DBA changes via SQL, batch updates).</li>
+          </ul>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Don&rsquo;t update, delete</div>
+            <p>On a write, prefer <code>DEL</code> over <code>SET</code> for the cache key. The next read will repopulate from the source of truth. Updating the cache directly creates a window where the cache and the DB disagree if the write to either fails halfway.</p>
+          </div>
+
+          <h2 id="stampede">Stampede protection</h2>
+          <p>A cache stampede occurs when a popular key expires and N concurrent requests miss simultaneously, all trying to recompute. Three patterns prevent it:</p>
+
+          <div class="diagram" role="img" aria-label="Cache stampede with and without single-flight protection">
+            <div class="diagram__inner">
+              <svg width="780" height="240" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="dc2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="dc3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <text x="200" y="25" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="600">WITHOUT PROTECTION</text>
+                <rect x="20" y="50" width="100" height="120" rx="6" fill="#0f0f16" stroke="#71717a"/>
+                <text x="70" y="70" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">100 reqs</text>
+                <text x="70" y="90" text-anchor="middle" fill="#71717a" font-size="9">all miss</text>
+
+                <rect x="160" y="50" width="100" height="120" rx="6" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="210" y="70" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">DB</text>
+                <text x="210" y="90" text-anchor="middle" fill="#ef4444" font-size="9">100 queries</text>
+                <text x="210" y="110" text-anchor="middle" fill="#ef4444" font-size="9">CPU pegged</text>
+                <text x="210" y="130" text-anchor="middle" fill="#ef4444" font-size="9">latency spike</text>
+
+                <line x1="120" y1="80" x2="158" y2="70" stroke="#ef4444" stroke-width="1" marker-end="url(#dc2)"/>
+                <line x1="120" y1="100" x2="158" y2="90" stroke="#ef4444" stroke-width="1" marker-end="url(#dc2)"/>
+                <line x1="120" y1="120" x2="158" y2="110" stroke="#ef4444" stroke-width="1" marker-end="url(#dc2)"/>
+                <line x1="120" y1="140" x2="158" y2="130" stroke="#ef4444" stroke-width="1" marker-end="url(#dc2)"/>
+
+                <line x1="320" y1="20" x2="320" y2="220" stroke="#71717a" stroke-dasharray="3 3"/>
+
+                <text x="540" y="25" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">SINGLE-FLIGHT</text>
+                <rect x="350" y="50" width="100" height="120" rx="6" fill="#0f0f16" stroke="#71717a"/>
+                <text x="400" y="70" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">100 reqs</text>
+                <text x="400" y="90" text-anchor="middle" fill="#71717a" font-size="9">all miss</text>
+
+                <rect x="490" y="50" width="120" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="550" y="70" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">SETNX lock</text>
+                <text x="550" y="86" text-anchor="middle" fill="#71717a" font-size="9">only 1 wins</text>
+
+                <rect x="490" y="120" width="120" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="550" y="140" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">DB &middot; 1 query</text>
+                <text x="550" y="156" text-anchor="middle" fill="#71717a" font-size="9">99 wait briefly</text>
+
+                <line x1="450" y1="100" x2="488" y2="80" stroke="#71717a" stroke-width="1" marker-end="url(#dc3)"/>
+                <line x1="550" y1="100" x2="550" y2="118" stroke="#00d4aa" stroke-width="1" marker-end="url(#dc3)"/>
+
+                <rect x="640" y="80" width="120" height="60" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="700" y="105" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">cache populated</text>
+                <text x="700" y="123" text-anchor="middle" fill="#71717a" font-size="9">99 reqs hit</text>
+
+                <line x1="610" y1="145" x2="638" y2="115" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dc3)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Cache stampede with and without single-flight</div>
+          </div>
+
+          <ul>
+            <li><strong>Single-flight (SETNX lock).</strong> First miss takes a lock; others poll briefly. Implementation in Redis is straightforward via <code>SET key value NX EX 30</code>.</li>
+            <li><strong>Probabilistic early refresh.</strong> Refresh the cache <em>before</em> expiry with probability proportional to how close to expiry the value is. Spreads the load.</li>
+            <li><strong>Stale-while-revalidate.</strong> Serve a stale value while a background task refreshes. Two TTLs: hard expiry (delete) and soft expiry (refresh in background, return current).</li>
+          </ul>
+
+          <h3>Single-flight in Lua</h3>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>single-flight.lua</span><span class="code-block__lang">lua</span></div>
+<pre><code><span class="tok-c">-- KEYS[1] = data key, KEYS[2] = lock key</span>
+<span class="tok-c">-- ARGV[1] = lock TTL in seconds</span>
+<span class="tok-k">local</span> v = redis.call(<span class="tok-s">'GET'</span>, KEYS[<span class="tok-n">1</span>])
+<span class="tok-k">if</span> v <span class="tok-k">then</span> <span class="tok-k">return</span> {<span class="tok-s">'hit'</span>, v} <span class="tok-k">end</span>
+
+<span class="tok-k">local</span> got = redis.call(<span class="tok-s">'SET'</span>, KEYS[<span class="tok-n">2</span>], <span class="tok-s">'1'</span>, <span class="tok-s">'NX'</span>, <span class="tok-s">'EX'</span>, ARGV[<span class="tok-n">1</span>])
+<span class="tok-k">if</span> got <span class="tok-k">then</span> <span class="tok-k">return</span> {<span class="tok-s">'lead'</span>} <span class="tok-k">end</span>      <span class="tok-c">-- caller should compute and SET</span>
+<span class="tok-k">return</span> {<span class="tok-s">'wait'</span>}                          <span class="tok-c">-- caller should retry GET shortly</span></code></pre>
+          </div>
+
+          <h2 id="observability">Observability</h2>
+          <p>Five metrics to alert on in production:</p>
+          <ul>
+            <li><strong>Hit rate.</strong> If hit rate falls below the historical baseline, something invalidated more than expected. Common cause: a deploy bumped a version prefix and orphaned the old keys.</li>
+            <li><strong>Eviction rate.</strong> A non-zero eviction rate when memory is at 60% means key sizes drifted. Investigate before memory pressure becomes latency.</li>
+            <li><strong>p99 latency.</strong> Redis is supposed to be sub-millisecond. p99 over 5ms means GC pauses, slow Lua, or hot keys. Check the slow log.</li>
+            <li><strong>Replication lag.</strong> Active/passive read-from-replica patterns rely on replicas being current. Lag &gt; 1s means readers are seeing stale data.</li>
+            <li><strong>Connection count.</strong> Apps that don&rsquo;t pool connections leak. A linear climb on connections is a deploy bug.</li>
+          </ul>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Big keys</div>
+            <p>A 50 MB Redis value blocks the event loop on every read. Redis is single-threaded for command execution; one big key kills latency for every other client. Cap value size at ~1 MB; for larger objects, store the bytes elsewhere and cache a pointer.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Hot key</div>
+            <p>One key receiving 80% of the traffic saturates one node&rsquo;s CPU. Detect with <code>--hotkeys</code> sampling. Mitigate by sharding the key (<code>customer:1234:1</code>, <code>customer:1234:2</code>...) and reading round-robin, or by adding a small in-process cache in front of Redis.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">KEYS in production</div>
+            <p>The <code>KEYS pattern</code> command is O(N) and blocks. Use <code>SCAN</code> for any iteration. Lock down <code>KEYS</code>, <code>FLUSHALL</code>, and <code>FLUSHDB</code> via ACL in production.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">No connection pool</div>
+            <p>Creating a Redis connection per request collapses under load. Configure Lettuce/Jedis pooling with min and max sizes; reuse the client across requests.</p>
+          </div>
+
+          <h2 id="when-not">When not to cache</h2>
+          <p>Caching is the right tool for read-heavy workloads with reusable values and tolerable staleness. It is the wrong tool when:</p>
+          <ul>
+            <li><strong>The data is unique per request.</strong> No reuse, no benefit. Just hit the database.</li>
+            <li><strong>Strong consistency is required.</strong> If the bank cannot show a transaction one second after it&rsquo;s booked, you don&rsquo;t want a cache between the user and the ledger.</li>
+            <li><strong>The workload is write-heavy.</strong> Write-through caches add latency without read benefit. Write-behind risks loss.</li>
+            <li><strong>The DB is fast enough.</strong> Adding a cache adds a network hop, a cache-coherence problem, and an operational dependency. If the DB serves the read in 2 ms, a 1 ms cache hit is rarely worth the complexity.</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="../legacy-integration.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Legacy Integration</div>
+            </a>
+            <a href="../api-security.html" class="article-nav__next">
+              <div class="article-nav__label">Next article</div>
+              <div class="article-nav__title">API Security &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

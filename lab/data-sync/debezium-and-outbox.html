@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Synchronisation &mdash; CDC, Debezium &amp; Outbox &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Production patterns for keeping distributed data in sync: change data capture with Debezium, the transactional outbox pattern, dual-write hazards, idempotent consumers, and the recipes that survive partial failures across financial services data flows.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Data Synchronisation &mdash; CDC, Debezium &amp; Outbox">
+  <meta property="og:description" content="Production CDC and outbox patterns for distributed data sync.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-sync/debezium-and-outbox.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Data Synchronisation &mdash; Production Patterns">
+  <meta name="twitter:description" content="Debezium, outbox, and idempotent consumers for financial services.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/debezium-and-outbox.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Debezium &amp; Outbox</div>
+          <span class="overline">Lab Article</span>
+          <h1>Data Synchronisation: Debezium &amp; Outbox</h1>
+          <p class="lead">The dual-write problem and how to solve it: change data capture with Debezium, the transactional outbox pattern, idempotent downstreams, and the reconciliation that catches the edge cases everyone forgets.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#dual-write">The dual-write problem</a></li>
+            <li><a href="#cdc">CDC with Debezium</a></li>
+            <li><a href="#outbox">Transactional outbox</a></li>
+            <li><a href="#deploy">Deploying CDC</a></li>
+            <li><a href="#config">Connector configuration</a></li>
+            <li><a href="#consumer">Idempotent consumer</a></li>
+            <li><a href="#schema-drift">Schema drift</a></li>
+            <li><a href="#reconciliation">Reconciliation</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When not to use CDC</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Debezium 2.x / Kafka Connect / Postgres / Db2</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Distributed systems hold the same fact in multiple places: a payment lives in the core ledger, a search index, a fraud feature store, and an analytics warehouse. Keeping these in sync is the single most consequential distributed-systems problem in financial services. Get it wrong and the bank shows different balances on the app vs the statement &mdash; and you find out in a complaint.</p>
+          <p>The robust pattern is <strong>change data capture (CDC)</strong>: read the transaction log of the source database, ship the changes through Kafka, apply them downstream. <strong>Debezium</strong> is the de-facto open-source implementation; for IBM Db2 and z/OS, IBM&rsquo;s InfoSphere Data Replication (IIDR) plays the same role.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Single source of truth, single write path</div>
+            <p>If two services write to the same data, you have a synchronisation problem you can&rsquo;t solve with synchronisation. The first move is always: pick one writer, derive the rest. CDC then becomes feasible because it has a single log to follow.</p>
+          </div>
+
+          <h2 id="dual-write">The dual-write problem</h2>
+          <p>The naive pattern: when an event occurs, write to the database <em>and</em> publish to Kafka. The two writes are not atomic. Four failure modes:</p>
+
+          <div class="diagram" role="img" aria-label="Dual-write failure modes showing database write succeeding but kafka write failing and vice versa">
+            <div class="diagram__inner">
+              <svg width="780" height="240" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="dx1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="80" width="120" height="60" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="80" y="105" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Service</text>
+                <text x="80" y="123" text-anchor="middle" fill="#71717a" font-size="9">writes A and B</text>
+
+                <rect x="320" y="40" width="160" height="60" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="400" y="65" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Database (A)</text>
+                <text x="400" y="83" text-anchor="middle" fill="#71717a" font-size="9">payment row inserted</text>
+
+                <rect x="320" y="140" width="160" height="60" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="400" y="165" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Kafka (B)</text>
+                <text x="400" y="183" text-anchor="middle" fill="#71717a" font-size="9">PaymentSubmitted event</text>
+
+                <line x1="140" y1="100" x2="318" y2="70" stroke="#00d4aa" stroke-width="1.5"/>
+                <line x1="140" y1="120" x2="318" y2="170" stroke="#00d4aa" stroke-width="1.5"/>
+
+                <rect x="540" y="20" width="220" height="200" rx="8" fill="none" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="650" y="40" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">FAILURE MODES</text>
+
+                <text x="555" y="65" fill="#ef4444" font-size="9">1. A ok, B fails</text>
+                <text x="555" y="78" fill="#71717a" font-size="9">&rarr; row exists, no event</text>
+
+                <text x="555" y="100" fill="#ef4444" font-size="9">2. A fails, B ok</text>
+                <text x="555" y="113" fill="#71717a" font-size="9">&rarr; event exists, no row</text>
+
+                <text x="555" y="135" fill="#ef4444" font-size="9">3. A ok, B times out</text>
+                <text x="555" y="148" fill="#71717a" font-size="9">&rarr; retry &rarr; possible duplicate</text>
+
+                <text x="555" y="170" fill="#ef4444" font-size="9">4. Crash mid-flow</text>
+                <text x="555" y="183" fill="#71717a" font-size="9">&rarr; state unrecoverable</text>
+
+                <text x="650" y="210" text-anchor="middle" fill="#71717a" font-size="9">none of these is rare in production</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Why dual-write breaks even when each individual write &ldquo;works&rdquo;</div>
+          </div>
+
+          <p>The solution is to make the two writes <em>one</em> write. Two patterns achieve this: <strong>CDC</strong> (read the DB log, ship to Kafka) and <strong>outbox</strong> (write the event to a DB table inside the same transaction, then ship the table&rsquo;s rows via CDC). Outbox is CDC applied to your own table; you&rsquo;ll usually use both.</p>
+
+          <h2 id="cdc">CDC with Debezium</h2>
+          <p>Debezium is a Kafka Connect source connector that reads the database&rsquo;s replication log (Postgres logical decoding, MySQL binlog, Db2 transaction log, SQL Server CDC). Each row change becomes a Kafka message with the before-image, after-image, operation type, and a position marker (LSN, GTID, log sequence).</p>
+
+          <div class="diagram" role="img" aria-label="Debezium CDC architecture from postgres WAL to kafka topics to downstream consumers">
+            <div class="diagram__inner">
+              <svg width="780" height="280" viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="dx2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="80" width="140" height="100" rx="8" fill="#16161f" stroke="#4a9eff"/>
+                <text x="90" y="105" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">Postgres</text>
+                <text x="90" y="125" text-anchor="middle" fill="#e4e4e7" font-size="10">payments table</text>
+                <text x="90" y="143" text-anchor="middle" fill="#71717a" font-size="9">WAL</text>
+                <text x="90" y="160" text-anchor="middle" fill="#71717a" font-size="9">logical replication</text>
+                <text x="90" y="174" text-anchor="middle" fill="#71717a" font-size="9">slot &amp; publication</text>
+
+                <rect x="220" y="80" width="160" height="100" rx="8" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="300" y="105" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Debezium</text>
+                <text x="300" y="125" text-anchor="middle" fill="#e4e4e7" font-size="10">Kafka Connect</text>
+                <text x="300" y="143" text-anchor="middle" fill="#71717a" font-size="9">read WAL &middot; transform</text>
+                <text x="300" y="160" text-anchor="middle" fill="#71717a" font-size="9">stable offset = LSN</text>
+                <text x="300" y="174" text-anchor="middle" fill="#71717a" font-size="9">snapshot then stream</text>
+
+                <rect x="440" y="50" width="160" height="50" rx="6" fill="#0f0f16" stroke="#fbbf24"/>
+                <text x="520" y="72" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">db.public.payments</text>
+                <text x="520" y="88" text-anchor="middle" fill="#71717a" font-size="9">CDC topic</text>
+
+                <rect x="440" y="115" width="160" height="50" rx="6" fill="#0f0f16" stroke="#fbbf24"/>
+                <text x="520" y="137" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">db.public.outbox</text>
+                <text x="520" y="153" text-anchor="middle" fill="#71717a" font-size="9">routed via SMT</text>
+
+                <rect x="660" y="50" width="100" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="710" y="75" text-anchor="middle" fill="#e4e4e7" font-size="10">Search</text>
+                <rect x="660" y="115" width="100" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="710" y="140" text-anchor="middle" fill="#e4e4e7" font-size="10">Analytics</text>
+                <rect x="660" y="180" width="100" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="710" y="205" text-anchor="middle" fill="#e4e4e7" font-size="10">Risk feature</text>
+
+                <line x1="160" y1="130" x2="218" y2="130" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dx2)"/>
+                <line x1="380" y1="100" x2="438" y2="75" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dx2)"/>
+                <line x1="380" y1="160" x2="438" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dx2)"/>
+                <line x1="600" y1="75" x2="658" y2="75" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dx2)"/>
+                <line x1="600" y1="140" x2="658" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dx2)"/>
+                <line x1="600" y1="160" x2="658" y2="200" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dx2)"/>
+
+                <rect x="20" y="220" width="740" height="40" rx="6" fill="#0f0f16" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="390" y="244" text-anchor="middle" fill="#71717a" font-size="9">DB transaction is the source of truth &middot; CDC is downstream-of-the-log; cannot diverge from DB state by design</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Debezium CDC: WAL &rarr; Kafka &rarr; consumers</div>
+          </div>
+
+          <h2 id="outbox">Transactional outbox</h2>
+          <p>The application writes the business row <em>and</em> the event into the same transaction. An <code>outbox</code> table holds events; CDC ships them to Kafka. If the transaction commits, both are present; if it rolls back, neither is. Atomicity solved.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>outbox-schema.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-k">CREATE TABLE</span> outbox (
+  id            <span class="tok-t">uuid</span>        <span class="tok-k">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  aggregate_id  <span class="tok-t">varchar(64)</span> <span class="tok-k">NOT NULL</span>,
+  aggregate_type <span class="tok-t">varchar(64)</span> <span class="tok-k">NOT NULL</span>,
+  event_type    <span class="tok-t">varchar(64)</span> <span class="tok-k">NOT NULL</span>,
+  payload       <span class="tok-t">jsonb</span>       <span class="tok-k">NOT NULL</span>,
+  created_at    <span class="tok-t">timestamptz</span> <span class="tok-k">NOT NULL DEFAULT</span> now()
+);
+
+<span class="tok-c">-- Debezium &mdash; using its outbox event router SMT &mdash; expects:</span>
+<span class="tok-c">--   id       &rarr; message id (deduplication key downstream)</span>
+<span class="tok-c">--   aggregate_id   &rarr; Kafka message key (partitioning + ordering)</span>
+<span class="tok-c">--   aggregate_type &rarr; topic suffix (one outbox &rarr; many topics)</span>
+<span class="tok-c">--   event_type     &rarr; header for filtering</span>
+<span class="tok-c">--   payload  &rarr; message value</span></code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentService.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Transactional</span>
+<span class="tok-k">public void</span> submit(<span class="tok-t">Payment</span> p) {
+  paymentRepo.save(p);                     <span class="tok-c">// business row</span>
+  outboxRepo.save(<span class="tok-k">new</span> OutboxEvent(    <span class="tok-c">// event in same txn</span>
+      p.getId(),                           <span class="tok-c">// aggregate_id</span>
+      <span class="tok-s">"Payment"</span>,                           <span class="tok-c">// aggregate_type &rarr; payment topic</span>
+      <span class="tok-s">"PaymentSubmitted"</span>,                  <span class="tok-c">// event_type</span>
+      Json.toJson(p)));                    <span class="tok-c">// payload</span>
+  <span class="tok-c">// commit happens at method exit; both rows appear or neither does</span>
+}</code></pre>
+          </div>
+
+          <p>Debezium reads the outbox table&rsquo;s WAL entries, applies the <strong>Outbox Event Router</strong> SMT (Single Message Transform) to route by <code>aggregate_type</code>, and produces to <code>payment.events</code> with the <code>aggregate_id</code> as message key. The original outbox row can be deleted asynchronously &mdash; the WAL entry is what carried the event.</p>
+
+          <h2 id="deploy">Deploying CDC</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Enable logical replication on the source</h4>
+              <p>Postgres: <code>wal_level=logical</code>, a <code>REPLICATION</code> user, a publication, and a replication slot. MySQL: row-format binlog. Db2: <code>DATA CAPTURE CHANGES</code>.</p>
+            </li>
+            <li>
+              <h4>Decide the snapshot strategy</h4>
+              <p>Initial snapshot of existing rows is the heaviest part of CDC startup. <code>initial</code> for the first deployment; <code>schema_only</code> when historical state isn&rsquo;t needed; <code>incremental</code> for tables too large to read in one go.</p>
+            </li>
+            <li>
+              <h4>Configure the connector</h4>
+              <p>Filter to only the tables CDC actually needs (otherwise you&rsquo;re shipping every internal table&rsquo;s changes). Pick the right SMT &mdash; Outbox Router, ExtractNewRecordState, or Unwrap.</p>
+            </li>
+            <li>
+              <h4>Topic conventions</h4>
+              <p>One topic per table by default. With outbox, route by <code>aggregate_type</code> &rarr; one topic per business event class (payment.events, customer.events).</p>
+            </li>
+            <li>
+              <h4>Consumer-side dedupe</h4>
+              <p>CDC is at-least-once. Use the source LSN or outbox row id as the idempotency key downstream.</p>
+            </li>
+            <li>
+              <h4>Wire alerts</h4>
+              <p>Connector lag (LSN behind), restart count, snapshot duration, slot disk usage. A slot with no consumer <em>retains WAL forever</em> and fills the source DB&rsquo;s disk &mdash; this is the single most common Debezium production incident.</p>
+            </li>
+          </ol>
+
+          <h2 id="config">Connector configuration</h2>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payments-connector.json</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-k">"name"</span>: <span class="tok-s">"payments-cdc"</span>,
+  <span class="tok-k">"config"</span>: {
+    <span class="tok-k">"connector.class"</span>: <span class="tok-s">"io.debezium.connector.postgresql.PostgresConnector"</span>,
+    <span class="tok-k">"tasks.max"</span>: <span class="tok-s">"1"</span>,
+    <span class="tok-k">"database.hostname"</span>: <span class="tok-s">"payments-db.svc.internal"</span>,
+    <span class="tok-k">"database.port"</span>: <span class="tok-s">"5432"</span>,
+    <span class="tok-k">"database.user"</span>: <span class="tok-s">"debezium"</span>,
+    <span class="tok-k">"database.password"</span>: <span class="tok-s">"${file:/secrets/db.pwd:db.pwd}"</span>,
+    <span class="tok-k">"database.dbname"</span>: <span class="tok-s">"payments"</span>,
+    <span class="tok-k">"database.server.name"</span>: <span class="tok-s">"payments"</span>,
+
+    <span class="tok-k">"plugin.name"</span>: <span class="tok-s">"pgoutput"</span>,
+    <span class="tok-k">"slot.name"</span>: <span class="tok-s">"debezium_payments"</span>,
+    <span class="tok-k">"publication.name"</span>: <span class="tok-s">"dbz_payments"</span>,
+
+    <span class="tok-k">"table.include.list"</span>: <span class="tok-s">"public.outbox"</span>,
+    <span class="tok-k">"snapshot.mode"</span>: <span class="tok-s">"never"</span>,
+
+    <span class="tok-k">"transforms"</span>: <span class="tok-s">"outbox"</span>,
+    <span class="tok-k">"transforms.outbox.type"</span>: <span class="tok-s">"io.debezium.transforms.outbox.EventRouter"</span>,
+    <span class="tok-k">"transforms.outbox.route.by.field"</span>: <span class="tok-s">"aggregate_type"</span>,
+    <span class="tok-k">"transforms.outbox.route.topic.replacement"</span>: <span class="tok-s">"${routedByValue}.events"</span>,
+    <span class="tok-k">"transforms.outbox.table.field.event.key"</span>: <span class="tok-s">"aggregate_id"</span>,
+    <span class="tok-k">"transforms.outbox.table.field.event.payload"</span>: <span class="tok-s">"payload"</span>,
+    <span class="tok-k">"transforms.outbox.table.field.event.id"</span>: <span class="tok-s">"id"</span>,
+
+    <span class="tok-k">"key.converter"</span>: <span class="tok-s">"org.apache.kafka.connect.storage.StringConverter"</span>,
+    <span class="tok-k">"value.converter"</span>: <span class="tok-s">"io.confluent.connect.avro.AvroConverter"</span>,
+    <span class="tok-k">"value.converter.schema.registry.url"</span>: <span class="tok-s">"http://schema-registry:8081"</span>,
+
+    <span class="tok-k">"heartbeat.interval.ms"</span>: <span class="tok-s">"10000"</span>,
+    <span class="tok-k">"heartbeat.action.query"</span>: <span class="tok-s">"INSERT INTO heartbeat (ts) VALUES (now()) ON CONFLICT (id) DO UPDATE SET ts = now()"</span>
+  }
+}</code></pre>
+          </div>
+
+          <p>The <code>heartbeat.action.query</code> is the silent hero. Without traffic on the source DB the WAL doesn&rsquo;t advance and the slot holds WAL forever; an idle outbox table can fill the DB&rsquo;s disk in days. The heartbeat keeps WAL flowing.</p>
+
+          <h2 id="consumer">Idempotent consumer</h2>
+          <p>CDC delivers at-least-once. The consumer must dedupe. The simplest reliable pattern: a processed-events table, keyed by the outbox event id, written in the same transaction as the side effect.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>SearchIndexer.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@KafkaListener</span>(topics = <span class="tok-s">"Payment.events"</span>)
+<span class="tok-k">public void</span> onEvent(<span class="tok-t">ConsumerRecord</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">Payment</span>&gt; r,
+                    <span class="tok-t">Acknowledgment</span> ack) {
+
+  <span class="tok-t">UUID</span> eventId = UUID.fromString(r.headers().lastHeader(<span class="tok-s">"id"</span>).value().toString());
+
+  <span class="tok-t">int</span> inserted = jdbc.update(
+      <span class="tok-s">"INSERT INTO processed_events (event_id) VALUES (?) ON CONFLICT DO NOTHING"</span>,
+      eventId);
+  <span class="tok-k">if</span> (inserted == <span class="tok-n">0</span>) { ack.acknowledge(); <span class="tok-k">return</span>; }      <span class="tok-c">// duplicate</span>
+
+  searchClient.index(r.value());
+  ack.acknowledge();
+}</code></pre>
+          </div>
+
+          <h2 id="schema-drift">Schema drift</h2>
+          <p>The source DDL changes &mdash; a new column, a renamed field, a dropped index. CDC keeps streaming; consumers may break silently if their deserialiser is strict. Three rules:</p>
+          <ul>
+            <li><strong>Use Schema Registry with BACKWARD compatibility.</strong> New columns become optional fields with defaults. Removing a column requires explicit consumer migration first.</li>
+            <li><strong>Pin column types in the connector.</strong> Don&rsquo;t let CDC infer; declare the schema in the connector configuration so a type change is a CI failure, not a runtime surprise.</li>
+            <li><strong>Always alert on schema-evolution events.</strong> Debezium emits a schema-change topic; route it to the platform team for review.</li>
+          </ul>
+
+          <h2 id="reconciliation">Reconciliation</h2>
+          <p>Reconciliation is the audit that catches what CDC missed: lost events from a slot reset, applied-twice events from a manual replay, downstream divergence from a bad consumer.</p>
+          <p>Pattern: a daily job hashes a window of source rows and the corresponding downstream rows; any mismatch is an alert. Don&rsquo;t skip this. CDC alone is not an audit story to a regulator.</p>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Replication slot disk fill</div>
+            <p>A Debezium slot with no consumer or a stuck consumer retains WAL indefinitely. Source DB disk fills, write stops, application down. Always alert on slot LSN lag; always have a runbook to drop the slot if Debezium is being decommissioned.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Snapshot under load</div>
+            <p>Initial snapshot of a 500M-row table at peak traffic locks for hours. Run the initial snapshot during a maintenance window with an incremental strategy or off a read replica.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Outbox without an index</div>
+            <p>The outbox grows; without an index on <code>created_at</code> a clean-up job locks the table. Index the column you&rsquo;ll use to delete by, and partition by month if volume is high.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">CDC is downstream of the database, not the application</div>
+            <p>Database changes made directly via SQL bypass application code &mdash; including any application-level outbox writes. CDC catches the row change but not the &ldquo;event&rdquo; the application would have emitted. Treat direct SQL writes as out of bounds, or use the table-CDC pattern instead of outbox for those flows.</p>
+          </div>
+
+          <h2 id="when-not">When not to use CDC</h2>
+          <ul>
+            <li><strong>The source DB is read-only or rarely changes.</strong> A nightly batch export is simpler.</li>
+            <li><strong>The downstream needs joins across multiple tables.</strong> CDC ships per-table changes; reconstructing joins is hard. Consider materialised views or stream processing instead.</li>
+            <li><strong>The DB has no replication log.</strong> Some legacy systems and proprietary platforms don&rsquo;t expose one. Application-level outbox or polling is the only option.</li>
+            <li><strong>You need synchronous propagation.</strong> CDC is async by definition. For strong cross-system consistency, use a database-level distributed transaction or co-locate the systems.</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="../api-security.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">API Security</div>
+            </a>
+            <a href="../devops.html" class="article-nav__next">
+              <div class="article-nav__label">Next article</div>
+              <div class="article-nav__title">DevOps &amp; Platform Engineering &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
