@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strimzi on Private OpenShift &mdash; Regulated Deployment &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A practical, production-grade walkthrough of running Strimzi (and Red Hat AMQ Streams) Kafka on private OpenShift in a regulated financial services environment: operator topology, listeners, OAuth via internal IdP, mTLS, NetworkPolicies, storage, HA, and the constraints unique to air-gapped banking clusters.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Strimzi on Private OpenShift &mdash; Regulated Deployment">
+  <meta property="og:description" content="Production Kafka on private OCP for regulated financial services: Strimzi / AMQ Streams patterns.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/strimzi-on-private-ocp.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Strimzi on Private OpenShift &mdash; Regulated Deployment">
+  <meta name="twitter:description" content="Strimzi / AMQ Streams Kafka on private OCP for regulated banks.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/strimzi-on-private-ocp.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Strimzi on Private OpenShift &mdash; Regulated Deployment",
+    "description": "Production-grade Strimzi / AMQ Streams Kafka on private OpenShift for regulated financial services: components, listeners, OAuth, mTLS, NetworkPolicies, storage, HA, and DR.",
+    "url": "https://www.wbadawi.info/lab/event-driven/strimzi-on-private-ocp.html",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
+    "image": "https://www.wbadawi.info/assets/img/og-image.png"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Strimzi on Private OpenShift</div>
+          <span class="overline">Lab Article</span>
+          <h1>Strimzi on Private OpenShift &mdash; Regulated</h1>
+          <p class="lead">Running Strimzi (and Red Hat AMQ Streams) on private, air-gapped OpenShift in a regulated bank: operator topology, listeners, OAuth via an internal IdP, mTLS with the internal CA, NetworkPolicies, storage, multi-AZ HA, MirrorMaker 2 for DR, and the constraints unique to regulated financial services that change every default.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#strimzi-vs-amq">Strimzi vs AMQ Streams</a></li>
+            <li><a href="#components">Components</a></li>
+            <li><a href="#topology">Private OCP topology</a></li>
+            <li><a href="#deploy">Deployment</a></li>
+            <li><a href="#kafka-cr">Kafka custom resource</a></li>
+            <li><a href="#auth">Auth &amp; mTLS</a></li>
+            <li><a href="#storage">Storage</a></li>
+            <li><a href="#netpol">NetworkPolicies</a></li>
+            <li><a href="#ha">HA &amp; multi-AZ</a></li>
+            <li><a href="#dr">DR with MirrorMaker 2</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When not to use</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Strimzi 0.40+ / AMQ Streams 2.7+ / OCP 4.14+ / Kafka 3.7</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Strimzi is the operator that turns OpenShift into a managed Kafka platform. You declare a <code>Kafka</code> custom resource; the operator reconciles brokers, ZooKeeper or KRaft controllers, listeners, certificates, users, topics, and connectors. In a regulated bank running on private (often air-gapped) OpenShift, this declarative model is what makes Kafka tractable: every change is a Git commit, every reconcile leaves an audit trail, and there is no console to click through that the regulator can&rsquo;t reproduce.</p>
+          <p>This article covers the deployment as it actually runs in a regulated KSA bank: no internet egress, internal image registry, internal Keycloak as the IdP, internal CA for mTLS, FIPS-validated crypto, and SAMA-aligned audit logging. The patterns transfer to other private cloud and regulated environments &mdash; PSD2 banks in the EU, OSFI-regulated banks in Canada, federal-tier government clouds &mdash; but the examples are written from the bank perspective.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Air-gapped vs private</div>
+            <p>&ldquo;Private OCP&rdquo; in this article means a cluster with no public internet egress, internal image registry mirror (Quay or Harbor), and IdP/CA on-prem. Strictly air-gapped clusters add one more layer (no in-cluster mirror; images delivered via signed bundles) but the Kafka deployment patterns are identical.</p>
+          </div>
+
+          <h2 id="strimzi-vs-amq">Strimzi vs AMQ Streams</h2>
+          <p>The same code runs under two product names. Pick by your support contract, not by features.</p>
+
+          <table>
+            <thead>
+              <tr><th>Property</th><th>Strimzi</th><th>Red Hat AMQ Streams</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Source</td><td>Upstream CNCF project</td><td>Productised Strimzi by Red Hat</td></tr>
+              <tr><td>Kafka version</td><td>Latest community Kafka</td><td>Curated, validated Kafka version</td></tr>
+              <tr><td>Support</td><td>Community</td><td>Red Hat enterprise support, SLA</td></tr>
+              <tr><td>FIPS</td><td>Depends on OCP / JVM</td><td>FIPS-validated build available</td></tr>
+              <tr><td>Channel</td><td>OperatorHub.io / Helm</td><td>Red Hat OperatorHub on OCP</td></tr>
+              <tr><td>Best fit</td><td>Self-supported teams, dev environments</td><td>Regulated production, audit-required environments</td></tr>
+            </tbody>
+          </table>
+
+          <p>For everything that follows, the YAML and the patterns are identical &mdash; the article uses <code>strimzi.io</code> APIs because they apply to both. Where the AMQ Streams build differs (image references, support channels), I&rsquo;ll call it out.</p>
+
+          <h2 id="components">Components</h2>
+          <p>Strimzi installs three operators. Each owns a distinct concern.</p>
+
+          <div class="diagram" role="img" aria-label="Strimzi components: cluster operator manages Kafka and KafkaConnect; topic operator manages KafkaTopic; user operator manages KafkaUser">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="st1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="st2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Operators (left) -->
+                <rect x="20" y="40" width="200" height="60" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="120" y="65" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Cluster Operator</text>
+                <text x="120" y="83" text-anchor="middle" fill="#71717a" font-size="9">watches Kafka, KafkaConnect,</text>
+                <text x="120" y="95" text-anchor="middle" fill="#71717a" font-size="9">KafkaMirrorMaker2, KafkaBridge</text>
+
+                <rect x="20" y="160" width="200" height="60" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="120" y="185" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">Topic Operator</text>
+                <text x="120" y="203" text-anchor="middle" fill="#71717a" font-size="9">watches KafkaTopic</text>
+                <text x="120" y="215" text-anchor="middle" fill="#71717a" font-size="9">reconciles to broker config</text>
+
+                <rect x="20" y="280" width="200" height="60" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="120" y="305" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">User Operator</text>
+                <text x="120" y="323" text-anchor="middle" fill="#71717a" font-size="9">watches KafkaUser</text>
+                <text x="120" y="335" text-anchor="middle" fill="#71717a" font-size="9">creates ACLs + secrets</text>
+
+                <!-- CRDs (middle) -->
+                <rect x="280" y="40" width="160" height="40" rx="4" fill="#0f0f16" stroke="#a78bfa" stroke-dasharray="3 2"/>
+                <text x="360" y="62" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Kafka</text>
+                <text x="360" y="76" text-anchor="middle" fill="#71717a" font-size="9">cluster spec</text>
+
+                <rect x="280" y="90" width="160" height="40" rx="4" fill="#0f0f16" stroke="#a78bfa" stroke-dasharray="3 2"/>
+                <text x="360" y="112" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">KafkaConnect</text>
+                <text x="360" y="126" text-anchor="middle" fill="#71717a" font-size="9">connect runtime</text>
+
+                <rect x="280" y="160" width="160" height="40" rx="4" fill="#0f0f16" stroke="#fbbf24" stroke-dasharray="3 2"/>
+                <text x="360" y="182" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">KafkaTopic</text>
+                <text x="360" y="196" text-anchor="middle" fill="#71717a" font-size="9">name, partitions, config</text>
+
+                <rect x="280" y="280" width="160" height="40" rx="4" fill="#0f0f16" stroke="#4a9eff" stroke-dasharray="3 2"/>
+                <text x="360" y="302" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">KafkaUser</text>
+                <text x="360" y="316" text-anchor="middle" fill="#71717a" font-size="9">auth + ACLs</text>
+
+                <!-- Kafka cluster (right) -->
+                <rect x="500" y="40" width="260" height="180" rx="8" fill="#0f0f16" stroke="#00d4aa" stroke-width="2"/>
+                <text x="630" y="62" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">KAFKA CLUSTER (PODS)</text>
+                <rect x="520" y="80" width="220" height="35" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="630" y="102" text-anchor="middle" fill="#e4e4e7" font-size="10">broker-0 / broker-1 / broker-2</text>
+                <rect x="520" y="125" width="220" height="35" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="630" y="147" text-anchor="middle" fill="#e4e4e7" font-size="10">KRaft controllers (or ZK)</text>
+                <rect x="520" y="170" width="220" height="35" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="630" y="192" text-anchor="middle" fill="#e4e4e7" font-size="10">Entity Operators (Topic + User)</text>
+
+                <!-- Secrets/Configs (right bottom) -->
+                <rect x="500" y="240" width="260" height="100" rx="8" fill="#0f0f16" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="630" y="262" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">GENERATED ARTIFACTS</text>
+                <text x="520" y="285" fill="#71717a" font-size="9">&middot; Cluster CA, Clients CA (Secrets)</text>
+                <text x="520" y="300" fill="#71717a" font-size="9">&middot; per-broker server certs (Secrets)</text>
+                <text x="520" y="315" fill="#71717a" font-size="9">&middot; bootstrap Service + Routes</text>
+                <text x="520" y="330" fill="#71717a" font-size="9">&middot; PVCs for log dirs (per pod)</text>
+
+                <!-- Arrows -->
+                <line x1="220" y1="65" x2="278" y2="60" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#st2)"/>
+                <line x1="220" y1="80" x2="278" y2="110" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#st2)"/>
+                <line x1="220" y1="190" x2="278" y2="180" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#st2)"/>
+                <line x1="220" y1="310" x2="278" y2="300" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#st2)"/>
+                <line x1="440" y1="60" x2="498" y2="100" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#st1)"/>
+                <line x1="440" y1="180" x2="498" y2="190" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#st1)"/>
+                <line x1="440" y1="300" x2="498" y2="190" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#st1)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Operators, CRDs, and what gets reconciled</div>
+          </div>
+
+          <p>Two operational implications fall out of this:</p>
+          <ul>
+            <li><strong>The CR is the truth, not the cluster.</strong> A broker pod that doesn&rsquo;t match the spec is a reconciliation candidate; the operator will replace it. Don&rsquo;t edit broker configs in a running pod &mdash; the next reconcile will undo it.</li>
+            <li><strong>Topics and users live as resources.</strong> Creating a topic via <code>kafka-topics --create</code> works once but isn&rsquo;t reproducible. Always create them as <code>KafkaTopic</code> CRs through Git, so the same topic exists identically in dev, test, and prod.</li>
+          </ul>
+
+          <h2 id="topology">Private OCP topology</h2>
+          <p>The deployment shape on a private OCP cluster has five distinct namespaces and a careful boundary between data plane (Kafka brokers) and shared services (operators, IdP, monitoring).</p>
+
+          <div class="diagram" role="img" aria-label="Private OCP topology with operator namespace, kafka namespace, app namespace, identity namespace, and monitoring namespace, behind internal CA and IdP">
+            <div class="diagram__inner">
+              <svg width="780" height="420" viewBox="0 0 780 420" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="st3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <!-- Cluster boundary -->
+                <rect x="10" y="10" width="760" height="390" rx="10" fill="none" stroke="#a78bfa" stroke-dasharray="4 3"/>
+                <text x="30" y="32" fill="#a78bfa" font-size="11" font-weight="600">PRIVATE OCP CLUSTER (no internet egress)</text>
+
+                <!-- Operators ns -->
+                <rect x="40" y="55" width="220" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="150" y="78" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">openshift-operators</text>
+                <text x="150" y="95" text-anchor="middle" fill="#e4e4e7" font-size="10">Strimzi Cluster Operator</text>
+                <text x="150" y="112" text-anchor="middle" fill="#71717a" font-size="9">cluster-scoped install</text>
+                <text x="150" y="124" text-anchor="middle" fill="#71717a" font-size="9">watches all namespaces</text>
+
+                <!-- Identity ns -->
+                <rect x="280" y="55" width="220" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="390" y="78" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">identity</text>
+                <text x="390" y="95" text-anchor="middle" fill="#e4e4e7" font-size="10">Keycloak (IdP, HA)</text>
+                <text x="390" y="112" text-anchor="middle" fill="#71717a" font-size="9">internal realm: prod</text>
+                <text x="390" y="124" text-anchor="middle" fill="#71717a" font-size="9">JWKS over cluster DNS</text>
+
+                <!-- CA ns -->
+                <rect x="520" y="55" width="220" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="630" y="78" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">cert-manager</text>
+                <text x="630" y="95" text-anchor="middle" fill="#e4e4e7" font-size="10">Internal CA bundle</text>
+                <text x="630" y="112" text-anchor="middle" fill="#71717a" font-size="9">issues mTLS client certs</text>
+                <text x="630" y="124" text-anchor="middle" fill="#71717a" font-size="9">approved by InfoSec</text>
+
+                <!-- Kafka ns (center, large) -->
+                <rect x="40" y="160" width="700" height="120" rx="8" fill="#0f0f16" stroke="#00d4aa" stroke-width="2"/>
+                <text x="60" y="180" fill="#00d4aa" font-size="11" font-weight="600">kafka-prod</text>
+                <text x="60" y="195" fill="#71717a" font-size="9">Kafka cluster, KafkaConnect, KafkaMirrorMaker2, all KafkaTopic + KafkaUser</text>
+
+                <rect x="60" y="205" width="120" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="120" y="225" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">broker-0</text>
+                <text x="120" y="242" text-anchor="middle" fill="#71717a" font-size="9">zone-a</text>
+                <text x="120" y="256" text-anchor="middle" fill="#71717a" font-size="9">PVC: ODF</text>
+
+                <rect x="195" y="205" width="120" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="255" y="225" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">broker-1</text>
+                <text x="255" y="242" text-anchor="middle" fill="#71717a" font-size="9">zone-b</text>
+                <text x="255" y="256" text-anchor="middle" fill="#71717a" font-size="9">PVC: ODF</text>
+
+                <rect x="330" y="205" width="120" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="390" y="225" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">broker-2</text>
+                <text x="390" y="242" text-anchor="middle" fill="#71717a" font-size="9">zone-c</text>
+                <text x="390" y="256" text-anchor="middle" fill="#71717a" font-size="9">PVC: ODF</text>
+
+                <rect x="475" y="205" width="120" height="60" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="535" y="225" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">controller-q</text>
+                <text x="535" y="242" text-anchor="middle" fill="#71717a" font-size="9">KRaft quorum</text>
+                <text x="535" y="256" text-anchor="middle" fill="#71717a" font-size="9">3 nodes</text>
+
+                <rect x="610" y="205" width="120" height="60" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="670" y="225" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">connect</text>
+                <text x="670" y="242" text-anchor="middle" fill="#71717a" font-size="9">Debezium</text>
+                <text x="670" y="256" text-anchor="middle" fill="#71717a" font-size="9">CDC sources</text>
+
+                <!-- App ns -->
+                <rect x="40" y="305" width="220" height="70" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="150" y="328" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">payments-prod</text>
+                <text x="150" y="345" text-anchor="middle" fill="#e4e4e7" font-size="10">Producers / Consumers</text>
+                <text x="150" y="360" text-anchor="middle" fill="#71717a" font-size="9">via internal Service DNS</text>
+
+                <!-- Monitoring ns -->
+                <rect x="280" y="305" width="220" height="70" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="390" y="328" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">openshift-monitoring</text>
+                <text x="390" y="345" text-anchor="middle" fill="#e4e4e7" font-size="10">Prometheus &middot; Grafana</text>
+                <text x="390" y="360" text-anchor="middle" fill="#71717a" font-size="9">scrapes ServiceMonitor</text>
+
+                <!-- SIEM bridge -->
+                <rect x="520" y="305" width="220" height="70" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="630" y="328" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">audit-bridge</text>
+                <text x="630" y="345" text-anchor="middle" fill="#e4e4e7" font-size="10">Vector &rarr; Splunk HEC</text>
+                <text x="630" y="360" text-anchor="middle" fill="#71717a" font-size="9">ships audit logs to SIEM</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Namespace topology on a private OCP cluster</div>
+          </div>
+
+          <p>The boundaries that matter:</p>
+          <ul>
+            <li><strong>One Kafka cluster, one namespace.</strong> Mixing two Kafka clusters in the same namespace is technically possible and operationally a mistake &mdash; certificate rotations, network policies, and quotas all become harder to reason about.</li>
+            <li><strong>Application namespaces never run brokers.</strong> Producers and consumers connect to the bootstrap Service in <code>kafka-prod</code>; they don&rsquo;t share a namespace with the cluster.</li>
+            <li><strong>The IdP is a hard dependency.</strong> If Keycloak is down, OAuth-authenticated clients can&rsquo;t connect. Run Keycloak in HA, replicate to the DR cluster, and consider a small set of mTLS-only system clients (Connect, MirrorMaker 2) as a fallback path.</li>
+          </ul>
+
+          <h2 id="deploy">Deployment</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Mirror images to the internal registry</h4>
+              <p>The Strimzi or AMQ Streams images live on quay.io / registry.redhat.io. In a private cluster they need to be mirrored to the internal Quay or Harbor first. <code>oc image mirror</code> handles this; the resulting <code>ImageContentSourcePolicy</code> lives in Git.</p>
+            </li>
+            <li>
+              <h4>Install the Cluster Operator</h4>
+              <p>For AMQ Streams: a <code>Subscription</code> against the Red Hat OperatorHub channel. For Strimzi upstream: a Helm chart or the bundled YAML manifest. Either way, install it cluster-scoped so it can watch all namespaces.</p>
+            </li>
+            <li>
+              <h4>Provision the storage class</h4>
+              <p>Brokers need durable, fast block storage. On bare-metal OCP that is typically OpenShift Data Foundation (Ceph RBD); on cloud OCP it&rsquo;s vendor block (gp3, premium, SSD). Pre-create the <code>StorageClass</code> with <code>volumeBindingMode: WaitForFirstConsumer</code> so PVCs land in the right zone.</p>
+            </li>
+            <li>
+              <h4>Apply the Kafka custom resource</h4>
+              <p>The Kafka CR (next section) drives the whole cluster. The first apply takes 5&ndash;10 minutes &mdash; the operator generates CAs, issues per-broker certs, and rolls out brokers one at a time.</p>
+            </li>
+            <li>
+              <h4>Create topics and users via CRs</h4>
+              <p><code>KafkaTopic</code> for each topic; <code>KafkaUser</code> for each app identity. Both reconcile through the Topic and User Operators. ACLs go on the <code>KafkaUser</code>.</p>
+            </li>
+            <li>
+              <h4>Wire NetworkPolicies</h4>
+              <p>Default-deny in the namespace; explicit ingress for app namespaces, monitoring, MirrorMaker 2; explicit egress to the IdP. This is the work that takes 80% of the deployment time and is the load-bearing security control.</p>
+            </li>
+          </ol>
+
+          <h2 id="kafka-cr">Kafka custom resource</h2>
+          <p>One YAML drives the whole cluster. Below is what runs in production: KRaft (no ZooKeeper), three brokers across three zones, three listeners (internal mTLS, OAuth for apps, mTLS for system clients), JBOD storage, authorization, and Prometheus metrics.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kafka-prod.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">kafka.strimzi.io/v1beta2</span>
+<span class="tok-k">kind</span>: <span class="tok-s">Kafka</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">events</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">kafka-prod</span>
+  <span class="tok-k">annotations</span>:
+    <span class="tok-k">strimzi.io/node-pools</span>: <span class="tok-s">enabled</span>
+    <span class="tok-k">strimzi.io/kraft</span>: <span class="tok-s">enabled</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">kafka</span>:
+    <span class="tok-k">version</span>: <span class="tok-s">3.7.0</span>
+    <span class="tok-k">metadataVersion</span>: <span class="tok-s">3.7-IV4</span>
+    <span class="tok-k">replicas</span>: <span class="tok-n">3</span>
+
+    <span class="tok-k">listeners</span>:
+      <span class="tok-c"># 1. Internal plain-TLS listener for in-cluster apps (Service DNS only)</span>
+      - <span class="tok-k">name</span>: <span class="tok-s">tls</span>
+        <span class="tok-k">port</span>: <span class="tok-n">9093</span>
+        <span class="tok-k">type</span>: <span class="tok-s">internal</span>
+        <span class="tok-k">tls</span>: <span class="tok-n">true</span>
+        <span class="tok-k">authentication</span>: { <span class="tok-k">type</span>: <span class="tok-s">tls</span> }
+
+      <span class="tok-c"># 2. OAuth listener &mdash; bearer JWT validated against internal Keycloak</span>
+      - <span class="tok-k">name</span>: <span class="tok-s">oauth</span>
+        <span class="tok-k">port</span>: <span class="tok-n">9094</span>
+        <span class="tok-k">type</span>: <span class="tok-s">internal</span>
+        <span class="tok-k">tls</span>: <span class="tok-n">true</span>
+        <span class="tok-k">authentication</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">oauth</span>
+          <span class="tok-k">validIssuerUri</span>: <span class="tok-s">https://idp.acme-bank.svc/realms/prod</span>
+          <span class="tok-k">jwksEndpointUri</span>: <span class="tok-s">https://idp.acme-bank.svc/realms/prod/protocol/openid-connect/certs</span>
+          <span class="tok-k">userNameClaim</span>: <span class="tok-s">preferred_username</span>
+          <span class="tok-k">checkAudience</span>: <span class="tok-n">true</span>
+          <span class="tok-k">tlsTrustedCertificates</span>:
+            - { <span class="tok-k">secretName</span>: <span class="tok-s">internal-ca-bundle</span>, <span class="tok-k">certificate</span>: <span class="tok-s">ca.crt</span> }
+
+      <span class="tok-c"># 3. External listener via OpenShift Routes &mdash; mTLS only, partner systems</span>
+      - <span class="tok-k">name</span>: <span class="tok-s">partner</span>
+        <span class="tok-k">port</span>: <span class="tok-n">9095</span>
+        <span class="tok-k">type</span>: <span class="tok-s">route</span>
+        <span class="tok-k">tls</span>: <span class="tok-n">true</span>
+        <span class="tok-k">authentication</span>: { <span class="tok-k">type</span>: <span class="tok-s">tls</span> }
+        <span class="tok-k">configuration</span>:
+          <span class="tok-k">bootstrap</span>: { <span class="tok-k">host</span>: <span class="tok-s">events.api.acme-bank.com</span> }
+          <span class="tok-k">brokers</span>:
+            - { <span class="tok-k">broker</span>: <span class="tok-n">0</span>, <span class="tok-k">host</span>: <span class="tok-s">events-0.api.acme-bank.com</span> }
+            - { <span class="tok-k">broker</span>: <span class="tok-n">1</span>, <span class="tok-k">host</span>: <span class="tok-s">events-1.api.acme-bank.com</span> }
+            - { <span class="tok-k">broker</span>: <span class="tok-n">2</span>, <span class="tok-k">host</span>: <span class="tok-s">events-2.api.acme-bank.com</span> }
+
+    <span class="tok-k">authorization</span>:
+      <span class="tok-k">type</span>: <span class="tok-s">simple</span>
+      <span class="tok-k">superUsers</span>:
+        - <span class="tok-s">CN=cluster-admin</span>
+        - <span class="tok-s">CN=mirrormaker</span>
+
+    <span class="tok-k">storage</span>:
+      <span class="tok-k">type</span>: <span class="tok-s">jbod</span>
+      <span class="tok-k">volumes</span>:
+        - { <span class="tok-k">id</span>: <span class="tok-n">0</span>, <span class="tok-k">type</span>: <span class="tok-s">persistent-claim</span>, <span class="tok-k">size</span>: <span class="tok-s">500Gi</span>, <span class="tok-k">class</span>: <span class="tok-s">ocs-storagecluster-ceph-rbd</span>, <span class="tok-k">deleteClaim</span>: <span class="tok-n">false</span> }
+        - { <span class="tok-k">id</span>: <span class="tok-n">1</span>, <span class="tok-k">type</span>: <span class="tok-s">persistent-claim</span>, <span class="tok-k">size</span>: <span class="tok-s">500Gi</span>, <span class="tok-k">class</span>: <span class="tok-s">ocs-storagecluster-ceph-rbd</span>, <span class="tok-k">deleteClaim</span>: <span class="tok-n">false</span> }
+
+    <span class="tok-k">resources</span>:
+      <span class="tok-k">requests</span>: { <span class="tok-k">cpu</span>: <span class="tok-s">2</span>, <span class="tok-k">memory</span>: <span class="tok-s">8Gi</span> }
+      <span class="tok-k">limits</span>:   { <span class="tok-k">cpu</span>: <span class="tok-s">4</span>, <span class="tok-k">memory</span>: <span class="tok-s">12Gi</span> }
+
+    <span class="tok-k">jvmOptions</span>:
+      <span class="tok-k">-Xms</span>: <span class="tok-s">6g</span>
+      <span class="tok-k">-Xmx</span>: <span class="tok-s">6g</span>
+      <span class="tok-k">javaSystemProperties</span>:
+        - { <span class="tok-k">name</span>: <span class="tok-s">javax.net.ssl.trustStoreType</span>, <span class="tok-k">value</span>: <span class="tok-s">PKCS12</span> }
+
+    <span class="tok-k">config</span>:
+      <span class="tok-k">default.replication.factor</span>: <span class="tok-n">3</span>
+      <span class="tok-k">min.insync.replicas</span>: <span class="tok-n">2</span>
+      <span class="tok-k">offsets.topic.replication.factor</span>: <span class="tok-n">3</span>
+      <span class="tok-k">transaction.state.log.replication.factor</span>: <span class="tok-n">3</span>
+      <span class="tok-k">transaction.state.log.min.isr</span>: <span class="tok-n">2</span>
+      <span class="tok-k">auto.create.topics.enable</span>: <span class="tok-s">"false"</span>
+      <span class="tok-k">delete.topic.enable</span>: <span class="tok-s">"true"</span>
+      <span class="tok-k">log.message.format.version</span>: <span class="tok-s">"3.7"</span>
+      <span class="tok-k">inter.broker.protocol.version</span>: <span class="tok-s">"3.7"</span>
+      <span class="tok-k">log.retention.hours</span>: <span class="tok-n">168</span>
+      <span class="tok-k">num.partitions</span>: <span class="tok-n">12</span>
+
+    <span class="tok-k">rack</span>:
+      <span class="tok-k">topologyKey</span>: <span class="tok-s">topology.kubernetes.io/zone</span>
+
+    <span class="tok-k">template</span>:
+      <span class="tok-k">pod</span>:
+        <span class="tok-k">topologySpreadConstraints</span>:
+          - <span class="tok-k">maxSkew</span>: <span class="tok-n">1</span>
+            <span class="tok-k">topologyKey</span>: <span class="tok-s">topology.kubernetes.io/zone</span>
+            <span class="tok-k">whenUnsatisfiable</span>: <span class="tok-s">DoNotSchedule</span>
+
+    <span class="tok-k">metricsConfig</span>:
+      <span class="tok-k">type</span>: <span class="tok-s">jmxPrometheusExporter</span>
+      <span class="tok-k">valueFrom</span>:
+        <span class="tok-k">configMapKeyRef</span>: { <span class="tok-k">name</span>: <span class="tok-s">kafka-metrics</span>, <span class="tok-k">key</span>: <span class="tok-s">kafka.yaml</span> }
+
+  <span class="tok-k">entityOperator</span>:
+    <span class="tok-k">topicOperator</span>: {}
+    <span class="tok-k">userOperator</span>: {}</code></pre>
+          </div>
+
+          <p>The configuration that always pays off in production:</p>
+          <ul>
+            <li><strong><code>auto.create.topics.enable: false</code></strong> &mdash; topics must come from <code>KafkaTopic</code> CRs in Git. Auto-creation hides governance gaps.</li>
+            <li><strong><code>min.insync.replicas: 2</code> with RF=3</strong> &mdash; the standard durability tradeoff. A single broker outage is tolerated; two are not.</li>
+            <li><strong><code>rack.topologyKey</code></strong> &mdash; tells Kafka to spread partition replicas across zones. Without it, all three replicas can land in one zone &mdash; an AZ outage takes the partition offline.</li>
+          </ul>
+
+          <h2 id="auth">Auth &amp; mTLS</h2>
+          <p>Three authentication paths, each for a different consumer class. Don&rsquo;t blur them.</p>
+
+          <table>
+            <thead>
+              <tr><th>Listener</th><th>Auth</th><th>Used by</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>tls</code> (9093)</td><td>mTLS, internal CA</td><td>System clients: MirrorMaker 2, Kafka Connect, Cruise Control</td></tr>
+              <tr><td><code>oauth</code> (9094)</td><td>JWT bearer, Keycloak introspection or JWKS</td><td>Bank applications &mdash; producers and consumers</td></tr>
+              <tr><td><code>partner</code> (9095, route)</td><td>mTLS, partner CA bundle</td><td>External B2B partners and TPPs over OpenShift Routes</td></tr>
+            </tbody>
+          </table>
+
+          <h3>App identity via KafkaUser + OAuth</h3>
+          <p>An application&rsquo;s Kafka identity is a <code>KafkaUser</code> CR with OAuth authentication and a Keycloak client mapped to it. The User Operator generates the secret containing the credentials; the application mounts it.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kafkauser-payments.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">kafka.strimzi.io/v1beta2</span>
+<span class="tok-k">kind</span>: <span class="tok-s">KafkaUser</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments-producer</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">kafka-prod</span>
+  <span class="tok-k">labels</span>:
+    <span class="tok-k">strimzi.io/cluster</span>: <span class="tok-s">events</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">authentication</span>:
+    <span class="tok-k">type</span>: <span class="tok-s">tls</span>          <span class="tok-c"># issue a client cert from the Clients CA</span>
+  <span class="tok-k">authorization</span>:
+    <span class="tok-k">type</span>: <span class="tok-s">simple</span>
+    <span class="tok-k">acls</span>:
+      - <span class="tok-k">resource</span>: { <span class="tok-k">type</span>: <span class="tok-s">topic</span>, <span class="tok-k">name</span>: <span class="tok-s">payments.</span>, <span class="tok-k">patternType</span>: <span class="tok-s">prefix</span> }
+        <span class="tok-k">operations</span>: [ <span class="tok-s">Write</span>, <span class="tok-s">Describe</span> ]
+      - <span class="tok-k">resource</span>: { <span class="tok-k">type</span>: <span class="tok-s">topic</span>, <span class="tok-k">name</span>: <span class="tok-s">payments.dlq</span>, <span class="tok-k">patternType</span>: <span class="tok-s">literal</span> }
+        <span class="tok-k">operations</span>: [ <span class="tok-s">Write</span>, <span class="tok-s">Read</span>, <span class="tok-s">Describe</span> ]
+      - <span class="tok-k">resource</span>: { <span class="tok-k">type</span>: <span class="tok-s">cluster</span>, <span class="tok-k">name</span>: <span class="tok-s">""</span> }
+        <span class="tok-k">operations</span>: [ <span class="tok-s">DescribeConfigs</span> ]</code></pre>
+          </div>
+
+          <p>The User Operator creates a Secret <code>payments-producer</code> with <code>user.crt</code>, <code>user.key</code>, and <code>user.password</code>. The application namespace gets a copy via External Secrets or a synced ConfigMap; the application mounts it and configures the Kafka client.</p>
+
+          <h3>Topic governance via KafkaTopic</h3>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kafkatopic-payments-submitted.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">kafka.strimzi.io/v1beta2</span>
+<span class="tok-k">kind</span>: <span class="tok-s">KafkaTopic</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments.submitted.v1</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">kafka-prod</span>
+  <span class="tok-k">labels</span>:
+    <span class="tok-k">strimzi.io/cluster</span>: <span class="tok-s">events</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">partitions</span>: <span class="tok-n">32</span>
+  <span class="tok-k">replicas</span>: <span class="tok-n">3</span>
+  <span class="tok-k">config</span>:
+    <span class="tok-k">retention.ms</span>: <span class="tok-s">"604800000"</span>      <span class="tok-c"># 7 days</span>
+    <span class="tok-k">min.insync.replicas</span>: <span class="tok-s">"2"</span>
+    <span class="tok-k">cleanup.policy</span>: <span class="tok-s">"delete"</span>
+    <span class="tok-k">compression.type</span>: <span class="tok-s">"lz4"</span>
+    <span class="tok-k">message.format.version</span>: <span class="tok-s">"3.7"</span></code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">CA rotation is the silent operational task</div>
+            <p>Strimzi auto-renews the Cluster CA and Clients CA before they expire (default 365 days, renewal at 30 days remaining). The renewal triggers a rolling restart of every broker and every connected client that uses the cert chain. Schedule the renewal window deliberately; don&rsquo;t let it surprise you on a Sunday.</p>
+          </div>
+
+          <h2 id="storage">Storage</h2>
+          <p>Three storage decisions determine whether the cluster will hold up under load.</p>
+          <ul>
+            <li><strong>StorageClass with <code>volumeBindingMode: WaitForFirstConsumer</code></strong> &mdash; ensures the PV is provisioned in the same zone the broker pod schedules to. With <code>Immediate</code> binding, the PV may be in zone A while the pod ends up in zone B; you discover this when the pod CrashLoops on attach.</li>
+            <li><strong>JBOD over single disk</strong> &mdash; gives Kafka multiple log directories. Loss of one disk doesn&rsquo;t take the broker offline; replication recovers the affected partitions.</li>
+            <li><strong>Quotas on the storage class</strong> &mdash; a runaway producer can fill 500 GB in hours. Set per-namespace storage quotas; alert at 70% disk utilisation per broker.</li>
+          </ul>
+
+          <h2 id="netpol">NetworkPolicies</h2>
+          <p>Default-deny in the namespace; explicit allows for app namespaces, monitoring, and the IdP. The pattern that holds:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>networkpolicy-kafka.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Default deny everything in the kafka-prod namespace</span>
+<span class="tok-k">apiVersion</span>: <span class="tok-s">networking.k8s.io/v1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">NetworkPolicy</span>
+<span class="tok-k">metadata</span>: { <span class="tok-k">name</span>: <span class="tok-s">default-deny</span>, <span class="tok-k">namespace</span>: <span class="tok-s">kafka-prod</span> }
+<span class="tok-k">spec</span>:
+  <span class="tok-k">podSelector</span>: {}
+  <span class="tok-k">policyTypes</span>: [<span class="tok-s">Ingress</span>, <span class="tok-s">Egress</span>]
+---
+<span class="tok-c"># Allow producers/consumers from labelled app namespaces</span>
+<span class="tok-k">apiVersion</span>: <span class="tok-s">networking.k8s.io/v1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">NetworkPolicy</span>
+<span class="tok-k">metadata</span>: { <span class="tok-k">name</span>: <span class="tok-s">allow-apps-to-brokers</span>, <span class="tok-k">namespace</span>: <span class="tok-s">kafka-prod</span> }
+<span class="tok-k">spec</span>:
+  <span class="tok-k">podSelector</span>: { <span class="tok-k">matchLabels</span>: { <span class="tok-k">strimzi.io/kind</span>: <span class="tok-s">Kafka</span> } }
+  <span class="tok-k">policyTypes</span>: [<span class="tok-s">Ingress</span>]
+  <span class="tok-k">ingress</span>:
+    - <span class="tok-k">from</span>:
+        - <span class="tok-k">namespaceSelector</span>:
+            <span class="tok-k">matchLabels</span>: { <span class="tok-k">acme.bank/kafka-client</span>: <span class="tok-s">"true"</span> }
+      <span class="tok-k">ports</span>:
+        - { <span class="tok-k">port</span>: <span class="tok-n">9094</span>, <span class="tok-k">protocol</span>: <span class="tok-s">TCP</span> }   <span class="tok-c"># OAuth listener only</span>
+---
+<span class="tok-c"># Allow brokers to reach the IdP for JWKS</span>
+<span class="tok-k">apiVersion</span>: <span class="tok-s">networking.k8s.io/v1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">NetworkPolicy</span>
+<span class="tok-k">metadata</span>: { <span class="tok-k">name</span>: <span class="tok-s">allow-brokers-to-idp</span>, <span class="tok-k">namespace</span>: <span class="tok-s">kafka-prod</span> }
+<span class="tok-k">spec</span>:
+  <span class="tok-k">podSelector</span>: { <span class="tok-k">matchLabels</span>: { <span class="tok-k">strimzi.io/kind</span>: <span class="tok-s">Kafka</span> } }
+  <span class="tok-k">policyTypes</span>: [<span class="tok-s">Egress</span>]
+  <span class="tok-k">egress</span>:
+    - <span class="tok-k">to</span>:
+        - <span class="tok-k">namespaceSelector</span>: { <span class="tok-k">matchLabels</span>: { <span class="tok-k">name</span>: <span class="tok-s">identity</span> } }
+          <span class="tok-k">podSelector</span>: { <span class="tok-k">matchLabels</span>: { <span class="tok-k">app</span>: <span class="tok-s">keycloak</span> } }
+      <span class="tok-k">ports</span>:
+        - { <span class="tok-k">port</span>: <span class="tok-n">8443</span>, <span class="tok-k">protocol</span>: <span class="tok-s">TCP</span> }</code></pre>
+          </div>
+
+          <p>App namespaces are labelled <code>acme.bank/kafka-client=true</code> at provisioning time. A namespace without that label cannot reach the brokers &mdash; even if a developer hard-codes the bootstrap URL.</p>
+
+          <h2 id="ha">HA &amp; multi-AZ</h2>
+          <p>Three brokers spread across three zones is the baseline. The properties that have to be true:</p>
+          <ul>
+            <li><strong><code>topologySpreadConstraints</code> with <code>DoNotSchedule</code></strong> &mdash; not <code>ScheduleAnyway</code>. The latter allows two brokers in one zone if the third zone is unavailable, which silently breaks the rack-aware replica placement.</li>
+            <li><strong><code>rack.topologyKey</code> on the Kafka spec</strong> &mdash; Kafka assigns replicas across racks (zones); without it, all three replicas can land on brokers in the same zone.</li>
+            <li><strong>PodDisruptionBudget of <code>maxUnavailable: 1</code></strong> &mdash; node drain doesn&rsquo;t take more than one broker down at a time.</li>
+            <li><strong>StorageClass per zone or topology-aware</strong> &mdash; the PV must be in the same zone as the pod that mounts it, or the pod won&rsquo;t schedule.</li>
+          </ul>
+
+          <h2 id="dr">DR with MirrorMaker 2</h2>
+          <p>Active/passive DR uses <code>KafkaMirrorMaker2</code> to replicate topics, consumer offsets, and ACLs from the primary cluster to the DR cluster. Both clusters are full Strimzi deployments; only the MM2 instance lives on the DR side.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>mirrormaker2.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">kafka.strimzi.io/v1beta2</span>
+<span class="tok-k">kind</span>: <span class="tok-s">KafkaMirrorMaker2</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">events-dr</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">kafka-dr</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">version</span>: <span class="tok-s">3.7.0</span>
+  <span class="tok-k">replicas</span>: <span class="tok-n">3</span>
+  <span class="tok-k">connectCluster</span>: <span class="tok-s">target</span>
+  <span class="tok-k">clusters</span>:
+    - <span class="tok-k">alias</span>: <span class="tok-s">source</span>
+      <span class="tok-k">bootstrapServers</span>: <span class="tok-s">events-kafka-bootstrap.kafka-prod.svc:9093</span>
+      <span class="tok-k">tls</span>: { <span class="tok-k">trustedCertificates</span>: [{ <span class="tok-k">secretName</span>: <span class="tok-s">prod-ca-cert</span>, <span class="tok-k">certificate</span>: <span class="tok-s">ca.crt</span> }] }
+      <span class="tok-k">authentication</span>: { <span class="tok-k">type</span>: <span class="tok-s">tls</span>, <span class="tok-k">certificateAndKey</span>: { <span class="tok-k">secretName</span>: <span class="tok-s">mm2-source</span>, <span class="tok-k">certificate</span>: <span class="tok-s">user.crt</span>, <span class="tok-k">key</span>: <span class="tok-s">user.key</span> } }
+    - <span class="tok-k">alias</span>: <span class="tok-s">target</span>
+      <span class="tok-k">bootstrapServers</span>: <span class="tok-s">events-kafka-bootstrap.kafka-dr.svc:9093</span>
+      <span class="tok-k">tls</span>: { <span class="tok-k">trustedCertificates</span>: [{ <span class="tok-k">secretName</span>: <span class="tok-s">dr-ca-cert</span>, <span class="tok-k">certificate</span>: <span class="tok-s">ca.crt</span> }] }
+      <span class="tok-k">authentication</span>: { <span class="tok-k">type</span>: <span class="tok-s">tls</span>, <span class="tok-k">certificateAndKey</span>: { <span class="tok-k">secretName</span>: <span class="tok-s">mm2-target</span>, <span class="tok-k">certificate</span>: <span class="tok-s">user.crt</span>, <span class="tok-k">key</span>: <span class="tok-s">user.key</span> } }
+  <span class="tok-k">mirrors</span>:
+    - <span class="tok-k">sourceCluster</span>: <span class="tok-s">source</span>
+      <span class="tok-k">targetCluster</span>: <span class="tok-s">target</span>
+      <span class="tok-k">topicsPattern</span>: <span class="tok-s">"payments\\..*,risk\\..*"</span>
+      <span class="tok-k">groupsPattern</span>: <span class="tok-s">".*"</span>
+      <span class="tok-k">sourceConnector</span>:
+        <span class="tok-k">config</span>:
+          <span class="tok-k">replication.factor</span>: <span class="tok-s">"3"</span>
+          <span class="tok-k">offset-syncs.topic.replication.factor</span>: <span class="tok-s">"3"</span>
+          <span class="tok-k">sync.topic.acls.enabled</span>: <span class="tok-s">"false"</span>
+          <span class="tok-k">refresh.topics.interval.seconds</span>: <span class="tok-s">"30"</span>
+      <span class="tok-k">checkpointConnector</span>:
+        <span class="tok-k">config</span>:
+          <span class="tok-k">checkpoints.topic.replication.factor</span>: <span class="tok-s">"3"</span>
+          <span class="tok-k">sync.group.offsets.enabled</span>: <span class="tok-s">"true"</span></code></pre>
+          </div>
+
+          <p>Failover is a runbook, not an automation. The DR cluster has the data; promotion to active requires updating the bootstrap DNS and resetting consumer group offsets via the MM2 checkpoint topic. Test this every quarter, not when the primary is down.</p>
+
+          <h2 id="observability">Observability</h2>
+          <p>Strimzi ships JMX-Prometheus exporter sidecars and ServiceMonitors out of the box; Grafana dashboards are in the upstream repo. Five alerts that have to fire before anything else:</p>
+          <ul>
+            <li><strong>UnderReplicatedPartitions &gt; 0</strong> &mdash; durability is degraded.</li>
+            <li><strong>OfflinePartitionsCount &gt; 0</strong> &mdash; data unavailable; this is a P1.</li>
+            <li><strong>ActiveControllerCount != 1</strong> &mdash; KRaft quorum issue.</li>
+            <li><strong>Disk utilisation &gt; 80%</strong> per broker &mdash; ahead of the cliff.</li>
+            <li><strong>Cert expiry &lt; 30 days</strong> &mdash; CA renewal needed.</li>
+          </ul>
+
+          <p>Audit logs (auth events, ACL denies) are forwarded to Splunk or QRadar via a Vector sidecar in the broker pods. The SAMA audit trail is the SIEM, not the broker disk.</p>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Single-zone deployment</div>
+            <p>The default Kafka CR replicas: 3 lands all three brokers wherever the scheduler likes. On a single-zone cluster, an AZ outage takes everything offline. Always set <code>topologySpreadConstraints</code> with <code>DoNotSchedule</code> and <code>rack.topologyKey</code>; verify by listing pod-to-node-to-zone mapping after rollout.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Auto-create topics in production</div>
+            <p>If <code>auto.create.topics.enable</code> is true, a typo in a producer&rsquo;s topic name silently creates a new topic with default partitions and replication factor. By the time it&rsquo;s noticed, weeks of traffic are in the wrong place. Disable it; let <code>KafkaTopic</code> CRs be the only path.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">CA rotation surprise</div>
+            <p>The default Cluster and Clients CAs renew automatically before expiry, triggering a rolling restart. If clients pin the CA fingerprint (some Java clients do), the renewal breaks them. Switch clients to verifying via the published CA secret; never pin fingerprints in app code.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">PVC ReadWriteOnce</div>
+            <p>Most block storage on OCP is RWO. A pod that can&rsquo;t schedule (taint, node down) leaves its PVC bound to a missing node. The replacement pod can&rsquo;t mount the same volume. The fix is StatefulSet-aware storage with topology zone or <code>volumeBindingMode: WaitForFirstConsumer</code> &mdash; configure the StorageClass correctly the first time.</p>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">KRaft maturity</div>
+            <p>KRaft (no ZooKeeper) is production-ready as of Kafka 3.5+ and is the only path forward (ZooKeeper is removed in Kafka 4.x). For greenfield deployments use KRaft; for migrations from a ZooKeeper-backed cluster, plan a deliberate migration window with a tested rollback.</p>
+          </div>
+
+          <h2 id="when-not">When not to use</h2>
+          <ul>
+            <li><strong>You don&rsquo;t already operate OCP.</strong> Strimzi&rsquo;s value is the operator pattern; without an existing K8s/OCP investment, vanilla Kafka on VMs may be simpler. Don&rsquo;t introduce OpenShift just to run Kafka.</li>
+            <li><strong>Managed Kafka satisfies your data residency.</strong> If Confluent Cloud, MSK, or IBM Event Streams (managed) is allowed by your regulator and security stance, the operational savings are large. Strimzi shines when you can&rsquo;t use managed.</li>
+            <li><strong>Sub-three-broker scale.</strong> A small two-broker cluster doesn&rsquo;t justify the operator footprint. RabbitMQ, NATS, or even a database queue may fit better.</li>
+            <li><strong>The team has no Kafka operator experience.</strong> Strimzi simplifies day-2 only if the team understands Kafka itself. Without that, you trade one set of unknowns for another.</li>
+          </ul>
+
+          <p>Where Strimzi on private OCP wins is the regulated bank case &mdash; data residency requirements, internal CA, internal IdP, FIPS-validated runtime, GitOps-managed configuration, audit-traceable changes &mdash; all the constraints that rule out managed Kafka and reward declarative platform engineering.</p>
+
+          <nav class="article-nav">
+            <a href="../event-driven.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Event-Driven Architecture</div>
+            </a>
+            <a href="kafka-and-mq.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Kafka &amp; IBM MQ &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
