@@ -51,6 +51,11 @@
     .cert-item { display: flex; justify-content: space-between; align-items: baseline; padding: 0.625rem 0; border-bottom: 1px solid var(--color-border); font-size: 0.875rem; gap: 1rem; }
     .cert-item__name { color: var(--color-text); }
     .cert-item__issuer { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); white-space: nowrap; }
+    .resume-exec { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem 2rem; margin-top: 0.5rem; }
+    .resume-exec__item { padding: 0.875rem 0; border-bottom: 1px solid var(--color-border); }
+    .resume-exec__item:nth-last-child(-n+2) { border-bottom: none; padding-bottom: 0; }
+    .resume-exec__item h4 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--color-accent); font-family: var(--font-heading); }
+    .resume-exec__item p { font-size: 0.8125rem; color: var(--color-text-secondary); line-height: 1.65; margin: 0; }
     .resume-stack { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem 2rem; margin-top: 0.5rem; }
     .resume-stack__group { padding: 0.875rem 0; border-bottom: 1px solid var(--color-border); }
     .resume-stack__group:nth-last-child(-n+2) { border-bottom: none; }
@@ -64,6 +69,7 @@
     .resume-writing__topic { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: inline-block; margin-right: 0.5rem; }
     @media (max-width: 640px) {
       .resume-stack { grid-template-columns: 1fr; }
+      .resume-exec { grid-template-columns: 1fr; }
     }
     @media print {
       .page-header { background: none; border: none; padding: 1rem 0; }
@@ -165,6 +171,37 @@
           <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.25rem; text-align: center;">
             <div style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--color-accent); line-height: 1.2; margin-bottom: 0.375rem;">35%</div>
             <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Fraud Risk Reduced</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="resume-section">
+        <span class="overline">Executive Capabilities</span>
+        <p style="font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">The leadership disciplines I operate at VP level &mdash; aligning technology with institutional strategy in regulated financial services.</p>
+        <div class="resume-exec">
+          <div class="resume-exec__item">
+            <h4>Enterprise Technology Strategy</h4>
+            <p>Setting technology direction at institutional scale. Aligning multi-year platform investments with business priorities, advising C-level on transformation, and translating Vision 2030 ambition into executable roadmaps.</p>
+          </div>
+          <div class="resume-exec__item">
+            <h4>Platform Strategy &amp; Architecture Governance</h4>
+            <p>Designing the platforms that connect systems, partners, and business lines. Establishing architecture standards, decision frameworks, and platform team topologies that scale.</p>
+          </div>
+          <div class="resume-exec__item">
+            <h4>Digital &amp; Ecosystem Enablement</h4>
+            <p>Leading API economy, Open Banking, BaaS, and embedded finance strategy. Turning regulatory mandates into competitive advantage and new revenue streams.</p>
+          </div>
+          <div class="resume-exec__item">
+            <h4>Risk, Control &amp; Regulatory Alignment</h4>
+            <p>Architecting for SAMA compliance from day one. Translating regulatory requirements into platform capabilities, audit-ready governance, and defensible operating models.</p>
+          </div>
+          <div class="resume-exec__item">
+            <h4>Organizational Design &amp; Delivery</h4>
+            <p>Building and leading high-performing engineering organizations of 25&ndash;40+. Operating models, hiring strategy, DevSecOps culture, and continuous delivery at institutional scale.</p>
+          </div>
+          <div class="resume-exec__item">
+            <h4>Stakeholder &amp; Board-Level Influence</h4>
+            <p>Translating technical complexity for executive audiences. Securing C-level mandates, partnering with business lines, and contributing to institutional strategy beyond technology.</p>
           </div>
         </div>
       </div>
