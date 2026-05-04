@@ -51,6 +51,20 @@
     .cert-item { display: flex; justify-content: space-between; align-items: baseline; padding: 0.625rem 0; border-bottom: 1px solid var(--color-border); font-size: 0.875rem; gap: 1rem; }
     .cert-item__name { color: var(--color-text); }
     .cert-item__issuer { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); white-space: nowrap; }
+    .resume-stack { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem 2rem; margin-top: 0.5rem; }
+    .resume-stack__group { padding: 0.875rem 0; border-bottom: 1px solid var(--color-border); }
+    .resume-stack__group:nth-last-child(-n+2) { border-bottom: none; }
+    .resume-stack__title { font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-bottom: 0.4rem; }
+    .resume-stack__items { font-size: 0.8125rem; color: var(--color-text-secondary); line-height: 1.7; margin: 0; }
+    .resume-writing { list-style: none; padding: 0; margin: 0.75rem 0 0 0; }
+    .resume-writing li { padding: 0.625rem 0; border-bottom: 1px solid var(--color-border); font-size: 0.8125rem; color: var(--color-text-secondary); line-height: 1.6; }
+    .resume-writing li:last-child { border-bottom: none; }
+    .resume-writing li a { color: var(--color-text); font-weight: 500; }
+    .resume-writing li a:hover { color: var(--color-accent); }
+    .resume-writing__topic { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: inline-block; margin-right: 0.5rem; }
+    @media (max-width: 640px) {
+      .resume-stack { grid-template-columns: 1fr; }
+    }
     @media print {
       .page-header { background: none; border: none; padding: 1rem 0; }
       .no-print { display: none; }
@@ -126,7 +140,7 @@
 
       <div class="resume-section">
         <span class="overline">Summary</span>
-        <p>Technology executive who builds institutional capabilities, not just platforms. 14+ years leading enterprise transformation in Saudi banking and government, from platform strategy and organizational design to API monetization and regulatory readiness. Recognized as Tech100 Strategic Leader of the Future (Saudi Arabia Edition).</p>
+        <p>Technology executive who builds institutional capabilities, not just platforms. 14+ years leading enterprise transformation in Saudi banking and government, from platform strategy and organizational design to API monetization, real-time payments, and regulatory readiness. Hands-on with the integration, streaming, and security stack behind regulated financial services.</p>
       </div>
 
       <div class="resume-section">
@@ -151,6 +165,53 @@
           <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.25rem; text-align: center;">
             <div style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--color-accent); line-height: 1.2; margin-bottom: 0.375rem;">35%</div>
             <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Fraud Risk Reduced</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="resume-section">
+        <span class="overline">Technical Stack</span>
+        <p style="font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">Hands-on with the platforms behind regulated banking integration. Each cluster maps to a deep-dive in the <a href="technical.html">Lab</a>.</p>
+        <div class="resume-stack">
+          <div class="resume-stack__group">
+            <div class="resume-stack__title">API &amp; Integration Platforms</div>
+            <p class="resume-stack__items">IBM API Connect / DataPower &middot; IBM ACE / App Connect &middot; IBM Cloud Pak for Integration &middot; IBM MQ &middot; Apache Camel &middot; OpenAPI 3.0 &middot; ESQL &middot; DFDL</p>
+          </div>
+          <div class="resume-stack__group">
+            <div class="resume-stack__title">Event-Driven &amp; Streaming</div>
+            <p class="resume-stack__items">Apache Kafka &middot; Strimzi / Red Hat AMQ Streams &middot; Kafka Streams &middot; Apache Flink &middot; Confluent &middot; IBM Event Streams &middot; Schema Registry &middot; Avro &middot; KRaft</p>
+          </div>
+          <div class="resume-stack__group">
+            <div class="resume-stack__title">Security &amp; Identity</div>
+            <p class="resume-stack__items">OAuth 2.1 &middot; OIDC &middot; FAPI 2.0 &middot; mTLS &middot; JWT / JWKS &middot; Keycloak &middot; Ping Federate &middot; SAMA Open Banking &middot; ISO 20022 &middot; PCI DSS</p>
+          </div>
+          <div class="resume-stack__group">
+            <div class="resume-stack__title">Data, CDC &amp; Caching</div>
+            <p class="resume-stack__items">Debezium &middot; Kafka Connect &middot; Outbox Pattern &middot; Postgres &middot; Db2 &middot; Redis Cluster / Sentinel &middot; Hazelcast &middot; Lettuce</p>
+          </div>
+          <div class="resume-stack__group">
+            <div class="resume-stack__title">Cloud, Containers &amp; GitOps</div>
+            <p class="resume-stack__items">OpenShift &middot; Kubernetes &middot; Tekton &middot; ArgoCD &middot; Helm &middot; Vault &middot; External Secrets &middot; cosign / Trivy &middot; IBM Cloud &middot; AWS &middot; Azure</p>
+          </div>
+          <div class="resume-stack__group">
+            <div class="resume-stack__title">Legacy &amp; Mainframe</div>
+            <p class="resume-stack__items">CICS &middot; COBOL &middot; MQ-CICS Bridge &middot; COMMAREA &middot; EBCDIC &middot; Strangler Fig &middot; Anti-Corruption Layer &middot; IBM IIDR</p>
+          </div>
+          <div class="resume-stack__group">
+            <div class="resume-stack__title">Languages &amp; Frameworks</div>
+            <p class="resume-stack__items">Java &middot; Spring Boot &middot; JEE &middot; Node.js &middot; TypeScript &middot; Python &middot; SQL &middot; Bash</p>
+          </div>
+          <div class="resume-stack__group">
+            <div class="resume-stack__title">Observability &amp; Operations</div>
+            <p class="resume-stack__items">Prometheus &middot; Grafana &middot; OpenTelemetry &middot; Splunk &middot; QRadar &middot; ELK &middot; Dynatrace &middot; PagerDuty</p>
+          </div>
+          <div class="resume-stack__group">
+            <div class="resume-stack__title">KSA Payment Schemes</div>
+            <p class="resume-stack__items">SARIE &middot; SADAD &middot; mada &middot; IPS &middot; SAMA Open Banking &middot; SWIFT MT / MX</p>
+          </div>
+          <div class="resume-stack__group">
+            <div class="resume-stack__title">Architecture &amp; Patterns</div>
+            <p class="resume-stack__items">Event Sourcing &middot; CQRS &middot; Saga &middot; Outbox &middot; Domain-Driven Design &middot; Enterprise Integration Patterns &middot; Zero Trust</p>
           </div>
         </div>
       </div>
@@ -227,6 +288,17 @@
       </div>
 
       <div class="resume-section">
+        <span class="overline">Awards &amp; Recognition</span>
+        <div class="resume-role">
+          <div class="resume-role__header">
+            <h4>Tech100 &mdash; Strategic Leader of the Future</h4>
+            <span class="resume-role__date">Saudi Arabia Edition</span>
+          </div>
+          <p style="font-size: 0.875rem; color: var(--color-text-secondary);">Recognized for enterprise integration leadership and digital transformation contributions in KSA&rsquo;s financial sector.</p>
+        </div>
+      </div>
+
+      <div class="resume-section">
         <span class="overline">Certifications</span>
         <div class="cert-item"><span class="cert-item__name">IBM Certified Integration Developer</span><span class="cert-item__issuer">IBM</span></div>
         <div class="cert-item"><span class="cert-item__name">IBM Certified Solution Architect &mdash; Cloud Pak for Integration</span><span class="cert-item__issuer">IBM</span></div>
@@ -236,6 +308,29 @@
         <div class="cert-item"><span class="cert-item__name">TOGAF 9 Certified</span><span class="cert-item__issuer">The Open Group</span></div>
         <div class="cert-item"><span class="cert-item__name">Certified Kubernetes Administrator (CKA)</span><span class="cert-item__issuer">CNCF</span></div>
         <div class="cert-item"><span class="cert-item__name">ISO 27001 Lead Implementer</span><span class="cert-item__issuer">ISMS</span></div>
+      </div>
+
+      <div class="resume-section">
+        <span class="overline">Selected Writing</span>
+        <p style="font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">Deep-dive technical articles on building production financial services platforms. Full Lab at <a href="technical.html">wbadawi.info/technical</a>.</p>
+        <ul class="resume-writing">
+          <li><span class="resume-writing__topic">API Gateway</span><a href="lab/api-gateway/ibm-api-connect.html">IBM API Gateway: Production Architecture</a> &mdash; DataPower runtime, OAuth, mTLS, plan-based rate limiting, two-DC active/active topology.</li>
+          <li><span class="resume-writing__topic">Event-Driven</span><a href="lab/event-driven/kafka-and-mq.html">Event-Driven Architecture: Kafka &amp; IBM MQ</a> &mdash; when each fits, schema evolution, idempotent consumers, exactly-once.</li>
+          <li><span class="resume-writing__topic">Event-Driven</span><a href="lab/event-driven/strimzi-on-private-ocp.html">Strimzi on Private OpenShift &mdash; Regulated</a> &mdash; Kafka on air-gapped OCP with internal IdP, mTLS, NetworkPolicies, MirrorMaker 2 DR.</li>
+          <li><span class="resume-writing__topic">Integration</span><a href="lab/integration-patterns/ibm-ace.html">Integration Design Patterns &amp; IBM ACE</a> &mdash; the EIP catalogue applied to real flows, orchestration vs choreography.</li>
+          <li><span class="resume-writing__topic">Streaming</span><a href="lab/data-streaming/kafka-streams-and-flink.html">Data Streaming: Kafka Streams &amp; Flink</a> &mdash; windowing, stateful joins, exactly-once stream processing.</li>
+          <li><span class="resume-writing__topic">Legacy</span><a href="lab/legacy-integration/strangler-and-cics.html">Legacy Integration: Strangler Fig &amp; CICS</a> &mdash; modernising core banking without taking the bank offline.</li>
+          <li><span class="resume-writing__topic">Caching</span><a href="lab/distributed-caching/redis-cluster.html">Distributed Caching: Redis Cluster &amp; Sentinel</a> &mdash; cache patterns, stampede protection, p99 in the millisecond range.</li>
+          <li><span class="resume-writing__topic">Security</span><a href="lab/api-security/oauth-and-mtls.html">API Security: OAuth 2.1 &amp; mTLS</a> &mdash; layered defence, FAPI 2.0, JWT validation done right.</li>
+          <li><span class="resume-writing__topic">Data Sync</span><a href="lab/data-sync/debezium-and-outbox.html">Data Synchronisation: Debezium &amp; Outbox</a> &mdash; the dual-write problem, CDC patterns, transactional outbox, reconciliation.</li>
+          <li><span class="resume-writing__topic">Platform</span><a href="lab/devops/tekton-and-argocd.html">DevOps &amp; Platform Engineering: Tekton &amp; ArgoCD</a> &mdash; GitOps for state, Tekton for events, audit-traceable releases.</li>
+        </ul>
+      </div>
+
+      <div class="resume-section">
+        <span class="overline">Languages</span>
+        <div class="cert-item"><span class="cert-item__name">Arabic</span><span class="cert-item__issuer">Native</span></div>
+        <div class="cert-item"><span class="cert-item__name">English</span><span class="cert-item__issuer">Professional Working</span></div>
       </div>
 
       <div class="resume-section">
