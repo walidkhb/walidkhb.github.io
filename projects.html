@@ -41,6 +41,13 @@
     .case-metric { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.25rem; text-align: center; }
     .case-metric__value { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--color-accent); line-height: 1.2; margin-bottom: 0.375rem; word-break: break-word; overflow-wrap: break-word; }
     .case-metric__label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .case-study__institution { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--color-text-muted); margin: 0.5rem 0 1rem 0; }
+    .case-study__institution strong { color: var(--color-text-secondary); font-weight: 600; }
+    .case-study__tech { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border); }
+    .case-study__tech-label { font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); margin-bottom: 0.75rem; }
+    .case-study__tech-tags { margin-bottom: 1rem; }
+    .case-study__tech-links { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 0.5rem; }
+    .case-study__tech-links .btn--ghost { font-size: 0.75rem; }
   </style>
   <script type="application/ld+json">
   {
@@ -88,6 +95,7 @@
       <!-- 01: Enterprise Platform Transformation -->
       <div class="case-study fade-in">
         <span class="overline">Enterprise Transformation</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2019&ndash;Present &middot; Riyadh</div>
         <h3 class="mb-3">Enterprise Platform Transformation</h3>
         <hr class="divider">
         <p>The bank's growth was constrained by an integration layer that operated as a cost center, not a capability. I repositioned integration as a strategic platform&mdash;replacing fragmented, one-off connections with a unified enterprise ecosystem led by a team of 40+.</p>
@@ -109,11 +117,32 @@
         </div>
 
         <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> Integration became a funded, owned platform capability with its own roadmap and governance&mdash;not a service-request queue. That organizational shift outlasted any single project.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">IBM API Connect</span>
+            <span class="skill-tag">DataPower</span>
+            <span class="skill-tag">IBM ACE</span>
+            <span class="skill-tag">IBM MQ</span>
+            <span class="skill-tag">Apache Kafka</span>
+            <span class="skill-tag">OpenShift</span>
+            <span class="skill-tag">Tekton</span>
+            <span class="skill-tag">ArgoCD</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/api-gateway.html" class="btn btn--ghost">Lab: API Gateway <span class="arrow">&rarr;</span></a>
+            <a href="lab/integration-patterns.html" class="btn btn--ghost">Lab: Integration Patterns <span class="arrow">&rarr;</span></a>
+            <a href="lab/event-driven.html" class="btn btn--ghost">Lab: Event-Driven <span class="arrow">&rarr;</span></a>
+            <a href="lab/devops.html" class="btn btn--ghost">Lab: DevOps <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
       </div>
 
       <!-- 02: Digital Factory & Engineering Culture -->
       <div class="case-study fade-in">
         <span class="overline">Innovation &amp; Culture Change</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2021&ndash;2023 &middot; Riyadh</div>
         <h3 class="mb-3">Digital Factory &amp; Engineering Culture</h3>
         <hr class="divider">
         <p>The bank shipped quarterly through waterfall processes, manual deployments, and no security automation. I created a new organizational unit&mdash;the Digital Factory&mdash;reporting directly to C-level, with a mandate to change how the bank builds software.</p>
@@ -135,11 +164,29 @@
         </div>
 
         <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> The Digital Factory became the permanent model for how the bank approaches software delivery. The culture shift&mdash;not the tooling&mdash;was the product.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">Java</span>
+            <span class="skill-tag">Spring Boot</span>
+            <span class="skill-tag">OpenShift</span>
+            <span class="skill-tag">Tekton</span>
+            <span class="skill-tag">ArgoCD</span>
+            <span class="skill-tag">SonarQube</span>
+            <span class="skill-tag">Vault</span>
+            <span class="skill-tag">DevSecOps</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/devops.html" class="btn btn--ghost">Lab: DevOps &amp; Platform Engineering <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
       </div>
 
       <!-- 03: API Economy & Revenue Creation -->
       <div class="case-study fade-in">
         <span class="overline">Revenue &amp; Growth</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2019&ndash;2021 &middot; Riyadh</div>
         <h3 class="mb-3">API Economy &amp; Revenue Creation</h3>
         <hr class="divider">
         <p>Banking services were locked behind internal systems with no external exposure. I designed and launched the bank's API economy strategy&mdash;turning internal capabilities into revenue-generating products with a partner ecosystem built from scratch.</p>
@@ -161,11 +208,29 @@
         </div>
 
         <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> The bank permanently shifted from service provider to platform operator. APIs became a governed business line with its own P&amp;L accountability.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">IBM API Connect</span>
+            <span class="skill-tag">DataPower</span>
+            <span class="skill-tag">OpenAPI 3.0</span>
+            <span class="skill-tag">OAuth 2.0</span>
+            <span class="skill-tag">Developer Portal</span>
+            <span class="skill-tag">Plan-based Quotas</span>
+            <span class="skill-tag">Analytics</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/api-gateway.html" class="btn btn--ghost">Lab: API Gateway <span class="arrow">&rarr;</span></a>
+            <a href="lab/api-security.html" class="btn btn--ghost">Lab: API Security <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
       </div>
 
       <!-- 04: Real-Time Fraud Prevention -->
       <div class="case-study fade-in">
         <span class="overline">Risk &amp; Compliance</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2023&ndash;2025 &middot; Riyadh</div>
         <h3 class="mb-3">Real-Time Fraud Prevention</h3>
         <hr class="divider">
         <p>Fraud detection operated on overnight batch cycles&mdash;by the time anomalies surfaced, losses were already realized. I redesigned the approach to intercept and evaluate transactions in real time, achieving sub-100ms detection without impacting payment latency.</p>
@@ -183,11 +248,29 @@
         </div>
 
         <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> Risk management became a real-time enterprise capability, not a back-office reconciliation function. The operating model for fraud prevention changed permanently.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">Apache Kafka</span>
+            <span class="skill-tag">Kafka Streams</span>
+            <span class="skill-tag">Sliding Windows</span>
+            <span class="skill-tag">Redis Cluster</span>
+            <span class="skill-tag">Sub-100ms Scoring</span>
+            <span class="skill-tag">Schema Registry</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/data-streaming.html" class="btn btn--ghost">Lab: Data Streaming <span class="arrow">&rarr;</span></a>
+            <a href="lab/distributed-caching.html" class="btn btn--ghost">Lab: Distributed Caching <span class="arrow">&rarr;</span></a>
+            <a href="lab/event-driven.html" class="btn btn--ghost">Lab: Event-Driven <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
       </div>
 
       <!-- 05: Digital Banking Products -->
       <div class="case-study fade-in">
         <span class="overline">Digital Product Leadership</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2023&ndash;2025 &middot; Riyadh</div>
         <h3 class="mb-3">Digital Banking Products</h3>
         <hr class="divider">
         <p>The bank had no digital-first customer experience while competitors launched mobile-first banking. I led the simultaneous launch of two digital products&mdash;building a shared platform that connects 15+ backend systems and serves any future digital channel.</p>
@@ -209,22 +292,59 @@
         </div>
 
         <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> The bank gained a reusable digital backbone. Every subsequent product launch compounds on the shared platform rather than starting from scratch.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">IBM API Connect</span>
+            <span class="skill-tag">IBM ACE</span>
+            <span class="skill-tag">Spring Boot</span>
+            <span class="skill-tag">OpenShift</span>
+            <span class="skill-tag">Redis</span>
+            <span class="skill-tag">Mobile / API-first</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/api-gateway.html" class="btn btn--ghost">Lab: API Gateway <span class="arrow">&rarr;</span></a>
+            <a href="lab/integration-patterns.html" class="btn btn--ghost">Lab: Integration Patterns <span class="arrow">&rarr;</span></a>
+            <a href="lab/distributed-caching.html" class="btn btn--ghost">Lab: Distributed Caching <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
       </div>
 
       <!-- 06: Open Banking & Ecosystem Strategy -->
       <div class="case-study fade-in">
         <span class="overline">Regulatory Strategy &amp; Ecosystem</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2023&ndash;2025 &middot; Riyadh</div>
         <h3 class="mb-3">Open Banking &amp; Ecosystem Strategy</h3>
         <hr class="divider">
         <p>SAMA mandated Open Banking across Saudi banks. Most treated it as a compliance checkbox. I positioned it as the foundation for ecosystem banking&mdash;the same regulatory APIs that satisfy SAMA also enable fintech partnerships, Banking-as-a-Service, and embedded finance.</p>
         <p>The bank achieved full SAMA compliance while simultaneously building the organizational readiness, partner governance, and consent management frameworks required for ecosystem-scale operations.</p>
 
         <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> Regulatory compliance became a competitive advantage. The bank is now positioned as a platform for third-party innovation, with a BaaS foundation that competitors who treated Open Banking as a checkbox do not have.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">SAMA Open Banking</span>
+            <span class="skill-tag">FAPI 2.0</span>
+            <span class="skill-tag">OAuth 2.1</span>
+            <span class="skill-tag">OIDC</span>
+            <span class="skill-tag">mTLS</span>
+            <span class="skill-tag">IBM API Connect</span>
+            <span class="skill-tag">Consent Management</span>
+            <span class="skill-tag">TPP Onboarding</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/api-security.html" class="btn btn--ghost">Lab: API Security <span class="arrow">&rarr;</span></a>
+            <a href="lab/api-gateway.html" class="btn btn--ghost">Lab: API Gateway <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
       </div>
 
       <!-- 07: Zero-Downtime Legacy Modernization -->
       <div class="case-study fade-in">
         <span class="overline">Operational Excellence</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2018&ndash;2019 &middot; Riyadh</div>
         <h3 class="mb-3">Zero-Downtime Legacy Modernization</h3>
         <hr class="divider">
         <p>The bank's legacy middleware processed every core transaction but was unsustainable&mdash;expensive, unscalable, and unable to support modern patterns. I designed a strangler fig migration strategy that replaced the entire foundation without a single second of service interruption.</p>
@@ -242,11 +362,29 @@
         </div>
 
         <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> Proved that a running bank can be modernized safely. This removed the organizational excuse for deferring platform investment and unlocked every initiative that followed.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">Strangler Fig</span>
+            <span class="skill-tag">IBM MQ</span>
+            <span class="skill-tag">CICS</span>
+            <span class="skill-tag">IBM ACE</span>
+            <span class="skill-tag">Anti-Corruption Layer</span>
+            <span class="skill-tag">Parallel Run</span>
+            <span class="skill-tag">Reconciliation</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/legacy-integration.html" class="btn btn--ghost">Lab: Legacy Integration <span class="arrow">&rarr;</span></a>
+            <a href="lab/integration-patterns.html" class="btn btn--ghost">Lab: Integration Patterns <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
       </div>
 
       <!-- 08: Absher National Platform -->
       <div class="case-study fade-in">
         <span class="overline">National Digital Infrastructure</span>
+        <div class="case-study__institution"><strong>ELM</strong> &middot; 2014&ndash;2017 &middot; Riyadh</div>
         <h3 class="mb-3">Absher National Platform</h3>
         <hr class="divider">
         <p>Saudi Arabia needed to digitize government services for its entire population&mdash;connecting dozens of agencies with different systems and security requirements into a single citizen-facing platform at national scale. I designed the integration architecture that made this possible.</p>
@@ -268,6 +406,23 @@
         </div>
 
         <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> Absher became one of the most recognized government digital platforms in the Middle East. The integration architecture is the invisible infrastructure that enables an entire nation to access services digitally.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">IBM Integration Bus</span>
+            <span class="skill-tag">IBM MQ</span>
+            <span class="skill-tag">SOA / SOAP</span>
+            <span class="skill-tag">REST</span>
+            <span class="skill-tag">National ID Integration</span>
+            <span class="skill-tag">Multi-Agency Federation</span>
+            <span class="skill-tag">High Availability</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/integration-patterns.html" class="btn btn--ghost">Lab: Integration Patterns <span class="arrow">&rarr;</span></a>
+            <a href="lab/legacy-integration.html" class="btn btn--ghost">Lab: Legacy Integration <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
       </div>
 
     </div>
