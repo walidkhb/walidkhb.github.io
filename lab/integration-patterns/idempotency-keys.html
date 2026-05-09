@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idempotency Keys at Scale &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Production-grade idempotency for payment and transactional APIs: key design, storage choices (Redis vs Postgres vs hybrid), TTL and eviction, replay semantics, the request-fingerprint problem, and why every banking write API needs them by default.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Idempotency Keys at Scale &mdash; Banking API Patterns">
+  <meta property="og:description" content="Production idempotency keys for payment and transactional APIs in regulated banking: design, storage, TTL, replay semantics.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/idempotency-keys.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Idempotency Keys at Scale">
+  <meta name="twitter:description" content="Production idempotency keys for payment and transactional APIs in regulated banking.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/idempotency-keys.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Patterns</a><span>/</span>Idempotency Keys</div>
+          <span class="overline">Lab Article</span>
+          <h1>Idempotency Keys at Scale</h1>
+          <p class="lead">The single most under-implemented pattern in financial-services APIs: idempotency key design, storage trade-offs (Redis vs Postgres vs hybrid), TTL and eviction, request-fingerprint matching, replay semantics, and the production failure modes that turn a retry into a duplicate payment.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#why">Why retries are not optional</a></li>
+            <li><a href="#contract">The API contract</a></li>
+            <li><a href="#fingerprint">Request fingerprinting</a></li>
+            <li><a href="#storage">Storage choices</a></li>
+            <li><a href="#flow">The end-to-end flow</a></li>
+            <li><a href="#concurrency">Concurrency &amp; locking</a></li>
+            <li><a href="#ttl">TTL &amp; cleanup</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When idempotency keys are not enough</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Postgres / Redis / Spring / OpenAPI</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~13 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Every payment API in production gets retried. Networks drop packets, gateways time out, mobile clients lose connectivity mid-request, batch jobs replay yesterday&rsquo;s queue. The retry is unavoidable. The question is whether the retry produces a second payment or a second look at the first one.</p>
+          <p><strong>Idempotency keys</strong> are the contract that turns a retried <code>POST</code> into a safe operation. The client sends a unique key with each new request; the server records the first outcome under that key and returns the same outcome for any subsequent request with the same key. Done correctly, the customer charges once even if the network told the merchant the request failed five times in a row. Done incorrectly, the customer is charged five times and the bank discovers it in a complaint queue two weeks later.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">The default for every write endpoint</div>
+            <p>If a banking API can move money, change account state, submit a transfer, or trigger a downstream effect that costs money to undo, it requires idempotency keys. This is not an optimisation. It is the minimum viable contract for a write endpoint that crosses a network in a regulated environment.</p>
+          </div>
+
+          <h2 id="why">Why retries are not optional</h2>
+          <p>Distributed systems retry. They retry because the alternative is dropping requests, and dropping requests is a worse failure mode than possibly duplicating them &mdash; <em>provided</em> the receiver knows how to deduplicate. Three retry sources matter in practice.</p>
+
+          <ul>
+            <li><strong>Client-side retries.</strong> Mobile apps, merchant POS terminals, third-party PSPs. The client got no response (or a 5xx) and tries again. The first request may have already been processed; the client has no way to tell.</li>
+            <li><strong>Gateway and proxy retries.</strong> Load balancers, API gateways, service meshes. A request times out at one hop and the proxy retries to a different backend instance. The original instance may have completed the work.</li>
+            <li><strong>Replay and recovery.</strong> A queue replay after an outage, a CDC stream restart that resends a window of events, a manual operator replay of a stuck batch. The system intentionally re-presents requests it has already seen.</li>
+          </ul>
+
+          <p>Without idempotency keys, every one of these is a potential duplicate. With idempotency keys, every one of them is recoverable.</p>
+
+          <h2 id="contract">The API contract</h2>
+          <p>The HTTP convention is straightforward. The client supplies an <code>Idempotency-Key</code> header on every <code>POST</code>, <code>PATCH</code>, and <code>DELETE</code> for resources where duplicate execution is unsafe. The key is opaque to the server &mdash; a UUID v4 from the client is the right default.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>POST /v1/payments</span><span class="code-block__lang">http</span></div>
+<pre><code><span class="tok-k">POST</span> /v1/payments HTTP/1.1
+Host: api.bank.example
+<span class="tok-k">Authorization</span>: Bearer <span class="tok-s">eyJ...</span>
+<span class="tok-k">Idempotency-Key</span>: <span class="tok-s">7f9c3b2e-4a91-4d2c-88f1-2e0f3a1b9c67</span>
+<span class="tok-k">Content-Type</span>: application/json
+<span class="tok-k">Content-Length</span>: 142
+
+{
+  <span class="tok-k">"amount"</span>: <span class="tok-s">"125.00"</span>,
+  <span class="tok-k">"currency"</span>: <span class="tok-s">"SAR"</span>,
+  <span class="tok-k">"creditor_iban"</span>: <span class="tok-s">"SA0380000000608010167519"</span>,
+  <span class="tok-k">"reference"</span>: <span class="tok-s">"INV-44219"</span>
+}</code></pre>
+          </div>
+
+          <p>The server&rsquo;s contract has four cases.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>New key, new request</h4>
+              <p>Process normally. Record the key, the request fingerprint, the response, and the resulting resource id. Return the response.</p>
+            </li>
+            <li>
+              <h4>Same key, identical request, processing complete</h4>
+              <p>Return the cached response with the original status code. Do not re-execute. The client cannot tell whether they&rsquo;re reading the cache or processing fresh &mdash; that&rsquo;s the point.</p>
+            </li>
+            <li>
+              <h4>Same key, identical request, still processing</h4>
+              <p>Return <code>409 Conflict</code> with a <code>Retry-After</code> header, or block on the in-flight request and return its result. Either is defensible; pick one and document it.</p>
+            </li>
+            <li>
+              <h4>Same key, different request body</h4>
+              <p>Return <code>422 Unprocessable Entity</code> with a clear error code (<code>idempotency_key_mismatch</code>). The key was reused with different inputs; this is a client bug, not a retry.</p>
+            </li>
+          </ol>
+
+          <h2 id="fingerprint">Request fingerprinting</h2>
+          <p>Case 4 above is where most implementations get it wrong. To detect a key reused with a different body, the server must compare the new request to the original. Storing the entire request payload is wasteful and creates a regulatory data-retention question. The right answer is a deterministic fingerprint &mdash; SHA-256 of the canonicalised request body, computed at API ingress and stored alongside the key.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>fingerprint.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public static</span> <span class="tok-t">String</span> fingerprint(<span class="tok-t">JsonNode</span> body) {
+  <span class="tok-c">// Canonicalise: sort keys, normalise whitespace, lowercase optional fields</span>
+  <span class="tok-t">String</span> canonical = JsonCanonicalizer.canonicalize(body);
+  <span class="tok-k">return</span> Hex.encode(Sha256.digest(canonical.getBytes(StandardCharsets.UTF_8)));
+}</code></pre>
+          </div>
+
+          <p>The canonicalisation step matters. Two clients sending the same logical request with different field ordering or different whitespace must produce the same fingerprint. RFC 8785 (JSON Canonicalization Scheme) is the right reference; library implementations exist for every server language.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">What goes into the fingerprint</div>
+            <p>Hash the request <em>body</em> only. Do not include the URL path (the key is already scoped to the endpoint), do not include headers (transport-layer noise), do not include timestamps the client added. Including any of those guarantees that a legitimate client retry will be flagged as a body mismatch.</p>
+          </div>
+
+          <h2 id="storage">Storage choices</h2>
+          <p>Three storage shapes, each with a different operational profile. The right choice depends on traffic volume, retention requirements, and how the bank already operates the relevant infrastructure.</p>
+
+          <div class="diagram" role="img" aria-label="Three idempotency storage architectures: Redis cache, Postgres table, and hybrid Redis-with-Postgres-backing">
+            <div class="diagram__inner">
+              <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ik1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <!-- Redis only -->
+                <rect x="20" y="40" width="220" height="240" rx="8" fill="none" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="130" y="60" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Redis only</text>
+                <rect x="60" y="90" width="140" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="130" y="115" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">API service</text>
+                <rect x="60" y="180" width="140" height="50" rx="6" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="130" y="205" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Redis Cluster</text>
+                <line x1="130" y1="140" x2="130" y2="178" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ik1)"/>
+                <text x="130" y="252" text-anchor="middle" fill="#71717a" font-size="9">fast &middot; ephemeral</text>
+                <text x="130" y="266" text-anchor="middle" fill="#71717a" font-size="9">no audit trail</text>
+
+                <!-- Postgres only -->
+                <rect x="280" y="40" width="220" height="240" rx="8" fill="none" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="390" y="60" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Postgres only</text>
+                <rect x="320" y="90" width="140" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="390" y="115" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">API service</text>
+                <rect x="320" y="180" width="140" height="50" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="390" y="205" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Postgres</text>
+                <line x1="390" y1="140" x2="390" y2="178" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ik1)"/>
+                <text x="390" y="252" text-anchor="middle" fill="#71717a" font-size="9">durable &middot; auditable</text>
+                <text x="390" y="266" text-anchor="middle" fill="#71717a" font-size="9">slower at high RPS</text>
+
+                <!-- Hybrid -->
+                <rect x="540" y="40" width="220" height="240" rx="8" fill="none" stroke="#00d4aa" stroke-dasharray="3 2"/>
+                <text x="650" y="60" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Hybrid (recommended)</text>
+                <rect x="580" y="80" width="140" height="40" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="650" y="105" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">API service</text>
+                <rect x="580" y="150" width="140" height="40" rx="6" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="650" y="175" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Redis (hot)</text>
+                <rect x="580" y="220" width="140" height="40" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="650" y="245" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Postgres (cold)</text>
+                <line x1="650" y1="120" x2="650" y2="148" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ik1)"/>
+                <line x1="650" y1="190" x2="650" y2="218" stroke="#00d4aa" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#ik1)"/>
+                <text x="650" y="290" text-anchor="middle" fill="#71717a" font-size="9">fast reads &middot; durable record</text>
+                <text x="650" y="304" text-anchor="middle" fill="#71717a" font-size="9">cache miss falls back to DB</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Three idempotency storage architectures and their operational trade-offs</div>
+          </div>
+
+          <p><strong>Redis only.</strong> Fast, simple, fits the access pattern (hash lookup by key). The problem is durability and audit. Redis with persistence and replication is good infrastructure, but it is not a system of record. A regulator asking why a payment processed twice on March 14 will not accept &ldquo;the cache lost the entry&rdquo; as an answer. Acceptable for low-stakes endpoints; not acceptable for write paths that move money.</p>
+
+          <p><strong>Postgres only.</strong> Durable and auditable. The idempotency table is a system of record; the unique constraint on the key is enforced atomically; the row carries the request fingerprint, response, and timestamps for the audit story. The cost is throughput &mdash; every <code>POST</code> becomes a database round-trip on the hot path. Acceptable for moderate-volume transactional APIs; can become a bottleneck for high-RPS endpoints.</p>
+
+          <p><strong>Hybrid.</strong> Redis as the hot cache, Postgres as the durable record. Reads check Redis first, fall back to Postgres on miss, populate Redis for next time. Writes go to Postgres synchronously and Redis on success. This is the production default for any payment-grade API at the volume of a national bank: the latency profile of Redis with the audit and durability of Postgres, at the cost of operational complexity and the need to keep the two stores consistent under partial failures.</p>
+
+          <h2 id="flow">The end-to-end flow</h2>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>idempotency-table.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-k">CREATE TABLE</span> idempotency_keys (
+  key_value      <span class="tok-t">varchar(128)</span>  <span class="tok-k">PRIMARY KEY</span>,
+  endpoint       <span class="tok-t">varchar(64)</span>   <span class="tok-k">NOT NULL</span>,
+  fingerprint    <span class="tok-t">char(64)</span>      <span class="tok-k">NOT NULL</span>,            <span class="tok-c">-- sha256 hex</span>
+  status         <span class="tok-t">varchar(16)</span>   <span class="tok-k">NOT NULL</span>,            <span class="tok-c">-- in_flight | done | failed</span>
+  response_code  <span class="tok-t">int</span>,
+  response_body  <span class="tok-t">jsonb</span>,
+  resource_id    <span class="tok-t">uuid</span>,                                <span class="tok-c">-- e.g., payment id</span>
+  created_at     <span class="tok-t">timestamptz</span>   <span class="tok-k">NOT NULL DEFAULT</span> now(),
+  completed_at   <span class="tok-t">timestamptz</span>,
+  expires_at     <span class="tok-t">timestamptz</span>   <span class="tok-k">NOT NULL</span>
+);
+
+<span class="tok-k">CREATE INDEX</span> idx_idempotency_expires <span class="tok-k">ON</span> idempotency_keys (expires_at);
+<span class="tok-k">CREATE INDEX</span> idx_idempotency_resource <span class="tok-k">ON</span> idempotency_keys (resource_id);</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentController.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@PostMapping</span>(<span class="tok-s">"/v1/payments"</span>)
+<span class="tok-k">public</span> <span class="tok-t">ResponseEntity</span>&lt;<span class="tok-t">PaymentResponse</span>&gt; submit(
+    <span class="tok-k">@RequestHeader</span>(<span class="tok-s">"Idempotency-Key"</span>) <span class="tok-t">String</span> key,
+    <span class="tok-k">@RequestBody</span> <span class="tok-t">PaymentRequest</span> req) {
+
+  <span class="tok-t">String</span> fp = Fingerprint.of(req);
+
+  <span class="tok-c">// 1. Try to claim the key. INSERT ... ON CONFLICT DO NOTHING is atomic.</span>
+  <span class="tok-t">boolean</span> claimed = idempotencyRepo.tryClaim(key, <span class="tok-s">"/v1/payments"</span>, fp);
+
+  <span class="tok-k">if</span> (!claimed) {
+    <span class="tok-t">IdempotencyRecord</span> existing = idempotencyRepo.find(key);
+
+    <span class="tok-c">// 2. Same key, different fingerprint? Client bug.</span>
+    <span class="tok-k">if</span> (!existing.fingerprint().equals(fp))
+      <span class="tok-k">throw new</span> IdempotencyMismatchException();
+
+    <span class="tok-c">// 3. Still in flight? Tell the client to wait.</span>
+    <span class="tok-k">if</span> (existing.status() == Status.<span class="tok-n">IN_FLIGHT</span>)
+      <span class="tok-k">return</span> ResponseEntity.status(<span class="tok-n">409</span>).header(<span class="tok-s">"Retry-After"</span>, <span class="tok-s">"2"</span>).build();
+
+    <span class="tok-c">// 4. Already done. Replay the original response.</span>
+    <span class="tok-k">return</span> ResponseEntity.status(existing.responseCode()).body(existing.response());
+  }
+
+  <span class="tok-c">// 5. We claimed the key. Process for real.</span>
+  <span class="tok-k">try</span> {
+    <span class="tok-t">PaymentResponse</span> resp = paymentService.submit(req);
+    idempotencyRepo.complete(key, <span class="tok-n">201</span>, resp);
+    <span class="tok-k">return</span> ResponseEntity.status(<span class="tok-n">201</span>).body(resp);
+  } <span class="tok-k">catch</span> (<span class="tok-t">Exception</span> e) {
+    idempotencyRepo.fail(key, e);
+    <span class="tok-k">throw</span> e;
+  }
+}</code></pre>
+          </div>
+
+          <p>The atomic claim is the entire trick. <code>INSERT ... ON CONFLICT DO NOTHING</code> in Postgres (or <code>SET key value NX</code> in Redis) lets exactly one request win the race for any given key. Every other path is a deterministic read of the winner&rsquo;s state.</p>
+
+          <h2 id="concurrency">Concurrency &amp; locking</h2>
+          <p>Two requests with the same key arriving within milliseconds is the case to design for, not against. Without explicit handling, the second request can read the first&rsquo;s in-flight row, decide the work is in progress, and the client gets a <code>409</code>. That is correct &mdash; but it is not always what you want. A merchant retrying a request 200ms after the first has timed out their HTTP call wants the result, not a 409.</p>
+
+          <p>Two patterns address this. The simpler is to return <code>409 Retry-After: 2</code> and let the client retry. The more advanced is to <em>wait</em> on the in-flight request &mdash; advisory lock the key in Postgres, block until the first request completes, then return its result. The second pattern is more user-friendly but ties up a server thread for the duration of the original request. For payment APIs, where the original request usually completes in under 500ms, this is a reasonable trade-off. For long-running APIs, the 409 pattern is safer.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Postgres advisory locks for &ldquo;wait for the original&rdquo;</div>
+            <p><code>SELECT pg_try_advisory_xact_lock(hashtext(key))</code> within a transaction lets the second arrival block until the first commits. Use <code>hashtext</code> rather than the raw key to fit Postgres&rsquo;s 64-bit lock space. Release on commit happens automatically.</p>
+          </div>
+
+          <h2 id="ttl">TTL &amp; cleanup</h2>
+          <p>Idempotency keys do not need to live forever. The retry window for a real client is minutes to hours. The audit window is longer &mdash; in regulated banking, often years &mdash; but the storage requirement for the two is different.</p>
+
+          <ul>
+            <li><strong>Hot retention (Redis): 24 hours.</strong> Long enough to catch every legitimate retry from any reasonable client. Short enough that Redis memory stays bounded.</li>
+            <li><strong>Cold retention (Postgres): 7 years for payment APIs.</strong> Aligns with SAMA&rsquo;s record retention expectations for payment evidence. The table is partitioned by month and old partitions are detached to cold storage.</li>
+            <li><strong>Cleanup job.</strong> A scheduled job deletes Redis entries past TTL (Redis does this for you with <code>EXPIRE</code>) and detaches Postgres partitions older than the retention boundary. Never <code>DELETE</code> from a high-volume idempotency table during business hours; partition pruning is the only sustainable strategy.</li>
+          </ul>
+
+          <h2 id="observability">Observability</h2>
+          <p>Three metrics tell you whether the idempotency layer is working.</p>
+
+          <ul>
+            <li><strong>Cache hit rate on retries.</strong> What fraction of <code>POST</code> requests find a previously seen key? Healthy production traffic for payment APIs is in the 1&ndash;5% range. Zero means clients aren&rsquo;t retrying with the same key (which means they&rsquo;ll send duplicates on the next outage). Above 10% suggests aggressive client retry behaviour worth investigating.</li>
+            <li><strong>Fingerprint mismatch rate.</strong> The rate at which clients reuse a key with a different body. This is a client bug indicator; it should be near zero. A spike points at a specific integration that needs a developer conversation.</li>
+            <li><strong>409 in-flight responses.</strong> The rate at which retries land while the original is still processing. Useful for capacity planning &mdash; if this rises, the underlying API latency has degraded.</li>
+          </ul>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Storing the response without the fingerprint</div>
+            <p>The most common production mistake: caching the response under the key but not validating the body matches. A client that reuses a key for a different payment gets the previous payment&rsquo;s confirmation. The duplicate-payment incident becomes a wrong-payment-confirmation incident, which is worse.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Idempotency key scoped wrongly</div>
+            <p>Scope the key to the endpoint, not globally and not per-customer. A key reused across different endpoints should never collide; a key reused on the same endpoint by the same customer is the case you must catch. The unique constraint on <code>(key_value, endpoint)</code> is the simplest correct scope.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Long-running operations behind a synchronous endpoint</div>
+            <p>If the <code>POST</code> kicks off a downstream workflow that takes more than a few seconds, the client&rsquo;s retry will land while the original is in flight. Either accept long 409 retry loops, or move to an async pattern with a separate status endpoint. Don&rsquo;t pretend a long-running operation is synchronous.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Forgetting the failure case</div>
+            <p>A failed first request &mdash; downstream timeout, bank core unavailable, validation error after partial work &mdash; needs explicit handling. Should the same key be retryable after the failure? Usually yes, but only if the failure was clean. If money may have moved, the retry is unsafe. Mark the row <code>failed</code> with the reason and require a different key for the retry.</p>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">The client-generates-key contract</div>
+            <p>Some implementations let the server generate the key and return it. Don&rsquo;t. The whole point of idempotency is that the <em>client</em> can retry safely after a network failure. If the server generated the key but the client never got the response, the client cannot replay with the same key. Client-generated keys are the only design that survives the failure mode the pattern was built for.</p>
+          </div>
+
+          <h2 id="when-not">When idempotency keys are not enough</h2>
+          <ul>
+            <li><strong>Multi-step workflows.</strong> A payment that requires authorisation, capture, and clearing is three operations, each with its own idempotency requirement. A single key on the orchestrator is not enough &mdash; each downstream step needs its own. Use a saga pattern with per-step keys derived from the orchestration key.</li>
+            <li><strong>External callbacks and webhooks.</strong> When the bank calls a third party (e.g., an SMS provider, a fraud-screening service), the bank is now the client of someone else&rsquo;s API. Generate idempotency keys for those calls too. The same logic applies in reverse.</li>
+            <li><strong>Cross-system consistency.</strong> Idempotency makes a single API call safe to retry. It does not make distributed transactions safe. For multi-system writes, combine idempotency keys with the transactional outbox pattern (covered in the <a href="../data-sync/debezium-and-outbox.html">Data Synchronisation</a> article) and explicit reconciliation.</li>
+            <li><strong>Read endpoints.</strong> <code>GET</code> requests are idempotent by definition. Adding an <code>Idempotency-Key</code> to them is wasted work and confuses caches and proxies that already cache reads correctly.</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="../integration-patterns.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Integration Patterns</div>
+            </a>
+            <a href="../api-security.html" class="article-nav__next">
+              <div class="article-nav__label">Next article</div>
+              <div class="article-nav__title">API Security &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
