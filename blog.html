@@ -15,6 +15,7 @@
   <meta name="description" content="Executive perspectives on open banking KSA, enterprise integration strategy, payment modernisation (IPS, SADAD), and technology leadership in Saudi Arabian financial services.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://www.wbadawi.info/blog.html">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi — Insights" href="/feed.xml">
   <meta property="og:title" content="Insights — Waleed Albadawi">
   <meta property="og:description" content="Executive perspectives on enterprise transformation, platform strategy, open banking KSA, and technology leadership.">
   <meta property="og:type" content="website">
@@ -67,6 +68,22 @@
     }
     .insight-card:hover .insight-card__arrow { transform: translateX(4px); }
     .insight-card .card__text { margin-bottom: 0; }
+
+    /* Search */
+    .blog-search { position: relative; max-width: 540px; margin: 0 auto 3rem; }
+    .blog-search__icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); pointer-events: none; }
+    #blogSearch { width: 100%; padding: 0.9rem 1rem 0.9rem 2.9rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); color: var(--color-text); font-family: var(--font-body); font-size: 0.95rem; transition: border-color var(--transition), box-shadow var(--transition); }
+    #blogSearch::placeholder { color: var(--color-text-muted); }
+    #blogSearch:focus { outline: none; border-color: var(--color-accent-border); box-shadow: 0 0 0 3px var(--color-accent-glow); }
+    .blog-search__status { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); text-align: center; margin: -1.75rem 0 2.25rem; }
+    .article-results { max-width: 760px; margin: 0 auto; }
+    .result-card { display: block; padding: 1.5rem 0; border-bottom: 1px solid var(--color-border); text-decoration: none; color: inherit; }
+    .result-card:last-child { border-bottom: none; }
+    .result-card__meta { font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-accent); margin-bottom: 0.5rem; }
+    .result-card__title { font-size: 1.0625rem; font-weight: 600; color: var(--color-text); line-height: 1.4; margin-bottom: 0.4rem; transition: color var(--transition); }
+    .result-card:hover .result-card__title { color: var(--color-accent); }
+    .result-card__desc { font-size: 0.9rem; color: var(--color-text-secondary); line-height: 1.7; margin: 0; }
+    .blog-search__empty { text-align: center; color: var(--color-text-muted); padding: 2rem 0; }
   </style>
   <script type="application/ld+json">
   {
@@ -118,7 +135,15 @@
 
   <section>
     <div class="container">
-      <div class="grid grid--3" style="gap: 1.5rem;">
+
+      <div class="blog-search">
+        <svg class="blog-search__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="blogSearch" type="search" placeholder="Search insights&hellip;" aria-label="Search all insights" autocomplete="off">
+      </div>
+      <p id="searchStatus" class="blog-search__status" hidden></p>
+      <div id="searchResults" class="article-results" hidden></div>
+
+      <div id="categoryGrid" class="grid grid--3" style="gap: 1.5rem;">
 
         <a href="blog/platform-strategy.html" class="card insight-card">
           <div class="card__icon">
@@ -231,6 +256,7 @@
       <div class="site-footer__inner">
         <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
         <ul class="footer-links">
+          <li><a href="feed.xml">RSS</a></li>
           <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
           <li><a href="contact.html">Contact</a></li>
           <li><a href="resume.html">Resume</a></li>
@@ -240,5 +266,52 @@
   </footer>
 
   <script src="assets/js/main.js"></script>
+  <script>
+  // Client-side search over the Insights index (assets/data/articles.json)
+  (function () {
+    var input = document.getElementById('blogSearch');
+    if (!input) return;
+    var grid = document.getElementById('categoryGrid');
+    var results = document.getElementById('searchResults');
+    var status = document.getElementById('searchStatus');
+    var articles = null, debounce;
+    var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    function fmtDate(iso) {
+      var p = (iso || '').split('-'); if (p.length !== 3) return '';
+      return MONTHS[parseInt(p[1], 10) - 1] + ' ' + parseInt(p[2], 10) + ', ' + p[0];
+    }
+    function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+    function load() {
+      if (articles) return Promise.resolve();
+      return fetch('assets/data/articles.json')
+        .then(function (r) { return r.json(); })
+        .then(function (d) { articles = d; })
+        .catch(function () { articles = []; });
+    }
+    function render(q) {
+      q = q.trim();
+      if (!q) { results.hidden = true; results.innerHTML = ''; status.hidden = true; grid.hidden = false; return; }
+      grid.hidden = true; results.hidden = false; status.hidden = false;
+      var terms = q.toLowerCase().split(/\s+/);
+      var matches = articles.filter(function (a) {
+        var hay = (a.title + ' ' + a.description + ' ' + a.category).toLowerCase();
+        return terms.every(function (t) { return hay.indexOf(t) !== -1; });
+      });
+      status.textContent = matches.length + ' ' + (matches.length === 1 ? 'insight' : 'insights') + ' matching “' + q + '”';
+      results.innerHTML = matches.length ? matches.map(function (a) {
+        return '<a class="result-card" href="' + a.url + '">' +
+          '<div class="result-card__meta">' + esc(a.category) + ' • ' + fmtDate(a.date) + '</div>' +
+          '<div class="result-card__title">' + esc(a.title) + '</div>' +
+          '<p class="result-card__desc">' + esc(a.description) + '</p></a>';
+      }).join('') : '<p class="blog-search__empty">No insights match your search. Try a different term.</p>';
+    }
+    input.addEventListener('input', function () {
+      clearTimeout(debounce);
+      debounce = setTimeout(function () { load().then(function () { render(input.value); }); }, 120);
+    });
+    var deep = new URLSearchParams(window.location.search).get('q');
+    if (deep) { input.value = deep; load().then(function () { render(deep); }); }
+  })();
+  </script>
 </body>
 </html>
