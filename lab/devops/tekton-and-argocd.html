@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevOps &amp; Platform Engineering &mdash; Tekton &amp; ArgoCD &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Production CI/CD and platform engineering for integration platforms in regulated environments: Tekton pipelines, ArgoCD GitOps, environment promotion, secrets management, and the operational patterns that make integration releases reliable in financial services.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="DevOps &amp; Platform Engineering &mdash; Tekton &amp; ArgoCD">
+  <meta property="og:description" content="GitOps and Tekton patterns for integration platform CI/CD in financial services.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/devops/tekton-and-argocd.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DevOps &amp; Platform Engineering &mdash; Production Patterns">
+  <meta name="twitter:description" content="Tekton, ArgoCD, GitOps for regulated environments.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/devops/tekton-and-argocd.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform</a><span>/</span>Tekton &amp; ArgoCD</div>
+          <span class="overline">Lab Article</span>
+          <h1>DevOps &amp; Platform Engineering</h1>
+          <p class="lead">Production CI/CD for integration platforms in regulated environments: Tekton pipelines, ArgoCD GitOps, environment promotion, secrets, observability, and the operational patterns that make integration releases routine in regulated financial services.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#pipeline">Pipeline shape</a></li>
+            <li><a href="#tekton">Tekton</a></li>
+            <li><a href="#gitops">GitOps with ArgoCD</a></li>
+            <li><a href="#promotion">Environment promotion</a></li>
+            <li><a href="#secrets">Secrets</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#release">Release patterns</a></li>
+            <li><a href="#audit">Audit &amp; compliance</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> OpenShift / Tekton / ArgoCD / Vault</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Integration platforms in financial services have CI/CD problems that vanilla microservice teams don&rsquo;t face: BAR files for IBM ACE, Kafka topics that can&rsquo;t be re-created without data loss, MQ queues that need clustering aware of network zones, OAuth clients that need IdP configuration synchronised with deployments, and a regulator who wants every change traced to an approver.</p>
+          <p>The pattern that holds: <strong>GitOps for state, Tekton for events</strong>. Git is the single source of truth for what should be deployed; Tekton runs the pipelines that build artifacts; ArgoCD reconciles the cluster to git. Promotions happen by merging a PR, not by a kubectl from a developer&rsquo;s laptop.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Platform engineering is not just CI</div>
+            <p>A platform engineering team owns the runtime, the pipeline, the dev experience, and the contracts with consumer teams. The deliverable is a <em>self-service path</em>: a service team can ship a new integration without raising a ticket. If teams still file tickets to deploy, you have a CI team, not a platform team.</p>
+          </div>
+
+          <h2 id="pipeline">Pipeline shape</h2>
+
+          <div class="diagram" role="img" aria-label="CI/CD pipeline shape from git commit through build, test, scan, deploy to environments">
+            <div class="diagram__inner">
+              <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="dv1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="40" width="120" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="80" y="62" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Git push</text>
+                <text x="80" y="78" text-anchor="middle" fill="#71717a" font-size="9">PR or main</text>
+
+                <rect x="180" y="40" width="120" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="240" y="62" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Tekton</text>
+                <text x="240" y="78" text-anchor="middle" fill="#71717a" font-size="9">build &middot; test &middot; scan</text>
+
+                <rect x="340" y="40" width="120" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="400" y="62" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">artifact</text>
+                <text x="400" y="78" text-anchor="middle" fill="#71717a" font-size="9">image + BAR + sbom</text>
+
+                <rect x="500" y="40" width="120" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="560" y="62" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">env config PR</text>
+                <text x="560" y="78" text-anchor="middle" fill="#71717a" font-size="9">manifest bump</text>
+
+                <rect x="660" y="40" width="100" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="710" y="62" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Git (env)</text>
+                <text x="710" y="78" text-anchor="middle" fill="#71717a" font-size="9">desired state</text>
+
+                <line x1="140" y1="65" x2="178" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dv1)"/>
+                <line x1="300" y1="65" x2="338" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dv1)"/>
+                <line x1="460" y1="65" x2="498" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dv1)"/>
+                <line x1="620" y1="65" x2="658" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dv1)"/>
+
+                <rect x="170" y="140" width="450" height="50" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="395" y="162" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">ArgoCD reconcile</text>
+                <text x="395" y="178" text-anchor="middle" fill="#71717a" font-size="9">watches env-config repo &middot; applies to clusters</text>
+
+                <line x1="710" y1="90" x2="600" y2="138" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dv1)"/>
+
+                <rect x="80" y="230" width="160" height="60" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="160" y="255" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">dev cluster</text>
+                <text x="160" y="273" text-anchor="middle" fill="#71717a" font-size="9">auto-sync, fast feedback</text>
+
+                <rect x="280" y="230" width="160" height="60" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="360" y="255" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">test cluster</text>
+                <text x="360" y="273" text-anchor="middle" fill="#71717a" font-size="9">PR + manual gate</text>
+
+                <rect x="480" y="230" width="160" height="60" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="560" y="255" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">prod cluster</text>
+                <text x="560" y="273" text-anchor="middle" fill="#71717a" font-size="9">change ticket + approver</text>
+
+                <line x1="280" y1="190" x2="160" y2="228" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#dv1)"/>
+                <line x1="395" y1="190" x2="360" y2="228" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#dv1)"/>
+                <line x1="510" y1="190" x2="560" y2="228" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#dv1)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; CI builds artifacts, GitOps reconciles state, environments promote via PR</div>
+          </div>
+
+          <p>The crucial property: <strong>nothing reaches a cluster except via git</strong>. No <code>kubectl apply</code> from a laptop, no manual oc rsh-and-edit. Every change is a commit; every commit has an author and a reviewer. This is what regulators care about and what most banks fail to implement consistently.</p>
+
+          <h2 id="tekton">Tekton</h2>
+          <p>Tekton is Kubernetes-native CI: pipelines and tasks are CRDs, runs are pods. The benefit over Jenkins is operational &mdash; the runtime is the cluster you already operate &mdash; and the cost is that Tekton is a primitive; you build the pipeline yourself.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>build-ace.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">tekton.dev/v1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">Pipeline</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">build-ace-flow</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">params</span>:
+    - { <span class="tok-k">name</span>: <span class="tok-s">git-url</span> }
+    - { <span class="tok-k">name</span>: <span class="tok-s">git-revision</span> }
+    - { <span class="tok-k">name</span>: <span class="tok-s">image</span> }
+  <span class="tok-k">workspaces</span>:
+    - <span class="tok-k">name</span>: <span class="tok-s">source</span>
+  <span class="tok-k">tasks</span>:
+
+    - <span class="tok-k">name</span>: <span class="tok-s">clone</span>
+      <span class="tok-k">taskRef</span>: { <span class="tok-k">name</span>: <span class="tok-s">git-clone</span> }
+      <span class="tok-k">params</span>:
+        - { <span class="tok-k">name</span>: <span class="tok-s">url</span>,      <span class="tok-k">value</span>: $(params.git-url) }
+        - { <span class="tok-k">name</span>: <span class="tok-s">revision</span>, <span class="tok-k">value</span>: $(params.git-revision) }
+      <span class="tok-k">workspaces</span>: [{ <span class="tok-k">name</span>: <span class="tok-s">output</span>, <span class="tok-k">workspace</span>: <span class="tok-s">source</span> }]
+
+    - <span class="tok-k">name</span>: <span class="tok-s">unit-test</span>
+      <span class="tok-k">runAfter</span>: [<span class="tok-s">clone</span>]
+      <span class="tok-k">taskRef</span>: { <span class="tok-k">name</span>: <span class="tok-s">ace-unit-test</span> }
+      <span class="tok-k">workspaces</span>: [{ <span class="tok-k">name</span>: <span class="tok-s">source</span>, <span class="tok-k">workspace</span>: <span class="tok-s">source</span> }]
+
+    - <span class="tok-k">name</span>: <span class="tok-s">build-bar</span>
+      <span class="tok-k">runAfter</span>: [<span class="tok-s">unit-test</span>]
+      <span class="tok-k">taskRef</span>: { <span class="tok-k">name</span>: <span class="tok-s">ace-build-bar</span> }
+      <span class="tok-k">workspaces</span>: [{ <span class="tok-k">name</span>: <span class="tok-s">source</span>, <span class="tok-k">workspace</span>: <span class="tok-s">source</span> }]
+
+    - <span class="tok-k">name</span>: <span class="tok-s">image-build</span>
+      <span class="tok-k">runAfter</span>: [<span class="tok-s">build-bar</span>]
+      <span class="tok-k">taskRef</span>: { <span class="tok-k">name</span>: <span class="tok-s">buildah</span> }
+      <span class="tok-k">params</span>:
+        - { <span class="tok-k">name</span>: <span class="tok-s">IMAGE</span>, <span class="tok-k">value</span>: $(params.image) }
+      <span class="tok-k">workspaces</span>: [{ <span class="tok-k">name</span>: <span class="tok-s">source</span>, <span class="tok-k">workspace</span>: <span class="tok-s">source</span> }]
+
+    - <span class="tok-k">name</span>: <span class="tok-s">trivy-scan</span>
+      <span class="tok-k">runAfter</span>: [<span class="tok-s">image-build</span>]
+      <span class="tok-k">taskRef</span>: { <span class="tok-k">name</span>: <span class="tok-s">trivy-scan</span> }
+      <span class="tok-k">params</span>:
+        - { <span class="tok-k">name</span>: <span class="tok-s">image</span>, <span class="tok-k">value</span>: $(params.image) }
+        - { <span class="tok-k">name</span>: <span class="tok-s">severity</span>, <span class="tok-k">value</span>: <span class="tok-s">"HIGH,CRITICAL"</span> }
+
+    - <span class="tok-k">name</span>: <span class="tok-s">sign-image</span>
+      <span class="tok-k">runAfter</span>: [<span class="tok-s">trivy-scan</span>]
+      <span class="tok-k">taskRef</span>: { <span class="tok-k">name</span>: <span class="tok-s">cosign-sign</span> }
+      <span class="tok-k">params</span>:
+        - { <span class="tok-k">name</span>: <span class="tok-s">image</span>, <span class="tok-k">value</span>: $(params.image) }
+
+    - <span class="tok-k">name</span>: <span class="tok-s">bump-env-manifest</span>
+      <span class="tok-k">runAfter</span>: [<span class="tok-s">sign-image</span>]
+      <span class="tok-k">taskRef</span>: { <span class="tok-k">name</span>: <span class="tok-s">git-pr-bump</span> }
+      <span class="tok-k">params</span>:
+        - { <span class="tok-k">name</span>: <span class="tok-s">env-repo</span>, <span class="tok-k">value</span>: <span class="tok-s">https://git/.../env-dev</span> }
+        - { <span class="tok-k">name</span>: <span class="tok-s">image</span>,    <span class="tok-k">value</span>: $(params.image) }</code></pre>
+          </div>
+
+          <p>Each task is reusable; the pipeline is one team&rsquo;s composition. Push reusable tasks to a shared catalog repo so platform updates apply everywhere.</p>
+
+          <h2 id="gitops">GitOps with ArgoCD</h2>
+          <p>Two repos per environment: the <strong>app repo</strong> (source) and the <strong>env repo</strong> (manifests). The CI pipeline opens a PR against the env repo with the new image tag; ArgoCD watches the env repo and reconciles the cluster.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>argocd-application.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">argoproj.io/v1alpha1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">Application</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments-prod</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">argocd</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">project</span>: <span class="tok-s">integration</span>
+  <span class="tok-k">source</span>:
+    <span class="tok-k">repoURL</span>: <span class="tok-s">https://git/acme/env-prod</span>
+    <span class="tok-k">targetRevision</span>: <span class="tok-s">main</span>
+    <span class="tok-k">path</span>: <span class="tok-s">apps/payments</span>
+    <span class="tok-k">helm</span>:
+      <span class="tok-k">valueFiles</span>: [<span class="tok-s">values.prod.yaml</span>]
+  <span class="tok-k">destination</span>:
+    <span class="tok-k">server</span>: <span class="tok-s">https://prod-cluster</span>
+    <span class="tok-k">namespace</span>: <span class="tok-s">payments</span>
+  <span class="tok-k">syncPolicy</span>:
+    <span class="tok-k">automated</span>:
+      <span class="tok-k">selfHeal</span>: <span class="tok-n">true</span>
+      <span class="tok-k">prune</span>: <span class="tok-n">false</span>      <span class="tok-c"># prod: never auto-prune; humans approve deletes</span>
+    <span class="tok-k">syncOptions</span>:
+      - <span class="tok-s">CreateNamespace=true</span>
+      - <span class="tok-s">PrunePropagationPolicy=foreground</span>
+    <span class="tok-k">retry</span>:
+      <span class="tok-k">limit</span>: <span class="tok-n">3</span>
+      <span class="tok-k">backoff</span>: { <span class="tok-k">duration</span>: <span class="tok-s">10s</span>, <span class="tok-k">factor</span>: <span class="tok-n">2</span>, <span class="tok-k">maxDuration</span>: <span class="tok-s">2m</span> }
+  <span class="tok-k">revisionHistoryLimit</span>: <span class="tok-n">10</span></code></pre>
+          </div>
+
+          <h2 id="promotion">Environment promotion</h2>
+          <p>Three environments is enough for almost any platform: <strong>dev</strong> (everyone, free for all), <strong>test</strong> (integration testing, fixed data), <strong>prod</strong>.</p>
+
+          <table>
+            <thead>
+              <tr><th>Environment</th><th>Sync</th><th>Approval</th><th>Data</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>dev</td><td>Automated on commit to main</td><td>None</td><td>Synthetic, freely reset</td></tr>
+              <tr><td>test</td><td>Automated on PR merge from dev branch</td><td>1 platform reviewer</td><td>Anonymised prod-like</td></tr>
+              <tr><td>prod</td><td>PR with image tag + change record</td><td>Service owner + change manager</td><td>Real</td></tr>
+            </tbody>
+          </table>
+
+          <p>Promotion is <em>image-tag-only</em>. The same image that passed test is what runs in prod. Configuration that varies by environment lives in env-specific Helm values files; never rebuild between environments.</p>
+
+          <h2 id="secrets">Secrets</h2>
+          <p>Three things must be true: secrets are not in git, secrets are versioned, and secrets are accessible to pods without runtime humans.</p>
+          <ul>
+            <li><strong>Vault as source of truth.</strong> HashiCorp Vault or IBM Cloud Pak for Integration secrets; pods authenticate via Kubernetes service account JWT.</li>
+            <li><strong>External Secrets Operator.</strong> Pulls from Vault, creates Kubernetes Secrets in the namespace; ArgoCD doesn&rsquo;t see the secrets, just <code>ExternalSecret</code> objects.</li>
+            <li><strong>Sealed Secrets</strong> as fallback. Encrypted secret in git, decrypted by a controller in the cluster. Ok for low-risk env-specific configuration, not for production credentials.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>external-secret.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">external-secrets.io/v1beta1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">ExternalSecret</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments-mq-creds</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">refreshInterval</span>: <span class="tok-s">1h</span>
+  <span class="tok-k">secretStoreRef</span>:
+    <span class="tok-k">name</span>: <span class="tok-s">vault-prod</span>
+    <span class="tok-k">kind</span>: <span class="tok-s">ClusterSecretStore</span>
+  <span class="tok-k">target</span>:
+    <span class="tok-k">name</span>: <span class="tok-s">payments-mq-creds</span>
+    <span class="tok-k">creationPolicy</span>: <span class="tok-s">Owner</span>
+  <span class="tok-k">data</span>:
+    - { <span class="tok-k">secretKey</span>: <span class="tok-s">username</span>, <span class="tok-k">remoteRef</span>: { <span class="tok-k">key</span>: <span class="tok-s">payments/mq</span>, <span class="tok-k">property</span>: <span class="tok-s">user</span> } }
+    - { <span class="tok-k">secretKey</span>: <span class="tok-s">password</span>, <span class="tok-k">remoteRef</span>: { <span class="tok-k">key</span>: <span class="tok-s">payments/mq</span>, <span class="tok-k">property</span>: <span class="tok-s">pwd</span> } }</code></pre>
+          </div>
+
+          <h2 id="observability">Observability</h2>
+          <p>The platform itself needs the same telemetry it gives its consumers. Three signals at minimum:</p>
+          <ul>
+            <li><strong>Pipeline duration &amp; success rate.</strong> Slow pipelines erode developer trust faster than failing pipelines. Track p50/p95 by stage.</li>
+            <li><strong>Sync drift.</strong> ArgoCD&rsquo;s out-of-sync status &mdash; track per app per environment. Persistent drift means manual changes to the cluster, which means GitOps is bypassed.</li>
+            <li><strong>Image freshness.</strong> Time since the image in production was built. An image older than 30 days probably has unpatched CVEs.</li>
+          </ul>
+
+          <h2 id="release">Release patterns</h2>
+          <p>Three release patterns cover almost every integration deployment:</p>
+          <ul>
+            <li><strong>Rolling.</strong> Default for stateless services; replace pods one at a time behind a load balancer. Fine for HTTP/REST.</li>
+            <li><strong>Blue/green.</strong> Stand up green alongside blue, switch traffic at the gateway. Use for releases that change message contracts where in-flight requests with the old contract must drain.</li>
+            <li><strong>Canary.</strong> Route a small percentage of traffic to the new version; ramp on metrics. Use for high-risk changes or anywhere business metrics are sensitive (fraud detection, risk scoring).</li>
+          </ul>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Stateful services need pre-release coordination</div>
+            <p>Kafka topic partition increases, MQ queue config changes, schema registry compatibility shifts &mdash; none of these are pod-level rollouts. Encode them as separate, idempotent platform tasks (Tekton or Ansible) that run before the pod-level deploy. Don&rsquo;t bake them into the application Helm chart.</p>
+          </div>
+
+          <h2 id="audit">Audit &amp; compliance</h2>
+          <p>The regulator&rsquo;s question is the same in every audit: &ldquo;show me who approved this change.&rdquo; GitOps answers that question by construction: every change is a commit with an author; every prod commit was a PR with a reviewer; every reviewer maps to an identity. Make sure the chain is unbroken.</p>
+          <ul>
+            <li><strong>Branch protection on prod env repo:</strong> require 2 reviewers, 1 from a different team, no force-pushes, signed commits.</li>
+            <li><strong>Image provenance:</strong> sign images with cosign; ArgoCD admission policy refuses unsigned images in prod.</li>
+            <li><strong>SBOM per artifact:</strong> attach a Software Bill of Materials to every image; the next CVE response is a query against SBOMs, not a reverse-engineering exercise.</li>
+            <li><strong>Change record link:</strong> require a ServiceNow / Jira change ticket reference in the prod PR title; auditors want to trace from change ticket to commit to deploy.</li>
+          </ul>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Cluster admin shortcuts</div>
+            <p>One platform engineer with cluster admin can fix anything in 30 seconds. They can also undo six months of GitOps discipline. Restrict cluster admin to break-glass; require justification per use; alert on every non-ArgoCD apply.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Pipeline secrets in CI logs</div>
+            <p>The single most common cause of credential leaks is debug output in a CI pipeline. Configure Tekton tasks with strict log filtering; reject any task that prints environment variables; rotate secrets immediately if any leak is suspected.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Per-team golden path</div>
+            <p>If every team has its own pipeline, you have N pipelines to maintain and audit. Define a small number (1&ndash;3) of paved paths; allow teams to deviate only with explicit approval. The flexibility cost is real but the audit and operational savings are larger.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">No rollback runbook</div>
+            <p>Rollback in GitOps is a revert PR. That sounds easy &mdash; until ArgoCD has auto-pruned a resource and the revert recreates it with a different IP, breaking downstream service-mesh routing. Test rollback regularly; never assume it works.</p>
+          </div>
+
+          <h2 id="checklist">Production checklist</h2>
+          <ol>
+            <li>App repo and env repo separated; only env repo drives deploys.</li>
+            <li>Branch protection on prod env repo; 2 reviewers; signed commits.</li>
+            <li>ArgoCD with selfHeal on, auto-prune off in prod.</li>
+            <li>Tekton tasks signed with cosign; only signed tasks run in prod.</li>
+            <li>Trivy/Clair scan on every image; HIGH/CRITICAL fail the pipeline.</li>
+            <li>Cosign image signing; admission policy enforces signatures in prod.</li>
+            <li>SBOM attached to every image; queryable by CVE.</li>
+            <li>Vault + External Secrets; no plaintext secrets in git.</li>
+            <li>One golden path per service shape; deviations need approval.</li>
+            <li>Pipeline duration p95 alert; sync drift alert; image freshness alert.</li>
+            <li>Documented and quarterly-tested rollback runbook.</li>
+            <li>Cluster admin restricted; non-ArgoCD apply alerts wired to oncall.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="../data-sync.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Data Synchronisation</div>
+            </a>
+            <a href="../../technical.html" class="article-nav__next">
+              <div class="article-nav__label">Back to</div>
+              <div class="article-nav__title">Lab &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

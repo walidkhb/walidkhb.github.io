@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Real-Time Data Decision: What SQL on Streams Actually Demands from Leadership &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Moving to real-time SQL analytics changes what your data team builds, what your operations team runs, and what your regulators can audit. The leadership decisions that determine whether you get the benefit or just the cost.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/stream-analytics-data-decisions.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="The Real-Time Data Decision: What SQL on Streams Actually Demands from Leadership &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Moving to real-time SQL analytics changes what your data team builds, what your operations team runs, and what your regulators can audit. The leadership decisions that determine whether you get the benefit or just the cost.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/stream-analytics-data-decisions.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Real-Time Data Decision: What SQL on Streams Actually Demands from Leadership">
+  <meta name="twitter:description" content="The leadership decisions that determine whether you get the benefit or just the cost of streaming SQL.">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+    .author-bio { background: var(--color-surface); border-top: 1px solid var(--color-border); }
+    .author-bio__inner { padding: 3rem 0; }
+  </style>
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The Real-Time Data Decision: What SQL on Streams Actually Demands from Leadership",
+    "datePublished": "2026-05-23",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "url": "https://www.wbadawi.info/blog/stream-analytics-data-decisions.html",
+    "isPartOf": {"@type": "Blog", "name": "Insights &mdash; Waleed Albadawi", "url": "https://www.wbadawi.info/blog.html"},
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.wbadawi.info/"},
+        {"@type": "ListItem", "position": 2, "name": "Insights", "item": "https://www.wbadawi.info/blog.html"},
+        {"@type": "ListItem", "position": 3, "name": "Enterprise Integration", "item": "https://www.wbadawi.info/blog/enterprise-integration.html"},
+        {"@type": "ListItem", "position": 4, "name": "The Real-Time Data Decision", "item": "https://www.wbadawi.info/blog/stream-analytics-data-decisions.html"}
+      ]
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>Real-Time Data Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; May 23, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">The Real-Time Data Decision: What SQL on Streams Actually Demands from Leadership</h1>
+    </div>
+  </section>
+
+  <!-- Article Body -->
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Your team has a working Kafka platform. A vendor or an engineer proposes adding ksqlDB or Flink SQL to give the data team a real-time analytics layer. The pitch is straightforward: SQL on streams is familiar, it is productive, it shortens the path from raw events to business insight. That part is true. What the pitch leaves out is that streaming SQL is not a query engine&mdash;it is a persistent infrastructure commitment. Before you approve the initiative, you need to understand what you are deciding to own.</p>
+
+        <blockquote>
+          <p>The difference between batch SQL and streaming SQL is not just latency. It is that streaming SQL queries never stop. They run indefinitely, accumulate state, and require operational attention even when nobody is changing them. A batch job runs and finishes. A streaming query is a service.</p>
+        </blockquote>
+
+        <p class="article-section">The decision hiding inside the technology choice</p>
+
+        <p>There are two very different things you can do with SQL on streams. The first is <strong>operational enrichment</strong>: every transaction that enters the payment system is enriched with customer data and screened against a sanctions list before a response is sent. This is latency-sensitive, operationally critical, and requires sub-200-millisecond outcomes. The second is <strong>analytical aggregation</strong>: build a real-time fraud scoring layer or a running daily spend total for SAMA compliance. This is also latency-sensitive but tolerates a few seconds and can sometimes replay safely after an outage.</p>
+
+        <p>Both use cases have value. They are not the same decision. Operational enrichment requires you to staff the streaming layer with the same rigour as your payment processing systems&mdash;on-call, runbooks, SLAs, a tested rollback procedure for query changes. Analytical aggregation is closer to a data pipeline and can be operated with slightly different procedures. Most teams start with the analytics pitch and find themselves running operational infrastructure they are not ready to support. The VP role here is to ask the question before the architecture is built: what is the on-call model for this new system?</p>
+
+        <p class="article-section">What the regulator cares about</p>
+
+        <p>SAMA does not prescribe technology, but two aspects of a streaming SQL deployment surface in every integration audit. The first is <strong>schema lineage</strong>: can you demonstrate that the data used to make a sanctions screening decision at 14:32:07 on a given date matched the official sanctions list as it stood at that time? Temporal joins in Flink SQL can answer this question directly. A naive implementation that looks up the current sanctions table cannot. The difference is architectural, not cosmetic, and you need to make it explicit in your design documentation before the audit, not during it.</p>
+
+        <p>The second is <strong>replay and reconciliation</strong>. If a streaming query produces incorrect output due to a code defect, can you replay the affected window and regenerate the correct output? Batch systems handle this naturally; streaming systems require deliberate design&mdash;checkpoint retention, topic retention policy, and a tested replay procedure. SAMA&rsquo;s data governance framework expects you to have this, and the answer &ldquo;we would need to rebuild from source systems&rdquo; is accepted once, not twice.</p>
+
+        <p class="article-section">The team capability question you must ask first</p>
+
+        <p>SQL on streams is more accessible than writing Kafka Streams topologies in Java. It is not as accessible as writing a SQL query against a data warehouse. The difference is that streaming SQL requires its author to understand event time versus processing time, watermarks, window types, join semantics, and the difference between a stream and a table. These are not hard concepts&mdash;but they are concepts that most data analysts who are comfortable with SQL have never needed. A team that deploys streaming SQL without this foundation will produce queries that work correctly in testing and fail in production when events arrive late, when a topic is replayed, or when a window advances unexpectedly.</p>
+
+        <p>The investment in capability must precede the investment in infrastructure. Two or three engineers who deeply understand stream processing semantics can run a production streaming platform. A team of ten who each understand it partially will operate it badly. Before approving the initiative, confirm that you have the right two or three people, and that they have enough protected time to build what needs to be built correctly.</p>
+
+        <p class="article-section">The trade-off the team will not surface to you</p>
+
+        <p>There is a specific operational trade-off in streaming SQL that engineers rarely escalate because it looks like a technical detail: changing a persistent streaming query is expensive. Adding a column, modifying a join condition, or adjusting a window size may require resetting the consumer offset and replaying from the beginning of the topic retention window. On a high-volume production topic, this replay can take hours. It means that a query change that would be a five-minute deployment in a batch system is a four-hour maintenance window in a streaming system. If your team is planning to iterate rapidly on the analytics logic&mdash;as analytics teams typically do&mdash;this cost compounds quickly.</p>
+
+        <p>The mitigation is to design for immutability: versioned output topics, new query names for each logic change, fan-out to downstream consumers from the new version once it has caught up. This works, but it requires discipline and generates operational sprawl if left unmanaged. Your team needs a governance model for streaming query lifecycle, not just a technical deployment pattern.</p>
+
+        <p class="article-section">What to ask before approving the initiative</p>
+
+        <p>Four questions worth asking explicitly before a streaming SQL initiative is approved:</p>
+        <p><strong>What is the on-call model?</strong> Name the person who holds the pager when a streaming query falls behind on a Friday night. If the answer is unclear, the platform is not ready to run in production.</p>
+        <p><strong>What is the query change procedure?</strong> How long does a query change take in the worst case? Is there a tested rollback? Who approves it?</p>
+        <p><strong>Can we demonstrate sanctions lineage for a historical transaction?</strong> If the answer requires manual reconstruction from multiple systems, the architecture needs temporal joins before go-live, not after.</p>
+        <p><strong>What stays in batch?</strong> The streaming layer should not try to replace everything. Daily regulatory files, SOX close reports, and ad-hoc analytical queries belong in batch. Protect the batch layer from scope creep and protect the streaming layer from use cases it was not designed for.</p>
+
+        <p>The teams that get streaming SQL right are not the ones with the most sophisticated technology. They are the ones where the leadership made deliberate decisions about scope, staffed it with the right people, and built the operational model before the first query went live. The technology is available. The discipline is the differentiator.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the technical depth behind these trade-offs&mdash;ksqlDB vs Flink SQL, stateful aggregations, temporal joins, and windowing semantics&mdash;see the companion Lab article: <a href="../lab/data-streaming/ksqldb-and-flink-sql.html" style="color:var(--color-accent);">Data Streaming: ksqlDB &amp; Flink SQL for Stream Analytics</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

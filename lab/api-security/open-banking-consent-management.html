@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Security &mdash; Open Banking &amp; Consent Management &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="CIBA, dynamic client registration, consent lifecycle management, TPP onboarding, and the operational mechanics of building a production-grade Open Banking consent platform under SAMA and FAPI 2.0.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="API Security &mdash; Open Banking &amp; Consent Management &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="CIBA, DCR, consent revocation, and TPP onboarding for production Open Banking under SAMA &amp; FAPI 2.0.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/api-security/open-banking-consent-management.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="API Security &mdash; Open Banking Consent Management">
+  <meta name="twitter:description" content="CIBA, DCR, consent lifecycle, and TPP onboarding for regulated Open Banking.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/api-security/open-banking-consent-management.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "API Security: Open Banking & Consent Management",
+    "description": "CIBA, dynamic client registration, consent lifecycle management, TPP onboarding, and the operational mechanics of building a production-grade Open Banking consent platform under SAMA and FAPI 2.0.",
+    "datePublished": "2026-05-17",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "url": "https://www.wbadawi.info/lab/api-security/open-banking-consent-management.html",
+    "isPartOf": {"@type": "WebPage", "name": "API Security &mdash; Lab", "url": "https://www.wbadawi.info/lab/api-security.html"},
+    "proficiencyLevel": "Expert",
+    "articleSection": "API Security"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>Open Banking &amp; Consent Management</div>
+          <span class="overline">Lab Article</span>
+          <h1>API Security: Open Banking &amp; Consent Management</h1>
+          <p class="lead">CIBA, dynamic client registration, consent revocation, and the operational mechanics of TPP onboarding under SAMA Open Banking and FAPI 2.0 &mdash; the patterns that survive the audit and the peak transaction window.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#consent-model">Consent data model</a></li>
+            <li><a href="#ciba">CIBA flow</a></li>
+            <li><a href="#dcr">Dynamic client registration</a></li>
+            <li><a href="#consent-creation">Consent creation</a></li>
+            <li><a href="#sca">Strong customer authentication</a></li>
+            <li><a href="#consent-revocation">Revocation mechanics</a></li>
+            <li><a href="#tpp-onboarding">TPP onboarding steps</a></li>
+            <li><a href="#token-binding">Token-consent binding</a></li>
+            <li><a href="#sama">SAMA-specific requirements</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Keycloak 24 &middot; Spring Authorization Server &middot; FAPI 2.0 &middot; CIBA &middot; DCR</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Every Open Banking API call is authorised by a consent. Not a token, not a session &mdash; a consent. The consent is the legal and technical artefact that says: this customer, on this date, authorised this TPP to access these accounts for these purposes, until this date. Get that right and everything downstream is tractable. Get it wrong and you have an audit trail that satisfies nobody, a revocation mechanism that doesn&rsquo;t propagate, and a TPP ecosystem that loses confidence in the platform.</p>
+          <p>The article covers the four hard parts: the consent data model, the CIBA flow that makes mobile-first consent workable, dynamic client registration for TPP onboarding, and the revocation mechanics that need to work under peak load on a SAMA holiday.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Consent is not just a token claim</div>
+            <p>The canonical mistake is storing consent as a JWT claim and trusting it for the lifetime of the token. Consent is a living entity &mdash; it can be partially revoked (remove one account from scope), suspended by the bank (fraud hold), or expired (reached the agreed end date). Token validation must check a live consent store on every call to the resource API, not just on token issuance. This is the design decision that separates a real consent platform from an OAuth implementation with a consent screen bolted on.</p>
+          </div>
+
+          <h2 id="consent-model">Consent data model</h2>
+          <p>A consent record needs to carry enough information to reconstruct the authorisation decision at any future point &mdash; for audit, for dispute, and for real-time enforcement. The minimal production-grade model:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>consent-record.json</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-k">"consentId"</span>: <span class="tok-s">"csnt-0e4f1a2b-3c5d"</span>,
+  <span class="tok-k">"status"</span>: <span class="tok-s">"AUTHORISED"</span>,
+  <span class="tok-k">"statusUpdatedAt"</span>: <span class="tok-s">"2026-05-17T09:14:00Z"</span>,
+  <span class="tok-k">"createdAt"</span>: <span class="tok-s">"2026-05-17T09:10:00Z"</span>,
+  <span class="tok-k">"expiresAt"</span>: <span class="tok-s">"2027-05-17T00:00:00Z"</span>,
+  <span class="tok-k">"tppId"</span>: <span class="tok-s">"tpp-acme-finance"</span>,
+  <span class="tok-k">"customerId"</span>: <span class="tok-s">"cust-redacted-hash"</span>,     <span class="tok-c">// hashed; PII stays in core</span>
+  <span class="tok-k">"permissions"</span>: [
+    <span class="tok-s">"ReadAccountsBasic"</span>,
+    <span class="tok-s">"ReadAccountsDetail"</span>,
+    <span class="tok-s">"ReadBalances"</span>,
+    <span class="tok-s">"ReadTransactionsCredits"</span>,
+    <span class="tok-s">"ReadTransactionsDebits"</span>
+  ],
+  <span class="tok-k">"accounts"</span>: [
+    { <span class="tok-k">"accountId"</span>: <span class="tok-s">"acc-001"</span>, <span class="tok-k">"currency"</span>: <span class="tok-s">"SAR"</span> },
+    { <span class="tok-k">"accountId"</span>: <span class="tok-s">"acc-002"</span>, <span class="tok-k">"currency"</span>: <span class="tok-s">"USD"</span> }
+  ],
+  <span class="tok-k">"transactionFromDate"</span>: <span class="tok-s">"2026-01-01"</span>,
+  <span class="tok-k">"transactionToDate"</span>: <span class="tok-s">"2026-12-31"</span>,
+  <span class="tok-k">"authorisationId"</span>: <span class="tok-s">"auth-7f8e9d0a"</span>,       <span class="tok-c">// links to SCA event</span>
+  <span class="tok-k">"accessToken"</span>: { <span class="tok-k">"expiresAt"</span>: <span class="tok-s">"2026-05-17T09:44:00Z"</span> },
+  <span class="tok-k">"refreshToken"</span>: { <span class="tok-k">"expiresAt"</span>: <span class="tok-s">"2026-06-17T09:14:00Z"</span> }
+}</code></pre>
+          </div>
+
+          <p>Consent <strong>status</strong> is an enum. Transitions are one-way except where the framework allows reauthorisation:</p>
+
+          <table>
+            <thead>
+              <tr><th>Status</th><th>Meaning</th><th>Who can set it</th><th>Reversible?</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>AWAITING_AUTHORISATION</code></td><td>Created by TPP, not yet confirmed by customer</td><td>Bank (on DCR or consent creation)</td><td>Yes &rarr; AUTHORISED</td></tr>
+              <tr><td><code>AUTHORISED</code></td><td>Customer confirmed via SCA</td><td>Bank (post-SCA)</td><td>Yes &rarr; REVOKED or EXPIRED</td></tr>
+              <tr><td><code>REVOKED</code></td><td>Cancelled by customer or bank</td><td>Customer (portal), Bank (fraud), TPP (DELETE endpoint)</td><td>No</td></tr>
+              <tr><td><code>EXPIRED</code></td><td>Past <code>expiresAt</code> or token TTL</td><td>System (scheduler)</td><td>No</td></tr>
+              <tr><td><code>REJECTED</code></td><td>Customer declined at SCA screen</td><td>Bank (post-SCA decline)</td><td>No</td></tr>
+              <tr><td><code>SUSPENDED</code></td><td>Temporarily blocked (fraud hold, sanction check)</td><td>Bank only</td><td>Yes &rarr; AUTHORISED</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="ciba">CIBA flow</h2>
+          <p>CIBA (Client-Initiated Backchannel Authentication, RFC&nbsp;draft) decouples the authentication device from the session initiating the request. In an Open Banking context: the TPP&rsquo;s web app initiates the consent request, the bank sends a push notification to the customer&rsquo;s mobile banking app, the customer confirms on their phone, and the TPP&rsquo;s server polls or receives a callback. No redirect. No browser pop-up. This is the pattern that the SAMA framework strongly favours for Phase 2 payment initiation because it keeps the authentication on a trusted, bank-enrolled device.</p>
+
+          <div class="diagram" role="img" aria-label="CIBA backchannel authentication flow for Open Banking consent">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ob1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="ob2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="ob3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Actors -->
+                <rect x="20" y="30" width="110" height="52" rx="5" fill="#16161f" stroke="#00d4aa"/>
+                <text x="75" y="51" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">TPP Server</text>
+                <text x="75" y="66" text-anchor="middle" fill="#71717a" font-size="8">acme-finance.sa</text>
+
+                <rect x="315" y="30" width="150" height="52" rx="5" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="390" y="51" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Bank Auth Server</text>
+                <text x="390" y="66" text-anchor="middle" fill="#71717a" font-size="8">Keycloak / FAPI 2.0</text>
+
+                <rect x="640" y="30" width="120" height="52" rx="5" fill="#16161f" stroke="#fbbf24"/>
+                <text x="700" y="51" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Customer</text>
+                <text x="700" y="66" text-anchor="middle" fill="#71717a" font-size="8">Mobile banking app</text>
+
+                <!-- Step lines -->
+                <!-- 1: TPP → AS: POST /bc-authorize -->
+                <line x1="130" y1="120" x2="313" y2="120" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ob1)"/>
+                <text x="220" y="113" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">1</text>
+                <text x="220" y="136" text-anchor="middle" fill="#71717a" font-size="8">POST /bc-authorize (login_hint, scope, consent payload)</text>
+
+                <!-- 2: AS → TPP: 200 auth_req_id -->
+                <line x1="313" y1="140" x2="130" y2="140" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#ob2)"/>
+                <text x="220" y="158" text-anchor="middle" fill="#71717a" font-size="8">200 {auth_req_id, expires_in, interval}</text>
+
+                <!-- 3: AS → Customer: push notification -->
+                <line x1="465" y1="178" x2="638" y2="178" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ob2)"/>
+                <text x="550" y="171" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">3</text>
+                <text x="550" y="192" text-anchor="middle" fill="#71717a" font-size="8">FCM/APNs push &rarr; mobile banking app</text>
+
+                <!-- 4: Customer confirms on device -->
+                <rect x="580" y="204" width="240" height="32" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="700" y="224" text-anchor="middle" fill="#fbbf24" font-size="9">4. Customer reviews &amp; approves (biometric SCA)</text>
+
+                <!-- 5: App → AS: POST /confirm-consent -->
+                <line x1="638" y1="252" x2="465" y2="252" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ob3)"/>
+                <text x="550" y="245" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">5</text>
+                <text x="550" y="267" text-anchor="middle" fill="#71717a" font-size="8">SCA result &rarr; AS; consent status &rarr; AUTHORISED</text>
+
+                <!-- 6: TPP polls token endpoint -->
+                <line x1="130" y1="300" x2="313" y2="300" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ob1)"/>
+                <text x="220" y="293" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">6</text>
+                <text x="220" y="315" text-anchor="middle" fill="#71717a" font-size="8">POST /token (grant_type=urn:openid:ciba, auth_req_id)</text>
+
+                <!-- 7: AS → TPP: tokens -->
+                <line x1="313" y1="338" x2="130" y2="338" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#ob2)"/>
+                <text x="220" y="356" text-anchor="middle" fill="#71717a" font-size="8">access_token (bound to consent) + refresh_token</text>
+
+                <!-- Step labels on left -->
+                <text x="10" y="124" fill="#71717a" font-size="8">②</text>
+                <text x="10" y="304" fill="#71717a" font-size="8">⑦</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; CIBA flow for Open Banking consent: decoupled device authentication without browser redirect</div>
+          </div>
+
+          <p>The key property: the TPP never handles the authentication. Steps 3&ndash;5 happen entirely on the customer&rsquo;s bank-enrolled device. The auth_req_id is a short-lived (120s) handle that ties the polling at step&nbsp;6 to the SCA event at step&nbsp;5.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">auth_req_id binding is non-negotiable</div>
+            <p>The auth_req_id must be cryptographically bound to the consent payload submitted at step&nbsp;1. A naive implementation generates the id independently and looks up the consent at token issuance &mdash; leaving a window where a rogue auth_req_id can be substituted. Embed the consent hash in the auth_req_id, verify on token issuance.</p>
+          </div>
+
+          <h2 id="dcr">Dynamic client registration</h2>
+          <p>TPPs cannot be pre-registered by email. The volumes are wrong and the automation requirement is absolute. Dynamic Client Registration (RFC 7591, OIDC DCR) is the mechanism: the TPP presents a software statement assertion (SSA) &mdash; a JWT signed by the Open Banking directory &mdash; and the bank&rsquo;s AS registers the TPP client and returns a client_id.</p>
+          <p>In SAMA&rsquo;s framework, the SSA is issued by the Saudi Open Banking (SAOB) platform. A bank that runs its own DCR endpoint must validate the SSA signature against the SAOB JWKS before creating the client record.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>dcr-request.json</span><span class="code-block__lang">json</span></div>
+<pre><code><span class="tok-c">// POST /register — DCR request body</span>
+{
+  <span class="tok-k">"software_statement"</span>: <span class="tok-s">"eyJhbGciOiJQUzI1NiIsImtpZCI6InNhb2ItMjAyNiJ9..."</span>,
+  <span class="tok-k">"redirect_uris"</span>: [<span class="tok-s">"https://app.acme-finance.sa/callback"</span>],
+  <span class="tok-k">"token_endpoint_auth_method"</span>: <span class="tok-s">"private_key_jwt"</span>,
+  <span class="tok-k">"grant_types"</span>: [<span class="tok-s">"authorization_code"</span>, <span class="tok-s">"urn:openid:ciba"</span>, <span class="tok-s">"refresh_token"</span>],
+  <span class="tok-k">"response_types"</span>: [<span class="tok-s">"code"</span>],
+  <span class="tok-k">"request_object_signing_alg"</span>: <span class="tok-s">"PS256"</span>,
+  <span class="tok-k">"backchannel_token_delivery_mode"</span>: <span class="tok-s">"poll"</span>,   <span class="tok-c">// or "ping" / "push"</span>
+  <span class="tok-k">"scope"</span>: <span class="tok-s">"openid accounts payments"</span>,
+  <span class="tok-k">"tls_client_auth_subject_dn"</span>: <span class="tok-s">"CN=acme-finance.sa,O=ACME Finance,C=SA"</span>
+}
+
+<span class="tok-c">// 201 response from AS</span>
+{
+  <span class="tok-k">"client_id"</span>: <span class="tok-s">"tpp-acme-finance"</span>,
+  <span class="tok-k">"client_id_issued_at"</span>: <span class="tok-n">1747476600</span>,
+  <span class="tok-k">"registration_access_token"</span>: <span class="tok-s">"rat-..."</span>,
+  <span class="tok-k">"registration_client_uri"</span>: <span class="tok-s">"https://as.saib.com.sa/register/tpp-acme-finance"</span>
+}</code></pre>
+          </div>
+
+          <p>The <code>registration_access_token</code> (RAT) is the only credential the TPP uses to update or delete its own registration. Treat it like a long-lived client secret: store it encrypted, rotate it annually, revoke it immediately on suspected compromise.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">DCR is idempotent in FAPI 2.0 profile</div>
+            <p>If a TPP submits the same SSA twice (retried registration), the AS must return the existing client_id, not create a duplicate. The <code>software_id</code> claim inside the SSA is the deduplication key. Index the client table on <code>software_id</code>, not on the outer client object.</p>
+          </div>
+
+          <h2 id="consent-creation">Consent creation</h2>
+          <p>Consent creation is a two-step process. The TPP creates the consent resource (a <code>POST /consents</code> call that returns a consentId in AWAITING_AUTHORISATION status), then the customer authorises it via CIBA or redirect. Both steps are FAPI-secured: PAR + JAR on the authorization request, private_key_jwt on the token request.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>create-consent.sh</span><span class="code-block__lang">bash</span></div>
+<pre><code><span class="tok-c"># Step 1: TPP creates consent resource (server-to-server, not user-facing)</span>
+curl -sS <span class="tok-s">https://api.saib.com.sa/open-banking/v3/aisp/consents</span> \
+  --cert <span class="tok-s">$TPP_CERT</span> --key <span class="tok-s">$TPP_KEY</span> \                 <span class="tok-c"># mTLS: client auth + token binding</span>
+  -H <span class="tok-s">"Authorization: Bearer $CCG_TOKEN"</span> \
+  -H <span class="tok-s">"Content-Type: application/json"</span> \
+  -H <span class="tok-s">"x-fapi-interaction-id: $(uuidgen)"</span> \
+  -d <span class="tok-p">'</span><span class="tok-s">{
+    "Data": {
+      "Permissions": ["ReadAccountsBasic","ReadBalances","ReadTransactionsCredits"],
+      "ExpirationDateTime": "2027-05-17T00:00:00Z",
+      "TransactionFromDateTime": "2026-01-01T00:00:00Z",
+      "TransactionToDateTime":   "2026-12-31T23:59:59Z"
+    },
+    "Risk": {}
+  }'</span><span class="tok-p">'</span>
+
+<span class="tok-c"># Returns: { "Data": { "ConsentId": "csnt-0e4f1a2b", "Status": "AwaitingAuthorisation" } }</span>
+
+<span class="tok-c"># Step 2: TPP submits PAR to get request_uri, then initiates CIBA with login_hint + consent id</span>
+curl -sS <span class="tok-s">https://as.saib.com.sa/par</span> \
+  -d <span class="tok-s">"response_type=code"</span> \
+  -d <span class="tok-s">"client_id=$CLIENT_ID"</span> \
+  -d <span class="tok-s">"scope=openid accounts"</span> \
+  -d <span class="tok-s">"claims=$(jq -c . claims.json)"</span> \     <span class="tok-c"># includes consentId in id_token claims</span>
+  -d <span class="tok-s">"request=$(sign_jar_jwt)"</span>               <span class="tok-c"># JAR: request object signed PS256</span></code></pre>
+          </div>
+
+          <h2 id="sca">Strong customer authentication</h2>
+          <p>SAMA mandates SCA for all consent authorisations and for each payment initiation regardless of value. SCA requires two of: something you know (PIN), something you have (OTP device / app), something you are (biometric). For the mobile banking app flow, biometric + push notification satisfies the &ldquo;have + are&rdquo; combination without a PIN step &mdash; which is the UX the market expects.</p>
+          <p>The SCA event must be cryptographically linked to the consent. The approach:</p>
+          <ol class="step-list">
+            <li><strong>Consent hash in push payload.</strong> The FCM/APNs push notification includes a signed hash of the consent payload (permissions, accounts, dates). The app displays this to the customer; they are authenticating a specific consent object, not just a generic approval screen.</li>
+            <li><strong>Device binding check.</strong> The AS verifies the push was delivered to a device bound to the customer&rsquo;s profile. A new device that has not completed device registration cannot receive open banking consent pushes &mdash; this is separate from the bank login device.</li>
+            <li><strong>Biometric attestation.</strong> On iOS/Android, the biometric challenge produces a platform-signed assertion (FIDO2 / WebAuthn authenticator assertion). The app forwards this to the AS. The AS verifies the assertion against the registered public key for that device.</li>
+            <li><strong>Consent status transition is atomic.</strong> The status update from AWAITING_AUTHORISATION to AUTHORISED is a single database transaction that also writes the authorisation_id (linking to the SCA event record). No intermediate states, no dual writes.</li>
+            <li><strong>auth_req_id expires independently.</strong> If the customer does not respond within the auth_req_id TTL (typically 120&ndash;300s), the consent status moves to REJECTED and the TPP&rsquo;s poll returns <code>expired_token</code> at the token endpoint.</li>
+            <li><strong>Re-authorisation is a new consent.</strong> A rejected consent cannot be approved. The TPP must create a new consent resource and start the CIBA flow again. This is intentional: it closes the window where a delayed approval could be intercepted and replayed.</li>
+          </ol>
+
+          <h2 id="consent-revocation">Revocation mechanics</h2>
+          <p>Revocation is the part that most implementations get wrong. The consent is revoked &mdash; but are the tokens revoked? Is the customer&rsquo;s dashboard updated? Is the TPP notified? There are three revocation paths, each with different propagation requirements.</p>
+
+          <table>
+            <thead>
+              <tr><th>Initiator</th><th>Mechanism</th><th>Token effect</th><th>Propagation</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Customer (bank portal / mobile)</td><td>PATCH or DELETE on consent resource via bank UI</td><td>All tokens under that consentId revoked immediately</td><td>TPP notified via event notification (webhook or polling the consent status endpoint)</td></tr>
+              <tr><td>TPP</td><td>DELETE /consents/{consentId}</td><td>TPP&rsquo;s own tokens revoked; customer notified in bank portal</td><td>Bank marks consent REVOKED; no further calls accepted under that id</td></tr>
+              <tr><td>Bank (fraud/compliance)</td><td>Internal admin API; can revoke consent or suspend client</td><td>All tokens revoked; client registration can be suspended</td><td>TPP receives 403 on next call with specific error code indicating revocation</td></tr>
+              <tr><td>System (expiry)</td><td>Scheduled job runs every hour; marks consents past expiresAt as EXPIRED</td><td>Refresh tokens revoked; access tokens expiry enforced at resource API</td><td>No active notification; TPP discovers on next token refresh (401)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Token revocation must be synchronous at the resource server</div>
+            <p>If your resource API validates tokens by checking only the JWT signature and expiry claim (stateless validation), a revoked consent does nothing until the access token naturally expires &mdash; potentially 15 minutes after the customer clicked &ldquo;remove access&rdquo;. Under SAMA&rsquo;s framework, this is a breach of the consent terms. The resource server must call the consent store on every request, or subscribe to consent revocation events and maintain a local revocation cache with &lt;1s staleness.</p>
+          </div>
+
+          <h2 id="tpp-onboarding">TPP onboarding steps</h2>
+          <p>TPP onboarding is an operational process that wraps the DCR protocol. In a production KSA deployment it looks like this:</p>
+          <ol class="step-list">
+            <li><strong>SAOB directory enrolment.</strong> The TPP registers with the Saudi Open Banking platform and receives a signed SSA. SAOB verifies the TPP&rsquo;s licence, legal entity, and regulatory standing. The bank does not repeat this check &mdash; it trusts the SSA signature.</li>
+            <li><strong>Sandbox DCR and E2E test.</strong> The TPP calls the bank&rsquo;s sandbox DCR endpoint with the SSA. The AS creates a sandbox client. The TPP runs the full consent + data retrieval flow against synthetic accounts. Sandbox must mirror production FAPI profile exactly.</li>
+            <li><strong>Production DCR.</strong> After sandbox sign-off, the TPP calls the production DCR endpoint. The AS validates the production SSA (different signing key from sandbox), creates the production client, and returns the client_id. No human approval step &mdash; the SAOB-signed SSA is the trust anchor.</li>
+            <li><strong>mTLS certificate exchange.</strong> The TPP&rsquo;s transport certificate DN is registered against the client_id. The bank&rsquo;s API gateway enforces mTLS on all TPP calls and maps the cert DN to the client_id for rate limiting and audit. A cert rotation by the TPP requires a DCR PATCH call, not an email.</li>
+            <li><strong>Consent notification endpoint registration.</strong> The TPP registers a webhook URL for consent event notifications (AUTHORISED, REVOKED, EXPIRED). The bank sends signed event notifications (JWS) to this URL within 5 minutes of a status change. The TPP webhook must accept and return 202 within 3 seconds &mdash; long processing goes async.</li>
+          </ol>
+
+          <h2 id="token-binding">Token-consent binding</h2>
+          <p>Every access token issued under a consent grant must carry the consentId as a claim. The resource API must verify the consentId claim on every call and check the live consent status. This is the binding that makes revocation work.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ConsentAwareResourceFilter.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public class</span> <span class="tok-t">ConsentAwareResourceFilter</span> <span class="tok-k">implements</span> <span class="tok-t">ContainerRequestFilter</span> {
+
+  <span class="tok-k">private final</span> <span class="tok-t">ConsentStore</span> consentStore;
+  <span class="tok-k">private final</span> <span class="tok-t">JwtValidator</span> jwtValidator;
+
+  <span class="tok-n">@Override</span>
+  <span class="tok-k">public void</span> filter(<span class="tok-t">ContainerRequestContext</span> ctx) {
+    <span class="tok-t">String</span> rawToken = extractBearer(ctx);
+    <span class="tok-t">JwtClaimsSet</span> claims = jwtValidator.validate(rawToken);
+
+    <span class="tok-t">String</span> consentId = claims.getStringClaim(<span class="tok-s">"consent_id"</span>);
+    <span class="tok-k">if</span> (consentId == <span class="tok-k">null</span>) {
+      <span class="tok-k">throw new</span> <span class="tok-t">WebApplicationException</span>(<span class="tok-t">Response.Status</span>.FORBIDDEN);
+    }
+
+    <span class="tok-c">// Live consent check — cached with 5s TTL, refreshed on MISS</span>
+    <span class="tok-t">Consent</span> consent = consentStore.findById(consentId)
+        .orElseThrow(() -&gt; <span class="tok-k">new</span> <span class="tok-t">WebApplicationException</span>(<span class="tok-t">Response.Status</span>.FORBIDDEN));
+
+    <span class="tok-k">if</span> (consent.getStatus() != ConsentStatus.AUTHORISED) {
+      ctx.abortWith(
+        <span class="tok-t">Response</span>.status(<span class="tok-n">403</span>)
+          .entity(<span class="tok-s">"{\"error\":\"consent_revoked\",\"consentId\":\""</span> + consentId + <span class="tok-s">"\"}"</span>)
+          .build()
+      );
+      <span class="tok-k">return</span>;
+    }
+
+    <span class="tok-c">// Enforce account scope: only accounts listed in consent are accessible</span>
+    <span class="tok-t">String</span> requestedAccount = extractAccountId(ctx);
+    <span class="tok-k">if</span> (requestedAccount != <span class="tok-k">null</span>
+          &amp;&amp; !consent.getAccounts().contains(requestedAccount)) {
+      ctx.abortWith(<span class="tok-t">Response</span>.status(<span class="tok-n">403</span>)
+          .entity(<span class="tok-s">"{\"error\":\"account_not_in_consent\"}"</span>).build());
+      <span class="tok-k">return</span>;
+    }
+
+    ctx.setProperty(<span class="tok-s">"consent"</span>, consent);
+  }
+}</code></pre>
+          </div>
+
+          <p>The cache TTL of 5 seconds is the trade-off between latency (avoiding a consent store roundtrip on every call) and revocation propagation. For payment initiation, use 0-second TTL (always live) &mdash; the additional latency on write-path APIs is acceptable; delayed revocation is not.</p>
+
+          <h2 id="sama">SAMA-specific requirements</h2>
+          <p>The SAMA Open Banking framework adds requirements beyond the base FAPI 2.0 profile. The ones that change architecture decisions:</p>
+          <ul>
+            <li><strong>Consent duration cap.</strong> SAMA Phase 1 allows consents up to 12 months for AIS. Phase 2 payment initiation consents for recurring payments have a separate duration regime defined per payment type. Do not hard-code 12 months into your consent model; parameterise by permission set and phase.</li>
+            <li><strong>Hijri date support.</strong> The SAMA framework requires that date fields in consent display (customer-facing UI) support Hijri calendar representation. The API uses Gregorian ISO 8601 internally; conversion happens in the display layer, not in the consent record.</li>
+            <li><strong>Arabic language consent screen.</strong> The SCA confirmation screen must be in Arabic for Arabic-speaking customers and must accurately represent the permission set in plain language. Regulators review the Arabic text, not the English technical specification. The mapping from <code>ReadTransactionsCredits</code> to customer-readable Arabic is a product decision with legal sign-off.</li>
+            <li><strong>Audit retention: 10 years.</strong> SAMA requires consent lifecycle events to be retained for 10 years. Event sourcing the consent store is the right architecture: the current state is a projection, and the event log is the durable audit trail. A mutable status column in a relational table is not sufficient.</li>
+            <li><strong>SAOB event notification SLA: 5 minutes.</strong> Status change events to the central SAOB platform must be delivered within 5 minutes. This is a push, not a pull. Your consent service must publish events to the SAOB notification endpoint as part of the status transition, not in a downstream batch.</li>
+          </ul>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">The x-fapi-interaction-id header is audited</div>
+            <p>Every API call in the SAMA Open Banking framework must carry an <code>x-fapi-interaction-id</code> header with a UUID. The bank must echo it back in the response and log it against every operation. SAMA audits use this header to reconstruct call chains for dispute investigation. An implementation that drops or rewrites this header in the API gateway will fail the SAMA audit review. Log it end-to-end: gateway, consent service, resource API, core system adapter.</p>
+          </div>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Stateless token validation for consented APIs</div>
+            <p>Described above under revocation &mdash; but it comes up consistently enough to name explicitly. Every team that has shipped an Open Banking Phase 1 implementation has an honest conversation at some point about whether they validate live consent status at the resource server or only at token issuance. The teams that chose the latter are having that conversation again now as they prepare for Phase 2. Fix it before Phase 2 is in production, not after.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Storing the refresh token without the consentId binding</div>
+            <p>A refresh token that references a revoked consent must return an error on the next refresh attempt, not issue a new access token. If the refresh token is stored without a consentId reference, the revocation path cannot propagate to it. The refresh token must carry or reference the consentId so the token endpoint can verify live consent status before issuing a new access token.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">DCR endpoint exposed without rate limiting</div>
+            <p>A DCR endpoint that does not rate-limit by IP and by SSA software_id will be abused. A credential stuffing attack against the DCR endpoint wastes compute and floods your client store. Rate limit: 10 DCR calls per software_id per hour, 50 per IP per hour. Responses to rate-limited requests must use HTTP 429, not 400 &mdash; some TPP SDK retry logic only backs off on 429.</p>
+          </div>
+
+          <h2 id="checklist">Production checklist</h2>
+          <ol>
+            <li>Consent store uses event sourcing; status column is a projection, not the source of truth.</li>
+            <li>auth_req_id is cryptographically bound to the consent payload hash at creation and verified at token issuance.</li>
+            <li>Resource API performs live consent status check on every call (cache TTL &le;5s for AIS, 0s for PIS).</li>
+            <li>Revocation propagates tokens synchronously: revoking a consent immediately invalidates the refresh token at the token endpoint.</li>
+            <li>DCR validates SSA signature against SAOB JWKS before creating client record.</li>
+            <li>DCR is idempotent on <code>software_id</code>: repeated registration returns existing client_id.</li>
+            <li><code>x-fapi-interaction-id</code> logged end-to-end: gateway, consent service, resource API.</li>
+            <li>Consent event notifications to SAOB are delivered within 5 minutes of status change.</li>
+            <li>DCR endpoint rate-limited by software_id and IP.</li>
+            <li>SCA confirmation screen is in Arabic, legally reviewed, and maps permissions to plain-language descriptions.</li>
+            <li>Consent duration enforced by permission type, not hard-coded to 12 months.</li>
+            <li>Audit events retained for 10 years; tested restore path exists.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="oauth-and-mtls.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">OAuth 2.1 &amp; mTLS</div>
+            </a>
+            <a href="../api-security.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">API Security &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

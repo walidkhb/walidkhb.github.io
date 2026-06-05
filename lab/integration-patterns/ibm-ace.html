@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integration Design Patterns &mdash; IBM ACE &amp; EIP &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Enterprise integration patterns in production: content-based routing, message translation, splitter, aggregator, choreography vs orchestration, and how IBM App Connect Enterprise (ACE) implements them in regulated financial services platforms.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Integration Design Patterns &mdash; IBM ACE &amp; EIP &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="EIP catalogue and IBM ACE message flows for financial services integration.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/ibm-ace.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Integration Design Patterns &mdash; Production Patterns">
+  <meta name="twitter:description" content="EIP catalogue and IBM ACE message flows for financial services.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/ibm-ace.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>IBM ACE</div>
+          <span class="overline">Lab Article</span>
+          <h1>Integration Design Patterns &amp; IBM ACE</h1>
+          <p class="lead">The EIP catalogue applied to production financial services integration: content-based routing, message translation, splitter/aggregator, choreography vs orchestration, canonical data models, and how IBM App Connect Enterprise (ACE) implements them in real flows.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#topology">ACE topology</a></li>
+            <li><a href="#patterns">Core patterns</a></li>
+            <li><a href="#orch-vs-chor">Orchestration vs choreography</a></li>
+            <li><a href="#canonical">Canonical model</a></li>
+            <li><a href="#flow">Building a flow</a></li>
+            <li><a href="#error">Error handling</a></li>
+            <li><a href="#ha">HA &amp; deployment</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When not to use</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM ACE 12 / App Connect</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Integration platforms in financial services exist to bridge systems that have nothing in common &mdash; a 30-year-old core banking system, a SaaS KYC provider, a real-time payment scheme, a partner B2B feed. The patterns that make this tractable were catalogued in Hohpe &amp; Woolf&rsquo;s <em>Enterprise Integration Patterns</em>; the runtime that implements them in most banks is <strong>IBM App Connect Enterprise (ACE)</strong>, the successor to IBM Integration Bus (IIB) and WebSphere Message Broker.</p>
+          <p>The ACE primitive is a <strong>message flow</strong>: a directed graph of nodes that consume from a source, transform/route/enrich, and deliver to one or more sinks. Each node is one EIP &mdash; the platform&rsquo;s value proposition is the catalogue, not the runtime.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">ACE is not an ESB</div>
+            <p>Modern ACE deployments are <strong>microservice-shaped</strong>: one integration server per domain, packaged as a container, deployed via CI to OpenShift. The 2010s-style monolithic ESB &mdash; one shared broker for the whole bank &mdash; is exactly the anti-pattern this article is trying to help you avoid.</p>
+          </div>
+
+          <h2 id="topology">ACE topology</h2>
+          <p>An ACE deployment has three logical units. The integration server runs flows; the integration node groups servers under shared admin; the toolkit (Eclipse-based) authors the flows. Modern containerised deployments collapse this &mdash; one server per container, no node, shared admin via Cloud Pak for Integration or a Helm chart.</p>
+
+          <div class="diagram" role="img" aria-label="IBM ACE topology with toolkit, integration servers, and connected systems">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ip1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="20" width="160" height="60" rx="6" fill="#16161f" stroke="#a78bfa"/>
+                <text x="100" y="42" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">ACE Toolkit</text>
+                <text x="100" y="60" text-anchor="middle" fill="#71717a" font-size="9">flow authoring (Eclipse)</text>
+                <text x="100" y="73" text-anchor="middle" fill="#71717a" font-size="9">BAR file build</text>
+
+                <rect x="20" y="120" width="160" height="60" rx="6" fill="#16161f" stroke="#a78bfa"/>
+                <text x="100" y="142" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">CI / Tekton</text>
+                <text x="100" y="160" text-anchor="middle" fill="#71717a" font-size="9">build BAR &middot; push image</text>
+                <text x="100" y="173" text-anchor="middle" fill="#71717a" font-size="9">deploy via Helm</text>
+
+                <rect x="240" y="20" width="320" height="320" rx="8" fill="#0f0f16" stroke="#00d4aa" stroke-width="2"/>
+                <text x="400" y="42" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">OPENSHIFT NAMESPACE</text>
+
+                <rect x="260" y="65" width="280" height="70" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="400" y="87" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Integration Server: payments</text>
+                <text x="400" y="105" text-anchor="middle" fill="#71717a" font-size="9">flow: SubmitPayment &middot; flow: SettleBatch</text>
+                <text x="400" y="120" text-anchor="middle" fill="#71717a" font-size="9">3 replicas &middot; HPA on CPU</text>
+
+                <rect x="260" y="150" width="280" height="70" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="400" y="172" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Integration Server: kyc</text>
+                <text x="400" y="190" text-anchor="middle" fill="#71717a" font-size="9">flow: OnboardCustomer &middot; flow: ScreenSanctions</text>
+                <text x="400" y="205" text-anchor="middle" fill="#71717a" font-size="9">2 replicas</text>
+
+                <rect x="260" y="235" width="280" height="70" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="400" y="257" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Integration Server: cards</text>
+                <text x="400" y="275" text-anchor="middle" fill="#71717a" font-size="9">flow: AuthRouter &middot; flow: SettlementBatch</text>
+                <text x="400" y="290" text-anchor="middle" fill="#71717a" font-size="9">2 replicas</text>
+
+                <rect x="620" y="40" width="140" height="50" rx="6" fill="#16161f" stroke="#fbbf24"/>
+                <text x="690" y="62" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">IBM MQ</text>
+                <text x="690" y="78" text-anchor="middle" fill="#71717a" font-size="9">qmgr cluster</text>
+
+                <rect x="620" y="110" width="140" height="50" rx="6" fill="#16161f" stroke="#fbbf24"/>
+                <text x="690" y="132" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Kafka</text>
+                <text x="690" y="148" text-anchor="middle" fill="#71717a" font-size="9">events.* topics</text>
+
+                <rect x="620" y="180" width="140" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="690" y="202" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Core (CICS)</text>
+                <text x="690" y="218" text-anchor="middle" fill="#71717a" font-size="9">COBOL · COMMAREA</text>
+
+                <rect x="620" y="250" width="140" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="690" y="272" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Partner SaaS</text>
+                <text x="690" y="288" text-anchor="middle" fill="#71717a" font-size="9">REST · SOAP</text>
+
+                <line x1="180" y1="50" x2="258" y2="80" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ip1)"/>
+                <line x1="180" y1="150" x2="258" y2="100" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ip1)"/>
+                <line x1="540" y1="100" x2="618" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ip1)"/>
+                <line x1="540" y1="180" x2="618" y2="135" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ip1)"/>
+                <line x1="540" y1="265" x2="618" y2="205" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ip1)"/>
+                <line x1="540" y1="290" x2="618" y2="275" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ip1)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Containerised ACE deployment: one server per domain</div>
+          </div>
+
+          <h2 id="patterns">Core patterns</h2>
+          <p>Six EIPs cover the majority of real flows. Each maps to one or two ACE node types.</p>
+
+          <table>
+            <thead>
+              <tr><th>Pattern</th><th>What it does</th><th>ACE node</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Content-based router</strong></td><td>Route a message to one of several outputs based on its content</td><td><code>RouteToLabel</code> + <code>Filter</code></td></tr>
+              <tr><td><strong>Message translator</strong></td><td>Convert one format/schema into another</td><td><code>Mapping</code> / <code>Compute</code> (ESQL)</td></tr>
+              <tr><td><strong>Splitter</strong></td><td>Break a composite message into individual elements</td><td><code>Compute</code> with PROPAGATE</td></tr>
+              <tr><td><strong>Aggregator</strong></td><td>Combine related messages into a single one</td><td><code>AggregateControl</code> + <code>AggregateReply</code></td></tr>
+              <tr><td><strong>Message enricher</strong></td><td>Augment a message with data from a side lookup</td><td><code>HTTPRequest</code> / <code>DatabaseRetrieve</code></td></tr>
+              <tr><td><strong>Dead letter channel</strong></td><td>Capture unprocessable messages for triage</td><td>Failure terminal &rarr; MQ DLQ</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="orch-vs-chor">Orchestration vs choreography</h2>
+          <p>The choice that defines the shape of the integration platform.</p>
+          <ul>
+            <li><strong>Orchestration:</strong> a central flow knows the steps and calls each system. Easy to reason about, easy to change in one place. Becomes a SPOF and a development bottleneck if it owns too much.</li>
+            <li><strong>Choreography:</strong> services react to events and emit their own. No central coordinator. Scales independently but the end-to-end path lives across many systems and is hard to debug without strong tracing.</li>
+          </ul>
+
+          <div class="diagram" role="img" aria-label="Orchestration versus choreography compared">
+            <div class="diagram__inner">
+              <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ip2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="ip3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <text x="190" y="25" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">ORCHESTRATION</text>
+                <rect x="140" y="60" width="100" height="40" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="190" y="85" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Orchestrator</text>
+
+                <rect x="20" y="160" width="90" height="40" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="65" y="185" text-anchor="middle" fill="#e4e4e7" font-size="10">KYC</text>
+                <rect x="140" y="160" width="90" height="40" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="185" y="185" text-anchor="middle" fill="#e4e4e7" font-size="10">Risk</text>
+                <rect x="260" y="160" width="90" height="40" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="305" y="185" text-anchor="middle" fill="#e4e4e7" font-size="10">Ledger</text>
+
+                <line x1="170" y1="100" x2="80" y2="158" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ip2)"/>
+                <line x1="190" y1="100" x2="190" y2="158" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ip2)"/>
+                <line x1="210" y1="100" x2="290" y2="158" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ip2)"/>
+
+                <text x="190" y="240" text-anchor="middle" fill="#71717a" font-size="9">orchestrator owns the sequence</text>
+                <text x="190" y="255" text-anchor="middle" fill="#71717a" font-size="9">single point to evolve flow</text>
+
+                <line x1="390" y1="20" x2="390" y2="290" stroke="#71717a" stroke-dasharray="3 3"/>
+
+                <text x="590" y="25" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">CHOREOGRAPHY</text>
+                <rect x="540" y="60" width="100" height="40" rx="4" fill="#0f0f16" stroke="#fbbf24"/>
+                <text x="590" y="85" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Event bus</text>
+
+                <rect x="420" y="160" width="90" height="40" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="465" y="185" text-anchor="middle" fill="#e4e4e7" font-size="10">KYC</text>
+                <rect x="540" y="160" width="90" height="40" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="585" y="185" text-anchor="middle" fill="#e4e4e7" font-size="10">Risk</text>
+                <rect x="660" y="160" width="90" height="40" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="705" y="185" text-anchor="middle" fill="#e4e4e7" font-size="10">Ledger</text>
+
+                <line x1="465" y1="160" x2="540" y2="100" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ip3)"/>
+                <line x1="585" y1="160" x2="585" y2="100" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ip3)"/>
+                <line x1="705" y1="160" x2="640" y2="100" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ip3)"/>
+
+                <line x1="540" y1="80" x2="465" y2="158" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#ip3)"/>
+                <line x1="640" y1="80" x2="705" y2="158" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#ip3)"/>
+
+                <text x="590" y="240" text-anchor="middle" fill="#71717a" font-size="9">each service decides what to react to</text>
+                <text x="590" y="255" text-anchor="middle" fill="#71717a" font-size="9">no central authority &middot; harder to trace</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Orchestration vs choreography in customer onboarding</div>
+          </div>
+
+          <p>The decision rule that holds in practice: <strong>orchestrate within a domain, choreograph across domains.</strong> Within payments, an ACE flow orchestrates KYC + risk + ledger. Across payments, fraud, and notifications, services subscribe to events and act independently.</p>
+
+          <h2 id="canonical">Canonical model</h2>
+          <p>A canonical data model is a shared internal representation that intermediates between external schemas. The promise: change one external system without touching N others. The risk: a canonical model that tries to be everything to everyone becomes a 600-field bloat that nobody can change. Keep it minimal &mdash; only the fields that genuinely flow across multiple integrations.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>canonical-payment-v1.xsd</span><span class="code-block__lang">xsd</span></div>
+<pre><code><span class="tok-k">&lt;xs:schema</span> xmlns:xs=<span class="tok-s">"http://www.w3.org/2001/XMLSchema"</span>
+           targetNamespace=<span class="tok-s">"http://acmebank.com/canonical/v1"</span>&gt;
+
+  <span class="tok-k">&lt;xs:complexType</span> name=<span class="tok-s">"Payment"</span>&gt;
+    <span class="tok-k">&lt;xs:sequence&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"id"</span>          type=<span class="tok-s">"xs:string"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"amount"</span>      type=<span class="tok-s">"xs:decimal"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"currency"</span>    type=<span class="tok-s">"xs:string"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"originator"</span>  type=<span class="tok-s">"Party"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"beneficiary"</span> type=<span class="tok-s">"Party"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"reference"</span>   type=<span class="tok-s">"xs:string"</span> minOccurs=<span class="tok-s">"0"</span>/&gt;
+    <span class="tok-k">&lt;/xs:sequence&gt;</span>
+  <span class="tok-k">&lt;/xs:complexType&gt;</span>
+
+  <span class="tok-k">&lt;xs:complexType</span> name=<span class="tok-s">"Party"</span>&gt;
+    <span class="tok-k">&lt;xs:sequence&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"name"</span>    type=<span class="tok-s">"xs:string"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"account"</span> type=<span class="tok-s">"xs:string"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"bic"</span>     type=<span class="tok-s">"xs:string"</span>/&gt;
+    <span class="tok-k">&lt;/xs:sequence&gt;</span>
+  <span class="tok-k">&lt;/xs:complexType&gt;</span>
+
+<span class="tok-k">&lt;/xs:schema&gt;</span></code></pre>
+          </div>
+
+          <p>Map external schemas (ISO 20022 <code>pacs.008</code>, SWIFT MT103, partner JSON) into this canonical type at the integration boundary. Downstream nodes only see canonical &mdash; they have no knowledge of the upstream format.</p>
+
+          <h2 id="flow">Building a flow</h2>
+          <p>A typical content-based-routing + enrichment flow looks like this in ACE:</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Choose the input node</h4>
+              <p><code>MQInput</code> for queue-driven, <code>HTTPInput</code> for synchronous REST, <code>KafkaConsumer</code> for streams. The input node defines the transaction boundary.</p>
+            </li>
+            <li>
+              <h4>Parse and validate</h4>
+              <p>Attach a message domain (<code>DFDL</code>, <code>JSON</code>, <code>XMLNSC</code>) so the rest of the flow has structured access. Validate against the canonical schema; reject early.</p>
+            </li>
+            <li>
+              <h4>Transform to canonical</h4>
+              <p>A <code>Mapping</code> node is preferred over <code>Compute</code> (ESQL) for maintainability. Mapping is graphical and reviewable; ESQL is code that only one engineer remembers how to read.</p>
+            </li>
+            <li>
+              <h4>Enrich</h4>
+              <p>Side calls to lookup services (account master, sanctions, KYC). Use <code>HTTPRequest</code> with a 2-second timeout and a circuit breaker; never let a downstream slowdown block the flow indefinitely.</p>
+            </li>
+            <li>
+              <h4>Route</h4>
+              <p>A <code>RouteToLabel</code> sets a label based on content; one <code>Label</code> node per branch. Avoid deep <code>Filter</code> chains &mdash; they&rsquo;re hard to read.</p>
+            </li>
+            <li>
+              <h4>Output</h4>
+              <p><code>MQOutput</code>, <code>HTTPRequest</code>, <code>KafkaProducer</code>. Wire the failure terminal of the output node to an error subflow that always logs and DLQs.</p>
+            </li>
+          </ol>
+
+          <h3>Example: payment routing in ESQL</h3>
+          <p>When ESQL is unavoidable, keep it short and side-effect-free.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>RoutePayment.esql</span><span class="code-block__lang">esql</span></div>
+<pre><code><span class="tok-k">CREATE COMPUTE MODULE</span> RoutePayment
+  <span class="tok-k">CREATE FUNCTION</span> Main() <span class="tok-k">RETURNS</span> BOOLEAN
+  <span class="tok-k">BEGIN</span>
+    <span class="tok-c">-- normalise currency to ISO 4217</span>
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.currency =
+        <span class="tok-k">UPPER</span>(InputRoot.JSON.Data.currency);
+
+    <span class="tok-c">-- route by amount: > 1M = high-value branch</span>
+    <span class="tok-k">DECLARE</span> amt <span class="tok-k">DECIMAL</span>;
+    <span class="tok-k">SET</span> amt = <span class="tok-k">CAST</span>(InputRoot.JSON.Data.amount <span class="tok-k">AS DECIMAL</span>);
+
+    <span class="tok-k">IF</span> amt &gt; 1000000 <span class="tok-k">THEN</span>
+      <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out1'</span>;       <span class="tok-c">-- high-value</span>
+    <span class="tok-k">ELSEIF</span> amt &gt; 10000 <span class="tok-k">THEN</span>
+      <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out2'</span>;       <span class="tok-c">-- standard</span>
+    <span class="tok-k">ELSE</span>
+      <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out3'</span>;       <span class="tok-c">-- micro-payment</span>
+    <span class="tok-k">END IF</span>;
+
+    <span class="tok-k">RETURN</span> FALSE;
+  <span class="tok-k">END</span>;
+<span class="tok-k">END MODULE</span>;</code></pre>
+          </div>
+
+          <h2 id="error">Error handling</h2>
+          <p>Three failure modes need explicit handling: malformed messages (parse failure), validation failures (business rule violation), and downstream errors (timeout, 5xx). Each goes to a different place.</p>
+
+          <ul>
+            <li><strong>Parse failure</strong> &rarr; <code>FAILURE</code> terminal of the parser node &rarr; quarantine queue, never DLQ. The message is unrecoverable; manual triage.</li>
+            <li><strong>Validation failure</strong> &rarr; respond to caller with structured error (sync) or emit a <code>PaymentRejected</code> event (async). Don&rsquo;t DLQ a valid message that just doesn&rsquo;t pass policy.</li>
+            <li><strong>Downstream error</strong> &rarr; retry with backoff (3 attempts, exponential), then DLQ. The message will be replayable once the downstream is fixed.</li>
+          </ul>
+
+          <h2 id="ha">HA &amp; deployment</h2>
+          <p>The container model gives you HA largely for free. Three things still need explicit attention:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>integration-server-helm.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">appconnect.ibm.com/v1beta1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">IntegrationServer</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">integration-prod</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">replicas</span>: <span class="tok-n">3</span>
+  <span class="tok-k">version</span>: <span class="tok-s">12.0.12.0-r1</span>
+  <span class="tok-k">barURL</span>: <span class="tok-s">https://artifactory/payments-1.4.7.bar</span>
+  <span class="tok-k">configurations</span>:
+    - <span class="tok-s">payments-mq-policy</span>
+    - <span class="tok-s">payments-truststore</span>
+    - <span class="tok-s">payments-server-conf</span>
+
+  <span class="tok-k">pod</span>:
+    <span class="tok-k">containers</span>:
+      <span class="tok-k">runtime</span>:
+        <span class="tok-k">resources</span>:
+          <span class="tok-k">requests</span>: { <span class="tok-k">cpu</span>: <span class="tok-s">500m</span>, <span class="tok-k">memory</span>: <span class="tok-s">1Gi</span> }
+          <span class="tok-k">limits</span>:   { <span class="tok-k">cpu</span>: <span class="tok-s">2</span>,    <span class="tok-k">memory</span>: <span class="tok-s">2Gi</span> }
+        <span class="tok-k">livenessProbe</span>:
+          <span class="tok-k">httpGet</span>: { <span class="tok-k">path</span>: <span class="tok-s">/apiv2</span>, <span class="tok-k">port</span>: <span class="tok-n">7600</span> }
+          <span class="tok-k">initialDelaySeconds</span>: <span class="tok-n">120</span>
+        <span class="tok-k">readinessProbe</span>:
+          <span class="tok-k">httpGet</span>: { <span class="tok-k">path</span>: <span class="tok-s">/apiv2/iready</span>, <span class="tok-k">port</span>: <span class="tok-n">7600</span> }
+
+  <span class="tok-k">autoScale</span>:
+    <span class="tok-k">enabled</span>: <span class="tok-n">true</span>
+    <span class="tok-k">minReplicas</span>: <span class="tok-n">3</span>
+    <span class="tok-k">maxReplicas</span>: <span class="tok-n">10</span>
+    <span class="tok-k">targetCPUUtilizationPercentage</span>: <span class="tok-n">70</span></code></pre>
+          </div>
+
+          <ol>
+            <li><strong>MQ qmgr cluster, not single qmgr.</strong> If the integration server pulls from MQ, the qmgr must be clustered or the MQ failover is the bottleneck.</li>
+            <li><strong>BAR file in artifactory, not in the image.</strong> Same image, different BAR per environment. This is what makes promotion deterministic.</li>
+            <li><strong>HPA on CPU is fine for synchronous flows.</strong> For queue-driven flows, use a custom metric on queue depth &mdash; CPU lags behind a backlog.</li>
+          </ol>
+
+          <h2 id="observability">Observability</h2>
+          <p>ACE emits flow accounting and statistics in a structured form. Wire them into Prometheus via the metrics endpoint; into a SIEM via syslog. The signals that matter:</p>
+          <ul>
+            <li><strong>Per-flow throughput, latency p50/p99, error rate.</strong> Available from <code>/apiv2/metrics</code> on each integration server.</li>
+            <li><strong>Queue depth on input MQ queues.</strong> A growing depth means the flow is falling behind; alert before the queue is full.</li>
+            <li><strong>Per-node failure counts.</strong> Helps localise <em>where</em> in a flow failures originate &mdash; the parse node, the enrich call, the output.</li>
+          </ul>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">The shared-flow library</div>
+            <p>A &ldquo;common subflow&rdquo; library that every team consumes turns into a coupling hazard within a year. One subflow change, fifty integrations to retest. Prefer copy-paste of small subflows over shared libraries unless you have rigorous regression coverage across consumers.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">ESQL as a programming language</div>
+            <p>ESQL is excellent for short transformations and message routing. It is a poor general-purpose language. If a Compute node has more than 50 lines of logic, it belongs in a Java microservice that the flow calls, not inside the flow.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">DLQ as a data store</div>
+            <p>A growing DLQ that nobody triages is a deferred outage. Build alerts on DLQ depth and dwell time; assign clear ownership; reprocess weekly at minimum.</p>
+          </div>
+
+          <h2 id="when-not">When not to use</h2>
+          <p>An integration platform like ACE is the right tool when:</p>
+          <ul>
+            <li>You connect protocol-incompatible systems (MQ &harr; REST, COBOL &harr; JSON, file-drop &harr; Kafka).</li>
+            <li>Transformations are non-trivial &mdash; ISO 20022, SWIFT MT, EDIFACT &mdash; and the platform&rsquo;s parsers save real effort.</li>
+            <li>Connectors to legacy or vendor systems are pre-built and certified.</li>
+          </ul>
+          <p>It is the wrong tool when:</p>
+          <ul>
+            <li>The integration is microservice-to-microservice over HTTPS with shared JSON contracts. A direct REST call is simpler than introducing a flow.</li>
+            <li>The logic is long-running, stateful, and stateful-correct &mdash; build a workflow service (Camunda, Temporal) instead.</li>
+            <li>You don&rsquo;t already have ACE / IBM licensing. Standalone, the cost rarely pencils against open-source alternatives (Apache Camel, Kafka Connect).</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="../event-driven.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Event-Driven Architecture</div>
+            </a>
+            <a href="../data-streaming.html" class="article-nav__next">
+              <div class="article-nav__label">Next article</div>
+              <div class="article-nav__title">Data Streaming &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

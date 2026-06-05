@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legacy Integration &mdash; Strangler Fig &amp; CICS &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Modernising integration with core banking and legacy financial systems: strangler fig pattern, anti-corruption layer, MQ-CICS bridges, COBOL adapters, and the patterns for retiring a 30-year-old system without taking the bank offline.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Legacy Integration &mdash; Strangler Fig &amp; CICS &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Strangler fig and adapter patterns for legacy core banking integration.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/legacy-integration/strangler-and-cics.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Legacy Integration &mdash; Production Patterns">
+  <meta name="twitter:description" content="Strangler fig and adapter patterns for legacy systems.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration/strangler-and-cics.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../legacy-integration.html">Legacy Integration</a><span>/</span>Strangler Fig &amp; CICS</div>
+          <span class="overline">Lab Article</span>
+          <h1>Legacy Integration: Strangler Fig &amp; CICS</h1>
+          <p class="lead">Modernising integration with core banking and legacy financial systems: strangler fig, anti-corruption layer, MQ-CICS bridges, COBOL adapters, and the patterns for retiring a 30-year-old system without taking the bank offline.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#typical">What &ldquo;legacy&rdquo; means</a></li>
+            <li><a href="#strangler">Strangler fig</a></li>
+            <li><a href="#acl">Anti-corruption layer</a></li>
+            <li><a href="#mq-cics">MQ &harr; CICS bridge</a></li>
+            <li><a href="#steps">Migration steps</a></li>
+            <li><a href="#data-shape">Data shape</a></li>
+            <li><a href="#cutover">Cutover patterns</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When not to migrate</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM MQ / CICS / Mainframe Connect</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Most banks run a core ledger that predates the internet. The system works, the regulator is comfortable with it, and replacing it &ldquo;in one go&rdquo; has failed at every bank that has tried. The realistic path is incremental: build a modern integration boundary around the legacy core, route new functionality through it, and retire pieces of the core when they no longer have callers.</p>
+          <p>This is the <strong>strangler fig pattern</strong>, named after the vine that grows around a host tree until the tree is gone. The vine in our case is a modern integration platform; the tree is the mainframe.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Don&rsquo;t modernise what works</div>
+            <p>The mainframe is not the problem. The problem is that every new product team has to learn COBOL conventions, CICS COMMAREA layouts, and EBCDIC encoding to integrate. Modernising means hiding the mainframe behind a clean contract &mdash; not necessarily replacing it. Some banks run a strangled core for a decade before retirement, and that is fine.</p>
+          </div>
+
+          <h2 id="typical">What &ldquo;legacy&rdquo; means</h2>
+          <p>The term covers a small number of recurring shapes:</p>
+          <ul>
+            <li><strong>CICS / COBOL on z/OS.</strong> Transactional, COMMAREA-based, called via 3270 emulation, MQ, or CICS Transaction Gateway.</li>
+            <li><strong>IMS DB/DC.</strong> Hierarchical database, transactional, called via MQ-IMS bridge or APPC.</li>
+            <li><strong>AS/400 (IBM i).</strong> RPG programs, DB2/400, often called via remote-program-call or message queue.</li>
+            <li><strong>File-drop integration.</strong> Fixed-width or CSV files dropped on FTP/SFTP, processed nightly.</li>
+            <li><strong>Vendor packages with no API.</strong> Closed core banking systems where the only integration point is a database table or a flat file.</li>
+          </ul>
+          <p>The pattern is the same regardless of shape: put a façade in front, normalise the contract, route new traffic through the façade, retire the legacy entry point.</p>
+
+          <h2 id="strangler">Strangler fig</h2>
+
+          <div class="diagram" role="img" aria-label="Strangler fig pattern showing progressive migration of three capabilities from legacy core to new services">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="lg1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="lg2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#71717a"/>
+                  </marker>
+                </defs>
+
+                <text x="130" y="30" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">PHASE 1 &mdash; FAÇADE</text>
+                <rect x="40" y="50" width="180" height="60" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="130" y="74" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Façade (REST)</text>
+                <text x="130" y="92" text-anchor="middle" fill="#71717a" font-size="9">accounts, payments, customers</text>
+
+                <line x1="130" y1="110" x2="130" y2="138" stroke="#71717a" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#lg2)"/>
+
+                <rect x="40" y="140" width="180" height="60" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="130" y="164" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Mainframe core</text>
+                <text x="130" y="182" text-anchor="middle" fill="#71717a" font-size="9">all logic still here</text>
+
+                <line x1="240" y1="120" x2="290" y2="120" stroke="#71717a" stroke-dasharray="3 2"/>
+
+                <text x="390" y="30" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">PHASE 2 &mdash; PARTIAL</text>
+                <rect x="300" y="50" width="180" height="60" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="390" y="74" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Façade (REST)</text>
+                <text x="390" y="92" text-anchor="middle" fill="#71717a" font-size="9">accounts, payments, customers</text>
+
+                <line x1="350" y1="110" x2="350" y2="138" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#lg1)"/>
+                <line x1="430" y1="110" x2="430" y2="138" stroke="#71717a" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#lg2)"/>
+
+                <rect x="300" y="140" width="80" height="60" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="340" y="164" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">customers</text>
+                <text x="340" y="180" text-anchor="middle" fill="#71717a" font-size="9">new svc</text>
+
+                <rect x="390" y="140" width="90" height="60" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="435" y="164" text-anchor="middle" fill="#e4e4e7" font-size="10">accounts</text>
+                <text x="435" y="180" text-anchor="middle" fill="#71717a" font-size="9">mainframe</text>
+
+                <line x1="500" y1="120" x2="550" y2="120" stroke="#71717a" stroke-dasharray="3 2"/>
+
+                <text x="650" y="30" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">PHASE 3 &mdash; RETIRED</text>
+                <rect x="560" y="50" width="180" height="60" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="650" y="74" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Façade (REST)</text>
+                <text x="650" y="92" text-anchor="middle" fill="#71717a" font-size="9">all routes &rarr; new services</text>
+
+                <line x1="650" y1="110" x2="650" y2="138" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#lg1)"/>
+
+                <rect x="560" y="140" width="180" height="60" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="650" y="164" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">New services</text>
+                <text x="650" y="182" text-anchor="middle" fill="#71717a" font-size="9">customers, accounts, payments</text>
+
+                <rect x="560" y="220" width="180" height="40" rx="6" fill="none" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="650" y="244" text-anchor="middle" fill="#71717a" font-size="10">mainframe decommissioned</text>
+
+                <text x="390" y="320" text-anchor="middle" fill="#71717a" font-size="10">consumer applications never see the migration &mdash; the façade contract is stable across phases</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Strangler fig: phased migration behind a stable façade</div>
+          </div>
+
+          <p>Three properties make this work:</p>
+          <ul>
+            <li><strong>The façade contract is stable.</strong> Consumers don&rsquo;t know which calls hit the new service vs the legacy core. Migration is a backend concern.</li>
+            <li><strong>Routing is feature-flagged.</strong> Per-customer or per-percentage routing lets you migrate 1% &rarr; 10% &rarr; 100% with quick rollback.</li>
+            <li><strong>Each phase is independently shippable.</strong> No big bang. If &ldquo;customers&rdquo; takes 18 months to migrate, accounts and payments can wait.</li>
+          </ul>
+
+          <h2 id="acl">Anti-corruption layer</h2>
+          <p>The façade and the legacy system speak different languages. The <strong>anti-corruption layer (ACL)</strong> is the translation boundary: legacy concepts (account types as 2-character codes, dates as <code>YYYYDDD</code> Julian, currency as numeric position) get mapped into modern equivalents on the way out, and modern shapes get mapped back on the way in.</p>
+          <p>The ACL is a separate component, not part of either side. Burying it inside the façade leaks legacy concepts into the API contract; burying it inside the legacy adapter ties the new code to mainframe quirks forever.</p>
+
+          <h2 id="mq-cics">MQ &harr; CICS bridge</h2>
+          <p>The most common integration topology: a modern service places a request on an MQ queue, the <strong>MQ-CICS bridge</strong> picks it up, invokes a CICS transaction with the request as COMMAREA, and puts the response on a reply queue.</p>
+
+          <div class="diagram" role="img" aria-label="MQ to CICS bridge with request and reply queues, COMMAREA marshalling">
+            <div class="diagram__inner">
+              <svg width="780" height="280" viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="lg3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="100" width="130" height="70" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="85" y="125" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Service (Java)</text>
+                <text x="85" y="143" text-anchor="middle" fill="#71717a" font-size="9">JMS producer</text>
+                <text x="85" y="158" text-anchor="middle" fill="#71717a" font-size="9">+ JSON request</text>
+
+                <rect x="180" y="60" width="120" height="40" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="240" y="85" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">REQUEST.QUEUE</text>
+
+                <rect x="180" y="180" width="120" height="40" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="240" y="205" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">REPLY.QUEUE</text>
+
+                <rect x="330" y="100" width="130" height="70" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="395" y="125" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">MQ-CICS</text>
+                <text x="395" y="142" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">bridge</text>
+                <text x="395" y="160" text-anchor="middle" fill="#71717a" font-size="9">JSON &harr; COMMAREA</text>
+
+                <rect x="490" y="100" width="130" height="70" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="555" y="125" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">CICS region</text>
+                <text x="555" y="142" text-anchor="middle" fill="#71717a" font-size="9">EXEC CICS LINK</text>
+                <text x="555" y="158" text-anchor="middle" fill="#71717a" font-size="9">COBOL program</text>
+
+                <rect x="650" y="100" width="120" height="70" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="710" y="125" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">VSAM / DB2</text>
+                <text x="710" y="143" text-anchor="middle" fill="#71717a" font-size="9">core ledger</text>
+
+                <line x1="150" y1="120" x2="178" y2="80" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#lg3)"/>
+                <line x1="300" y1="80" x2="328" y2="120" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#lg3)"/>
+                <line x1="460" y1="135" x2="488" y2="135" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#lg3)"/>
+                <line x1="620" y1="135" x2="648" y2="135" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#lg3)"/>
+
+                <line x1="648" y1="155" x2="620" y2="155" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#lg3)" stroke-dasharray="3 2"/>
+                <line x1="488" y1="155" x2="460" y2="155" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#lg3)" stroke-dasharray="3 2"/>
+                <line x1="328" y1="155" x2="300" y2="200" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#lg3)" stroke-dasharray="3 2"/>
+                <line x1="178" y1="200" x2="150" y2="155" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#lg3)" stroke-dasharray="3 2"/>
+
+                <text x="395" y="240" text-anchor="middle" fill="#71717a" font-size="10">solid = request &middot; dashed = reply &middot; correlation via MsgId &harr; CorrelId</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; MQ-CICS bridge with COMMAREA marshalling</div>
+          </div>
+
+          <h3>JMS producer in the new service</h3>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>AccountQueryClient.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public</span> AccountBalance query(<span class="tok-t">String</span> accountId) <span class="tok-k">throws</span> JMSException {
+  <span class="tok-t">JMSContext</span> ctx = cf.createContext();
+  <span class="tok-t">Queue</span> request = ctx.createQueue(<span class="tok-s">"queue:///REQUEST.QUEUE"</span>);
+  <span class="tok-t">TemporaryQueue</span> reply = ctx.createTemporaryQueue();
+
+  <span class="tok-t">JsonObject</span> body = Json.createObjectBuilder()
+      .add(<span class="tok-s">"op"</span>, <span class="tok-s">"GETBAL"</span>)
+      .add(<span class="tok-s">"accountId"</span>, accountId)
+      .build();
+
+  <span class="tok-t">TextMessage</span> msg = ctx.createTextMessage(body.toString());
+  msg.setJMSReplyTo(reply);
+  msg.setStringProperty(<span class="tok-s">"_format"</span>, <span class="tok-s">"MQSTR"</span>);
+
+  ctx.createProducer().send(request, msg);
+
+  <span class="tok-t">Message</span> response = ctx.createConsumer(reply).receive(<span class="tok-n">5000</span>);  <span class="tok-c">// 5s timeout</span>
+  <span class="tok-k">if</span> (response == <span class="tok-k">null</span>) <span class="tok-k">throw new</span> TimeoutException(<span class="tok-s">"CICS no reply"</span>);
+
+  <span class="tok-k">return</span> AccountBalance.fromJson(response.getBody(<span class="tok-t">String</span>.<span class="tok-k">class</span>));
+}</code></pre>
+          </div>
+
+          <h3>COBOL COMMAREA layout</h3>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ACCT001.cbl</span><span class="code-block__lang">cobol</span></div>
+<pre><code><span class="tok-c">      * Request COMMAREA: 80 bytes</span>
+       <span class="tok-n">01</span>  WS-REQUEST.
+           <span class="tok-n">05</span>  WS-OP            <span class="tok-k">PIC</span> X(<span class="tok-n">8</span>).
+           <span class="tok-n">05</span>  WS-ACCOUNT-ID    <span class="tok-k">PIC</span> X(<span class="tok-n">16</span>).
+           <span class="tok-n">05</span>  WS-CHANNEL       <span class="tok-k">PIC</span> X(<span class="tok-n">4</span>).
+           <span class="tok-n">05</span>  <span class="tok-k">FILLER</span>           <span class="tok-k">PIC</span> X(<span class="tok-n">52</span>).
+
+<span class="tok-c">      * Response COMMAREA: 200 bytes</span>
+       <span class="tok-n">01</span>  WS-RESPONSE.
+           <span class="tok-n">05</span>  WS-RC            <span class="tok-k">PIC</span> 9(<span class="tok-n">4</span>).
+           <span class="tok-n">05</span>  WS-RC-MSG        <span class="tok-k">PIC</span> X(<span class="tok-n">40</span>).
+           <span class="tok-n">05</span>  WS-BAL-AVAIL     <span class="tok-k">PIC</span> S9(<span class="tok-n">15</span>)V99 <span class="tok-k">COMP-3</span>.
+           <span class="tok-n">05</span>  WS-BAL-LEDGER    <span class="tok-k">PIC</span> S9(<span class="tok-n">15</span>)V99 <span class="tok-k">COMP-3</span>.
+           <span class="tok-n">05</span>  WS-CCY           <span class="tok-k">PIC</span> X(<span class="tok-n">3</span>).
+           <span class="tok-n">05</span>  WS-LAST-TXN-DATE <span class="tok-k">PIC</span> 9(<span class="tok-n">7</span>).</code></pre>
+          </div>
+
+          <p>The bridge marshals JSON to/from this layout. The mapping is rote but worth scripting in CI &mdash; field-level test coverage on the marshalling code is the difference between a successful migration and a 3am incident.</p>
+
+          <h2 id="steps">Migration steps</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Inventory the entry points</h4>
+              <p>List every system that calls the legacy core. Channel, protocol, frequency, peak rate, who owns it. This is usually 50&ndash;200 entry points and the inventory itself takes a quarter.</p>
+            </li>
+            <li>
+              <h4>Identify the seams</h4>
+              <p>Group entry points into bounded contexts (accounts, payments, customers, cards). Each seam becomes a façade.</p>
+            </li>
+            <li>
+              <h4>Build the façade</h4>
+              <p>One façade per seam. Initially every operation routes to the legacy core via MQ-CICS. The façade exists only to stabilise the contract.</p>
+            </li>
+            <li>
+              <h4>Cut over consumers to the façade</h4>
+              <p>Migrate every consumer from direct mainframe access to the façade. This is the boring, long phase &mdash; budget for it.</p>
+            </li>
+            <li>
+              <h4>Build the new service for one capability</h4>
+              <p>Pick a low-risk, high-volume capability (read-only first &mdash; balance enquiry beats funds transfer). Build it independently, dual-write to legacy during shadow phase.</p>
+            </li>
+            <li>
+              <h4>Switch the façade to route to the new service</h4>
+              <p>Behind a feature flag, route a small percentage of traffic to the new service. Compare responses against legacy. Ramp up.</p>
+            </li>
+            <li>
+              <h4>Retire the legacy entry point</h4>
+              <p>Once 100% of the capability is on the new service for some sustained period, remove the legacy code path. This is the only step that frees up real mainframe MIPS.</p>
+            </li>
+          </ol>
+
+          <h2 id="data-shape">Data shape</h2>
+          <p>Three legacy data conventions trip up almost every migration:</p>
+          <ul>
+            <li><strong>EBCDIC vs ASCII.</strong> The mainframe speaks EBCDIC; everyone else speaks ASCII (or UTF-8). Conversion happens in the bridge or the channel; get it wrong and currency symbols, accents, and special characters break silently.</li>
+            <li><strong>Packed decimal (<code>COMP-3</code>).</strong> COBOL stores monetary values as packed BCD &mdash; not native binary or decimal string. Bridges must unpack to <code>BigDecimal</code> with the correct scale.</li>
+            <li><strong>Date formats.</strong> Julian dates (<code>YYYYDDD</code>), four-digit year ambiguity, missing time-of-day. Convert at the boundary, store ISO 8601 internally.</li>
+          </ul>
+
+          <h2 id="cutover">Cutover patterns</h2>
+
+          <table>
+            <thead>
+              <tr><th>Pattern</th><th>How it works</th><th>When to use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Shadow</strong></td><td>Write to both, read from legacy, compare</td><td>Building confidence in the new system</td></tr>
+              <tr><td><strong>Dual-write</strong></td><td>Write to both, read from new</td><td>After shadow proves equivalence</td></tr>
+              <tr><td><strong>Read-from-new</strong></td><td>Stop writing to legacy, new is system of record</td><td>Once dual-write is stable</td></tr>
+              <tr><td><strong>Big-bang</strong></td><td>Cut over in one window, no fallback</td><td>Almost never; very small surface only</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Reconcile, don&rsquo;t trust</div>
+            <p>During shadow and dual-write, run a reconciliation job that compares legacy and new state daily. Any drift &mdash; even &ldquo;just one record&rdquo; &mdash; is a bug. Track drift count as a release-gate metric. Without reconciliation you discover migration bugs from customer complaints, which is too late.</p>
+          </div>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Underestimating throughput mismatch</div>
+            <p>The mainframe is slower per transaction than a modern service but absorbs huge concurrent loads. The new service is faster per transaction but falls over at the legacy concurrent load. Load-test the new service to mainframe peak, not average.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">The ACL becomes the legacy</div>
+            <p>If the ACL accumulates business logic (&ldquo;round amounts to 2 dp for partner X but 4 dp for partner Y&rdquo;), it ossifies. Keep the ACL purely about translation; push business logic to either side.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">No rollback plan</div>
+            <p>Once the new service is system of record and legacy has stopped writing, rolling back is hard or impossible. Define the &ldquo;point of no return&rdquo; explicitly; require explicit sign-off; keep the legacy path warm for a quarter past the cutover.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">COBOL knowledge fade</div>
+            <p>The engineers who wrote the original code retire. Codify their knowledge in tests against the bridge before they leave &mdash; otherwise you discover undocumented behaviour by re-implementing it incorrectly.</p>
+          </div>
+
+          <h2 id="when-not">When not to migrate</h2>
+          <p>Strangler fig is the right pattern when the legacy code is a constraint on shipping new product, scaling, or hiring. It is the wrong pattern when:</p>
+          <ul>
+            <li><strong>The legacy works and is invisible.</strong> A 30-year-old batch job that runs at 2am, processes 50M transactions, and never fails is not a problem. Don&rsquo;t modernise it just because it&rsquo;s old.</li>
+            <li><strong>Regulatory certainty depends on legacy behaviour.</strong> If the regulator is comfortable with the current system and a re-implementation would require re-certification, the cost calculus shifts dramatically. Document and ringfence; don&rsquo;t modernise.</li>
+            <li><strong>The team has no mainframe expertise left.</strong> A migration done without anyone who understands the legacy code will introduce subtle bugs that are impossible to diagnose. Hire or train first; migrate second.</li>
+            <li><strong>Volumes are small and the cost of running it is low.</strong> A small AS/400 system that costs less to keep than to migrate is a candidate for &ldquo;leave alone forever.&rdquo;</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="../data-streaming.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Data Streaming</div>
+            </a>
+            <a href="../distributed-caching.html" class="article-nav__next">
+              <div class="article-nav__label">Next article</div>
+              <div class="article-nav__title">Distributed Caching &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

@@ -5,24 +5,24 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Data Streaming — Lab — Waleed Albadawi</title>
-  <meta name="description" content="Technical articles on data streaming — real-time pipelines, stream processing, and high-throughput event handling for financial data flows.">
+  <title>Data Streaming &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Articles on real-time stream processing for financial data: Kafka Streams, Apache Flink, IBM Event Streams, windowing, exactly-once stateful processing, and the patterns behind real-time fraud detection and payments.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Data Streaming — Lab — Waleed Albadawi">
-  <meta property="og:description" content="Technical articles on data streaming — real-time pipelines, stream processing, and high-throughput event handling for financial data flows.">
+  <meta property="og:title" content="Data Streaming &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Stream processing patterns for real-time fraud detection and payments.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Data Streaming — Lab — Waleed Albadawi">
-  <meta name="twitter:description" content="Technical articles on data streaming — real-time pipelines, stream processing, and high-throughput event handling for financial data flows.">
+  <meta name="twitter:title" content="Data Streaming &mdash; Lab &mdash; Waleed Albadawi">
+  <meta name="twitter:description" content="Stream processing for real-time financial services.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
@@ -32,29 +32,7 @@
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 0.4rem; }
-    .coming-soon-state { text-align: center; padding: 5rem 0; }
-    .coming-soon-state .overline { display: block; margin-bottom: 1rem; }
-    .coming-soon-state p { color: var(--color-text-muted); font-size: 0.9375rem; max-width: 480px; margin: 0 auto; }
   </style>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": "Data Streaming",
-    "description": "Technical articles on data streaming — real-time pipelines, stream processing, and high-throughput event handling for financial data flows.",
-    "url": "https://www.wbadawi.info/lab/data-streaming.html",
-    "isPartOf": {"@type": "WebSite", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
-    "breadcrumb": {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.wbadawi.info/"},
-        {"@type": "ListItem", "position": 2, "name": "Lab", "item": "https://www.wbadawi.info/technical.html"},
-        {"@type": "ListItem", "position": 3, "name": "Data Streaming", "item": "https://www.wbadawi.info/lab/data-streaming.html"}
-      ]
-    },
-    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"}
-  }
-  </script>
 </head>
 <body>
 
@@ -78,19 +56,62 @@
   </header>
 
   <section class="page-header">
-    <div class="container">
+    <div class="container container--narrow">
       <div class="breadcrumb"><a href="../technical.html">Lab</a><span>/</span>Data Streaming</div>
+      <span class="overline">Lab Topic</span>
       <h1>Data Streaming</h1>
-      <p class="lead">Real-time data pipelines, stream processing, and high-throughput event handling for financial data flows and market feeds. Building systems that process millions of events without losing a single one.</p>
+      <p class="lead">Real-time data pipelines, stream processing, and high-throughput event handling for financial data flows, market feeds, fraud detection, and the trade-offs between Kafka Streams and Apache Flink.</p>
     </div>
   </section>
 
   <section>
     <div class="container container--narrow">
-      <div class="coming-soon-state">
-        <span class="overline">Coming Soon</span>
-        <h3 style="margin-bottom: 1rem;">Articles in progress</h3>
-        <p>Technical write-ups on data streaming for financial services are being prepared. Check back shortly.</p>
+      <div class="article-list">
+
+        <a href="data-streaming/kafka-streams-and-flink.html" class="article-list__item">
+          <div class="article-list__meta">
+            <span>Lab article</span>
+            <span class="article-list__meta-divider">&middot;</span>
+            <span>~15 min read</span>
+          </div>
+          <h2 class="article-list__title">Data Streaming: Kafka Streams &amp; Flink</h2>
+          <p class="article-list__excerpt">Stream processing for fraud detection and real-time payments: windowing, stateful joins, exactly-once processing, and the trade-offs between Kafka Streams (in-process) and Flink (separate cluster).</p>
+          <div class="article-list__tags">
+            <span class="skill-tag">Kafka Streams</span>
+            <span class="skill-tag">Apache Flink</span>
+            <span class="skill-tag">IBM Event Streams</span>
+            <span class="skill-tag">Windowing</span>
+            <span class="skill-tag">RocksDB</span>
+          </div>
+          <div class="article-list__arrow">Read article &rarr;</div>
+        </a>
+
+        <a href="data-streaming/ksqldb-and-flink-sql.html" class="article-list__item">
+          <div class="article-list__meta">
+            <span>Lab article</span>
+            <span class="article-list__meta-divider">&middot;</span>
+            <span>~14 min read</span>
+          </div>
+          <h2 class="article-list__title">Data Streaming: ksqlDB &amp; Flink SQL for Stream Analytics</h2>
+          <p class="article-list__excerpt">SQL on streams for financial services: stateful aggregations, windowing semantics, temporal joins for sanctions screening, schema management, and the operational trade-offs that determine which engine fits your architecture.</p>
+          <div class="article-list__tags">
+            <span class="skill-tag">ksqlDB</span>
+            <span class="skill-tag">Flink SQL</span>
+            <span class="skill-tag">Schema Registry</span>
+            <span class="skill-tag">Windowing</span>
+            <span class="skill-tag">Stream Analytics</span>
+          </div>
+          <div class="article-list__arrow">Read article &rarr;</div>
+        </a>
+
+        <div class="article-list__item article-list__item--soon">
+          <div class="article-list__meta">
+            <span>Coming soon</span>
+          </div>
+          <h2 class="article-list__title">Real-time fraud detection pipeline</h2>
+          <p class="article-list__excerpt">An end-to-end design: feature store, sliding-window aggregates, model scoring on the stream, and feedback loops.</p>
+        </div>
+
       </div>
     </div>
   </section>

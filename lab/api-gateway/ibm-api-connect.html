@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IBM API Gateway — Production Architecture — Lab — Waleed Albadawi</title>
+  <meta name="description" content="A practical, production-grade walkthrough of IBM API Connect and DataPower Gateway: components, request lifecycle, deployment steps, OpenAPI assembly policies, security, HA topology, and operational patterns for financial services.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="IBM API Gateway — Production Architecture — Lab — Waleed Albadawi">
+  <meta property="og:description" content="A practical, production-grade walkthrough of IBM API Connect and DataPower Gateway: components, request lifecycle, deployment, security, HA topology.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/api-gateway/ibm-api-connect.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="IBM API Gateway — Production Architecture">
+  <meta name="twitter:description" content="A practical, production-grade walkthrough of IBM API Connect and DataPower Gateway.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/api-gateway/ibm-api-connect.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "IBM API Gateway — Production Architecture",
+    "description": "A practical, production-grade walkthrough of IBM API Connect and DataPower Gateway: components, request lifecycle, deployment steps, OpenAPI assembly policies, security, HA topology, and operational patterns for financial services.",
+    "url": "https://www.wbadawi.info/lab/api-gateway/ibm-api-connect.html",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "isPartOf": {"@type": "WebSite", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.wbadawi.info/"},
+        {"@type": "ListItem", "position": 2, "name": "Lab", "item": "https://www.wbadawi.info/technical.html"},
+        {"@type": "ListItem", "position": 3, "name": "API Gateway", "item": "https://www.wbadawi.info/lab/api-gateway/ibm-api-connect.html"}
+      ]
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-gateway.html">API Gateway</a><span>/</span>IBM API Connect</div>
+          <span class="overline">Lab Article</span>
+          <h1>IBM API Gateway: Production Architecture</h1>
+          <p class="lead">A practical walkthrough of IBM API Connect and DataPower Gateway &mdash; the components, the request lifecycle, deployment steps, OpenAPI assembly policies, OAuth and mTLS, HA topology, and the operational patterns that keep regulated financial APIs reliable at scale.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#components">Components</a></li>
+            <li><a href="#lifecycle">Request lifecycle</a></li>
+            <li><a href="#deploy">Deploying an API</a></li>
+            <li><a href="#openapi">OpenAPI &amp; assembly</a></li>
+            <li><a href="#security">Security policies</a></li>
+            <li><a href="#rate-limit">Rate limiting</a></li>
+            <li><a href="#ha">HA topology</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When not to use</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM API Connect 10 / DataPower</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>IBM API Connect is a policy-driven API management platform. The runtime that actually enforces policies and proxies traffic is <strong>DataPower Gateway</strong> &mdash; an appliance (physical, virtual, or container) that terminates TLS, applies policies expressed as an <em>assembly</em>, and forwards to a backend. Around the gateway sit three control-plane services: <strong>API Manager</strong> (authoring, plans, catalogs), <strong>Developer Portal</strong> (consumer onboarding), and <strong>Analytics</strong> (event ingest, reporting).</p>
+          <p>In financial services it shows up because three things matter at once: TLS/mTLS termination with strong cipher control, deterministic rate-limit and quota enforcement, and an audit trail that maps every request to a consumer, plan, and policy version. DataPower&rsquo;s purpose-built XML/JSON processing engine and FIPS&#8209;validated cryptography make those properties enforceable rather than aspirational.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Naming</div>
+            <p>The product family is <strong>IBM API Connect</strong>. The gateway component is <strong>DataPower Gateway</strong> (often deployed as the <code>v5c</code> or <code>API Gateway</code> service). When people say &ldquo;IBM API Gateway&rdquo; they almost always mean DataPower configured as an API Connect gateway.</p>
+          </div>
+
+          <h2 id="components">Components</h2>
+          <p>An API Connect deployment has four logical subsystems. Each can be scaled independently, and each owns a distinct concern in the lifecycle.</p>
+
+          <div class="diagram" role="img" aria-label="IBM API Connect architecture diagram showing API Manager, DataPower Gateway, Developer Portal, and Analytics around a backend service">
+            <div class="diagram__inner">
+              <svg width="760" height="380" viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#71717a"/>
+                  </marker>
+                </defs>
+
+                <!-- Client -->
+                <rect x="20" y="160" width="110" height="60" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="75" y="185" text-anchor="middle" fill="#e4e4e7" font-size="12" font-weight="600">Consumer</text>
+                <text x="75" y="202" text-anchor="middle" fill="#71717a" font-size="10">app / partner</text>
+
+                <!-- DataPower (center) -->
+                <rect x="280" y="140" width="200" height="100" rx="8" fill="#1c1c28" stroke="#00d4aa" stroke-width="2"/>
+                <text x="380" y="165" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">DATAPOWER GATEWAY</text>
+                <text x="380" y="186" text-anchor="middle" fill="#e4e4e7" font-size="11">TLS · OAuth · Rate limit</text>
+                <text x="380" y="204" text-anchor="middle" fill="#e4e4e7" font-size="11">Transform · Route</text>
+                <text x="380" y="222" text-anchor="middle" fill="#71717a" font-size="10">data plane</text>
+
+                <!-- Backend -->
+                <rect x="610" y="160" width="130" height="60" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="675" y="185" text-anchor="middle" fill="#e4e4e7" font-size="12" font-weight="600">Backend</text>
+                <text x="675" y="202" text-anchor="middle" fill="#71717a" font-size="10">core / micro-services</text>
+
+                <!-- API Manager (top) -->
+                <rect x="200" y="20" width="160" height="70" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="280" y="45" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">API MANAGER</text>
+                <text x="280" y="62" text-anchor="middle" fill="#e4e4e7" font-size="10">authoring · plans</text>
+                <text x="280" y="78" text-anchor="middle" fill="#e4e4e7" font-size="10">catalogs · publish</text>
+
+                <!-- Developer Portal (top right) -->
+                <rect x="400" y="20" width="160" height="70" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="480" y="45" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">DEVELOPER PORTAL</text>
+                <text x="480" y="62" text-anchor="middle" fill="#e4e4e7" font-size="10">onboarding · keys</text>
+                <text x="480" y="78" text-anchor="middle" fill="#e4e4e7" font-size="10">docs · subscriptions</text>
+
+                <!-- Analytics (bottom) -->
+                <rect x="280" y="290" width="200" height="70" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="380" y="315" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">ANALYTICS</text>
+                <text x="380" y="332" text-anchor="middle" fill="#e4e4e7" font-size="10">event ingest · OpenSearch</text>
+                <text x="380" y="348" text-anchor="middle" fill="#e4e4e7" font-size="10">dashboards · exports</text>
+
+                <!-- Arrows: data plane -->
+                <line x1="130" y1="190" x2="278" y2="190" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr1)"/>
+                <line x1="480" y1="190" x2="608" y2="190" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr1)"/>
+
+                <!-- Arrows: control plane -->
+                <line x1="280" y1="92" x2="350" y2="138" stroke="#71717a" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr2)"/>
+                <line x1="380" y1="240" x2="380" y2="288" stroke="#71717a" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr2)"/>
+                <line x1="480" y1="92" x2="430" y2="138" stroke="#71717a" stroke-width="1" stroke-dasharray="4 3"/>
+
+                <!-- Labels -->
+                <text x="200" y="180" fill="#71717a" font-size="9">request</text>
+                <text x="540" y="180" fill="#71717a" font-size="9">forward</text>
+                <text x="295" y="120" fill="#71717a" font-size="9">publish config</text>
+                <text x="395" y="270" fill="#71717a" font-size="9">events</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; API Connect logical components and their interaction</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr><th>Subsystem</th><th>Concern</th><th>Scaling</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>DataPower Gateway</strong></td><td>Data plane: TLS, policy enforcement, routing, transformation</td><td>Horizontal, stateless; size by RPS &amp; payload</td></tr>
+              <tr><td><strong>API Manager</strong></td><td>Authoring of APIs, products, plans, catalogs; publish to gateway</td><td>Active/active; size by author count, publish rate</td></tr>
+              <tr><td><strong>Developer Portal</strong></td><td>External-facing site for consumer onboarding, app keys, docs</td><td>Horizontal; size by consumer base</td></tr>
+              <tr><td><strong>Analytics</strong></td><td>Event ingest (OpenSearch) and dashboards for traffic, errors, latency</td><td>Cluster; size by event volume and retention</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="lifecycle">Request lifecycle</h2>
+          <p>Every request that traverses DataPower runs through the same pipeline: connection acceptance, policy assembly, backend invocation, response policy assembly, and response. Each stage can short-circuit. The lifecycle below is the one to internalise &mdash; almost every operational decision (where to log, where to enforce a quota, where to mask a field) is really a question about <em>which stage</em>.</p>
+
+          <div class="diagram" role="img" aria-label="Request lifecycle through DataPower showing TLS, client identification, security, rate limit, transform, invoke, response policies, log">
+            <div class="diagram__inner">
+              <svg width="800" height="220" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <!-- Stages -->
+                <g>
+                  <rect x="10" y="80" width="90" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                  <text x="55" y="105" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">TLS</text>
+                  <text x="55" y="122" text-anchor="middle" fill="#71717a" font-size="9">terminate</text>
+                </g>
+                <g>
+                  <rect x="115" y="80" width="90" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                  <text x="160" y="100" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">client-id</text>
+                  <text x="160" y="115" text-anchor="middle" fill="#71717a" font-size="9">app key</text>
+                  <text x="160" y="128" text-anchor="middle" fill="#71717a" font-size="9">+ secret</text>
+                </g>
+                <g>
+                  <rect x="220" y="80" width="90" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                  <text x="265" y="100" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">security</text>
+                  <text x="265" y="115" text-anchor="middle" fill="#71717a" font-size="9">OAuth /</text>
+                  <text x="265" y="128" text-anchor="middle" fill="#71717a" font-size="9">JWT / mTLS</text>
+                </g>
+                <g>
+                  <rect x="325" y="80" width="90" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                  <text x="370" y="100" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">rate-limit</text>
+                  <text x="370" y="115" text-anchor="middle" fill="#71717a" font-size="9">plan quota</text>
+                  <text x="370" y="128" text-anchor="middle" fill="#71717a" font-size="9">+ burst</text>
+                </g>
+                <g>
+                  <rect x="430" y="80" width="90" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                  <text x="475" y="100" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">transform</text>
+                  <text x="475" y="115" text-anchor="middle" fill="#71717a" font-size="9">map / xslt</text>
+                  <text x="475" y="128" text-anchor="middle" fill="#71717a" font-size="9">redact</text>
+                </g>
+                <g>
+                  <rect x="535" y="80" width="90" height="60" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                  <text x="580" y="105" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">invoke</text>
+                  <text x="580" y="122" text-anchor="middle" fill="#71717a" font-size="9">backend</text>
+                </g>
+                <g>
+                  <rect x="640" y="80" width="90" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                  <text x="685" y="100" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">response</text>
+                  <text x="685" y="115" text-anchor="middle" fill="#71717a" font-size="9">map / mask</text>
+                  <text x="685" y="128" text-anchor="middle" fill="#71717a" font-size="9">cache</text>
+                </g>
+
+                <!-- Arrows -->
+                <line x1="100" y1="110" x2="113" y2="110" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr3)"/>
+                <line x1="205" y1="110" x2="218" y2="110" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr3)"/>
+                <line x1="310" y1="110" x2="323" y2="110" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr3)"/>
+                <line x1="415" y1="110" x2="428" y2="110" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr3)"/>
+                <line x1="520" y1="110" x2="533" y2="110" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr3)"/>
+                <line x1="625" y1="110" x2="638" y2="110" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr3)"/>
+                <line x1="730" y1="110" x2="780" y2="110" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr3)"/>
+
+                <!-- Top labels -->
+                <text x="190" y="50" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">REQUEST POLICIES</text>
+                <line x1="10" y1="60" x2="525" y2="60" stroke="#a78bfa" stroke-width="0.5" stroke-dasharray="2 2"/>
+                <text x="685" y="50" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">RESPONSE POLICIES</text>
+                <line x1="640" y1="60" x2="730" y2="60" stroke="#fbbf24" stroke-width="0.5" stroke-dasharray="2 2"/>
+
+                <!-- Bottom: log/event tap -->
+                <rect x="220" y="170" width="305" height="36" rx="4" fill="#0f0f16" stroke="#fbbf24" stroke-dasharray="3 2"/>
+                <text x="372" y="193" text-anchor="middle" fill="#fbbf24" font-size="10">async event tap &rarr; analytics + SIEM</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Request lifecycle through DataPower</div>
+          </div>
+
+          <p>Two practical implications:</p>
+          <ul>
+            <li><strong>Rate-limit before transform.</strong> A rejected request should consume zero CPU on payload parsing. Always place quota and security checks before any transformation policy.</li>
+            <li><strong>Mask in the response stage, not the request stage.</strong> PII redaction belongs in <code>post-invoke</code> &mdash; the gateway has the full backend response and can drop fields before they cross the trust boundary back to the caller.</li>
+          </ul>
+
+          <h2 id="deploy">Deploying an API</h2>
+          <p>The path from a local OpenAPI file to a published, consumable API runs through six steps. Each one is scriptable via the <code>apic</code> CLI, which is the only sane way to manage anything beyond a handful of APIs.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Author the OpenAPI definition</h4>
+              <p>Write the spec as plain OpenAPI 3.0 YAML. The IBM&#8209;specific behaviour (security, rate limits, assembly) lives under the <code>x-ibm-configuration</code> extension &mdash; the spec itself stays portable and reviewable.</p>
+            </li>
+            <li>
+              <h4>Define the assembly (policy chain)</h4>
+              <p>Inside <code>x-ibm-configuration.assembly.execute</code>, list the policies in order: <code>set-variable</code>, <code>oauth</code>, <code>rate-limit</code>, <code>map</code>, <code>invoke</code>, <code>gatewayscript</code>. The assembly is what DataPower actually executes; the rest of the OpenAPI spec is metadata.</p>
+            </li>
+            <li>
+              <h4>Wrap the API in a Product with Plans</h4>
+              <p>A Product groups one or more APIs. Plans inside the Product attach quotas (e.g. <code>1000/hour</code>, <code>burst 50/sec</code>). Consumers subscribe to a <em>plan</em>, not an API directly &mdash; this is what makes per-consumer rate limits work.</p>
+            </li>
+            <li>
+              <h4>Stage to the Catalog</h4>
+              <p>A Catalog is an environment (sandbox, test, prod). Staging publishes the Product to that catalog&rsquo;s gateway service in a <em>pending</em> state. At this point the gateway has the configuration but is not routing live traffic yet.</p>
+            </li>
+            <li>
+              <h4>Publish</h4>
+              <p>Publishing flips the staged Product to active and makes it visible in the Developer Portal. Existing in-flight requests are not affected; new requests pick up the new policy version.</p>
+            </li>
+            <li>
+              <h4>Subscribe and test</h4>
+              <p>Consumers register an application in the Portal, subscribe to the plan, and receive a client ID and secret. Calls to the gateway must include both, plus the agreed auth (OAuth bearer or mTLS client cert).</p>
+            </li>
+          </ol>
+
+          <h3>CLI: end-to-end publish</h3>
+          <p>The pattern below is what runs in CI for every catalog promotion. Token, org, and catalog vary by environment; everything else is the same.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>publish.sh</span><span class="code-block__lang">bash</span></div>
+<pre><code><span class="tok-c"># 1. Authenticate against the management cluster</span>
+apic login --server <span class="tok-s">manager.api.example.com</span> \
+  --username <span class="tok-s">$APIC_USER</span> --password <span class="tok-s">$APIC_PASS</span> \
+  --realm <span class="tok-s">provider/default-idp-2</span>
+
+<span class="tok-c"># 2. Validate the OpenAPI + assembly locally before pushing</span>
+apic validate <span class="tok-s">payments-api.yaml</span>
+
+<span class="tok-c"># 3. Push API and Product into the org draft area</span>
+apic apis:publish <span class="tok-s">payments-api.yaml</span>      --org <span class="tok-s">acme-bank</span>
+apic products:publish <span class="tok-s">payments-product.yaml</span> --org <span class="tok-s">acme-bank</span>
+
+<span class="tok-c"># 4. Stage to the target catalog (no live traffic yet)</span>
+apic products:publish <span class="tok-s">payments-product.yaml</span> \
+  --org <span class="tok-s">acme-bank</span> --catalog <span class="tok-s">production</span> --stage
+
+<span class="tok-c"># 5. Promote to active after smoke tests pass</span>
+apic products:publish <span class="tok-s">payments-product.yaml</span> \
+  --org <span class="tok-s">acme-bank</span> --catalog <span class="tok-s">production</span></code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Idempotency</div>
+            <p><code>products:publish</code> without <code>--stage</code> will replace the active version. In a CI pipeline, always stage first, run a synthetic-traffic check against the staged endpoint, and promote in a separate step. Never let a single command both stage and activate in production.</p>
+          </div>
+
+          <h2 id="openapi">OpenAPI &amp; assembly</h2>
+          <p>Below is a representative OpenAPI 3.0 file for a payments lookup. The gateway behaviour is entirely in <code>x-ibm-configuration</code> &mdash; the rest is the contract clients see.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payments-api.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">openapi</span>: <span class="tok-s">3.0.0</span>
+<span class="tok-k">info</span>:
+  <span class="tok-k">title</span>: <span class="tok-s">Payments Lookup</span>
+  <span class="tok-k">version</span>: <span class="tok-s">1.2.0</span>
+<span class="tok-k">servers</span>:
+  - <span class="tok-k">url</span>: <span class="tok-s">https://api.acme-bank.com/payments/v1</span>
+
+<span class="tok-k">x-ibm-configuration</span>:
+  <span class="tok-k">cors</span>: { <span class="tok-k">enabled</span>: <span class="tok-n">false</span> }
+  <span class="tok-k">enforced</span>: <span class="tok-n">true</span>
+  <span class="tok-k">testable</span>: <span class="tok-n">false</span>
+  <span class="tok-k">phase</span>: <span class="tok-s">realized</span>
+  <span class="tok-k">activity-log</span>:
+    <span class="tok-k">enabled</span>: <span class="tok-n">true</span>
+    <span class="tok-k">success-content</span>: <span class="tok-s">activity</span>
+    <span class="tok-k">error-content</span>: <span class="tok-s">payload</span>
+  <span class="tok-k">gateway</span>: <span class="tok-s">datapower-api-gateway</span>
+
+  <span class="tok-k">assembly</span>:
+    <span class="tok-k">execute</span>:
+
+      <span class="tok-c"># Tag the request with a correlation ID for downstream tracing</span>
+      - <span class="tok-k">set-variable</span>:
+          <span class="tok-k">version</span>: <span class="tok-s">2.0.0</span>
+          <span class="tok-k">title</span>: <span class="tok-s">tag-correlation</span>
+          <span class="tok-k">actions</span>:
+            - { <span class="tok-k">set</span>: <span class="tok-s">message.headers.x-correlation-id</span>,
+                <span class="tok-k">value</span>: <span class="tok-s">$(api.id)-$(message.headers.x-request-id)</span> }
+
+      <span class="tok-c"># OAuth 2.0 bearer validation against an external authorization server</span>
+      - <span class="tok-k">oauth</span>:
+          <span class="tok-k">version</span>: <span class="tok-s">2.0.0</span>
+          <span class="tok-k">title</span>: <span class="tok-s">verify-bearer</span>
+          <span class="tok-k">oauth-provider-settings-ref</span>:
+            <span class="tok-k">name</span>: <span class="tok-s">acme-keycloak-introspect</span>
+          <span class="tok-k">supported-oauth-components</span>: [ <span class="tok-s">OAuthValidateRequest</span> ]
+
+      <span class="tok-c"># Plan-level quota; key derives from client_id + plan id</span>
+      - <span class="tok-k">rate-limit</span>:
+          <span class="tok-k">version</span>: <span class="tok-s">2.0.0</span>
+          <span class="tok-k">title</span>: <span class="tok-s">plan-quota</span>
+          <span class="tok-k">source</span>: <span class="tok-s">plan</span>
+
+      <span class="tok-c"># Strip internal headers before backend hop</span>
+      - <span class="tok-k">set-variable</span>:
+          <span class="tok-k">title</span>: <span class="tok-s">strip-internal</span>
+          <span class="tok-k">actions</span>:
+            - { <span class="tok-k">clear</span>: <span class="tok-s">message.headers.authorization</span> }
+            - { <span class="tok-k">clear</span>: <span class="tok-s">message.headers.x-ibm-client-secret</span> }
+
+      <span class="tok-c"># Forward to the internal core service</span>
+      - <span class="tok-k">invoke</span>:
+          <span class="tok-k">version</span>: <span class="tok-s">2.0.0</span>
+          <span class="tok-k">title</span>: <span class="tok-s">backend</span>
+          <span class="tok-k">target-url</span>: <span class="tok-s">https://payments-core.svc.internal/v1$(request.path)</span>
+          <span class="tok-k">timeout</span>: <span class="tok-n">30</span>
+          <span class="tok-k">verb</span>: <span class="tok-s">keep</span>
+          <span class="tok-k">cache-response</span>: <span class="tok-s">protocol</span>
+          <span class="tok-k">tls-profile</span>: <span class="tok-s">internal-mtls</span>
+
+      <span class="tok-c"># Response post-processing: redact account numbers, drop debug</span>
+      - <span class="tok-k">gatewayscript</span>:
+          <span class="tok-k">version</span>: <span class="tok-s">2.0.0</span>
+          <span class="tok-k">title</span>: <span class="tok-s">redact-pii</span>
+          <span class="tok-k">source</span>: |
+            <span class="tok-k">var</span> body = apim.getvariable(<span class="tok-s">'message.body'</span>);
+            <span class="tok-k">if</span> (body &amp;&amp; body.account)
+              body.account = body.account.replace(/.(?=.{4})/g, <span class="tok-s">'*'</span>);
+            <span class="tok-k">delete</span> body.__debug;
+            apim.setvariable(<span class="tok-s">'message.body'</span>, body);</code></pre>
+          </div>
+
+          <p>The <code>source: plan</code> on rate-limit is the load-bearing detail. It tells DataPower to derive the quota key from the subscribed plan and consumer app, not from a fixed string &mdash; which is what makes the same API enforce different limits for &ldquo;internal&rdquo; vs &ldquo;partner&rdquo; vs &ldquo;public&rdquo; consumers without forking the assembly.</p>
+
+          <h2 id="security">Security policies</h2>
+          <p>Three patterns cover almost every real API Connect deployment in financial services.</p>
+
+          <h3>OAuth 2.0 with external authorization server</h3>
+          <p>The gateway is a resource server, not the AS. It introspects bearer tokens against an external IdP (Keycloak, Ping, ForgeRock). This keeps token lifecycle, refresh, and consent flows out of DataPower &mdash; which is purpose-built to validate, not to issue.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>oauth-introspect-provider.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">name</span>: <span class="tok-s">acme-keycloak-introspect</span>
+<span class="tok-k">title</span>: <span class="tok-s">Keycloak Token Introspection</span>
+<span class="tok-k">provider-type</span>: <span class="tok-s">third_party</span>
+<span class="tok-k">third-party-config</span>:
+  <span class="tok-k">introspection-endpoint</span>: <span class="tok-s">https://idp.acme-bank.com/realms/prod/protocol/openid-connect/token/introspect</span>
+  <span class="tok-k">authentication-method</span>: <span class="tok-s">client-secret-basic</span>
+  <span class="tok-k">client-id</span>: <span class="tok-s">datapower-rs</span>
+  <span class="tok-k">client-secret</span>: <span class="tok-s">$(env.IDP_CLIENT_SECRET)</span>
+  <span class="tok-k">cache-type</span>: <span class="tok-s">time-to-live</span>
+  <span class="tok-k">cache-ttl</span>: <span class="tok-n">300</span>
+<span class="tok-k">scopes</span>:
+  - <span class="tok-s">payments.read</span>
+  - <span class="tok-s">payments.write</span>
+<span class="tok-k">grants</span>:
+  - <span class="tok-s">accessCode</span>
+  - <span class="tok-s">clientCredentials</span></code></pre>
+          </div>
+
+          <p>The <code>cache-ttl: 300</code> is critical. Without it, every gateway request becomes a synchronous call to the IdP. With it, the gateway introspects once and caches the active/inactive decision for five minutes &mdash; trading immediate revocation for an order-of-magnitude latency improvement. For revocation-sensitive flows (high-value transfers, admin operations), set the TTL to <code>0</code> on the specific assembly, not globally.</p>
+
+          <h3>Mutual TLS for partner traffic</h3>
+          <p>For B2B traffic the contract is &ldquo;present a client certificate signed by our partner CA, or you don&rsquo;t reach the listener.&rdquo; This is configured at the gateway service level (<em>not</em> in the API assembly), because TLS happens before any policy runs.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>tls-profile-partner-mtls.cfg</span><span class="code-block__lang">datapower</span></div>
+<pre><code><span class="tok-k">crypto profile</span> partner-mtls
+  <span class="tok-k">idcred</span>           gw-server-cert
+  <span class="tok-k">valcred</span>          partner-ca-bundle
+  <span class="tok-k">ciphers</span>          TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  <span class="tok-k">protocols</span>        TLSv1.2 TLSv1.3
+<span class="tok-k">exit</span>
+
+<span class="tok-k">ssl-server</span> partner-listener
+  <span class="tok-k">crypto-profile</span>   partner-mtls
+  <span class="tok-k">request-client-auth</span>  on
+  <span class="tok-k">require-client-auth</span>  on
+  <span class="tok-k">send-client-auth-ca-list</span>  on
+<span class="tok-k">exit</span></code></pre>
+          </div>
+
+          <h3>JWT validation (offline, no introspection)</h3>
+          <p>When the issuer is trusted and tokens are short-lived (under 5 minutes), validate the JWT signature locally using the issuer&rsquo;s JWKS endpoint. No round-trip to the IdP, sub-millisecond verification.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>jwt-validate.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code>- <span class="tok-k">jwt-validate</span>:
+    <span class="tok-k">version</span>: <span class="tok-s">2.0.0</span>
+    <span class="tok-k">title</span>: <span class="tok-s">verify-jwt</span>
+    <span class="tok-k">jwt</span>: <span class="tok-s">request.headers.authorization</span>
+    <span class="tok-k">output-claims</span>: <span class="tok-s">decoded.claims</span>
+    <span class="tok-k">jwk</span>: <span class="tok-s">https://idp.acme-bank.com/realms/prod/protocol/openid-connect/certs</span>
+    <span class="tok-k">iss-claim</span>: <span class="tok-s">"https://idp.acme-bank.com/realms/prod"</span>
+    <span class="tok-k">aud-claim</span>: <span class="tok-s">"payments-api"</span>
+    <span class="tok-k">verify-crypto</span>: <span class="tok-s">true</span></code></pre>
+          </div>
+
+          <h2 id="rate-limit">Rate limiting</h2>
+          <p>Rate limit is the most operationally consequential policy. The model is a two-level hierarchy:</p>
+          <ul>
+            <li><strong>Plan-level quota</strong> &mdash; the contract with the consumer (e.g. 10 000 calls/day). Enforced by the gateway, counted per (consumer-app, plan).</li>
+            <li><strong>Burst limit</strong> &mdash; protection for the backend (e.g. 50 requests/second). Enforced regardless of plan, counted per (consumer-app, API).</li>
+          </ul>
+          <p>Both are configured on the Plan, not the API:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payments-product.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">product</span>: <span class="tok-s">1.0.0</span>
+<span class="tok-k">info</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments</span>
+  <span class="tok-k">title</span>: <span class="tok-s">Payments Product</span>
+  <span class="tok-k">version</span>: <span class="tok-s">1.2.0</span>
+
+<span class="tok-k">plans</span>:
+  <span class="tok-k">internal</span>:
+    <span class="tok-k">title</span>: <span class="tok-s">Internal (no quota)</span>
+    <span class="tok-k">approval</span>: <span class="tok-n">false</span>
+    <span class="tok-k">rate-limits</span>:
+      <span class="tok-k">unlimited</span>: { <span class="tok-k">value</span>: <span class="tok-s">unlimited</span> }
+    <span class="tok-k">apis</span>: { <span class="tok-k">payments</span>: {} }
+
+  <span class="tok-k">partner-tier1</span>:
+    <span class="tok-k">title</span>: <span class="tok-s">Partner Tier 1</span>
+    <span class="tok-k">approval</span>: <span class="tok-n">true</span>
+    <span class="tok-k">rate-limits</span>:
+      <span class="tok-k">daily</span>:  { <span class="tok-k">value</span>: <span class="tok-s">100000/1day</span>,  <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span> }
+      <span class="tok-k">burst</span>:  { <span class="tok-k">value</span>: <span class="tok-s">50/1second</span>,    <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span> }
+    <span class="tok-k">apis</span>: { <span class="tok-k">payments</span>: {} }
+
+  <span class="tok-k">public</span>:
+    <span class="tok-k">title</span>: <span class="tok-s">Public</span>
+    <span class="tok-k">approval</span>: <span class="tok-n">true</span>
+    <span class="tok-k">rate-limits</span>:
+      <span class="tok-k">daily</span>:  { <span class="tok-k">value</span>: <span class="tok-s">5000/1day</span>,    <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span> }
+      <span class="tok-k">burst</span>:  { <span class="tok-k">value</span>: <span class="tok-s">10/1second</span>,    <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span> }
+    <span class="tok-k">apis</span>: { <span class="tok-k">payments</span>: {} }</code></pre>
+          </div>
+
+          <p><code>hard-limit: true</code> rejects with HTTP 429 once exceeded. With <code>hard-limit: false</code> (the default in older versions) the gateway emits a warning header but still passes the request &mdash; useful for soft launches, dangerous in production. Be explicit.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Counter consistency</div>
+            <p>DataPower distributes counters across the gateway peer group via UDP gossip. Across two data centres with high latency the count can drift; use <strong>per-DC plan quotas</strong> sized to the DC&rsquo;s share of traffic, plus a global burst limit, instead of trying to enforce a single global daily quota across geographies.</p>
+          </div>
+
+          <h2 id="ha">HA topology</h2>
+          <p>Production deployments run active/active across two data centres. Each DC has its own DataPower peer group; API Manager and Portal sit in one DC with a warm standby. Analytics is a stretched cluster.</p>
+
+          <div class="diagram" role="img" aria-label="High availability topology with two data centres, each running an active DataPower peer group behind a global load balancer">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <!-- GLB -->
+                <rect x="320" y="20" width="140" height="50" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="390" y="42" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Global LB</text>
+                <text x="390" y="58" text-anchor="middle" fill="#71717a" font-size="9">DNS · health-aware</text>
+
+                <!-- DC1 -->
+                <rect x="30" y="100" width="320" height="240" rx="8" fill="none" stroke="#a78bfa" stroke-dasharray="4 3" stroke-width="1"/>
+                <text x="50" y="120" fill="#a78bfa" font-size="10" font-weight="600">DC1 (active)</text>
+
+                <rect x="60" y="135" width="120" height="44" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="120" y="155" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">DataPower</text>
+                <text x="120" y="170" text-anchor="middle" fill="#71717a" font-size="9">peer-group A</text>
+
+                <rect x="200" y="135" width="120" height="44" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="260" y="155" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">DataPower</text>
+                <text x="260" y="170" text-anchor="middle" fill="#71717a" font-size="9">peer-group A</text>
+
+                <rect x="60" y="195" width="260" height="44" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="190" y="215" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">API Manager (primary)</text>
+                <text x="190" y="230" text-anchor="middle" fill="#71717a" font-size="9">3-node cluster</text>
+
+                <rect x="60" y="255" width="260" height="44" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="190" y="275" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Developer Portal (primary)</text>
+                <text x="190" y="290" text-anchor="middle" fill="#71717a" font-size="9">3-node cluster</text>
+
+                <!-- DC2 -->
+                <rect x="430" y="100" width="320" height="240" rx="8" fill="none" stroke="#a78bfa" stroke-dasharray="4 3" stroke-width="1"/>
+                <text x="450" y="120" fill="#a78bfa" font-size="10" font-weight="600">DC2 (active)</text>
+
+                <rect x="460" y="135" width="120" height="44" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="520" y="155" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">DataPower</text>
+                <text x="520" y="170" text-anchor="middle" fill="#71717a" font-size="9">peer-group B</text>
+
+                <rect x="600" y="135" width="120" height="44" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="660" y="155" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">DataPower</text>
+                <text x="660" y="170" text-anchor="middle" fill="#71717a" font-size="9">peer-group B</text>
+
+                <rect x="460" y="195" width="260" height="44" rx="4" fill="#1c1c28" stroke="#a78bfa" stroke-dasharray="3 2"/>
+                <text x="590" y="215" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">API Manager (warm standby)</text>
+                <text x="590" y="230" text-anchor="middle" fill="#71717a" font-size="9">async replication from DC1</text>
+
+                <rect x="460" y="255" width="260" height="44" rx="4" fill="#1c1c28" stroke="#a78bfa" stroke-dasharray="3 2"/>
+                <text x="590" y="275" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Developer Portal (warm)</text>
+                <text x="590" y="290" text-anchor="middle" fill="#71717a" font-size="9">async replication from DC1</text>
+
+                <!-- Analytics: stretched -->
+                <rect x="200" y="335" width="380" height="35" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="390" y="357" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Analytics &mdash; stretched OpenSearch (DC1 + DC2)</text>
+
+                <!-- Arrows from GLB -->
+                <line x1="360" y1="70" x2="120" y2="135" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr4)"/>
+                <line x1="360" y1="70" x2="260" y2="135" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr4)"/>
+                <line x1="420" y1="70" x2="520" y2="135" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr4)"/>
+                <line x1="420" y1="70" x2="660" y2="135" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr4)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 3 &mdash; Two-DC active/active topology</div>
+          </div>
+
+          <p>Three operational rules follow from this topology:</p>
+          <ul>
+            <li><strong>The data plane is active/active; the control plane is active/standby.</strong> Authoring an API in DC2 while DC1 is the primary breaks &mdash; the change won&rsquo;t replicate back. Authoring is restricted to the primary; failover is a deliberate, runbook-driven event.</li>
+            <li><strong>DataPower peer groups don&rsquo;t span DCs.</strong> Counter gossip across high-latency links is unreliable. Each DC maintains its own quota counters; this is the trade you make to keep enforcement deterministic.</li>
+            <li><strong>Analytics is stretched, not active/standby.</strong> Both DCs write events to the same OpenSearch cluster. A single dashboard shows global traffic; the cluster handles partition tolerance via shard placement rules.</li>
+          </ul>
+
+          <h2 id="observability">Observability</h2>
+          <p>Three signals are non-negotiable in production: per-API latency percentiles, per-consumer error rate, and policy-failure attribution. The first two come for free from Analytics. The third requires deliberate instrumentation.</p>
+
+          <h3>Logging configuration</h3>
+          <p>Set <code>activity-log</code> to <code>payload</code> for errors only &mdash; logging full payloads on success blows up storage and creates a PII footprint that compliance will refuse to certify. Errors get the payload because that&rsquo;s where you actually need it.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>activity-log.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">activity-log</span>:
+  <span class="tok-k">enabled</span>: <span class="tok-n">true</span>
+  <span class="tok-k">success-content</span>: <span class="tok-s">activity</span>     <span class="tok-c"># headers + meta only</span>
+  <span class="tok-k">error-content</span>:   <span class="tok-s">payload</span>      <span class="tok-c"># headers + meta + body</span></code></pre>
+          </div>
+
+          <h3>Forwarding events to a SIEM</h3>
+          <p>DataPower writes to its own analytics endpoint, but most banks also need events in Splunk or QRadar for security correlation. The pattern: a <code>log</code> target on the gateway publishes to a syslog endpoint, which feeds the SIEM. Don&rsquo;t try to make the SIEM the primary store &mdash; analytics ingest patterns are different.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>log-target-splunk.cfg</span><span class="code-block__lang">datapower</span></div>
+<pre><code><span class="tok-k">log target</span> splunk-tcp
+  <span class="tok-k">type</span>          syslog-tcp
+  <span class="tok-k">remote-host</span>   splunk-hec.acme-bank.com
+  <span class="tok-k">remote-port</span>   <span class="tok-n">514</span>
+  <span class="tok-k">format</span>        json
+  <span class="tok-k">event</span>         apic-gw-error
+  <span class="tok-k">event</span>         apic-gw-throttle
+  <span class="tok-k">priority</span>      warning
+<span class="tok-k">exit</span></code></pre>
+          </div>
+
+          <h3>Health checks</h3>
+          <p>Every gateway exposes <code>/2018-04-01/diag</code> over the management port. Wire it into the LB&rsquo;s health probe with a 2-second timeout and 3-failure threshold &mdash; that&rsquo;s aggressive enough to drain a bad node within 6 seconds, lenient enough to survive a GC pause.</p>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Activity log bloat</div>
+            <p>Setting <code>success-content: payload</code> in production will fill the analytics disk inside a week on any decent traffic level. Every team I&rsquo;ve seen do this also fails to set retention policies, which compounds the problem.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">OAuth introspection without caching</div>
+            <p>Default <code>cache-ttl: 0</code> means every request introspects against the IdP. At 1 000 RPS that&rsquo;s 1 000 IdP calls/sec &mdash; the IdP becomes the bottleneck and the bank&rsquo;s auth service falls over before the gateway breaks a sweat. Always set a non-zero TTL; reserve <code>0</code> for revocation-sensitive endpoints only.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Catalog drift</div>
+            <p>Editing an API directly in the API Manager UI on the production catalog creates a divergence the source repo can&rsquo;t reproduce. Make the production catalog read-only via RBAC; force all changes through the staging catalog and a CI promotion.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Hard-coding URLs in target-url</div>
+            <p>Use <code>$(target-url)</code> with a property-defined backend instead of literal hostnames. Otherwise every promotion to a new catalog requires editing the assembly &mdash; and editing assemblies in CI is exactly what catalog properties exist to prevent.</p>
+          </div>
+
+          <h2 id="when-not">When not to use IBM API Gateway</h2>
+          <p>API Connect is excellent at what it&rsquo;s designed for. It is a poor fit when:</p>
+          <ul>
+            <li><strong>Traffic is internal east-west only.</strong> A service mesh (Istio, Linkerd) gives you mTLS, observability, and traffic policy without the licensing cost or operational footprint of DataPower.</li>
+            <li><strong>You need request-stream rewriting at the byte level.</strong> Envoy or NGINX with custom Lua/Wasm gives you primitives DataPower doesn&rsquo;t expose. DataPower&rsquo;s strength is policy, not raw stream manipulation.</li>
+            <li><strong>The use case is webhook ingestion.</strong> Webhook receivers benefit from an event-driven runtime (Kafka + a small consumer) more than a synchronous gateway. Forcing webhooks through API Connect adds latency without buying you policy enforcement that matters at the edge of the bank.</li>
+            <li><strong>You don&rsquo;t have an IBM relationship.</strong> The cost only makes sense alongside other IBM software (MQ, ACE, DataPower, Cloud Pak for Integration). As a standalone purchase the value-for-money argument is hard to win against Kong, Apigee, or AWS API Gateway.</li>
+          </ul>
+
+          <p>Where it does win: when policy is the product. Regulated environments where the gateway must be certifiable, where consumer-facing rate limits are part of the commercial contract, where TLS termination has to be FIPS-validated, and where the audit trail needs to be queryable by examiners. That is the environment API Connect was built for.</p>
+
+          <nav class="article-nav">
+            <a href="../../technical.html">
+              <div class="article-nav__label">&larr; Back to</div>
+              <div class="article-nav__title">Lab</div>
+            </a>
+            <a href="../event-driven.html" class="article-nav__next">
+              <div class="article-nav__label">Next article</div>
+              <div class="article-nav__title">Event-Driven Architecture &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    // Scrollspy for TOC
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){
+          if (s.offsetTop <= fromTop) current = s.id;
+        });
+        links.forEach(function(l){
+          l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+        });
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

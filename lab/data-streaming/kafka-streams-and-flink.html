@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Streaming &mdash; Kafka Streams &amp; Flink &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Real-time stream processing for financial services: Kafka Streams and Apache Flink, windowing, joins, exactly-once stateful processing, IBM Event Streams in production, and the operational patterns behind real-time payments and fraud detection.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Data Streaming &mdash; Kafka Streams &amp; Flink &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Stream processing patterns for real-time fraud detection and payments.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/kafka-streams-and-flink.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Data Streaming &mdash; Production Patterns">
+  <meta name="twitter:description" content="Stream processing for real-time financial services.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/kafka-streams-and-flink.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Kafka Streams &amp; Flink</div>
+          <span class="overline">Lab Article</span>
+          <h1>Data Streaming: Kafka Streams &amp; Flink</h1>
+          <p class="lead">Real-time stream processing for fraud detection, real-time payments, and market data: windowing, stateful joins, exactly-once processing, the trade-offs between Kafka Streams and Apache Flink, and the operational patterns behind streams that run for months without intervention.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#streams-vs-flink">Streams vs Flink</a></li>
+            <li><a href="#topology">Pipeline topology</a></li>
+            <li><a href="#windowing">Windowing</a></li>
+            <li><a href="#state">State stores</a></li>
+            <li><a href="#build">Building a pipeline</a></li>
+            <li><a href="#joins">Stream joins</a></li>
+            <li><a href="#exactly-once">Exactly-once</a></li>
+            <li><a href="#ha">HA &amp; rebalancing</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When not to use</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Kafka Streams 3.x / Flink 1.18 / IBM Event Streams</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Stream processing transforms an unbounded sequence of events into derived facts in real time. The three killer applications in financial services are <strong>fraud detection</strong> (sliding-window aggregation over card authorisations), <strong>real-time payment screening</strong> (joining payment events against sanctions lists), and <strong>market data enrichment</strong> (deriving VWAP, position, P&amp;L from tick streams).</p>
+          <p>Two engines dominate: <strong>Kafka Streams</strong> (a library that runs inside your application) and <strong>Apache Flink</strong> (a separate runtime cluster). IBM packages Kafka as <strong>Event Streams</strong>; the streaming patterns are the same.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Streaming vs ETL</div>
+            <p>If you can wait until the end of the day to know the answer, run a batch ETL. Streaming exists for the cases where the answer must be ready in milliseconds: declining a fraudulent card, blocking a sanctioned payment, recalculating a counterparty&rsquo;s exposure before the next trade. Don&rsquo;t stream what a nightly job can do.</p>
+          </div>
+
+          <h2 id="streams-vs-flink">Streams vs Flink</h2>
+
+          <table>
+            <thead>
+              <tr><th>Property</th><th>Kafka Streams</th><th>Apache Flink</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Deployment</td><td>Library inside your JVM app</td><td>Separate cluster (JobManager + TaskManagers)</td></tr>
+              <tr><td>State backend</td><td>RocksDB on local disk + changelog topic</td><td>RocksDB or filesystem; checkpoint to S3/HDFS</td></tr>
+              <tr><td>Scaling unit</td><td>Application instance = stream task</td><td>TaskManager slots, decoupled from app</td></tr>
+              <tr><td>Sources/sinks</td><td>Kafka only (without Connect)</td><td>Kafka, Kinesis, JDBC, files, sockets</td></tr>
+              <tr><td>SQL</td><td>ksqlDB (separate product)</td><td>First-class Flink SQL</td></tr>
+              <tr><td>Best fit</td><td>Per-microservice stream logic</td><td>Cross-team analytics, complex joins, large state</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="topology">Pipeline topology</h2>
+          <p>A stream processing pipeline is a directed acyclic graph: source topics, processing operators, and sink topics. The runtime maps operators to tasks, tasks to threads, and partitions the work by key.</p>
+
+          <div class="diagram" role="img" aria-label="Stream processing topology with sources, transformations, joins, windowing, and sinks">
+            <div class="diagram__inner">
+              <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ds1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="40" width="120" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="80" y="62" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">card-auth</text>
+                <text x="80" y="78" text-anchor="middle" fill="#71717a" font-size="9">source topic</text>
+
+                <rect x="20" y="130" width="120" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="80" y="152" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">customer-master</text>
+                <text x="80" y="168" text-anchor="middle" fill="#71717a" font-size="9">KTable (compacted)</text>
+
+                <rect x="20" y="220" width="120" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="80" y="242" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">sanctions-list</text>
+                <text x="80" y="258" text-anchor="middle" fill="#71717a" font-size="9">KTable (compacted)</text>
+
+                <rect x="200" y="40" width="120" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="260" y="62" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">filter</text>
+                <text x="260" y="78" text-anchor="middle" fill="#71717a" font-size="9">amount &gt; 0</text>
+
+                <rect x="340" y="40" width="120" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="400" y="62" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">enrich</text>
+                <text x="400" y="78" text-anchor="middle" fill="#71717a" font-size="9">stream-table join</text>
+
+                <rect x="340" y="130" width="120" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="400" y="152" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">screen</text>
+                <text x="400" y="168" text-anchor="middle" fill="#71717a" font-size="9">stream-table join</text>
+
+                <rect x="480" y="40" width="120" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="540" y="62" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">window</text>
+                <text x="540" y="78" text-anchor="middle" fill="#71717a" font-size="9">5-min sliding</text>
+
+                <rect x="480" y="130" width="120" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="540" y="152" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">aggregate</text>
+                <text x="540" y="168" text-anchor="middle" fill="#71717a" font-size="9">count, sum</text>
+
+                <rect x="480" y="220" width="120" height="50" rx="6" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="540" y="242" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">branch</text>
+                <text x="540" y="258" text-anchor="middle" fill="#71717a" font-size="9">if score &gt; threshold</text>
+
+                <rect x="640" y="40" width="120" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="700" y="62" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">enriched-auth</text>
+                <text x="700" y="78" text-anchor="middle" fill="#71717a" font-size="9">sink topic</text>
+
+                <rect x="640" y="130" width="120" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="700" y="152" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">fraud-alerts</text>
+                <text x="700" y="168" text-anchor="middle" fill="#71717a" font-size="9">sink topic</text>
+
+                <rect x="640" y="220" width="120" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="700" y="242" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">declined</text>
+                <text x="700" y="258" text-anchor="middle" fill="#71717a" font-size="9">sink topic</text>
+
+                <line x1="140" y1="65" x2="198" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ds1)"/>
+                <line x1="320" y1="65" x2="338" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ds1)"/>
+                <line x1="140" y1="155" x2="338" y2="155" stroke="#00d4aa" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#ds1)"/>
+                <line x1="140" y1="245" x2="338" y2="170" stroke="#00d4aa" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#ds1)"/>
+                <line x1="460" y1="65" x2="478" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ds1)"/>
+                <line x1="460" y1="155" x2="478" y2="155" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ds1)"/>
+                <line x1="600" y1="65" x2="638" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ds1)"/>
+                <line x1="600" y1="155" x2="638" y2="155" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ds1)"/>
+                <line x1="540" y1="180" x2="540" y2="218" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ds1)"/>
+                <line x1="600" y1="245" x2="638" y2="245" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ds1)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Fraud detection pipeline: enrich, screen, window, branch</div>
+          </div>
+
+          <h2 id="windowing">Windowing</h2>
+          <p>Windows turn an unbounded stream into bounded computations. Four kinds, each with a specific use case:</p>
+          <ul>
+            <li><strong>Tumbling</strong> &mdash; non-overlapping fixed-size windows. Use for hourly counts, daily totals.</li>
+            <li><strong>Hopping (sliding)</strong> &mdash; overlapping fixed-size windows that advance by an interval. Use for &ldquo;how many transactions in the last 5 minutes, updated every 30 seconds.&rdquo;</li>
+            <li><strong>Session</strong> &mdash; windows defined by activity gaps. Use for grouping a customer&rsquo;s actions into a session.</li>
+            <li><strong>Global</strong> &mdash; one window for the whole stream. Use only with custom triggers.</li>
+          </ul>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Event time, not processing time</div>
+            <p>Always use event time (the timestamp from the event itself) for windowing, never processing time (when the stream operator saw it). A delayed batch from a partner system that arrives an hour late should still be assigned to its true window. Configure a watermark with allowed lateness; close the window only after the watermark passes.</p>
+          </div>
+
+          <h2 id="state">State stores</h2>
+          <p>Stateful operators (joins, aggregations, deduplication) keep state in a local <strong>RocksDB</strong> instance. Kafka Streams replicates this to a <em>changelog topic</em> &mdash; on failure, a new instance reads the changelog and rebuilds. Flink uses incremental checkpoints to S3 or HDFS.</p>
+          <p>State size is the variable nobody plans for and everybody fights with. A 10 GB customer master KTable times 10 partitions is 100 GB of disk on each instance. Plan capacity at the state level, not at the throughput level.</p>
+
+          <h2 id="build">Building a pipeline</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Define the topology</h4>
+              <p>Source topics, transformations, sinks. Draw the DAG before writing code &mdash; it&rsquo;s the design document.</p>
+            </li>
+            <li>
+              <h4>Co-partition the inputs</h4>
+              <p>Stream-table joins require the stream and table to be partitioned by the same key with the same partition count. Repartition explicitly when this isn&rsquo;t already true.</p>
+            </li>
+            <li>
+              <h4>Configure state</h4>
+              <p>Local disk size for RocksDB, changelog retention (default <code>compact</code>), and rocksdb-tuning if state is large (block cache, write buffer).</p>
+            </li>
+            <li>
+              <h4>Set processing guarantee</h4>
+              <p><code>at_least_once</code> for most flows; <code>exactly_once_v2</code> when downstream cannot tolerate duplicates and side effects are Kafka-only.</p>
+            </li>
+            <li>
+              <h4>Wire metrics &amp; alerts</h4>
+              <p>Lag per task, state store size, restore time on rebalance, processing rate. Without these you&rsquo;ll discover problems via business complaints.</p>
+            </li>
+          </ol>
+
+          <h3>Example: fraud-detection topology in Kafka Streams</h3>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>FraudTopology.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public</span> Topology build() {
+  <span class="tok-t">StreamsBuilder</span> b = <span class="tok-k">new</span> StreamsBuilder();
+
+  <span class="tok-c">// Source: card authorisations, keyed by cardId</span>
+  <span class="tok-t">KStream</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">CardAuth</span>&gt; auths =
+      b.stream(<span class="tok-s">"card-auth"</span>, Consumed.with(Serdes.String(), authSerde));
+
+  <span class="tok-c">// KTable: customer master, compacted by customerId</span>
+  <span class="tok-t">KTable</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">Customer</span>&gt; customers =
+      b.table(<span class="tok-s">"customer-master"</span>, Consumed.with(Serdes.String(), customerSerde));
+
+  <span class="tok-c">// Stream-table join: enrich auth with customer profile</span>
+  <span class="tok-t">KStream</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">EnrichedAuth</span>&gt; enriched = auths
+      .selectKey((k, v) -&gt; v.getCustomerId())
+      .leftJoin(customers, EnrichedAuth::new);
+
+  <span class="tok-c">// 5-minute sliding window count per customer</span>
+  <span class="tok-t">KTable</span>&lt;<span class="tok-t">Windowed</span>&lt;<span class="tok-t">String</span>&gt;, <span class="tok-t">Long</span>&gt; recentCount = enriched
+      .groupByKey()
+      .windowedBy(SlidingWindows.ofTimeDifferenceWithNoGrace(Duration.ofMinutes(<span class="tok-n">5</span>)))
+      .count(Materialized.<span class="tok-k">as</span>(<span class="tok-s">"recent-count-store"</span>));
+
+  <span class="tok-c">// Branch: high-velocity customers go to fraud-alerts</span>
+  enriched
+      .leftJoin(recentCount.toStream().selectKey((k, v) -&gt; k.key()).toTable(),
+                (e, c) -&gt; e.withRecentCount(c == <span class="tok-k">null</span> ? <span class="tok-n">0</span> : c))
+      .split()
+      .branch((k, v) -&gt; v.getRecentCount() &gt; <span class="tok-n">10</span>,
+              Branched.withConsumer(s -&gt; s.to(<span class="tok-s">"fraud-alerts"</span>)))
+      .defaultBranch(Branched.withConsumer(s -&gt; s.to(<span class="tok-s">"enriched-auth"</span>)));
+
+  <span class="tok-k">return</span> b.build();
+}</code></pre>
+          </div>
+
+          <h2 id="joins">Stream joins</h2>
+          <p>Three join semantics, each with different state requirements:</p>
+          <ul>
+            <li><strong>Stream &harr; KTable:</strong> stateless on the stream side, stateful on the table side. The most common pattern &mdash; enrichment.</li>
+            <li><strong>KTable &harr; KTable:</strong> stateful on both sides. Use for derived materialised views.</li>
+            <li><strong>Stream &harr; Stream (windowed):</strong> stateful on both sides for the window duration. Use for matching events that should arrive close in time (auth + clearing).</li>
+          </ul>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Don&rsquo;t join unkeyed streams</div>
+            <p>If the join key isn&rsquo;t the partition key on both sides, Streams will silently fail to find matches across partitions. Use <code>selectKey()</code> + <code>repartition()</code> first, or be explicit with <code>through()</code>. The error mode is silent &mdash; you get no exception, just no joins.</p>
+          </div>
+
+          <h2 id="exactly-once">Exactly-once</h2>
+          <p>Kafka Streams supports <code>exactly_once_v2</code> end-to-end: consume from input topics, update state, produce to output topics, all atomically. Latency cost is around 30&ndash;50 ms per commit, throughput cost is around 5%. For most stream pipelines that&rsquo;s a fair trade.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>streams.properties</span><span class="code-block__lang">properties</span></div>
+<pre><code>application.id=<span class="tok-s">fraud-detection</span>
+bootstrap.servers=<span class="tok-s">kafka:9092</span>
+processing.guarantee=<span class="tok-s">exactly_once_v2</span>
+commit.interval.ms=<span class="tok-n">100</span>
+num.stream.threads=<span class="tok-n">8</span>
+
+<span class="tok-c"># State store tuning</span>
+state.dir=<span class="tok-s">/var/lib/kafka-streams</span>
+rocksdb.config.setter=<span class="tok-s">com.acmebank.streams.RocksTuner</span>
+
+<span class="tok-c"># Restore tuning &mdash; speeds up rebalance recovery</span>
+num.standby.replicas=<span class="tok-n">1</span>
+acceptable.recovery.lag=<span class="tok-n">10000</span></code></pre>
+          </div>
+
+          <h2 id="ha">HA &amp; rebalancing</h2>
+          <p>Stream applications scale horizontally up to the partition count of the input topics. Each instance owns a subset of partitions; on failure or scale-up Kafka rebalances assignments. The rebalance is the operational soft underbelly &mdash; everything is fine until you scale.</p>
+
+          <div class="diagram" role="img" aria-label="Streams application scaling with three instances and standby replicas">
+            <div class="diagram__inner">
+              <svg width="780" height="280" viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ds2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="20" width="200" height="240" rx="8" fill="#0f0f16" stroke="#a78bfa" stroke-dasharray="3 2"/>
+                <text x="120" y="42" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">KAFKA TOPIC (12 partitions)</text>
+                <g>
+                  <rect x="40" y="60" width="160" height="20" rx="3" fill="#1c1c28" stroke="#00d4aa"/>
+                  <text x="120" y="74" text-anchor="middle" fill="#71717a" font-size="9">p0 &middot; p1 &middot; p2 &middot; p3</text>
+                  <rect x="40" y="90" width="160" height="20" rx="3" fill="#1c1c28" stroke="#fbbf24"/>
+                  <text x="120" y="104" text-anchor="middle" fill="#71717a" font-size="9">p4 &middot; p5 &middot; p6 &middot; p7</text>
+                  <rect x="40" y="120" width="160" height="20" rx="3" fill="#1c1c28" stroke="#4a9eff"/>
+                  <text x="120" y="134" text-anchor="middle" fill="#71717a" font-size="9">p8 &middot; p9 &middot; p10 &middot; p11</text>
+                </g>
+                <text x="120" y="170" text-anchor="middle" fill="#71717a" font-size="9">+ changelog: state-recent-count</text>
+
+                <line x1="220" y1="70" x2="278" y2="80" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ds2)"/>
+                <line x1="220" y1="100" x2="278" y2="170" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ds2)"/>
+                <line x1="220" y1="130" x2="278" y2="260" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ds2)"/>
+
+                <rect x="280" y="55" width="220" height="60" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="390" y="78" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Instance A</text>
+                <text x="390" y="95" text-anchor="middle" fill="#71717a" font-size="9">active: p0&ndash;p3 &middot; standby: p4&ndash;p7</text>
+                <text x="390" y="108" text-anchor="middle" fill="#71717a" font-size="9">RocksDB: 12 GB</text>
+
+                <rect x="280" y="145" width="220" height="60" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="390" y="168" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Instance B</text>
+                <text x="390" y="185" text-anchor="middle" fill="#71717a" font-size="9">active: p4&ndash;p7 &middot; standby: p8&ndash;p11</text>
+                <text x="390" y="198" text-anchor="middle" fill="#71717a" font-size="9">RocksDB: 12 GB</text>
+
+                <rect x="280" y="235" width="220" height="40" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="390" y="258" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Instance C: p8&ndash;p11</text>
+
+                <rect x="540" y="20" width="220" height="240" rx="8" fill="none" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="650" y="42" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">SCALING NOTES</text>
+                <text x="555" y="70" fill="#71717a" font-size="9">&bull; Add Instance D &rarr; rebalance</text>
+                <text x="555" y="85" fill="#71717a" font-size="9">&nbsp;&nbsp;reassigns partitions across all 4</text>
+                <text x="555" y="110" fill="#71717a" font-size="9">&bull; Standby replicas warm so</text>
+                <text x="555" y="125" fill="#71717a" font-size="9">&nbsp;&nbsp;failover doesn&rsquo;t restart cold</text>
+                <text x="555" y="150" fill="#71717a" font-size="9">&bull; Static membership avoids</text>
+                <text x="555" y="165" fill="#71717a" font-size="9">&nbsp;&nbsp;rebalance on rolling restart</text>
+                <text x="555" y="190" fill="#71717a" font-size="9">&bull; Max parallelism = partition count</text>
+                <text x="555" y="205" fill="#71717a" font-size="9">&nbsp;&nbsp;over-partition input topics</text>
+                <text x="555" y="230" fill="#71717a" font-size="9">&bull; Co-partition tables and streams</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Streams instances, partition assignment, standby replicas</div>
+          </div>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Rebalance storms on startup</div>
+            <p>A pod restart in Kubernetes triggers a rebalance, which restores state from changelog &mdash; which can take minutes. Without <code>group.instance.id</code> (static membership), every restart is a full rebalance. Always configure static membership in production.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Unbounded state growth</div>
+            <p>An aggregation keyed by <code>transactionId</code> never compacts &mdash; every transaction is a new key. RocksDB grows forever. Use windowed aggregations or set a TTL via a custom store.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Single-thread bottleneck</div>
+            <p>Default <code>num.stream.threads=1</code> means one thread for the whole topology in that instance. On a 16-core machine you&rsquo;re using one core. Set <code>num.stream.threads</code> to match cores.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Watermark misconfiguration</div>
+            <p>Default allowed lateness is zero &mdash; late events are dropped silently. For sources with known lateness (partner batch feeds) set <code>grace</code> on the window definition explicitly.</p>
+          </div>
+
+          <h2 id="when-not">When not to use</h2>
+          <p>Streaming is the right tool when latency budgets are sub-second and the work is per-event. It is the wrong tool when:</p>
+          <ul>
+            <li><strong>The query is interactive ad-hoc analytics.</strong> Use a query engine (Presto, Snowflake, BigQuery) over a data lake. Stream processing is for known, fixed pipelines.</li>
+            <li><strong>The state requirement exceeds available local disk.</strong> A 5 TB lookup table doesn&rsquo;t belong in RocksDB on each instance. Use an external store (DynamoDB, Cassandra) and accept the latency.</li>
+            <li><strong>Backpressure is intolerable.</strong> Streaming engines pause sources when downstream slows; for a hard real-time SLA where late processing is worse than dropping, use a different tool.</li>
+            <li><strong>The pipeline is a one-off.</strong> A nightly Spark job is simpler than a Streams app for a once-a-day rollup. Don&rsquo;t over-engineer.</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="../integration-patterns.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Integration Design Patterns</div>
+            </a>
+            <a href="../legacy-integration.html" class="article-nav__next">
+              <div class="article-nav__label">Next article</div>
+              <div class="article-nav__title">Legacy Integration &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kong &amp; Envoy at the Edge &mdash; Open-Source Gateway Strategies &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A production-grade walkthrough of Kong Gateway and Envoy Proxy for financial services: architecture trade-offs, FAPI 2.0 and mTLS configuration, migration patterns from commercial gateways, and the topology decisions that survive a SAMA security audit.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Kong &amp; Envoy at the Edge &mdash; Open-Source Gateway Strategies &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Production-grade walkthrough of Kong Gateway and Envoy Proxy for financial services: FAPI 2.0, mTLS, rate limiting, and migration from commercial gateways.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/api-gateway/kong-and-envoy.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Kong &amp; Envoy at the Edge &mdash; Open-Source Gateway Strategies">
+  <meta name="twitter:description" content="Production-grade walkthrough of Kong Gateway and Envoy Proxy for financial services: FAPI 2.0, mTLS, rate limiting, migration from commercial gateways.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/api-gateway/kong-and-envoy.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Kong &amp; Envoy at the Edge: Open-Source Gateway Strategies for Financial Services",
+    "description": "A production-grade walkthrough of Kong Gateway and Envoy Proxy for financial services: architecture trade-offs, FAPI 2.0 and mTLS configuration, migration patterns from commercial gateways, and the topology decisions that survive a SAMA security audit.",
+    "url": "https://www.wbadawi.info/lab/api-gateway/kong-and-envoy.html",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "isPartOf": {"@type": "WebSite", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.wbadawi.info/"},
+        {"@type": "ListItem", "position": 2, "name": "Lab", "item": "https://www.wbadawi.info/technical.html"},
+        {"@type": "ListItem", "position": 3, "name": "API Gateway", "item": "https://www.wbadawi.info/lab/api-gateway.html"},
+        {"@type": "ListItem", "position": 4, "name": "Kong &amp; Envoy at the Edge", "item": "https://www.wbadawi.info/lab/api-gateway/kong-and-envoy.html"}
+      ]
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-gateway.html">API Gateway</a><span>/</span>Kong &amp; Envoy</div>
+          <span class="overline">Lab Article</span>
+          <h1>Kong &amp; Envoy at the Edge: Open-Source Gateway Strategies for Financial Services</h1>
+          <p class="lead">Open-source alternatives to commercial gateways are not a cost-saving exercise &mdash; they are an architectural shift. This article covers Kong Gateway and Envoy Proxy: where each fits, how to configure them for FAPI 2.0 and mTLS, and the migration patterns that let you leave a commercial gateway without breaking the service contracts that depend on it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#kong-architecture">Kong architecture</a></li>
+            <li><a href="#envoy-mesh">Envoy &amp; service mesh</a></li>
+            <li><a href="#comparison">Kong vs Envoy: when each wins</a></li>
+            <li><a href="#security">Security configuration</a></li>
+            <li><a href="#rate-limiting">Rate limiting in Kong</a></li>
+            <li><a href="#migration">Migration from commercial gateway</a></li>
+            <li><a href="#topology">Production topology</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#decision">Decision framework</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Kong Gateway 3.x / Envoy 1.30 / Istio 1.22</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>The commercial API gateway market has narrowed around a small set of vendors &mdash; IBM, MuleSoft, Apigee &mdash; whose products were designed for a world where the gateway was a monolithic appliance and the API portfolio was owned by a central team. Cloud-native architectures have eroded both assumptions. Service teams deploy independently, traffic patterns are heterogeneous, and the gateway is no longer a single enforcement point but one of several places where policy lives.</p>
+          <p>Kong and Envoy are the two open-source runtimes that have gained production traction in regulated environments. They are not interchangeable: Kong is a purpose-built API gateway with a plugin model and a management layer. Envoy is a general-purpose L7 proxy designed to be programmed by a control plane. Both can enforce TLS, authentication, and rate limits at the edge &mdash; but they do it differently, and the right choice depends on where policy needs to live and who needs to author it.</p>
+          <p>This article covers both, with enough depth on configuration that you can deploy either in a bank environment and have it pass a security review.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Scope</div>
+            <p>This article covers <strong>Kong Gateway (OSS and Enterprise 3.x)</strong> and <strong>Envoy Proxy 1.30</strong> in standalone mode and as the Istio sidecar/ingress. It does not cover Gloo Edge, Ambassador, or APISIX. For IBM API Connect, see the <a href="ibm-api-connect.html">companion article</a> in this series.</p>
+          </div>
+
+          <h2 id="kong-architecture">Kong architecture</h2>
+          <p>Kong is built on top of Nginx and <code>lua-nginx-module</code> (OpenResty). The proxy core is Nginx &mdash; battle-tested for throughput and connection handling. Kong wraps it with a plugin execution engine in Lua (and increasingly Go via the PDK), a declarative configuration layer, and optionally a control-plane database (PostgreSQL) or a DB-free declarative mode (<code>kong.yaml</code>).</p>
+
+          <div class="diagram" role="img" aria-label="Kong Gateway architecture: Kong Manager or deck CLI configures Kong Admin API, which writes to Postgres or flat config; Kong proxy layer handles ingress traffic via Nginx with plugins and routes to upstream services">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ka1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="ka2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#71717a"/>
+                  </marker>
+                </defs>
+
+                <!-- Control plane box -->
+                <rect x="20" y="20" width="320" height="145" rx="8" fill="none" stroke="#a78bfa" stroke-dasharray="4 3" stroke-width="1"/>
+                <text x="40" y="40" fill="#a78bfa" font-size="10" font-weight="600">CONTROL PLANE</text>
+
+                <!-- deck / Admin API -->
+                <rect x="40" y="50" width="120" height="50" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="100" y="71" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">deck CLI</text>
+                <text x="100" y="87" text-anchor="middle" fill="#71717a" font-size="9">declarative config</text>
+
+                <rect x="200" y="50" width="120" height="50" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="260" y="71" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Kong Manager</text>
+                <text x="260" y="87" text-anchor="middle" fill="#71717a" font-size="9">UI / Admin API</text>
+
+                <!-- PostgreSQL -->
+                <rect x="100" y="125" width="140" height="30" rx="4" fill="#1c1c28" stroke="#a78bfa" stroke-dasharray="3 2"/>
+                <text x="170" y="145" text-anchor="middle" fill="#e4e4e7" font-size="10">PostgreSQL (optional)</text>
+
+                <!-- Data plane box -->
+                <rect x="20" y="185" width="320" height="150" rx="8" fill="none" stroke="#00d4aa" stroke-dasharray="4 3" stroke-width="1"/>
+                <text x="40" y="205" fill="#00d4aa" font-size="10" font-weight="600">DATA PLANE (Kong Proxy)</text>
+
+                <!-- Nginx core -->
+                <rect x="40" y="215" width="280" height="50" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="180" y="236" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Nginx / OpenResty core</text>
+                <text x="180" y="252" text-anchor="middle" fill="#71717a" font-size="9">TLS termination &middot; connection mgmt &middot; upstream keepalive</text>
+
+                <!-- Plugins row -->
+                <rect x="40" y="278" width="60" height="40" rx="3" fill="#16161f" stroke="#4a9eff"/>
+                <text x="70" y="296" text-anchor="middle" fill="#e4e4e7" font-size="9">auth</text>
+                <text x="70" y="309" text-anchor="middle" fill="#71717a" font-size="8">oidc/jwt</text>
+
+                <rect x="108" y="278" width="60" height="40" rx="3" fill="#16161f" stroke="#4a9eff"/>
+                <text x="138" y="296" text-anchor="middle" fill="#e4e4e7" font-size="9">rate-limit</text>
+                <text x="138" y="309" text-anchor="middle" fill="#71717a" font-size="8">adv./redis</text>
+
+                <rect x="176" y="278" width="60" height="40" rx="3" fill="#16161f" stroke="#4a9eff"/>
+                <text x="206" y="296" text-anchor="middle" fill="#e4e4e7" font-size="9">transform</text>
+                <text x="206" y="309" text-anchor="middle" fill="#71717a" font-size="8">req/resp</text>
+
+                <rect x="244" y="278" width="60" height="40" rx="3" fill="#16161f" stroke="#fbbf24"/>
+                <text x="274" y="296" text-anchor="middle" fill="#e4e4e7" font-size="9">custom</text>
+                <text x="274" y="309" text-anchor="middle" fill="#71717a" font-size="8">go/lua PDK</text>
+
+                <!-- Client -->
+                <rect x="430" y="260" width="100" height="50" rx="4" fill="#16161f" stroke="#00d4aa"/>
+                <text x="480" y="280" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Consumer</text>
+                <text x="480" y="296" text-anchor="middle" fill="#71717a" font-size="9">HTTPS / mTLS</text>
+
+                <!-- Upstream -->
+                <rect x="620" y="260" width="120" height="50" rx="4" fill="#16161f" stroke="#4a9eff"/>
+                <text x="680" y="280" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Upstream</text>
+                <text x="680" y="296" text-anchor="middle" fill="#71717a" font-size="9">micro-services</text>
+
+                <!-- Arrows: config flow -->
+                <line x1="160" y1="100" x2="200" y2="100" stroke="#71717a" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#ka2)"/>
+                <line x1="170" y1="125" x2="170" y2="185" stroke="#71717a" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#ka2)"/>
+
+                <!-- Arrows: traffic -->
+                <line x1="530" y1="285" x2="345" y2="285" stroke="#00d4aa" stroke-width="2" marker-end="url(#ka1)"/>
+                <line x1="345" y1="285" x2="618" y2="285" stroke="#00d4aa" stroke-width="2" marker-end="url(#ka1)"/>
+
+                <!-- Labels -->
+                <text x="418" y="278" fill="#71717a" font-size="9">ingress</text>
+                <text x="540" y="278" fill="#71717a" font-size="9">forward</text>
+
+                <!-- Plugin label -->
+                <text x="40" y="272" fill="#71717a" font-size="9">plugins (per route / service / global):</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Kong Gateway: control plane (config) and data plane (proxy)</div>
+          </div>
+
+          <p>The separation between control and data plane is a first-class concept in Kong Enterprise and an emerging pattern in the OSS version. In the DB-less mode &mdash; which is what you want in Kubernetes &mdash; the proxy reads a declarative <code>kong.yaml</code> file that is mounted as a ConfigMap or served from a Kong Konnect control plane. There is no shared state in the proxy tier; this makes the data plane purely stateless and scale-safe.</p>
+
+          <p>Plugins execute in phases tied to the Nginx request lifecycle: <code>init_worker</code>, <code>access</code>, <code>header_filter</code>, <code>body_filter</code>, <code>log</code>. A plugin can short-circuit the pipeline at any phase &mdash; <code>kong.response.exit()</code> in the access phase rejects before any upstream call is made. This is the correct design for auth and rate-limit plugins.</p>
+
+          <h2 id="envoy-mesh">Envoy &amp; service mesh</h2>
+          <p>Envoy is a C++ L7 proxy built by Lyft and donated to the CNCF. Unlike Kong, it is not a gateway product &mdash; it is a proxy runtime designed to be configured entirely by an external control plane via the <strong>xDS API</strong> (Listener Discovery Service, Route Discovery Service, Cluster Discovery Service, Endpoint Discovery Service). Istio, which is the dominant Kubernetes service mesh, uses Envoy as its data plane and acts as the xDS control plane.</p>
+          <p>In financial services, Envoy appears in two roles:</p>
+          <ul>
+            <li><strong>As the Istio ingress gateway</strong> &mdash; a dedicated Envoy instance at the cluster edge, replacing an external load balancer or Kong for intra-cluster north-south traffic.</li>
+            <li><strong>As the Istio sidecar</strong> &mdash; one Envoy per pod, handling east-west mTLS, circuit breaking, retries, and telemetry entirely transparently to the application.</li>
+          </ul>
+          <p>The key difference from Kong: Envoy&rsquo;s configuration is xDS-driven, which means you need a control plane (Istio, Consul Connect, or a custom xDS server) to manage it at scale. You do not write YAML that describes a proxy configuration &mdash; you write CRDs (<code>VirtualService</code>, <code>Gateway</code>, <code>DestinationRule</code>) that Istio translates to xDS and pushes to Envoy. This is powerful but adds an abstraction layer; when something goes wrong, you need to understand both the Istio CRD model and the Envoy xDS translation.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Envoy &amp; WASM plugins</div>
+            <p>Envoy supports WebAssembly (Wasm) extensions via the proxy-wasm ABI. This allows custom filters compiled to Wasm to run inside Envoy&rsquo;s filter chain without forking the binary. For bank-specific policy enforcement (custom PEP logic, SAMA-specific audit headers), a Wasm filter avoids the overhead of an external authorisation call while keeping the core binary unmodified.</p>
+          </div>
+
+          <h2 id="comparison">Kong vs Envoy: when each wins</h2>
+          <p>These tools solve overlapping problems from different angles. The decision is not Kong <em>or</em> Envoy &mdash; most mature Kubernetes environments run Envoy as the sidecar mesh and Kong (or an Istio ingress gateway) at the cluster boundary. But when budget, operational capacity, or deployment target forces a choice, here are the trade-offs that hold up in practice.</p>
+
+          <table>
+            <thead>
+              <tr><th>Dimension</th><th>Kong Gateway 3.x</th><th>Envoy / Istio 1.22</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Configuration model</strong></td>
+                <td>Declarative YAML (<code>deck</code>) or Admin API. Human-readable, version-controllable directly.</td>
+                <td>xDS via control plane (Istio CRDs). Requires understanding two abstraction layers.</td>
+              </tr>
+              <tr>
+                <td><strong>Plugin / filter ecosystem</strong></td>
+                <td>Large Lua/Go plugin library. Custom plugins via PDK. Kong Hub for third-party.</td>
+                <td>Envoy native filters + Wasm extensions. Fewer out-of-the-box; more flexible at the byte level.</td>
+              </tr>
+              <tr>
+                <td><strong>mTLS enforcement</strong></td>
+                <td>Configured per service in Kong. External cert manager integration for rotation.</td>
+                <td>Automatic, cluster-wide via <code>PeerAuthentication</code>. Cert rotation handled by Istio CA.</td>
+              </tr>
+              <tr>
+                <td><strong>Rate limiting</strong></td>
+                <td>First-class plugin with Redis backend for cluster-wide counters. Per consumer, per route, per service.</td>
+                <td>Not native &mdash; requires an external rate-limit service (e.g. Ratelimit by Envoy project) or a Wasm filter.</td>
+              </tr>
+              <tr>
+                <td><strong>Operational footprint</strong></td>
+                <td>Kong proxy + optionally Kong Manager + PostgreSQL. Manageable for a small team.</td>
+                <td>Envoy sidecar per pod + Istio control plane (istiod). Higher resource cost; requires Istio operational expertise.</td>
+              </tr>
+              <tr>
+                <td><strong>Fit for north-south API gateway</strong></td>
+                <td>Excellent. Designed for this role.</td>
+                <td>Adequate via Istio ingress gateway, but lacks consumer management, developer portal, and API catalogue.</td>
+              </tr>
+              <tr>
+                <td><strong>Fit for east-west service mesh</strong></td>
+                <td>Poor &mdash; Kong is not a sidecar proxy.</td>
+                <td>Excellent. The canonical choice.</td>
+              </tr>
+              <tr>
+                <td><strong>Migration from IBM API Connect</strong></td>
+                <td>Closer semantic mapping: services, routes, plugins map to APIs, products, policies.</td>
+                <td>More distant &mdash; Istio CRDs do not naturally express quota plans or consumer app subscriptions.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>The practical answer for a SAIB-style environment: use Kong at the network edge (external partner APIs, SAMA Open Banking endpoints) and Istio/Envoy for east-west service mesh. Kong enforces the consumer contract &mdash; auth, quota, transformations; Istio enforces the service-to-service contract &mdash; mTLS identity, circuit breaking, traffic policy.</p>
+
+          <h2 id="security">Security configuration</h2>
+          <p>Two security requirements surface in every SAMA security audit for an open-source gateway: <strong>mTLS for all external partner traffic</strong> and <strong>FAPI 2.0-compliant OAuth</strong> for open banking endpoints. Neither is configured out of the box; both require deliberate plugin or filter chain setup.</p>
+
+          <h3>Kong: mTLS termination and client certificate verification</h3>
+          <p>Kong terminates TLS on its proxy listeners. Mutual TLS requires configuring a CA certificate in Kong and attaching it to the relevant service or route. The <code>mtls-auth</code> plugin (Kong Enterprise) or the <code>request-termination</code> + Nginx <code>ssl_verify_client</code> combination (OSS) enforces client certificate presence and validity.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kong-mtls-service.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Step 1: register the partner CA as a CA certificate in Kong</span>
+<span class="tok-k">_format_version</span>: <span class="tok-s">"3.0"</span>
+
+<span class="tok-k">ca_certificates</span>:
+  - <span class="tok-k">id</span>: <span class="tok-s">partner-ca-01</span>
+    <span class="tok-k">cert</span>: |
+      -----BEGIN CERTIFICATE-----
+      <span class="tok-c"># PEM of the partner CA bundle</span>
+      -----END CERTIFICATE-----
+
+<span class="tok-c"># Step 2: define the service and route</span>
+<span class="tok-k">services</span>:
+  - <span class="tok-k">name</span>: <span class="tok-s">payments-core</span>
+    <span class="tok-k">url</span>: <span class="tok-s">https://payments.svc.internal/v1</span>
+    <span class="tok-k">tls_verify</span>: <span class="tok-n">true</span>
+    <span class="tok-k">ca_certificates</span>: [ <span class="tok-s">internal-ca-01</span> ]
+    <span class="tok-k">routes</span>:
+      - <span class="tok-k">name</span>: <span class="tok-s">partner-payments-route</span>
+        <span class="tok-k">hosts</span>: [ <span class="tok-s">api.acme-bank.com</span> ]
+        <span class="tok-k">paths</span>: [ <span class="tok-s">/partner/payments</span> ]
+        <span class="tok-k">protocols</span>: [ <span class="tok-s">https</span> ]
+    <span class="tok-k">plugins</span>:
+      <span class="tok-c"># mtls-auth enforces client cert against the registered CA</span>
+      - <span class="tok-k">name</span>: <span class="tok-s">mtls-auth</span>
+        <span class="tok-k">config</span>:
+          <span class="tok-k">ca_certificate_ids</span>: [ <span class="tok-s">partner-ca-01</span> ]
+          <span class="tok-k">revocation_check_mode</span>: <span class="tok-s">SKIP</span>      <span class="tok-c"># use STRICT if CRL/OCSP is reachable</span>
+          <span class="tok-k">skip_consumer_lookup</span>: <span class="tok-n">false</span>
+          <span class="tok-k">authenticated_group_by</span>: <span class="tok-s">DN</span>        <span class="tok-c"># map cert DN to Kong consumer</span></code></pre>
+          </div>
+
+          <p>The <code>authenticated_group_by: DN</code> setting is load-bearing for partner onboarding. It maps the Distinguished Name of the client certificate to a Kong consumer, which means rate-limit plugins downstream can count requests per partner without requiring an additional API key exchange. This is the standard pattern for SAMA Open Banking B2B channels where the partner cert <em>is</em> the identity credential.</p>
+
+          <h3>Kong: OIDC / FAPI 2.0 with the openid-connect plugin</h3>
+          <p>The <code>openid-connect</code> plugin (Kong Enterprise) handles token introspection, JWT validation, and PAR (Pushed Authorisation Request) flows required by FAPI 2.0. Configure it with <code>proof_of_possession_mtls: true</code> to enforce the certificate-bound access token requirement from FAPI 2.0.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kong-oidc-fapi2.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">plugins</span>:
+  - <span class="tok-k">name</span>: <span class="tok-s">openid-connect</span>
+    <span class="tok-k">route</span>: <span class="tok-s">open-banking-accounts-route</span>
+    <span class="tok-k">config</span>:
+      <span class="tok-k">issuer</span>: <span class="tok-s">https://idp.acme-bank.com/realms/ob-prod/.well-known/openid-configuration</span>
+      <span class="tok-k">client_id</span>: <span class="tok-s">kong-rs</span>
+      <span class="tok-k">client_secret</span>: <span class="tok-s">{vault://env/KONG_IDP_SECRET}</span>     <span class="tok-c"># never inline secrets</span>
+      <span class="tok-k">auth_methods</span>:
+        - <span class="tok-s">bearer</span>
+        - <span class="tok-s">introspection</span>
+      <span class="tok-k">introspection_endpoint</span>: <span class="tok-s">https://idp.acme-bank.com/realms/ob-prod/protocol/openid-connect/token/introspect</span>
+      <span class="tok-k">introspection_endpoint_auth_method</span>: <span class="tok-s">client_secret_basic</span>
+      <span class="tok-k">cache_introspection</span>: <span class="tok-n">true</span>
+      <span class="tok-k">introspection_hint</span>: <span class="tok-s">access_token</span>
+      <span class="tok-c"># FAPI 2.0: certificate-bound tokens (RFC 8705)</span>
+      <span class="tok-k">proof_of_possession_mtls</span>: <span class="tok-n">true</span>
+      <span class="tok-k">proof_of_possession_auth_methods_validation</span>: <span class="tok-n">true</span>
+      <span class="tok-k">scopes_required</span>: [ <span class="tok-s">accounts:read</span> ]
+      <span class="tok-k">consumer_claim</span>: <span class="tok-s">sub</span>
+      <span class="tok-k">consumer_by</span>: [ <span class="tok-s">username</span> ]
+      <span class="tok-k">upstream_headers_claims</span>:
+        - <span class="tok-k">claim</span>: <span class="tok-s">sub</span>
+          <span class="tok-k">header</span>: <span class="tok-s">X-Authenticated-Sub</span>
+        - <span class="tok-k">claim</span>: <span class="tok-s">acr</span>
+          <span class="tok-k">header</span>: <span class="tok-s">X-Auth-Class</span></code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Vault references, not inline secrets</div>
+            <p>The <code>{vault://env/KONG_IDP_SECRET}</code> syntax is Kong&rsquo;s native vault reference. It resolves at runtime from an environment variable or a HashiCorp Vault / AWS Secrets Manager backend. Never paste a client secret into a <code>kong.yaml</code> that lives in a Git repository &mdash; even an internal one. A SAMA security audit will flag hardcoded secrets in configuration files as a critical finding.</p>
+          </div>
+
+          <h2 id="rate-limiting">Rate limiting in Kong</h2>
+          <p>Kong&rsquo;s <code>rate-limiting-advanced</code> plugin (Enterprise) or <code>rate-limiting</code> (OSS) implements sliding-window counters backed by Redis. The advanced plugin supports multiple sliding windows simultaneously, which is the correct model for a financial API that has both a burst constraint (requests per second) and a contractual quota (requests per day).</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kong-rate-limit.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">plugins</span>:
+  - <span class="tok-k">name</span>: <span class="tok-s">rate-limiting-advanced</span>
+    <span class="tok-k">route</span>: <span class="tok-s">partner-payments-route</span>
+    <span class="tok-k">config</span>:
+      <span class="tok-k">identifier</span>: <span class="tok-s">consumer</span>     <span class="tok-c"># key per authenticated consumer, not per IP</span>
+      <span class="tok-k">window_type</span>: <span class="tok-s">sliding</span>
+      <span class="tok-k">limit</span>:
+        - <span class="tok-n">50</span>                     <span class="tok-c"># burst: 50 req / second</span>
+        - <span class="tok-n">100000</span>                 <span class="tok-c"># daily quota: 100 000 req / day</span>
+      <span class="tok-k">window_size</span>:
+        - <span class="tok-n">1</span>                      <span class="tok-c"># seconds for burst window</span>
+        - <span class="tok-n">86400</span>                  <span class="tok-c"># seconds for daily window</span>
+      <span class="tok-k">sync_rate</span>: <span class="tok-n">10</span>             <span class="tok-c"># sync Redis counter every 10 req (balances accuracy vs latency)</span>
+      <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>
+      <span class="tok-k">redis</span>:
+        <span class="tok-k">host</span>: <span class="tok-s">redis-sentinel.svc.internal</span>
+        <span class="tok-k">port</span>: <span class="tok-n">26379</span>
+        <span class="tok-k">sentinel_master</span>: <span class="tok-s">mymaster</span>
+        <span class="tok-k">password</span>: <span class="tok-s">{vault://env/REDIS_AUTH_TOKEN}</span>
+        <span class="tok-k">ssl</span>: <span class="tok-n">true</span>
+        <span class="tok-k">ssl_verify</span>: <span class="tok-n">true</span>
+      <span class="tok-k">error_code</span>: <span class="tok-n">429</span>
+      <span class="tok-k">error_message</span>: <span class="tok-s">Rate limit exceeded</span>
+      <span class="tok-k">hide_client_headers</span>: <span class="tok-n">false</span>  <span class="tok-c"># expose X-RateLimit-* headers to consumers</span></code></pre>
+          </div>
+
+          <p>Three configuration decisions here that matter in production:</p>
+          <ul>
+            <li><strong><code>identifier: consumer</code></strong> &mdash; counts per authenticated Kong consumer, not per IP. This is the only correct model once you have mTLS or OIDC authentication in place. IP-based rate limiting is trivially bypassed by a partner behind NAT or a load balancer.</li>
+            <li><strong><code>sync_rate: 10</code></strong> &mdash; each Kong node writes to Redis every 10 requests rather than every request. This reduces Redis load by an order of magnitude at high throughput. The trade-off: a consumer can briefly exceed their limit by up to <code>10 × node_count</code> requests before the global counter catches up. For daily quotas this is immaterial; for burst limits you may want a lower sync rate.</li>
+            <li><strong>Redis Sentinel, not a single Redis node.</strong> The rate-limit counter is in-memory in Redis. If Redis goes down and <code>strategy: redis</code> is set, Kong falls back to allowing all requests (fail-open) unless you configure <code>fault_tolerant: false</code>. Sentinel gives you HA without changing the fail-open behaviour.</li>
+          </ul>
+
+          <h2 id="migration">Migration from commercial gateway</h2>
+          <p>Migrating from IBM API Connect or MuleSoft API Manager to Kong is a project, not a deployment. The semantic mapping is close but not exact, and the operational model &mdash; how you deploy, test, and rollback a configuration change &mdash; is completely different. A dark-launch migration is the only pattern that consistently works without an outage window.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Inventory and categorise existing APIs</h4>
+              <p>Export the full API catalogue from the current gateway. Categorise each API by traffic tier (internal, partner, public), auth mechanism (OAuth, mTLS, API key), and rate-limit policy. Flag any APIs with <code>gatewayscript</code> or XSLT transforms &mdash; these require the most translation effort.</p>
+            </li>
+            <li>
+              <h4>Build the Kong declarative config skeleton</h4>
+              <p>Map each API to a Kong service and route in a <code>kong.yaml</code> file. Attach auth plugins first, rate-limit second, transform plugins last. Use <code>deck validate</code> to catch structural errors before any deployment.</p>
+            </li>
+            <li>
+              <h4>Deploy Kong in shadow mode alongside the existing gateway</h4>
+              <p>Route a copy of production traffic to Kong using traffic mirroring at the load balancer (NGINX <code>mirror</code> directive, HAProxy <code>http-request send-spoe</code>, or AWS ALB mirroring). Kong processes the requests but discards the responses; you compare access logs from both gateways for auth failures, policy mismatches, and latency divergence.</p>
+            </li>
+            <li>
+              <h4>Canary the lowest-risk route</h4>
+              <p>Pick an internal API (not customer-facing, not payment-critical) and shift 5% of live traffic to Kong. Monitor for error-rate regression and latency spikes for 24 hours. Increase in 10% increments until 100%.</p>
+            </li>
+            <li>
+              <h4>Migrate partner and external APIs</h4>
+              <p>These require consumer migration: re-issuing API keys or provisioning Kong consumers with the same client certificates. Coordinate with partners on the changeover date. Keep the old gateway running as a fallback for 30 days &mdash; partners will miss comms.</p>
+            </li>
+            <li>
+              <h4>Decommission the old gateway</h4>
+              <p>Only after zero traffic for 14 days on the old gateway. Check analytics and SIEM for any lingering requests. Archive the old gateway config &mdash; you will need it for an audit question about the migration period.</p>
+            </li>
+          </ol>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never cut over a payment API on a Friday</div>
+            <p>Payment APIs carry SAMA oversight obligations. A cut-over that causes even a brief outage on a settlement window is a regulatory incident. Schedule payment API migrations for mid-week, mid-morning, with the core banking team on standby, and a tested rollback procedure that gets you back to the old gateway in under 5 minutes.</p>
+          </div>
+
+          <h2 id="topology">Production topology</h2>
+          <p>A production Kong deployment on Kubernetes follows the hybrid mode pattern: a Kong Konnect or self-hosted control plane manages config; stateless Kong data-plane pods run in the workload cluster. This matches the DB-less design &mdash; config is fetched from the control plane at startup and cached in-memory, so pod restarts are safe even if the control plane is temporarily unreachable.</p>
+
+          <div class="diagram" role="img" aria-label="Production Kong topology: external consumer hits Kong data plane pods behind an NLB; Kong data plane fetches config from Kong control plane; Istio sidecar handles east-west mTLS between Kong and upstream services">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="tp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="tp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#71717a"/>
+                  </marker>
+                </defs>
+
+                <!-- Internet zone -->
+                <rect x="10" y="20" width="100" height="60" rx="6" fill="#16161f" stroke="#ef4444"/>
+                <text x="60" y="45" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Partner /</text>
+                <text x="60" y="60" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Consumer</text>
+                <text x="60" y="75" text-anchor="middle" fill="#71717a" font-size="9">HTTPS + mTLS</text>
+
+                <!-- NLB -->
+                <rect x="140" y="30" width="100" height="40" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="190" y="50" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Network LB</text>
+                <text x="190" y="63" text-anchor="middle" fill="#71717a" font-size="9">TLS passthrough</text>
+
+                <!-- Kong DP pods -->
+                <rect x="270" y="10" width="180" height="80" rx="6" fill="none" stroke="#00d4aa" stroke-dasharray="4 3"/>
+                <text x="360" y="28" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Kong Data Plane (×3)</text>
+                <rect x="280" y="35" width="50" height="40" rx="3" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="305" y="53" text-anchor="middle" fill="#e4e4e7" font-size="9">Kong</text>
+                <text x="305" y="66" text-anchor="middle" fill="#71717a" font-size="8">pod-1</text>
+                <rect x="340" y="35" width="50" height="40" rx="3" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="365" y="53" text-anchor="middle" fill="#e4e4e7" font-size="9">Kong</text>
+                <text x="365" y="66" text-anchor="middle" fill="#71717a" font-size="8">pod-2</text>
+                <rect x="400" y="35" width="40" height="40" rx="3" fill="#1c1c28" stroke="#00d4aa" stroke-dasharray="2 2"/>
+                <text x="420" y="53" text-anchor="middle" fill="#71717a" font-size="9">pod-n</text>
+
+                <!-- Control plane -->
+                <rect x="270" y="110" width="180" height="50" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="360" y="132" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Kong Control Plane</text>
+                <text x="360" y="148" text-anchor="middle" fill="#71717a" font-size="9">deck sync · Admin API · Manager UI</text>
+
+                <!-- Redis (rate limit) -->
+                <rect x="470" y="20" width="100" height="40" rx="4" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="520" y="37" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Redis Sentinel</text>
+                <text x="520" y="52" text-anchor="middle" fill="#71717a" font-size="9">rate-limit counters</text>
+
+                <!-- Upstream zone -->
+                <rect x="590" y="20" width="170" height="135" rx="6" fill="none" stroke="#4a9eff" stroke-dasharray="4 3"/>
+                <text x="675" y="40" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Upstream Services</text>
+                <rect x="600" y="50" width="140" height="35" rx="3" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="670" y="67" text-anchor="middle" fill="#e4e4e7" font-size="10">payments-core</text>
+                <text x="670" y="80" text-anchor="middle" fill="#71717a" font-size="8">Envoy sidecar (mTLS)</text>
+                <rect x="600" y="95" width="140" height="35" rx="3" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="670" y="112" text-anchor="middle" fill="#e4e4e7" font-size="10">accounts-api</text>
+                <text x="670" y="125" text-anchor="middle" fill="#71717a" font-size="8">Envoy sidecar (mTLS)</text>
+
+                <!-- Observability -->
+                <rect x="270" y="180" width="180" height="40" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="360" y="198" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Prometheus + Grafana</text>
+                <text x="360" y="213" text-anchor="middle" fill="#71717a" font-size="9">Kong status metrics &middot; Istio mesh telemetry</text>
+
+                <!-- Arrows -->
+                <line x1="110" y1="50" x2="138" y2="50" stroke="#00d4aa" stroke-width="2" marker-end="url(#tp1)"/>
+                <line x1="240" y1="50" x2="268" y2="50" stroke="#00d4aa" stroke-width="2" marker-end="url(#tp1)"/>
+                <line x1="360" y1="90" x2="360" y2="108" stroke="#71717a" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#tp2)"/>
+                <line x1="450" y1="50" x2="468" y2="50" stroke="#ef4444" stroke-width="1" stroke-dasharray="2 2" marker-end="url(#tp2)"/>
+                <line x1="450" y1="70" x2="588" y2="67" stroke="#00d4aa" stroke-width="2" marker-end="url(#tp1)"/>
+                <line x1="360" y1="160" x2="360" y2="178" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#tp2)"/>
+
+                <!-- Labels -->
+                <text x="112" y="43" fill="#71717a" font-size="8">TLS</text>
+                <text x="245" y="43" fill="#71717a" font-size="8">to DP</text>
+                <text x="455" y="63" fill="#71717a" font-size="8">rate counter</text>
+                <text x="455" y="83" fill="#71717a" font-size="8">fwd (mTLS)</text>
+                <text x="365" y="103" fill="#71717a" font-size="8">config pull</text>
+                <text x="365" y="173" fill="#71717a" font-size="8">scrape</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Production Kong topology: DB-less data plane, Istio east-west mTLS, Redis-backed rate limiting</div>
+          </div>
+
+          <p>Three topology rules that hold up in regulated environments:</p>
+          <ul>
+            <li><strong>The load balancer must do TLS passthrough, not termination.</strong> Kong is the TLS termination point. Terminating at the LB and re-encrypting to Kong means the client certificate is lost before it reaches the <code>mtls-auth</code> plugin. Partner mTLS breaks silently if the LB terminates.</li>
+            <li><strong>Rate-limit counters must be in Redis, not in-memory.</strong> With three Kong data-plane pods, each pod maintains independent in-memory counters if you use <code>strategy: local</code>. A consumer can make <code>3 × burst_limit</code> requests before any pod rejects. Redis strategy gives you accurate global counters at the cost of a Redis round-trip per sync.</li>
+            <li><strong>Kong does not replace Istio inside the cluster.</strong> Kong enforces the edge contract. Istio enforces the service-to-service contract. Both are necessary in a regulated environment where the audit expects mTLS on every hop, not just the edge.</li>
+          </ul>
+
+          <h2 id="observability">Observability</h2>
+          <p>Kong exposes a Prometheus metrics endpoint at <code>/metrics</code> on the status port (default 8100). The key metrics for a financial API gateway are latency percentiles by route, upstream error rates, and rate-limit rejection counts.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>prometheus-plugin.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Enable the Prometheus plugin globally</span>
+<span class="tok-k">plugins</span>:
+  - <span class="tok-k">name</span>: <span class="tok-s">prometheus</span>
+    <span class="tok-k">config</span>:
+      <span class="tok-k">per_consumer</span>: <span class="tok-n">true</span>         <span class="tok-c"># label metrics by consumer name</span>
+      <span class="tok-k">status_code_metrics</span>: <span class="tok-n">true</span>
+      <span class="tok-k">latency_metrics</span>: <span class="tok-n">true</span>
+      <span class="tok-k">upstream_health_metrics</span>: <span class="tok-n">true</span>
+      <span class="tok-k">bandwidth_metrics</span>: <span class="tok-n">false</span>   <span class="tok-c"># high cardinality; disable unless needed</span>
+
+<span class="tok-c"># Grafana alert: p99 latency spike on the payments route</span>
+<span class="tok-c"># histogram_quantile(0.99,</span>
+<span class="tok-c">#   sum(rate(kong_latency_bucket{route="partner-payments-route"}[5m])) by (le))</span>
+<span class="tok-c"># > 500  (alert if p99 exceeds 500ms for 5 minutes)</span></code></pre>
+          </div>
+
+          <p>For Envoy/Istio, the telemetry comes from the sidecar and the ingress gateway automatically. Istio generates three types: access logs (per request), Prometheus metrics (aggregated), and distributed traces via Zipkin/Jaeger. The combination gives you the full picture: Kong sees the consumer identity and the rate-limit decision; Istio sees the intra-cluster hop latency and the mTLS handshake.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">SIEM forwarding</div>
+            <p>Send Kong access logs to your SIEM (Splunk, QRadar) via the <code>tcp-log</code> or <code>http-log</code> plugin, not by tail-following pod stdout. Pod stdout is ephemeral; the log plugin writes to an endpoint that is available even during pod restarts. For SAMA audit purposes, you need a durable, tamper-evident audit log of every request that crosses the regulated boundary &mdash; pod logs alone do not satisfy this.</p>
+          </div>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">DB-less and the Kong Manager UI</div>
+            <p>Kong Manager cannot write configuration to a DB-less deployment. If you use DB-less (the correct choice for Kubernetes), Kong Manager is read-only. Teams frequently discover this after spending a day trying to edit a route in the UI and finding that changes do not persist across pod restarts. Manage configuration exclusively via <code>deck sync</code> from a Git-controlled <code>kong.yaml</code>.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Istio injects sidecars into Kong pods unless you opt out</div>
+            <p>By default, Istio injects Envoy sidecars into every pod in a namespace with the <code>istio-injection: enabled</code> label. This includes Kong pods. The sidecar will intercept Kong&rsquo;s outbound connections to upstream services and apply mTLS &mdash; which is correct behaviour &mdash; but it will also intercept Kong&rsquo;s connections to its own status port and Redis, which can break health checks and rate-limit sync in non-obvious ways. Label Kong pods with <code>sidecar.istio.io/inject: "false"</code> unless you have explicitly tested the sidecar-injected behaviour.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">The <code>sync_rate</code> trade-off at low quotas</div>
+            <p>A <code>sync_rate</code> of 10 with 3 Kong pods means a consumer on a 15-requests-per-day free-tier plan could make up to 30 requests before the rate limiter kicks in (each pod accumulates 10 locally before syncing). For high-volume commercial plans this error is negligible; for tight free-tier quotas it matters. Either lower the sync rate or implement a hard Redis check for low-quota consumers.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Certificate rotation requires consumer update</div>
+            <p>When a partner renews their mTLS client certificate, the new certificate must be registered in Kong (via the <code>consumers</code> API or <code>deck sync</code>) before the old certificate expires. There is no automatic cert-rotation mechanism in Kong OSS. Build the renewal workflow into your partner onboarding runbook and add a 60-day expiry alert.</p>
+          </div>
+
+          <h2 id="decision">Decision framework</h2>
+          <p>The question is not whether Kong or Envoy is the &ldquo;better&rdquo; gateway &mdash; it is which tool best fits the specific enforcement point and the team operating it. In a regulated bank the decision looks like this:</p>
+
+          <table>
+            <thead>
+              <tr><th>Enforcement point</th><th>Recommended tool</th><th>Rationale</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>External partner APIs (SAMA Open Banking, ISO 20022 connectors)</td>
+                <td><strong>Kong Gateway</strong></td>
+                <td>Consumer management, mTLS-cert-to-consumer mapping, per-consumer rate limits, and a developer portal are native. FAPI 2.0 OIDC plugin exists.</td>
+              </tr>
+              <tr>
+                <td>Internal east-west service-to-service traffic</td>
+                <td><strong>Istio / Envoy sidecar</strong></td>
+                <td>Automatic mTLS with workload identity (SPIFFE/SVID). No per-service configuration needed. Zero-trust posture for free.</td>
+              </tr>
+              <tr>
+                <td>Intra-cluster north-south (app services calling APIs within the same cluster)</td>
+                <td><strong>Istio ingress gateway</strong></td>
+                <td>Envoy-based; shares the control plane. Avoids a second technology for intra-cluster routing.</td>
+              </tr>
+              <tr>
+                <td>Migration path from IBM API Connect</td>
+                <td><strong>Kong (dark-launch)</strong></td>
+                <td>Closest semantic mapping to the IBM model. <code>deck</code> toolchain enables Git-controlled config comparable to the IBM <code>apic</code> CLI workflow.</td>
+              </tr>
+              <tr>
+                <td>Custom byte-level protocol manipulation</td>
+                <td><strong>Envoy + Wasm filter</strong></td>
+                <td>When you need to operate below the HTTP semantic layer (e.g. custom TLS extension negotiation, binary protocol inspection), Envoy&rsquo;s filter chain is the right primitive.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>Neither tool eliminates the need for an API lifecycle process &mdash; catalogue, versioning, consumer onboarding, rate-limit contracts. Kong provides a lightweight version of that process out of the box. Envoy does not. If the teams consuming your APIs are internal and operate in the same Kubernetes cluster, the Istio-only model is clean and low overhead. If you have external partners, SAMA-mandated open banking endpoints, or a developer community, Kong&rsquo;s consumer model is the differentiator, and the cost of running it alongside Istio is justified.</p>
+
+          <nav class="article-nav">
+            <a href="../api-gateway.html">
+              <div class="article-nav__label">&larr; Back to</div>
+              <div class="article-nav__title">API Gateway</div>
+            </a>
+            <a href="ibm-api-connect.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">IBM API Gateway: Production Architecture &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){
+          if (s.offsetTop <= fromTop) current = s.id;
+        });
+        links.forEach(function(l){
+          l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+        });
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

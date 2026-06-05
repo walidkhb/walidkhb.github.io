@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Streaming &mdash; ksqlDB &amp; Flink SQL for Stream Analytics &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="SQL on streams for financial services: ksqlDB and Flink SQL compared, stateful aggregations, schema management, windowing, stream-table joins, and the operational trade-offs that decide which engine fits your architecture.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Data Streaming &mdash; ksqlDB &amp; Flink SQL &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="SQL on streams: stateful aggregations, windowing, joins, and what holds up in production financial-services environments.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/ksqldb-and-flink-sql.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ksqlDB &amp; Flink SQL &mdash; Stream Analytics in Production">
+  <meta name="twitter:description" content="SQL on streams for financial services: windowing, joins, schema, and operational trade-offs.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/ksqldb-and-flink-sql.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Data Streaming: ksqlDB & Flink SQL for Stream Analytics",
+    "description": "SQL on streams for financial services: ksqlDB and Flink SQL compared, stateful aggregations, schema management, windowing, stream-table joins, and operational production patterns.",
+    "datePublished": "2026-05-23",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "url": "https://www.wbadawi.info/lab/data-streaming/ksqldb-and-flink-sql.html",
+    "isPartOf": {"@type": "WebPage", "name": "Data Streaming &mdash; Lab", "url": "https://www.wbadawi.info/lab/data-streaming.html"},
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.wbadawi.info/"},
+        {"@type": "ListItem", "position": 2, "name": "Lab", "item": "https://www.wbadawi.info/technical.html"},
+        {"@type": "ListItem", "position": 3, "name": "Data Streaming", "item": "https://www.wbadawi.info/lab/data-streaming.html"},
+        {"@type": "ListItem", "position": 4, "name": "ksqlDB & Flink SQL", "item": "https://www.wbadawi.info/lab/data-streaming/ksqldb-and-flink-sql.html"}
+      ]
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>ksqlDB &amp; Flink SQL</div>
+          <span class="overline">Lab Article</span>
+          <h1>Data Streaming: ksqlDB &amp; Flink SQL for Stream Analytics</h1>
+          <p class="lead">SQL on streams is a genuine productivity leap for financial-services teams&mdash;it lowers the barrier to building stateful real-time pipelines, but it does not eliminate the complexity of running them. This article covers the trade-offs between ksqlDB and Flink SQL, stateful aggregations, schema management, windowing in SQL, stream-table joins, and the production concerns that surface after go-live.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#comparison">ksqlDB vs Flink SQL</a></li>
+            <li><a href="#architecture">Deployment architecture</a></li>
+            <li><a href="#first-query">Writing streaming queries</a></li>
+            <li><a href="#aggregations">Stateful aggregations</a></li>
+            <li><a href="#schema">Schema management</a></li>
+            <li><a href="#windowing">Windowing in SQL</a></li>
+            <li><a href="#joins">Stream-table joins</a></li>
+            <li><a href="#build">Building a pipeline</a></li>
+            <li><a href="#production">Production concerns</a></li>
+            <li><a href="#batch-fit">Fit alongside batch</a></li>
+            <li><a href="#when-not">When not to use</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> ksqlDB 0.29 / Flink 1.19 / Confluent Schema Registry / IBM Event Streams</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>The Kafka ecosystem learned an early lesson from Hadoop: SQL dialects dramatically widen the population of engineers who can build production pipelines. ksqlDB and Flink SQL are the two mainstream answers to &ldquo;I want to query a stream without writing Java topology code.&rdquo; Both can produce correct results on unbounded data. The difference is in ownership model, operational surface, and what happens when you need to go off-script.</p>
+          <p>For a Saudi bank running on IBM Event Streams (Kafka 3.x) or Confluent, the deployment picture is asymmetric: ksqlDB runs inside the Kafka ecosystem with minimal new infrastructure; Flink SQL requires a Flink cluster that needs its own cluster management, scaling strategy, and checkpointing store. That is a legitimate operational cost. But Flink SQL also offers SQL semantics the ksqlDB team openly describes as a future target, not a shipped feature&mdash;complex multi-stream joins, MATCH_RECOGNIZE pattern detection, savepoints, and first-class SQL DDL for state management.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">This article assumes you understand Kafka Streams basics</div>
+            <p>If windowing, KTable, and changelog topics are new, read <a href="kafka-streams-and-flink.html" style="color:var(--color-accent);">Kafka Streams &amp; Flink</a> first. This article builds on those concepts and translates them into SQL semantics.</p>
+          </div>
+
+          <h2 id="comparison">ksqlDB vs Flink SQL</h2>
+          <p>Choose the engine once, deliberately. Migrating a production streaming SQL application to a different engine is not a weekend project; the SQL dialects differ in ways that matter, and state must be rebuilt from scratch.</p>
+
+          <table>
+            <thead>
+              <tr><th>Property</th><th>ksqlDB 0.29</th><th>Flink SQL 1.19</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Runtime</td><td>JVM process, co-located with Kafka cluster</td><td>Flink JobManager + TaskManagers (separate cluster)</td></tr>
+              <tr><td>State backend</td><td>Kafka changelog topic (RocksDB via Kafka Streams)</td><td>RocksDB or Heap; checkpoints to S3/HDFS/NFS</td></tr>
+              <tr><td>SQL completeness</td><td>Subset: SELECT, CREATE STREAM/TABLE, GROUP BY, window functions, basic JOINs</td><td>Full SQL:2016 subset + streaming extensions; MATCH_RECOGNIZE, TUMBLE/HOP/SESSION/CUMULATE</td></tr>
+              <tr><td>CDC ingestion</td><td>Via Kafka Connect debezium source; treats as stream</td><td>Native Flink CDC connectors (Debezium, Maxwell); changelog-aware merge</td></tr>
+              <tr><td>Operational surface</td><td>One ksqlDB server binary; REST API for DDL/DML</td><td>Separate cluster + checkpointing store; Flink UI; savepoint management</td></tr>
+              <tr><td>Scaling</td><td>Horizontal: add ksqlDB servers; partitioned by query topic</td><td>Horizontal: TaskManager slots; fine-grained parallelism per operator</td></tr>
+              <tr><td>Best fit</td><td>Enrichment, filtering, per-topic transformations; smaller teams</td><td>Complex multi-stream analytics, regulatory reporting, ML feature pipelines</td></tr>
+              <tr><td>KSA regulatory fit</td><td>Simpler SAMA sandbox testing; fewer moving parts for audit</td><td>Richer lineage and checkpointing for SOX/SAMA evidence chains</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">ksqlDB is a Confluent product</div>
+            <p>ksqlDB is open-source but its roadmap is driven by Confluent. If you run IBM Event Streams (Apache Kafka under the hood without Confluent Platform), ksqlDB is deployable but you lose Confluent-specific enhancements. Flink SQL has no such dependency&mdash;it works with any Kafka-compatible cluster.</p>
+          </div>
+
+          <h2 id="architecture">Deployment architecture</h2>
+          <p>The two engines slot into an existing Kafka-based platform differently. ksqlDB extends the Kafka footprint; Flink SQL stands beside it.</p>
+
+          <div class="diagram" role="img" aria-label="ksqlDB and Flink SQL deployment architectures compared side by side">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="sql-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="sql-arrow-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Left panel: ksqlDB -->
+                <rect x="10" y="10" width="360" height="360" rx="8" fill="#0d0d14" stroke="#00d4aa" stroke-dasharray="4 3"/>
+                <text x="190" y="34" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600" letter-spacing="0.08em">KSQLDB ARCHITECTURE</text>
+
+                <rect x="30" y="50" width="140" height="44" rx="5" fill="#16161f" stroke="#4a9eff"/>
+                <text x="100" y="69" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Kafka Cluster</text>
+                <text x="100" y="83" text-anchor="middle" fill="#71717a" font-size="9">IBM Event Streams</text>
+
+                <rect x="190" y="50" width="160" height="44" rx="5" fill="#16161f" stroke="#4a9eff"/>
+                <text x="270" y="69" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Schema Registry</text>
+                <text x="270" y="83" text-anchor="middle" fill="#71717a" font-size="9">Avro / Protobuf</text>
+
+                <rect x="80" y="130" width="200" height="50" rx="5" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="180" y="151" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">ksqlDB Server</text>
+                <text x="180" y="168" text-anchor="middle" fill="#71717a" font-size="9">REST API &middot; Interactive queries</text>
+
+                <rect x="30" y="220" width="140" height="44" rx="5" fill="#16161f" stroke="#fbbf24"/>
+                <text x="100" y="239" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Persistent Query</text>
+                <text x="100" y="253" text-anchor="middle" fill="#71717a" font-size="9">CREATE TABLE AS</text>
+
+                <rect x="190" y="220" width="140" height="44" rx="5" fill="#16161f" stroke="#fbbf24"/>
+                <text x="260" y="239" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Push Query</text>
+                <text x="260" y="253" text-anchor="middle" fill="#71717a" font-size="9">SELECT … EMIT CHANGES</text>
+
+                <rect x="80" y="305" width="200" height="40" rx="5" fill="#16161f" stroke="#ef4444"/>
+                <text x="180" y="320" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Internal changelog topics</text>
+                <text x="180" y="333" text-anchor="middle" fill="#71717a" font-size="9">state stored as Kafka topic offsets</text>
+
+                <line x1="100" y1="94" x2="120" y2="128" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#sql-arrow)"/>
+                <line x1="270" y1="94" x2="230" y2="128" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#sql-arrow)"/>
+                <line x1="150" y1="180" x2="110" y2="218" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sql-arrow)"/>
+                <line x1="210" y1="180" x2="250" y2="218" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sql-arrow)"/>
+                <line x1="180" y1="264" x2="180" y2="303" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sql-arrow)"/>
+
+                <!-- Right panel: Flink SQL -->
+                <rect x="400" y="10" width="370" height="360" rx="8" fill="#0d0d14" stroke="#a78bfa" stroke-dasharray="4 3"/>
+                <text x="585" y="34" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600" letter-spacing="0.08em">FLINK SQL ARCHITECTURE</text>
+
+                <rect x="420" y="50" width="140" height="44" rx="5" fill="#16161f" stroke="#4a9eff"/>
+                <text x="490" y="69" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Kafka Cluster</text>
+                <text x="490" y="83" text-anchor="middle" fill="#71717a" font-size="9">any Kafka-compatible</text>
+
+                <rect x="580" y="50" width="160" height="44" rx="5" fill="#16161f" stroke="#4a9eff"/>
+                <text x="660" y="69" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Schema Registry</text>
+                <text x="660" y="83" text-anchor="middle" fill="#71717a" font-size="9">or Glue / Hive catalog</text>
+
+                <rect x="460" y="130" width="130" height="50" rx="5" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="525" y="151" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">JobManager</text>
+                <text x="525" y="168" text-anchor="middle" fill="#71717a" font-size="9">REST / Web UI</text>
+
+                <rect x="610" y="130" width="130" height="50" rx="5" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="675" y="151" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">TaskManagers</text>
+                <text x="675" y="168" text-anchor="middle" fill="#71717a" font-size="9">n × slot-count</text>
+
+                <rect x="420" y="220" width="140" height="44" rx="5" fill="#16161f" stroke="#fbbf24"/>
+                <text x="490" y="239" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">RocksDB State</text>
+                <text x="490" y="253" text-anchor="middle" fill="#71717a" font-size="9">local + incremental ckpt</text>
+
+                <rect x="580" y="220" width="140" height="44" rx="5" fill="#16161f" stroke="#fbbf24"/>
+                <text x="650" y="239" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">S3 / HDFS</text>
+                <text x="650" y="253" text-anchor="middle" fill="#71717a" font-size="9">savepoints &amp; checkpoints</text>
+
+                <rect x="460" y="305" width="270" height="40" rx="5" fill="#16161f" stroke="#ef4444"/>
+                <text x="595" y="320" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Flink SQL DDL catalog (Hive or in-memory)</text>
+                <text x="595" y="333" text-anchor="middle" fill="#71717a" font-size="9">table definitions survive job restart</text>
+
+                <line x1="490" y1="94" x2="510" y2="128" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#sql-arrow-p)"/>
+                <line x1="660" y1="94" x2="645" y2="128" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#sql-arrow-p)"/>
+                <line x1="510" y1="180" x2="470" y2="218" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#sql-arrow-p)"/>
+                <line x1="615" y1="180" x2="640" y2="218" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#sql-arrow-p)"/>
+                <line x1="490" y1="264" x2="540" y2="303" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#sql-arrow-p)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; ksqlDB (left) extends the Kafka cluster; Flink SQL (right) is a separate runtime with independent checkpointing</div>
+          </div>
+
+          <h2 id="first-query">Writing streaming queries</h2>
+          <p>Both engines distinguish between a <strong>stream</strong> (an unbounded append log, backed by a Kafka topic) and a <strong>table</strong> (the latest value per key, backed by a compacted topic or KTable). Every query is declared against one of these abstractions.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ksqlDB &mdash; declare stream and table</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- Declare an existing Kafka topic as a stream</span>
+<span class="tok-k">CREATE STREAM</span> card_auth (
+  auth_id     <span class="tok-t">VARCHAR</span> <span class="tok-k">KEY</span>,
+  customer_id <span class="tok-t">VARCHAR</span>,
+  amount      <span class="tok-t">DECIMAL(15,2)</span>,
+  mcc         <span class="tok-t">VARCHAR</span>,
+  ts          <span class="tok-t">BIGINT</span>
+) <span class="tok-k">WITH</span> (
+  KAFKA_TOPIC  = <span class="tok-s">'card-auth'</span>,
+  VALUE_FORMAT = <span class="tok-s">'AVRO'</span>,
+  TIMESTAMP    = <span class="tok-s">'ts'</span>
+);
+
+<span class="tok-c">-- Declare a compacted topic as a table (latest-value-per-key)</span>
+<span class="tok-k">CREATE TABLE</span> customer_profile (
+  customer_id   <span class="tok-t">VARCHAR</span> <span class="tok-k">PRIMARY KEY</span>,
+  risk_segment  <span class="tok-t">VARCHAR</span>,
+  daily_limit   <span class="tok-t">DECIMAL(15,2)</span>
+) <span class="tok-k">WITH</span> (
+  KAFKA_TOPIC  = <span class="tok-s">'customer-master'</span>,
+  VALUE_FORMAT = <span class="tok-s">'AVRO'</span>
+);
+
+<span class="tok-c">-- Push query: subscribe to enriched output (useful for dashboards)</span>
+<span class="tok-k">SELECT</span> a.auth_id, a.amount, c.risk_segment
+<span class="tok-k">FROM</span>  card_auth a
+<span class="tok-k">JOIN</span>  customer_profile c <span class="tok-k">ON</span> a.customer_id = c.customer_id
+<span class="tok-k">EMIT CHANGES</span>;</code></pre>
+          </div>
+
+          <p>Flink SQL uses identical logical abstractions but different DDL syntax and connector notation:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>Flink SQL &mdash; declare stream and table via catalog</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- Source table backed by a Kafka topic (append stream)</span>
+<span class="tok-k">CREATE TABLE</span> card_auth (
+  auth_id      <span class="tok-t">STRING</span>,
+  customer_id  <span class="tok-t">STRING</span>,
+  amount       <span class="tok-t">DECIMAL(15,2)</span>,
+  mcc          <span class="tok-t">STRING</span>,
+  ts           <span class="tok-t">TIMESTAMP(3)</span>,
+  <span class="tok-k">WATERMARK FOR</span> ts <span class="tok-k">AS</span> ts - <span class="tok-t">INTERVAL</span> <span class="tok-s">'5'</span> <span class="tok-t">SECOND</span>
+) <span class="tok-k">WITH</span> (
+  <span class="tok-s">'connector'</span>                     = <span class="tok-s">'kafka'</span>,
+  <span class="tok-s">'topic'</span>                         = <span class="tok-s">'card-auth'</span>,
+  <span class="tok-s">'properties.bootstrap.servers'</span>  = <span class="tok-s">'kafka:9092'</span>,
+  <span class="tok-s">'format'</span>                        = <span class="tok-s">'avro-confluent'</span>,
+  <span class="tok-s">'avro-confluent.schema-registry.url'</span> = <span class="tok-s">'http://schema-registry:8081'</span>
+);
+
+<span class="tok-c">-- Lookup table (upsert Kafka connector for changelog-aware reads)</span>
+<span class="tok-k">CREATE TABLE</span> customer_profile (
+  customer_id   <span class="tok-t">STRING</span> <span class="tok-k">PRIMARY KEY NOT ENFORCED</span>,
+  risk_segment  <span class="tok-t">STRING</span>,
+  daily_limit   <span class="tok-t">DECIMAL(15,2)</span>
+) <span class="tok-k">WITH</span> (
+  <span class="tok-s">'connector'</span>   = <span class="tok-s">'upsert-kafka'</span>,
+  <span class="tok-s">'topic'</span>       = <span class="tok-s">'customer-master'</span>,
+  <span class="tok-s">'properties.bootstrap.servers'</span> = <span class="tok-s">'kafka:9092'</span>,
+  <span class="tok-s">'key.format'</span>  = <span class="tok-s">'raw'</span>,
+  <span class="tok-s">'value.format'</span>= <span class="tok-s">'avro-confluent'</span>,
+  <span class="tok-s">'value.avro-confluent.schema-registry.url'</span> = <span class="tok-s">'http://schema-registry:8081'</span>
+);</code></pre>
+          </div>
+
+          <h2 id="aggregations">Stateful aggregations</h2>
+          <p>Streaming SQL aggregations are always stateful. The engine must remember previous rows within the scope of a window or a grouping key. Unlike batch SQL, there is no full table scan &mdash; only incremental update as each new event arrives. This has two implications: aggregation results are continuously emitted (a retraction stream) and state size is bounded only by the key cardinality and the window duration.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ksqlDB &mdash; 10-minute tumbling-window spend per customer</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-k">CREATE TABLE</span> customer_spend_10m <span class="tok-k">AS</span>
+<span class="tok-k">SELECT</span>
+  customer_id,
+  <span class="tok-t">WINDOWSTART</span>              <span class="tok-k">AS</span> window_start,
+  <span class="tok-t">WINDOWEND</span>                <span class="tok-k">AS</span> window_end,
+  <span class="tok-t">COUNT</span>(*)                  <span class="tok-k">AS</span> tx_count,
+  <span class="tok-t">SUM</span>(amount)               <span class="tok-k">AS</span> total_spend,
+  <span class="tok-t">MAX</span>(amount)               <span class="tok-k">AS</span> max_single_tx
+<span class="tok-k">FROM</span>  card_auth
+  <span class="tok-t">WINDOW TUMBLING</span> (<span class="tok-t">SIZE</span> <span class="tok-n">10</span> <span class="tok-t">MINUTES</span>)
+<span class="tok-k">GROUP BY</span> customer_id
+<span class="tok-k">EMIT FINAL</span>;         <span class="tok-c">-- only emit once the window closes, not on every row</span></code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">EMIT CHANGES vs EMIT FINAL</div>
+            <p><code>EMIT CHANGES</code> sends a row to the output topic every time a partial result updates&mdash;up to one row per input event. For fraud detection dashboards this is fine. For downstream database inserts or ISO 20022 message generation, use <code>EMIT FINAL</code> to wait until the window closes. Mixing semantics between producers and consumers of derived topics is the most common ksqlDB data quality bug.</p>
+          </div>
+
+          <h2 id="schema">Schema management</h2>
+          <p>Schema Registry is non-negotiable in production. It enforces Avro or Protobuf compatibility on every topic, which prevents a schema change in one pipeline from silently breaking all downstream consumers. Both ksqlDB and Flink SQL integrate with the Confluent Schema Registry API.</p>
+          <p>Two compatibility modes matter for financial data:</p>
+          <ul>
+            <li><strong>BACKWARD</strong> &mdash; new readers can read old messages. Safe for adding nullable fields. The default for most transaction topics.</li>
+            <li><strong>FULL</strong> &mdash; new readers can read old messages and old readers can read new messages. Required when you have long-running consumers (like compliance archives) that cannot be redeployed quickly.</li>
+          </ul>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Renaming a field breaks BACKWARD compatibility</div>
+            <p>Avro treats a rename as a delete + add. If your downstream ksqlDB query depends on <code>customer_id</code> and a schema change renames it to <code>cust_id</code>, ksqlDB silently produces <code>null</code> for that field&mdash;no exception, no alert. Register your schema changes with a compatibility check before deploying the producer. Mandate this at the platform level, not per-team.</p>
+          </div>
+
+          <h2 id="windowing">Windowing in SQL</h2>
+          <p>Both engines support four window types via SQL functions. Flink SQL adds a fifth (<code>CUMULATE</code>) which is particularly useful for regulatory reporting patterns like &ldquo;running daily total since midnight, updated every minute.&rdquo;</p>
+
+          <table>
+            <thead>
+              <tr><th>Window type</th><th>SQL function (Flink)</th><th>Financial use case</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Tumbling</td><td><code>TUMBLE(ts, INTERVAL '10' MINUTE)</code></td><td>Hourly settlement batches, transaction count thresholds</td></tr>
+              <tr><td>Hopping (sliding)</td><td><code>HOP(ts, INTERVAL '1' MINUTE, INTERVAL '10' MINUTE)</code></td><td>Rolling 10-minute velocity: transactions in last 10 min, updated each minute</td></tr>
+              <tr><td>Session</td><td><code>SESSION(ts, INTERVAL '30' MINUTE)</code></td><td>Customer session aggregation; ATM sequence detection</td></tr>
+              <tr><td>Cumulate</td><td><code>CUMULATE(ts, INTERVAL '1' MINUTE, INTERVAL '1' DAY)</code></td><td>Daily spend running total for limit enforcement; SAMA daily limits</td></tr>
+              <tr><td>Over (ksqlDB)</td><td><code>WINDOW HOPPING (SIZE 10 MIN, ADVANCE BY 1 MIN)</code></td><td>Sliding fraud velocity; merchant spend concentration</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Cumulate windows for SAMA daily limits</div>
+            <p>SAMA&rsquo;s IPS framework sets per-day transaction limits for individuals and SMEs. A cumulate window lets you compute the running spend from midnight every 1-minute interval without waiting until end-of-day. This is operationally simpler than a session window and better than a tumbling window because the result is always &ldquo;amount spent since midnight&rdquo; rather than &ldquo;amount spent in the last X minutes.&rdquo;</p>
+          </div>
+
+          <h2 id="joins">Stream-table joins</h2>
+          <p>Stream-table joins are the enrichment pattern: every incoming event is enriched with the current state of a reference dataset (customer profile, sanctions list, merchant category). Both engines support this, but the join semantics differ in an important way:</p>
+          <ul>
+            <li><strong>ksqlDB</strong> &mdash; stream-table join uses the table state <em>at the time the stream event arrives</em>. There is no time-travel or delayed lookup. This is correct for most enrichment cases.</li>
+            <li><strong>Flink SQL</strong> &mdash; the <code>FOR SYSTEM_TIME AS OF</code> syntax enables temporal joins: look up the reference table at the event&rsquo;s own timestamp, not the current state. This matters for audit-grade enrichment where you need to prove &ldquo;what was the counterparty&rsquo;s sanction status <em>at the time of this transaction</em>&rdquo;&mdash;not today.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>Flink SQL &mdash; temporal join for sanctions-accurate enrichment</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- sanctions_list must be a Flink temporal table with versioned rows</span>
+<span class="tok-k">CREATE TABLE</span> sanctions_list (
+  entity_id      <span class="tok-t">STRING</span> <span class="tok-k">PRIMARY KEY NOT ENFORCED</span>,
+  sanction_flag  <span class="tok-t">BOOLEAN</span>,
+  list_date      <span class="tok-t">TIMESTAMP(3)</span>,  <span class="tok-c">-- when this version became effective</span>
+  <span class="tok-k">WATERMARK FOR</span> list_date <span class="tok-k">AS</span> list_date - <span class="tok-t">INTERVAL</span> <span class="tok-s">'0'</span> <span class="tok-t">SECOND</span>
+) <span class="tok-k">WITH</span> ( <span class="tok-c">/* connector props */</span> );
+
+<span class="tok-k">INSERT INTO</span> payment_screening_output
+<span class="tok-k">SELECT</span>
+  p.payment_id,
+  p.beneficiary_id,
+  p.amount,
+  s.sanction_flag,
+  s.list_date <span class="tok-k">AS</span> sanction_version_at_event_time
+<span class="tok-k">FROM</span>  payments p
+<span class="tok-k">LEFT JOIN</span> sanctions_list <span class="tok-k">FOR SYSTEM_TIME AS OF</span> p.ts <span class="tok-k">AS</span> s
+  <span class="tok-k">ON</span>  p.beneficiary_id = s.entity_id;</code></pre>
+          </div>
+
+          <h2 id="build">Building a pipeline: step by step</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Design the topology before writing SQL</h4>
+              <p>Name the input topics, the derived intermediate topics, and the output topics. Define the key for each. SQL makes the code easy to write, but mis-keyed topics still cause silent join misses. Draw the DAG first.</p>
+            </li>
+            <li>
+              <h4>Register schemas in Schema Registry</h4>
+              <p>Define Avro schemas for all source topics before writing DDL. Use <code>BACKWARD</code> compatibility as the default, upgrading to <code>FULL</code> for any topic with long-lived consumers. Schema Registry check on each <code>CREATE TABLE</code> at deploy time, not at runtime.</p>
+            </li>
+            <li>
+              <h4>Declare streams and tables with explicit watermarks</h4>
+              <p>For Flink SQL, always declare the <code>WATERMARK FOR</code> expression on the event-time column. The watermark controls window closure and late-event handling. For ksqlDB, set <code>TIMESTAMP</code> in the <code>WITH</code> clause to use event time rather than processing time.</p>
+            </li>
+            <li>
+              <h4>Write and test queries against a local broker</h4>
+              <p>Use <code>docker-compose</code> with a single-broker Kafka and ksqlDB/Flink SQL CLI. Inject synthetic events representing normal, edge, and late-arrival cases. Validate output topic contents with <code>kafka-console-consumer</code> before deploying upstream.</p>
+            </li>
+            <li>
+              <h4>Deploy as persistent queries (ksqlDB) or Flink jobs</h4>
+              <p>For ksqlDB, use <code>CREATE TABLE/STREAM AS SELECT</code> statements committed to source control and applied via the ksqlDB REST API or Terraform provider. For Flink, package as a JAR or SQL script run via <code>flink run</code>, versioned alongside the DDL catalog.</p>
+            </li>
+            <li>
+              <h4>Configure checkpointing and retention</h4>
+              <p>For ksqlDB, set <code>ksql.streams.state.dir</code> and ensure changelog topics have retention at least as long as the maximum expected restart window. For Flink, configure incremental checkpointing to S3 with interval 30&ndash;60 seconds and retained checkpoint count ≥ 3.</p>
+            </li>
+            <li>
+              <h4>Wire lag monitoring before go-live</h4>
+              <p>Both engines expose consumer group lag metrics. Set alerting thresholds at 2x normal lag. A sustained lag increase without throughput increase signals state restore in progress or a slow query (missing index, cartesian join). Catch it before business notices.</p>
+            </li>
+          </ol>
+
+          <h2 id="production">Production concerns</h2>
+          <p>The SQL surface is approachable; the operations are not. Three things that catch teams after initial deployment:</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Query topology changes require stream reset</div>
+            <p>Changing a ksqlDB persistent query (adding a column, changing a join condition) requires terminating the query, optionally resetting the consumer group offset, and re-creating it. This causes a replay from the beginning of the topic retention window, which can take hours on production topic volumes. Plan schema and query evolution carefully&mdash;immutable output topics with versioned query names are the safest pattern.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">State size is the hidden capacity variable</div>
+            <p>A 10-minute hopping window with a 1-minute advance over 5 million active customers creates 10 overlapping windows per customer = 50 million state entries. At 200 bytes each that is 10 GB of state, replicated across all instances. Calculate state size before you pick a window type. Session windows are worst-case unbounded.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Pull queries in ksqlDB are point-in-time</div>
+            <p>A pull query (<code>SELECT … FROM materialized_table WHERE key = ?</code>) reads the current state of a materialized table synchronously&mdash;it is useful for request-response enrichment but does not scale to thousands of concurrent requests per second. Under high load, route pull queries to a dedicated ksqlDB cluster or read the changelog topic directly from a Redis or DynamoDB cache.</p>
+          </div>
+
+          <h2 id="batch-fit">Fit alongside batch warehouses</h2>
+          <p>Streaming SQL and batch SQL are complementary, not competing. The operational pattern that works in regulated banking is a <strong>lambda-adjacent architecture</strong>: the streaming layer handles operational decisions (real-time fraud scoring, limit enforcement) while the batch layer handles the analytical workloads that regulators care about (end-of-day reconciliation, daily transaction file to SAMA, SOX reports).</p>
+          <p>The bridge between the two is the data lake. Flink SQL has a first-class <code>PRINT</code> sink and a Hudi/Iceberg/Delta connector that writes streaming data into a table format that batch engines (Spark, Trino, BigQuery) can query. ksqlDB can sink to Kafka Connect, which in turn writes to S3 for batch consumption. Neither replaces the other.</p>
+
+          <table>
+            <thead>
+              <tr><th>Use case</th><th>Layer</th><th>Latency target</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Card fraud scoring</td><td>Streaming SQL</td><td>&lt; 300 ms</td></tr>
+              <tr><td>IPS payment limit check</td><td>Streaming SQL (cumulate window)</td><td>&lt; 100 ms</td></tr>
+              <tr><td>Sanctions screening</td><td>Streaming SQL (temporal join)</td><td>&lt; 200 ms</td></tr>
+              <tr><td>Daily reconciliation to SAMA</td><td>Batch (Spark / scheduled job)</td><td>T+0 before 23:59</td></tr>
+              <tr><td>SOX financial close reporting</td><td>Batch (data warehouse query)</td><td>T+1 morning</td></tr>
+              <tr><td>Customer 360 feature store</td><td>Both (streaming pre-aggregation, batch refresh)</td><td>5-minute window</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="when-not">When not to use streaming SQL</h2>
+          <p>Streaming SQL is the wrong choice when:</p>
+          <ul>
+            <li><strong>The query is interactive and ad-hoc.</strong> Analysts running exploratory queries against a ksqlDB server will encounter latency, cost, and resource contention it was not designed for. Use Trino or BigQuery against a data lake for exploratory work.</li>
+            <li><strong>The logic requires complex imperative state management.</strong> A ksqlDB or Flink SQL query that requires a custom UDF for every meaningful operation is a signal that the Kafka Streams Java API is a better fit. SQL abstracts state; sometimes you need to manipulate it directly.</li>
+            <li><strong>You need cross-window joins with large state on both sides.</strong> Joining two streams where both have multi-hour windows and millions of distinct keys materialises enormous state on both sides. Unless you have a clear throughput and state budget, this pattern causes production incidents.</li>
+            <li><strong>The pipeline is read-once and discarded.</strong> A one-time backfill or a quarterly regulatory extract does not justify the operational overhead of a persistent streaming query. Write a Spark job.</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="../data-streaming.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Data Streaming</div>
+            </a>
+            <a href="kafka-streams-and-flink.html" class="article-nav__next">
+              <div class="article-nav__label">Sibling article</div>
+              <div class="article-nav__title">Kafka Streams &amp; Flink &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

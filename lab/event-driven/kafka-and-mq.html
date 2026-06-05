@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event-Driven Architecture &mdash; Kafka &amp; IBM MQ &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A practical, production-grade walkthrough of event-driven architecture for financial services: Kafka and IBM MQ, event modelling, schema evolution, idempotent consumers, exactly-once semantics, HA topology, and the operational patterns behind real-time payment and trading platforms.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Event-Driven Architecture &mdash; Kafka &amp; IBM MQ &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Production patterns for event-driven systems on Kafka and IBM MQ in regulated financial services.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/kafka-and-mq.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Event-Driven Architecture &mdash; Production Patterns">
+  <meta name="twitter:description" content="Kafka and IBM MQ patterns for regulated financial services.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/kafka-and-mq.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Event-Driven Architecture &mdash; Kafka & IBM MQ",
+    "description": "Production-grade event-driven architecture patterns for financial services on Kafka and IBM MQ.",
+    "url": "https://www.wbadawi.info/lab/event-driven/kafka-and-mq.html",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
+    "image": "https://www.wbadawi.info/assets/img/og-image.png"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Kafka &amp; IBM MQ</div>
+          <span class="overline">Lab Article</span>
+          <h1>Event-Driven Architecture: Kafka &amp; IBM MQ</h1>
+          <p class="lead">Event modelling, broker topology, schema evolution, idempotent consumers, exactly-once semantics, and the operational patterns behind real-time payment, trading, and core-banking event flows. Where Kafka fits, where MQ still wins, and how to run them side by side.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#kafka-vs-mq">Kafka vs MQ</a></li>
+            <li><a href="#topology">Topology</a></li>
+            <li><a href="#flow">Event flow</a></li>
+            <li><a href="#deploy">Building a flow</a></li>
+            <li><a href="#schema">Schemas &amp; contracts</a></li>
+            <li><a href="#idempotency">Idempotent consumers</a></li>
+            <li><a href="#exactly-once">Exactly-once</a></li>
+            <li><a href="#ha">HA &amp; DR</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When not to use</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Apache Kafka 3.x / IBM MQ 9.x</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~16 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Event-driven architecture (EDA) is the architectural style where state changes are published as discrete, immutable facts and consumers react asynchronously. In financial services it underpins three classes of system: <strong>real-time payments</strong> (faster payments, instant transfers), <strong>trading and risk</strong> (order events, position updates), and <strong>core banking modernisation</strong> (CDC streams from a system of record into downstream products).</p>
+          <p>Two brokers dominate this space: <strong>Apache Kafka</strong> for high-throughput, replayable event streams, and <strong>IBM MQ</strong> for guaranteed-once messaging with strong transactional semantics. They solve different problems and most banks run both.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Event vs Message</div>
+            <p>An <strong>event</strong> is a fact about something that happened (<code>PaymentSubmitted</code>). It has no intended recipient and may be consumed many times. A <strong>message</strong> is a command or request directed at a specific consumer (<code>SettleTransfer</code>). Kafka is optimised for events; MQ is optimised for messages. Mixing the two in the same broker is the most common architectural mistake in this space.</p>
+          </div>
+
+          <h2 id="kafka-vs-mq">Kafka vs MQ</h2>
+          <p>The choice is not philosophical &mdash; it is determined by the durability model, consumer pattern, and replay requirement.</p>
+
+          <table>
+            <thead>
+              <tr><th>Property</th><th>Kafka</th><th>IBM MQ</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Storage model</td><td>Append-only log, retained for hours/days</td><td>Queue, message removed on consume</td></tr>
+              <tr><td>Consumer model</td><td>Pull, offset-based, multiple groups</td><td>Push or pull, one consumer per message</td></tr>
+              <tr><td>Replay</td><td>Native (rewind to any offset)</td><td>Not supported; need a separate audit store</td></tr>
+              <tr><td>Throughput</td><td>100k+ msg/sec per broker</td><td>10&ndash;30k msg/sec per qmgr</td></tr>
+              <tr><td>Transactions</td><td>Idempotent producer, EOS</td><td>XA, two-phase commit</td></tr>
+              <tr><td>Ordering</td><td>Per partition</td><td>Per queue (FIFO)</td></tr>
+              <tr><td>Best fit</td><td>Event sourcing, CDC, analytics streams</td><td>Command processing, point-to-point integration</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="topology">Topology</h2>
+          <p>A production Kafka cluster has three logical layers: brokers (the data plane), the metadata service (KRaft, replacing ZooKeeper from 3.5 onwards), and the surrounding ecosystem &mdash; Schema Registry, Kafka Connect, and Streams applications.</p>
+
+          <div class="diagram" role="img" aria-label="Kafka cluster topology with producers, brokers, schema registry, connect, and consumer groups">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ea1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="ea2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#71717a"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="40" width="120" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="80" y="62" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Payment API</text>
+                <text x="80" y="78" text-anchor="middle" fill="#71717a" font-size="9">producer</text>
+
+                <rect x="20" y="110" width="120" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="80" y="132" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Core ledger</text>
+                <text x="80" y="148" text-anchor="middle" fill="#71717a" font-size="9">CDC source</text>
+
+                <rect x="20" y="180" width="120" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="80" y="202" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Trade booking</text>
+                <text x="80" y="218" text-anchor="middle" fill="#71717a" font-size="9">producer</text>
+
+                <rect x="240" y="20" width="300" height="240" rx="8" fill="#0f0f16" stroke="#00d4aa" stroke-width="2"/>
+                <text x="390" y="42" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">KAFKA CLUSTER</text>
+
+                <rect x="260" y="60" width="80" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="300" y="82" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">broker-1</text>
+                <text x="300" y="98" text-anchor="middle" fill="#71717a" font-size="9">leader p0,p3</text>
+                <text x="300" y="112" text-anchor="middle" fill="#71717a" font-size="9">follower p1,p2</text>
+
+                <rect x="350" y="60" width="80" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="390" y="82" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">broker-2</text>
+                <text x="390" y="98" text-anchor="middle" fill="#71717a" font-size="9">leader p1</text>
+                <text x="390" y="112" text-anchor="middle" fill="#71717a" font-size="9">follower p0,p3</text>
+
+                <rect x="440" y="60" width="80" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="480" y="82" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">broker-3</text>
+                <text x="480" y="98" text-anchor="middle" fill="#71717a" font-size="9">leader p2</text>
+                <text x="480" y="112" text-anchor="middle" fill="#71717a" font-size="9">follower all</text>
+
+                <rect x="260" y="140" width="260" height="40" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="390" y="160" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">KRaft metadata quorum</text>
+                <text x="390" y="173" text-anchor="middle" fill="#71717a" font-size="9">controller-1 &middot; controller-2 &middot; controller-3</text>
+
+                <rect x="260" y="195" width="120" height="50" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="320" y="215" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Schema Registry</text>
+                <text x="320" y="232" text-anchor="middle" fill="#71717a" font-size="9">Avro &middot; compatibility</text>
+
+                <rect x="400" y="195" width="120" height="50" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="460" y="215" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Kafka Connect</text>
+                <text x="460" y="232" text-anchor="middle" fill="#71717a" font-size="9">CDC &middot; sinks</text>
+
+                <rect x="640" y="40" width="120" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="700" y="62" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Risk engine</text>
+                <text x="700" y="78" text-anchor="middle" fill="#71717a" font-size="9">consumer group</text>
+
+                <rect x="640" y="110" width="120" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="700" y="132" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Notifications</text>
+                <text x="700" y="148" text-anchor="middle" fill="#71717a" font-size="9">consumer group</text>
+
+                <rect x="640" y="180" width="120" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="700" y="202" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Data lake</text>
+                <text x="700" y="218" text-anchor="middle" fill="#71717a" font-size="9">sink connector</text>
+
+                <line x1="140" y1="65" x2="258" y2="80" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ea1)"/>
+                <line x1="140" y1="135" x2="258" y2="100" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ea1)"/>
+                <line x1="140" y1="205" x2="258" y2="105" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ea1)"/>
+
+                <line x1="522" y1="80" x2="638" y2="65" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ea2)"/>
+                <line x1="522" y1="100" x2="638" y2="135" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ea2)"/>
+                <line x1="522" y1="105" x2="638" y2="205" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ea2)"/>
+
+                <text x="40" y="290" fill="#71717a" font-size="9">PRODUCERS</text>
+                <text x="370" y="290" fill="#71717a" font-size="9">BROKERS &middot; METADATA &middot; ECOSYSTEM</text>
+                <text x="660" y="290" fill="#71717a" font-size="9">CONSUMERS</text>
+
+                <rect x="20" y="310" width="740" height="55" rx="6" fill="#1c1c28" stroke="#a78bfa" stroke-dasharray="3 2"/>
+                <text x="40" y="332" fill="#a78bfa" font-size="10" font-weight="600">IBM MQ (parallel command-style integration)</text>
+                <text x="40" y="350" fill="#71717a" font-size="9">queue manager &middot; XA-coordinated transactions &middot; point-to-point and pub/sub topics &middot; FFDC for diagnostics</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Kafka cluster topology with parallel IBM MQ for command flows</div>
+          </div>
+
+          <h2 id="flow">Event flow</h2>
+          <p>Every event in a well-designed system traverses six stages. Understanding which stage handles which concern is what separates a system that scales from one that collapses under its own retries.</p>
+
+          <div class="diagram" role="img" aria-label="Event flow showing produce, partition, replicate, consume, process, commit">
+            <div class="diagram__inner">
+              <svg width="780" height="180" viewBox="0 0 780 180" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ea3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+                <rect x="10" y="60" width="110" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="65" y="82" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">produce</text>
+                <text x="65" y="100" text-anchor="middle" fill="#71717a" font-size="9">key + value + schema id</text>
+
+                <rect x="135" y="60" width="110" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="190" y="82" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">partition</text>
+                <text x="190" y="100" text-anchor="middle" fill="#71717a" font-size="9">hash(key) % N</text>
+
+                <rect x="260" y="60" width="110" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="315" y="82" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">replicate</text>
+                <text x="315" y="100" text-anchor="middle" fill="#71717a" font-size="9">RF=3, min.isr=2</text>
+
+                <rect x="385" y="60" width="110" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="440" y="82" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">consume</text>
+                <text x="440" y="100" text-anchor="middle" fill="#71717a" font-size="9">poll loop &middot; group</text>
+
+                <rect x="510" y="60" width="110" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="565" y="82" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">process</text>
+                <text x="565" y="100" text-anchor="middle" fill="#71717a" font-size="9">side effect</text>
+
+                <rect x="635" y="60" width="110" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="690" y="82" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">commit</text>
+                <text x="690" y="100" text-anchor="middle" fill="#71717a" font-size="9">offset advance</text>
+
+                <line x1="120" y1="90" x2="133" y2="90" stroke="#00d4aa" stroke-width="2" marker-end="url(#ea3)"/>
+                <line x1="245" y1="90" x2="258" y2="90" stroke="#00d4aa" stroke-width="2" marker-end="url(#ea3)"/>
+                <line x1="370" y1="90" x2="383" y2="90" stroke="#00d4aa" stroke-width="2" marker-end="url(#ea3)"/>
+                <line x1="495" y1="90" x2="508" y2="90" stroke="#00d4aa" stroke-width="2" marker-end="url(#ea3)"/>
+                <line x1="620" y1="90" x2="633" y2="90" stroke="#00d4aa" stroke-width="2" marker-end="url(#ea3)"/>
+
+                <text x="190" y="35" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">PRODUCER</text>
+                <text x="440" y="35" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">CONSUMER</text>
+
+                <rect x="10" y="140" width="735" height="30" rx="4" fill="#0f0f16" stroke="#ef4444" stroke-dasharray="3 2"/>
+                <text x="377" y="160" text-anchor="middle" fill="#ef4444" font-size="10">on failure &rarr; DLQ topic, replay after fix</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; The six stages of an event in flight</div>
+          </div>
+
+          <h2 id="deploy">Building a flow</h2>
+          <p>From an empty cluster to a production event flow runs through five steps. Topic provisioning, schema registration, and connector deployment should all be GitOps&#8209;managed &mdash; clicking through a UI is how production becomes irreproducible.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Define the topic</h4>
+              <p>Pick partitions for parallelism (16&ndash;64 is typical), a replication factor of 3 with <code>min.insync.replicas=2</code>, and a retention policy that matches the consumer SLA. Compaction is a separate decision &mdash; only compact topics that represent the latest state of a key.</p>
+            </li>
+            <li>
+              <h4>Register the schema</h4>
+              <p>Avro or Protobuf &mdash; both work. Register the schema in Schema Registry with <code>BACKWARD</code> compatibility for events that consumers must keep reading; <code>FULL</code> for canonical contracts. Never use <code>NONE</code> in production.</p>
+            </li>
+            <li>
+              <h4>Build the producer</h4>
+              <p>Configure <code>acks=all</code>, <code>enable.idempotence=true</code>, and a deterministic key (account id, customer id, trade id). The key controls partitioning and therefore ordering; pick it once and never change.</p>
+            </li>
+            <li>
+              <h4>Build the consumer</h4>
+              <p>Manual offset commit, idempotent processing logic, structured DLQ on permanent failure, and a poll-loop pause / resume around backpressure. Always commit offsets <em>after</em> the side effect succeeds, never before.</p>
+            </li>
+            <li>
+              <h4>Wire observability</h4>
+              <p>Lag metrics per consumer group, throughput per topic, request rate per producer, ISR shrink/expand events. Without lag alerts, a slow consumer silently rots until disk fills.</p>
+            </li>
+          </ol>
+
+          <h3>Topic provisioning</h3>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>create-topic.sh</span><span class="code-block__lang">bash</span></div>
+<pre><code><span class="tok-c"># 32 partitions, RF=3, min.isr=2, 7-day retention</span>
+kafka-topics --bootstrap-server <span class="tok-s">kafka:9092</span> --create \
+  --topic <span class="tok-s">payments.submitted.v1</span> \
+  --partitions <span class="tok-n">32</span> \
+  --replication-factor <span class="tok-n">3</span> \
+  --config <span class="tok-s">min.insync.replicas=2</span> \
+  --config <span class="tok-s">retention.ms=604800000</span> \
+  --config <span class="tok-s">compression.type=lz4</span> \
+  --config <span class="tok-s">cleanup.policy=delete</span></code></pre>
+          </div>
+
+          <h2 id="schema">Schemas &amp; contracts</h2>
+          <p>The schema is the API. In a synchronous service the API contract is the OpenAPI spec; in event-driven systems it is the schema registered against a topic. Schema evolution rules are the equivalent of versioning rules for a REST API &mdash; just enforced earlier.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payment-submitted-v2.avsc</span><span class="code-block__lang">avro</span></div>
+<pre><code>{
+  <span class="tok-k">"type"</span>: <span class="tok-s">"record"</span>,
+  <span class="tok-k">"name"</span>: <span class="tok-s">"PaymentSubmitted"</span>,
+  <span class="tok-k">"namespace"</span>: <span class="tok-s">"com.acmebank.payments.events"</span>,
+  <span class="tok-k">"fields"</span>: [
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"paymentId"</span>,    <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"originator"</span>,   <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"beneficiary"</span>,  <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"amount"</span>,
+      <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"bytes"</span>, <span class="tok-k">"logicalType"</span>: <span class="tok-s">"decimal"</span>,
+                <span class="tok-k">"precision"</span>: <span class="tok-n">18</span>, <span class="tok-k">"scale"</span>: <span class="tok-n">2</span> } },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"currency"</span>,     <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"submittedAt"</span>,  <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"long"</span>, <span class="tok-k">"logicalType"</span>: <span class="tok-s">"timestamp-millis"</span> } },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"reference"</span>,    <span class="tok-k">"type"</span>: [<span class="tok-s">"null"</span>, <span class="tok-s">"string"</span>], <span class="tok-k">"default"</span>: <span class="tok-n">null</span> },
+    <span class="tok-c">// added in v2 with default &mdash; backward compatible</span>
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"channel"</span>,      <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>, <span class="tok-k">"default"</span>: <span class="tok-s">"unknown"</span> }
+  ]
+}</code></pre>
+          </div>
+
+          <p>Three rules to enforce in CI:</p>
+          <ul>
+            <li><strong>No removed fields</strong> in <code>BACKWARD</code> mode. Once a field is published, consumers depend on it.</li>
+            <li><strong>No required fields added.</strong> New fields must have a default. This is the difference between an additive change and a breaking change.</li>
+            <li><strong>Use <code>logicalType: decimal</code> for money</strong>, never <code>double</code>. Floating point in financial events is an audit issue waiting to happen.</li>
+          </ul>
+
+          <h2 id="idempotency">Idempotent consumers</h2>
+          <p>At-least-once delivery is the default for both Kafka and MQ in any realistic configuration. The consumer must therefore tolerate duplicates. The standard pattern is a <strong>processed-events table</strong> keyed by event id, written in the same transaction as the side effect.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentEventConsumer.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@KafkaListener</span>(topics = <span class="tok-s">"payments.submitted.v1"</span>, groupId = <span class="tok-s">"risk-engine"</span>)
+<span class="tok-k">public void</span> onPayment(<span class="tok-t">ConsumerRecord</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">PaymentSubmitted</span>&gt; record,
+                      <span class="tok-t">Acknowledgment</span> ack) {
+
+  <span class="tok-t">String</span> eventId = record.value().getPaymentId() + <span class="tok-s">":"</span> + record.offset();
+
+  jdbc.execute(<span class="tok-k">conn</span> -> {
+    <span class="tok-c">// Single transaction: dedupe + side effect</span>
+    <span class="tok-k">try</span> {
+      conn.update(<span class="tok-s">"INSERT INTO processed_events(event_id) VALUES (?)"</span>, eventId);
+    } <span class="tok-k">catch</span> (<span class="tok-t">DuplicateKeyException</span> e) {
+      log.info(<span class="tok-s">"skip duplicate {}"</span>, eventId);
+      <span class="tok-k">return</span>;
+    }
+    riskService.scorePayment(record.value());
+  });
+
+  ack.acknowledge();  <span class="tok-c">// commit offset only after DB commit succeeds</span>
+}</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Don&rsquo;t commit before processing</div>
+            <p>Auto-commit (<code>enable.auto.commit=true</code>) advances the offset on a timer regardless of whether processing succeeded. A consumer crash after commit but before processing means silent data loss. Always use manual commit, always commit after the side effect persists, never before.</p>
+          </div>
+
+          <h2 id="exactly-once">Exactly-once</h2>
+          <p>True exactly-once across two systems requires either two-phase commit (slow, blocking, generally avoided in modern systems) or the <strong>transactional outbox</strong> pattern. Kafka&rsquo;s exactly-once semantics (EOS) only cover Kafka-to-Kafka flows &mdash; produce, consume, and produce-to-output-topic in one transaction.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kafka-streams-eos.properties</span><span class="code-block__lang">properties</span></div>
+<pre><code><span class="tok-c"># Kafka Streams exactly-once configuration</span>
+application.id=<span class="tok-s">risk-scoring</span>
+processing.guarantee=<span class="tok-s">exactly_once_v2</span>
+producer.acks=<span class="tok-s">all</span>
+producer.enable.idempotence=<span class="tok-n">true</span>
+producer.transaction.timeout.ms=<span class="tok-n">60000</span>
+consumer.isolation.level=<span class="tok-s">read_committed</span>
+state.dir=<span class="tok-s">/var/lib/kafka-streams</span></code></pre>
+          </div>
+
+          <p>For Kafka-to-database flows (the common case), the transactional outbox is the correct pattern: write the event into an <code>outbox</code> table inside the same transaction as the business write, then a CDC connector (Debezium) ships outbox rows to Kafka. This is covered in detail in the <a href="../data-sync.html">Data Synchronisation</a> article.</p>
+
+          <h2 id="ha">HA &amp; DR</h2>
+          <p>Production Kafka clusters in financial services run with three brokers per data centre and two data centres. The cluster spans within a DC; replication across DCs uses <strong>MirrorMaker 2</strong> or <strong>Cluster Linking</strong> for active/passive DR.</p>
+
+          <div class="diagram" role="img" aria-label="HA topology with active Kafka cluster in DC1 and passive cluster in DC2 connected by MirrorMaker 2">
+            <div class="diagram__inner">
+              <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ea4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="20" width="340" height="280" rx="8" fill="none" stroke="#00d4aa" stroke-dasharray="4 3"/>
+                <text x="40" y="42" fill="#00d4aa" font-size="11" font-weight="600">DC1 (active)</text>
+
+                <rect x="50" y="60" width="280" height="60" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="190" y="82" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Kafka cluster (3 brokers)</text>
+                <text x="190" y="100" text-anchor="middle" fill="#71717a" font-size="9">RF=3, min.isr=2, AZ-aware placement</text>
+
+                <rect x="50" y="135" width="280" height="40" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="190" y="158" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Schema Registry (cluster)</text>
+
+                <rect x="50" y="190" width="280" height="40" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="190" y="213" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Kafka Connect (workers)</text>
+
+                <rect x="50" y="245" width="280" height="40" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="190" y="268" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Producers &middot; Consumers</text>
+
+                <rect x="420" y="20" width="340" height="280" rx="8" fill="none" stroke="#71717a" stroke-dasharray="4 3"/>
+                <text x="440" y="42" fill="#71717a" font-size="11" font-weight="600">DC2 (passive / DR)</text>
+
+                <rect x="450" y="60" width="280" height="60" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="590" y="82" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Kafka cluster (3 brokers)</text>
+                <text x="590" y="100" text-anchor="middle" fill="#71717a" font-size="9">mirrored topics, lag-monitored</text>
+
+                <rect x="450" y="135" width="280" height="40" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="590" y="158" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">Schema Registry (read replica)</text>
+
+                <rect x="450" y="190" width="280" height="40" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="590" y="213" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">Connect (idle, ready)</text>
+
+                <rect x="450" y="245" width="280" height="40" rx="6" fill="#1c1c28" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="590" y="268" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">Consumers (failover-only)</text>
+
+                <line x1="330" y1="90" x2="450" y2="90" stroke="#fbbf24" stroke-width="2" stroke-dasharray="4 2" marker-end="url(#ea4)"/>
+                <text x="390" y="80" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">MM2</text>
+                <text x="390" y="115" text-anchor="middle" fill="#71717a" font-size="9">async replication</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 3 &mdash; Active/passive DR with MirrorMaker 2</div>
+          </div>
+
+          <p>Three rules:</p>
+          <ul>
+            <li><strong>Replicate within an AZ-aware cluster, not across DCs at the broker level.</strong> Stretching a cluster across DCs makes <code>min.isr</code> sensitive to inter-DC latency &mdash; one network hiccup and producers stall.</li>
+            <li><strong>Consumer offsets are not free in DR.</strong> MM2 translates offsets via a checkpoint topic, but failover still requires deliberate offset reset. Build the runbook before you need it.</li>
+            <li><strong>Schema Registry is a SPOF if you ignore it.</strong> Run it in a cluster, replicate the <code>_schemas</code> topic, and put the registry behind a load balancer with failover.</li>
+          </ul>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Hot partition by key choice</div>
+            <p>If 80% of traffic is for one customer (the bank&rsquo;s biggest corporate client), keying by <code>customerId</code> sends 80% of events to one partition &mdash; one consumer thread &mdash; one CPU. Use a composite key (<code>customerId + transactionId</code>) when distribution matters more than per-customer ordering.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Auto-commit data loss</div>
+            <p>Default Kafka consumer auto-commits offsets every 5 seconds. A crash after commit but before processing means silent message loss. Disable auto-commit. Always.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Topic explosion</div>
+            <p>One topic per microservice per event type sounds clean until you have 4 000 topics and the metadata refresh time on every broker is in the seconds. Group related events into a single topic with a <code>type</code> field; let consumers filter.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Schema Registry as deployment blocker</div>
+            <p>Hard-failing producer startup when Schema Registry is unreachable means a Schema Registry incident becomes a producer-side incident. Use a local schema cache and tolerate brief Registry unavailability.</p>
+          </div>
+
+          <h2 id="when-not">When not to use</h2>
+          <p>Event-driven architecture is not a default. It&rsquo;s a deliberate trade: lower coupling and replay capability in exchange for harder debugging, eventual consistency, and operational complexity.</p>
+          <ul>
+            <li><strong>Synchronous request/response with a single answer.</strong> A REST call is simpler. Don&rsquo;t put a queue between two services that always need to talk to each other in lockstep.</li>
+            <li><strong>Strong cross-aggregate consistency.</strong> If two writes must succeed or fail together and the business cannot tolerate any window of inconsistency, use a database transaction, not events.</li>
+            <li><strong>Low traffic, low criticality.</strong> Running Kafka for 100 messages a day is overkill. Use a simpler queue (RabbitMQ, SQS, or even a database table) until volume justifies the operational cost.</li>
+            <li><strong>Audit-first command flows.</strong> When the business needs every command to be acknowledged synchronously and traced individually, IBM MQ with XA still beats Kafka. Kafka is a stream; MQ is a transaction.</li>
+          </ul>
+
+          <p>Where event-driven wins: when the same fact must reach multiple consumers, when replay is a regulatory requirement, when downstream systems evolve at different speeds, and when peak throughput exceeds what a synchronous call chain can absorb. That&rsquo;s most modern banking platforms &mdash; but not all of them.</p>
+
+          <nav class="article-nav">
+            <a href="../api-gateway.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">IBM API Gateway</div>
+            </a>
+            <a href="../integration-patterns.html" class="article-nav__next">
+              <div class="article-nav__label">Next article</div>
+              <div class="article-nav__title">Integration Design Patterns &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

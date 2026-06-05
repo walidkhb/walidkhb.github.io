@@ -147,6 +147,206 @@
     </div>
   </section>
 
+  <section class="section--alt">
+    <div class="container">
+      <span class="overline">Technical Depth</span>
+      <h2 class="mb-3">Hands-on technology stack</h2>
+      <p class="lead" style="max-width: 720px; margin-bottom: 2.5rem;">The platforms, brokers, languages, and patterns I work with directly. Each block links to a deep-dive Lab article on the patterns and configuration that hold up in production financial services.</p>
+
+      <div class="grid grid--2" style="gap: 1.25rem;">
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">API Gateway &amp; Edge</h3>
+          <p class="domain-block__desc">Edge architecture for regulated banking APIs: TLS termination, OAuth flows, mTLS for partner traffic, JWT validation, and policy assemblies. Production deployments on IBM API Connect with DataPower as the runtime.</p>
+          <div style="margin-bottom: 1.25rem;">
+            <span class="skill-tag skill-tag--highlight">IBM API Connect</span>
+            <span class="skill-tag skill-tag--highlight">DataPower</span>
+            <span class="skill-tag">OpenAPI 3.0</span>
+            <span class="skill-tag">Rate Limiting</span>
+            <span class="skill-tag">Apigee</span>
+            <span class="skill-tag">Kong</span>
+            <span class="skill-tag">10+ yrs</span>
+          </div>
+          <a href="lab/api-gateway.html" class="btn btn--ghost">Lab: API Gateway <span class="arrow">&rarr;</span></a>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">API Security &amp; Identity</h3>
+          <p class="domain-block__desc">Layered defence for financial APIs: OAuth 2.1 with PKCE, OpenID Connect, mutual TLS, JWT with algorithm pinning, and the FAPI 2.0 profile required by Open Banking and SAMA-regulated flows.</p>
+          <div style="margin-bottom: 1.25rem;">
+            <span class="skill-tag skill-tag--highlight">OAuth 2.1</span>
+            <span class="skill-tag skill-tag--highlight">OIDC</span>
+            <span class="skill-tag skill-tag--highlight">FAPI 2.0</span>
+            <span class="skill-tag">mTLS</span>
+            <span class="skill-tag">JWT / JWKS</span>
+            <span class="skill-tag">Keycloak</span>
+            <span class="skill-tag">Ping Federate</span>
+            <span class="skill-tag">8+ yrs</span>
+          </div>
+          <a href="lab/api-security.html" class="btn btn--ghost">Lab: API Security <span class="arrow">&rarr;</span></a>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">Event-Driven &amp; Messaging</h3>
+          <p class="domain-block__desc">Brokers, schemas, and idempotent consumers for real-time payment, risk, and core-banking flows. Kafka for event streams, IBM MQ for transactional command flows; both run side by side in production.</p>
+          <div style="margin-bottom: 1.25rem;">
+            <span class="skill-tag skill-tag--highlight">Apache Kafka</span>
+            <span class="skill-tag skill-tag--highlight">IBM MQ</span>
+            <span class="skill-tag">Confluent</span>
+            <span class="skill-tag">IBM Event Streams</span>
+            <span class="skill-tag">Schema Registry</span>
+            <span class="skill-tag">Avro</span>
+            <span class="skill-tag">KRaft</span>
+            <span class="skill-tag">10+ yrs</span>
+          </div>
+          <a href="lab/event-driven.html" class="btn btn--ghost">Lab: Event-Driven Architecture <span class="arrow">&rarr;</span></a>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">Stream Processing</h3>
+          <p class="domain-block__desc">Real-time fraud detection, payment screening, and feature pipelines on Kafka Streams (in-process) and Apache Flink (cluster). Windowing, stateful joins, exactly-once, and the operational patterns for streams that run for months.</p>
+          <div style="margin-bottom: 1.25rem;">
+            <span class="skill-tag skill-tag--highlight">Kafka Streams</span>
+            <span class="skill-tag">Apache Flink</span>
+            <span class="skill-tag">ksqlDB</span>
+            <span class="skill-tag">RocksDB</span>
+            <span class="skill-tag">Windowed Joins</span>
+            <span class="skill-tag">Exactly-Once</span>
+            <span class="skill-tag">5+ yrs</span>
+          </div>
+          <a href="lab/data-streaming.html" class="btn btn--ghost">Lab: Data Streaming <span class="arrow">&rarr;</span></a>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">Integration Platforms</h3>
+          <p class="domain-block__desc">The runtimes that bridge core banking, partner SaaS, and modern microservices. IBM ACE message flows in production at the bank; Apache Camel and Kafka Connect for cloud-native integration. EIP catalogue applied as primitives.</p>
+          <div style="margin-bottom: 1.25rem;">
+            <span class="skill-tag skill-tag--highlight">IBM ACE / App Connect</span>
+            <span class="skill-tag skill-tag--highlight">IBM Cloud Pak for Integration</span>
+            <span class="skill-tag">Apache Camel</span>
+            <span class="skill-tag">ESQL</span>
+            <span class="skill-tag">DFDL</span>
+            <span class="skill-tag">EIP Catalogue</span>
+            <span class="skill-tag">10+ yrs</span>
+          </div>
+          <a href="lab/integration-patterns.html" class="btn btn--ghost">Lab: Integration Design Patterns <span class="arrow">&rarr;</span></a>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">Data Synchronisation &amp; CDC</h3>
+          <p class="domain-block__desc">Keeping distributed financial data consistent without dual-write hazards. Debezium for change data capture, the transactional outbox pattern, idempotent consumers, and reconciliation jobs that catch the edge cases CDC misses.</p>
+          <div style="margin-bottom: 1.25rem;">
+            <span class="skill-tag skill-tag--highlight">Debezium</span>
+            <span class="skill-tag">Kafka Connect</span>
+            <span class="skill-tag">Outbox Pattern</span>
+            <span class="skill-tag">CDC</span>
+            <span class="skill-tag">Postgres logical replication</span>
+            <span class="skill-tag">IBM IIDR</span>
+            <span class="skill-tag">5+ yrs</span>
+          </div>
+          <a href="lab/data-sync.html" class="btn btn--ghost">Lab: Data Synchronisation <span class="arrow">&rarr;</span></a>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">Distributed Caching</h3>
+          <p class="domain-block__desc">Sub-millisecond reads on shared state for low-latency banking flows. Redis Cluster for sharded data, Sentinel for HA, cache-aside as the default pattern, and the stampede-protection patterns that have saved more than one production weekend.</p>
+          <div style="margin-bottom: 1.25rem;">
+            <span class="skill-tag skill-tag--highlight">Redis 7</span>
+            <span class="skill-tag">Redis Cluster</span>
+            <span class="skill-tag">Sentinel</span>
+            <span class="skill-tag">Lettuce</span>
+            <span class="skill-tag">Cache-Aside</span>
+            <span class="skill-tag">Hazelcast</span>
+            <span class="skill-tag">6+ yrs</span>
+          </div>
+          <a href="lab/distributed-caching.html" class="btn btn--ghost">Lab: Distributed Caching <span class="arrow">&rarr;</span></a>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">Legacy &amp; Mainframe Integration</h3>
+          <p class="domain-block__desc">Bridging core banking on z/OS to modern platforms without taking the bank offline. Strangler fig migrations, MQ-CICS bridges, COMMAREA marshalling, EBCDIC handling, and the cutover patterns that survive regulator scrutiny.</p>
+          <div style="margin-bottom: 1.25rem;">
+            <span class="skill-tag skill-tag--highlight">CICS</span>
+            <span class="skill-tag">COBOL</span>
+            <span class="skill-tag">MQ-CICS Bridge</span>
+            <span class="skill-tag">COMMAREA</span>
+            <span class="skill-tag">Strangler Fig</span>
+            <span class="skill-tag">Anti-Corruption Layer</span>
+            <span class="skill-tag">8+ yrs</span>
+          </div>
+          <a href="lab/legacy-integration.html" class="btn btn--ghost">Lab: Legacy Integration <span class="arrow">&rarr;</span></a>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">Cloud, Containers &amp; GitOps</h3>
+          <p class="domain-block__desc">Production runtime for integration platforms in regulated environments. OpenShift on-prem and IBM Cloud, GitOps with ArgoCD, Tekton pipelines, secrets via Vault, image signing, and SBOM-attached releases the auditor can trace.</p>
+          <div style="margin-bottom: 1.25rem;">
+            <span class="skill-tag skill-tag--highlight">OpenShift</span>
+            <span class="skill-tag skill-tag--highlight">Tekton</span>
+            <span class="skill-tag skill-tag--highlight">ArgoCD</span>
+            <span class="skill-tag">Kubernetes</span>
+            <span class="skill-tag">IBM Cloud</span>
+            <span class="skill-tag">AWS</span>
+            <span class="skill-tag">Azure</span>
+            <span class="skill-tag">Helm</span>
+            <span class="skill-tag">Vault</span>
+            <span class="skill-tag">Jenkins</span>
+            <span class="skill-tag">cosign / Trivy</span>
+            <span class="skill-tag">8+ yrs</span>
+          </div>
+          <a href="lab/devops.html" class="btn btn--ghost">Lab: DevOps &amp; Platform Engineering <span class="arrow">&rarr;</span></a>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">Languages &amp; Frameworks</h3>
+          <p class="domain-block__desc">Java is the bank&rsquo;s primary integration language; Spring Boot is the microservice default; Node.js shows up for lightweight adapters and serverless. Python for tooling, scripting, and the occasional analytics pipeline.</p>
+          <div style="margin-bottom: 0.5rem;">
+            <span class="skill-tag skill-tag--highlight">Java</span>
+            <span class="skill-tag skill-tag--highlight">Spring Boot</span>
+            <span class="skill-tag">JEE</span>
+            <span class="skill-tag">Node.js</span>
+            <span class="skill-tag">TypeScript</span>
+            <span class="skill-tag">Python</span>
+            <span class="skill-tag">SQL</span>
+            <span class="skill-tag">Bash</span>
+            <span class="skill-tag">12+ yrs Java</span>
+          </div>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">KSA Payment Schemes &amp; Regulation</h3>
+          <p class="domain-block__desc">Direct exposure to the KSA payment rails and the regulatory frameworks that govern integration in Saudi banking. Hands-on with SAMA Open Banking compliance and the technical conformance work behind it.</p>
+          <div style="margin-bottom: 0.5rem;">
+            <span class="skill-tag skill-tag--highlight">SARIE</span>
+            <span class="skill-tag skill-tag--highlight">SADAD</span>
+            <span class="skill-tag skill-tag--highlight">mada</span>
+            <span class="skill-tag skill-tag--highlight">IPS</span>
+            <span class="skill-tag">SAMA Open Banking</span>
+            <span class="skill-tag">ISO 20022</span>
+            <span class="skill-tag">SWIFT MT / MX</span>
+            <span class="skill-tag">PCI DSS</span>
+          </div>
+        </div>
+
+        <div class="domain-block fade-in">
+          <h3 class="domain-block__title">Observability &amp; Operations</h3>
+          <p class="domain-block__desc">The signals and tooling that keep integration platforms reliable in production: structured metrics, distributed tracing, log forwarding to SIEM, and the runbooks that turn 3am pages into 5-minute resolutions.</p>
+          <div style="margin-bottom: 0.5rem;">
+            <span class="skill-tag">Prometheus</span>
+            <span class="skill-tag">Grafana</span>
+            <span class="skill-tag">OpenTelemetry</span>
+            <span class="skill-tag">Splunk</span>
+            <span class="skill-tag">QRadar</span>
+            <span class="skill-tag">ELK</span>
+            <span class="skill-tag">Dynatrace</span>
+            <span class="skill-tag">PagerDuty</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <section class="section--dark">
     <div class="container text-center">
       <span class="overline">Next</span>
