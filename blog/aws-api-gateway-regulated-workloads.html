@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS API Gateway in a Regulated Bank: The Decisions Your CISO and CTO Need to Align On &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Managed API gateway services eliminate operational overhead but transfer security configuration responsibility to your team. The leadership decisions that determine whether AWS API Gateway is the right choice for a SAMA-regulated bank.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/aws-api-gateway-regulated-workloads.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="AWS API Gateway in a Regulated Bank — Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi — Insights" href="/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="AWS API Gateway in a Regulated Bank: The Decisions Your CISO and CTO Need to Align On &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Managed API gateway services eliminate operational overhead but transfer security configuration responsibility to your team. The leadership decisions that determine whether AWS API Gateway is the right choice for a SAMA-regulated bank.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/aws-api-gateway-regulated-workloads.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AWS API Gateway in a Regulated Bank: The Decisions Your CISO and CTO Need to Align On">
+  <meta name="twitter:description" content="Managed gateway services transfer security configuration responsibility to your team. The leadership decisions that determine whether AWS API Gateway fits a SAMA-regulated environment.">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "AWS API Gateway in a Regulated Bank: The Decisions Your CISO and CTO Need to Align On",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-06-06",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/aws-api-gateway-regulated-workloads.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.wbadawi.info/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Insights",
+          "item": "https://www.wbadawi.info/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Enterprise Integration",
+          "item": "https://www.wbadawi.info/blog/enterprise-integration.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "AWS API Gateway in a Regulated Bank",
+          "item": "https://www.wbadawi.info/blog/aws-api-gateway-regulated-workloads.html"
+        }
+      ]
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>AWS API Gateway</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; June 6, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">AWS API Gateway in a Regulated Bank: The Decisions Your CISO and CTO Need to Align On</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>The pitch for a managed API gateway is easy to make: no clusters to run, no patches to schedule, automatic scaling, and a per-call pricing model that is transparently low at modest volumes. AWS API Gateway fits that description. What the pitch tends to understate is that &ldquo;managed&rdquo; means AWS manages the infrastructure &mdash; the compute, the TLS certificates for the gateway itself, the availability zones. The <em>security posture</em> of the gateway &mdash; which traffic is allowed in, how callers are authenticated, which WAF rules are enforced, where the audit logs go &mdash; remains entirely your responsibility. Getting those decisions wrong does not produce a P1 incident immediately; it produces a finding in the next SAMA security review.</p>
+
+        <blockquote>
+          <p>A managed service eliminates operational overhead. It does not eliminate security responsibility. The shared responsibility model means your team still owns the configuration layer &mdash; and that layer is where regulated-environment risk concentrates.</p>
+        </blockquote>
+
+        <p class="article-section">The shared responsibility question no one asks at the design review</p>
+
+        <p>AWS&rsquo;s shared responsibility model is well-understood at the infrastructure level. What is less often examined at the design review is what happens at the API Gateway configuration layer. AWS is responsible for the availability and patching of the gateway service itself. You are responsible for: the WAF rules that filter inbound traffic, the custom authoriser that validates caller identity, the VPC link configuration that keeps your backend services off the public internet, the mTLS truststore that specifies which partner certificates to accept, and the access log format that provides the audit trail your CISO needs. Each of these has a default state that is not a secure production configuration. The default WAF state is &ldquo;no WAF.&rdquo; The default authoriser state is &ldquo;no authentication.&rdquo; The default access log state is &ldquo;no logging.&rdquo; Approving a deployment without these in place is approving an exposure.</p>
+
+        <p class="article-section">What SAMA&rsquo;s review specifically looks for</p>
+
+        <p>SAMA&rsquo;s Cyber Security Framework (CSF) and Open Banking Technical Standards reference the API boundary as a regulated enforcement point. When an architecture review covers an AWS-hosted API, the questions surface in four areas. <strong>Data residency</strong>: is all customer data &mdash; in transit and at rest &mdash; confined to the Bahrain (<code>me-south-1</code>) or UAE (<code>me-central-1</code>) region? API Gateway regional endpoints in those regions keep data in-region, but CloudWatch Logs and S3 buckets for audit logs must also be explicitly pinned to the same region with no cross-region replication outside the GCC footprint. <strong>Authentication and non-repudiation</strong>: can you demonstrate, for any given API call, who made it, with what credential, and when? The Lambda authoriser and access log configuration are what provide this evidence. <strong>Encryption in transit</strong>: SAMA CSF requires TLS&nbsp;1.2 minimum for all external connections. AWS API Gateway defaults to TLS&nbsp;1.0 on legacy custom domain configurations; the <code>security_policy</code> field must be explicitly set to <code>TLS_1_2</code>. <strong>Vulnerability scanning</strong>: the WAF must be active and its rules must cover OWASP Top 10 at minimum. The AWS Managed Rules Common Rule Set satisfies this requirement, but it must be in enforce mode (not count mode) before go-live.</p>
+
+        <p class="article-section">The vendor lock-in question for the board</p>
+
+        <p>SAMA&rsquo;s IT Governance Framework explicitly identifies cloud provider concentration risk as something institutions must manage. This is not abstract: if AWS API Gateway becomes mission-critical for Open Banking partner connectivity and your institution subsequently needs to move to a different cloud or back to on-premises, the migration cost is real. API Gateway VTL mapping templates, the Lambda authoriser code, the custom domain configuration, and the WAF rule sets are all AWS-specific constructs. They do not port to Kong, IBM API Connect, or Azure API Management without a rewrite. The practical question for the board is not &ldquo;are we locked in&rdquo; &mdash; we are, to some degree, with any technology choice &mdash; but &ldquo;is the lock-in proportionate to the value delivered?&rdquo; For a greenfield cloud-native programme on AWS, the answer is almost certainly yes. For an institution with a significant on-premises investment and a hybrid-cloud strategy, the answer is worth examining before the architecture is committed.</p>
+
+        <p class="article-section">The cost model at scale</p>
+
+        <p>API Gateway&rsquo;s pricing is per-call plus data transfer. At 100 million API calls per month in <code>me-south-1</code>, the gateway cost is approximately SAR&nbsp;1,300&ndash;1,600 per month for REST API. That is low. What grows with call volume are the components around the gateway: CloudWatch Logs ingestion and storage (which can exceed the gateway cost at high volume if log verbosity is unconstrained), Lambda invocations for the authoriser (a cost that grows with unique callers unless caching is configured), and WAF charges (per-rule evaluation, per million requests). Build a 12-month cost model that includes all four components before committing to the architecture &mdash; the headline gateway price understates the total by 40&ndash;60% at high volume with a full security stack enabled.</p>
+
+        <p class="article-section">What the platform team needs from leadership to ship this correctly</p>
+
+        <p>There are four enablers that determine whether the team can configure AWS API Gateway correctly for a regulated environment, none of which are technical. <strong>An IaC-first mandate.</strong> The gateway configuration, WAF rules, Lambda authoriser code, and VPC link definition must all be in Terraform or CloudFormation and deployed through a CI/CD pipeline. Console changes are invisible to the change management process that the audit expects. This requires a policy decision from leadership, not a technical decision from the team. <strong>A CISO sign-off process for WAF rule changes.</strong> Every WAF rule exclusion (and there will be legitimate ones &mdash; ISO&nbsp;20022 payloads routinely trigger size rules) must go through a security review. The team needs a lightweight process for this that does not create a bottleneck; absent one, teams start making exclusions without oversight. <strong>Access log retention and SIEM integration from day one.</strong> The audit log pipeline &mdash; CloudWatch Logs to Kinesis to S3 to SIEM &mdash; must be in place before the first production call, not added later. Retrofitting a log pipeline to an existing gateway is operationally disruptive and leaves a gap period in the audit trail that is difficult to explain to a regulator. <strong>A partner certificate rotation workflow.</strong> mTLS is only as strong as the process for rotating partner certificates before they expire. Build the rotation workflow and the expiry monitoring into the partner onboarding runbook before the first partner goes live. A certificate that expires because no one tracked the NotAfter field is a service outage, not a minor oversight.</p>
+
+        <p>The institutions that run AWS API Gateway well in regulated environments are not the ones that deployed it fastest. They are the ones where the CISO, CTO, and platform lead aligned on the configuration standards before the first deployment, treated the gateway as a regulated component rather than a utility, and staffed the IaC and security-policy work explicitly rather than leaving it to whoever had spare capacity. The service is excellent. The organisational discipline is what determines whether the configuration that surrounds it holds up when the examiner asks for evidence.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the technical depth behind these decisions &mdash; VPC private integrations, WAF rule configuration, Lambda authoriser design, mTLS truststore management, and the comparison with Kong and IBM API Connect &mdash; see the companion Lab article: <a href="../lab/api-gateway/aws-api-gateway.html" style="color:var(--color-accent);">AWS API Gateway for Regulated Workloads: VPC Integration, WAF &amp; Custom Authorisers</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

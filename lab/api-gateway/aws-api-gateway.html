@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS API Gateway for Regulated Workloads &mdash; VPC, WAF &amp; Custom Authorisers &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A production walkthrough of AWS API Gateway for financial services: VPC private integrations, WAF coupling, Lambda and JWT custom authorisers, mTLS, usage plans, and the configuration choices that pass a SAMA security review.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="AWS API Gateway for Regulated Workloads &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="VPC integration, WAF coupling, custom authorisers, and the configuration choices that pass a financial services security review.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/api-gateway/aws-api-gateway.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AWS API Gateway for Regulated Workloads">
+  <meta name="twitter:description" content="VPC integration, WAF coupling, custom authorisers, and the configuration choices that pass a financial services security review.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/api-gateway/aws-api-gateway.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "AWS API Gateway for Regulated Workloads: VPC Integration, WAF, and Custom Authorisers",
+    "description": "A production walkthrough of AWS API Gateway for financial services: VPC private integrations, WAF coupling, Lambda and JWT custom authorisers, mTLS, usage plans, and the configuration choices that pass a SAMA security review.",
+    "url": "https://www.wbadawi.info/lab/api-gateway/aws-api-gateway.html",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "isPartOf": {"@type": "WebSite", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.wbadawi.info/"},
+        {"@type": "ListItem", "position": 2, "name": "Lab", "item": "https://www.wbadawi.info/technical.html"},
+        {"@type": "ListItem", "position": 3, "name": "API Gateway", "item": "https://www.wbadawi.info/lab/api-gateway.html"},
+        {"@type": "ListItem", "position": 4, "name": "AWS API Gateway for Regulated Workloads", "item": "https://www.wbadawi.info/lab/api-gateway/aws-api-gateway.html"}
+      ]
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-gateway.html">API Gateway</a><span>/</span>AWS API Gateway</div>
+          <span class="overline">Lab Article</span>
+          <h1>AWS API Gateway for Regulated Workloads: VPC Integration, WAF &amp; Custom Authorisers</h1>
+          <p class="lead">AWS API Gateway is a managed service, which means the cluster management, the scaling, and the certificate renewal are handled for you. What is not handled for you is the security posture: private integrations through VPC links, WAF rule tuning, authoriser design, mTLS enforcement, and the audit-log pipeline that a SAMA review demands. This article covers the configuration that bridges the gap between a default API Gateway deployment and one that holds up in a regulated financial-services environment.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview &amp; service types</a></li>
+            <li><a href="#vpc-integration">VPC private integrations</a></li>
+            <li><a href="#waf">WAF coupling</a></li>
+            <li><a href="#authorisers">Custom authorisers</a></li>
+            <li><a href="#mtls">mTLS configuration</a></li>
+            <li><a href="#usage-plans">Throttling &amp; usage plans</a></li>
+            <li><a href="#transformations">Request/response transformations</a></li>
+            <li><a href="#observability">Observability &amp; audit logging</a></li>
+            <li><a href="#topology">Production topology</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#comparison">Comparison with Kong &amp; IBM</a></li>
+            <li><a href="#decision">Decision framework</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> AWS API Gateway v2 (HTTP API) &middot; REST API &middot; AWS WAF v2 &middot; Lambda (Node 22 / Python 3.12)</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview &amp; service types</h2>
+          <p>AWS API Gateway comes in three flavours that are not interchangeable:</p>
+          <ul>
+            <li><strong>REST API</strong> &mdash; the original product. Feature-complete: stages, deployment history, per-method throttling, request/response mapping templates (VTL), usage plans with API keys, X-Ray integration. Higher per-call cost. Supports edge-optimised, regional, and private endpoints.</li>
+            <li><strong>HTTP API</strong> &mdash; launched in 2019, roughly 70% cheaper per call than REST API. Supports JWT authorisers natively, auto-deploy, VPC links to Application Load Balancers and Cloud Map. Missing: usage plans, API keys, per-method throttling, WAF direct attachment (WAF attaches to the CloudFront distribution in front). Best fit for internal microservice backends and workloads where latency cost is critical.</li>
+            <li><strong>WebSocket API</strong> &mdash; stateful bidirectional connections. Not covered here; distinct architecture requirements.</li>
+          </ul>
+
+          <p>For a regulated financial-services environment, the choice almost always comes down to <strong>REST API with a private or regional endpoint</strong>. The feature set &mdash; usage plans, per-method throttling, request validation, VTL transforms, native WAF attachment &mdash; is what a SAMA security review expects to see at the API boundary. HTTP API is the right choice for lower-sensitivity internal APIs where the missing governance features are provided by IAM policies and the downstream service.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">REST API vs HTTP API &mdash; the governance gap</div>
+            <p>HTTP API does not support usage plans or API keys. If your external partners have contractual rate-limit quotas and you need a durable audit record of their quota consumption, you must use <strong>REST API</strong> or implement quota tracking outside API Gateway (e.g. in a Lambda authoriser writing to DynamoDB). The cheaper call price is real, but the missing governance layer has to be accounted for.</p>
+          </div>
+
+          <h2 id="vpc-integration">VPC private integrations</h2>
+          <p>The most consequential network-level decision for a bank deployment is whether the API Gateway integrates with backend services through the public internet or through a VPC link. The default is the public internet &mdash; your Lambda functions or HTTP endpoints are called from the managed API Gateway fleet over HTTPS. For internal-only backends, this is unacceptable: the data plane traverses AWS infrastructure that is not inside your VPC security boundary.</p>
+          <p>VPC links solve this. A VPC Link is an elastic network interface injected into your VPC; API Gateway reaches your backend through it without the traffic leaving the AWS private network. There are two VPC link types:</p>
+          <ul>
+            <li><strong>VPC Link for REST API</strong> &mdash; targets a <em>Network Load Balancer</em> inside your VPC. The NLB terminates at your private ALB or directly at your ECS / EKS service target groups.</li>
+            <li><strong>VPC Link for HTTP API</strong> &mdash; supports ALB, NLB, and AWS Cloud Map service discovery targets directly.</li>
+          </ul>
+
+          <div class="diagram" role="img" aria-label="AWS API Gateway private integration: internet consumer hits API Gateway regional endpoint; WAF evaluates the request; API Gateway calls backend via VPC Link through NLB to private ECS or Kubernetes services inside the bank VPC">
+            <div class="diagram__inner">
+              <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="aw1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="aw2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                  <marker id="aw3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Consumer -->
+                <rect x="10" y="140" width="100" height="60" rx="6" fill="#16161f" stroke="#ef4444"/>
+                <text x="60" y="164" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Partner /</text>
+                <text x="60" y="179" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Consumer</text>
+                <text x="60" y="194" text-anchor="middle" fill="#71717a" font-size="9">HTTPS + mTLS</text>
+
+                <!-- AWS boundary -->
+                <rect x="130" y="30" width="450" height="300" rx="8" fill="none" stroke="#4a9eff" stroke-dasharray="5 3" stroke-width="1.5"/>
+                <text x="148" y="50" fill="#4a9eff" font-size="10" font-weight="600">AWS MANAGED PLANE</text>
+
+                <!-- WAF -->
+                <rect x="150" y="130" width="100" height="50" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="200" y="151" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">AWS WAF v2</text>
+                <text x="200" y="167" text-anchor="middle" fill="#71717a" font-size="9">rule groups &middot; IP sets</text>
+
+                <!-- API GW -->
+                <rect x="290" y="110" width="130" height="90" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="355" y="133" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">API Gateway</text>
+                <text x="355" y="149" text-anchor="middle" fill="#71717a" font-size="9">REST API (regional)</text>
+                <text x="355" y="163" text-anchor="middle" fill="#71717a" font-size="9">authoriser &middot; throttle</text>
+                <text x="355" y="177" text-anchor="middle" fill="#71717a" font-size="9">transform &middot; validate</text>
+                <text x="355" y="191" text-anchor="middle" fill="#71717a" font-size="9">X-Ray &middot; access logs</text>
+
+                <!-- Lambda authoriser -->
+                <rect x="290" y="230" width="130" height="45" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="355" y="250" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Lambda Authoriser</text>
+                <text x="355" y="265" text-anchor="middle" fill="#71717a" font-size="9">token introspection / mTLS</text>
+
+                <!-- VPC boundary -->
+                <rect x="470" y="60" width="260" height="270" rx="8" fill="none" stroke="#00d4aa" stroke-dasharray="4 3"/>
+                <text x="490" y="80" fill="#00d4aa" font-size="10" font-weight="600">BANK VPC (private)</text>
+
+                <!-- VPC Link -->
+                <rect x="490" y="90" width="110" height="45" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="545" y="110" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">VPC Link</text>
+                <text x="545" y="125" text-anchor="middle" fill="#71717a" font-size="9">ENI in bank VPC</text>
+
+                <!-- NLB -->
+                <rect x="490" y="155" width="110" height="45" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="545" y="175" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Network LB</text>
+                <text x="545" y="190" text-anchor="middle" fill="#71717a" font-size="9">internal &middot; TLS</text>
+
+                <!-- Services -->
+                <rect x="490" y="220" width="110" height="35" rx="3" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="545" y="237" text-anchor="middle" fill="#e4e4e7" font-size="10">payments-api</text>
+                <text x="545" y="250" text-anchor="middle" fill="#71717a" font-size="8">ECS Fargate</text>
+
+                <rect x="620" y="220" width="90" height="35" rx="3" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="665" y="237" text-anchor="middle" fill="#e4e4e7" font-size="10">accounts-api</text>
+                <text x="665" y="250" text-anchor="middle" fill="#71717a" font-size="8">ECS Fargate</text>
+
+                <!-- Secrets / ACM -->
+                <rect x="620" y="90" width="90" height="45" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="665" y="110" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">ACM / SM</text>
+                <text x="665" y="125" text-anchor="middle" fill="#71717a" font-size="9">certs &middot; secrets</text>
+
+                <!-- CloudWatch -->
+                <rect x="620" y="155" width="90" height="45" rx="4" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="665" y="175" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">CloudWatch</text>
+                <text x="665" y="190" text-anchor="middle" fill="#71717a" font-size="9">logs &middot; metrics</text>
+
+                <!-- Arrows -->
+                <line x1="110" y1="170" x2="148" y2="155" stroke="#00d4aa" stroke-width="2" marker-end="url(#aw1)"/>
+                <line x1="250" y1="155" x2="288" y2="155" stroke="#fbbf24" stroke-width="2" marker-end="url(#aw2)"/>
+                <line x1="420" y1="155" x2="488" y2="113" stroke="#00d4aa" stroke-width="2" marker-end="url(#aw1)"/>
+                <line x1="545" y1="135" x2="545" y2="153" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#aw1)"/>
+                <line x1="545" y1="200" x2="545" y2="218" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#aw1)"/>
+                <line x1="600" y1="237" x2="618" y2="237" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#aw1)"/>
+                <line x1="355" y1="200" x2="355" y2="228" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#aw3)"/>
+
+                <!-- Labels -->
+                <text x="112" y="152" fill="#71717a" font-size="8">HTTPS / mTLS</text>
+                <text x="252" y="148" fill="#71717a" font-size="8">allow / block</text>
+                <text x="422" y="135" fill="#71717a" font-size="8">VPC link</text>
+                <text x="360" y="222" fill="#71717a" font-size="8">token check</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; AWS API Gateway (regional REST API) with WAF, VPC Link private integration, Lambda authoriser, and bank-VPC backend services</div>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>vpc-link-cfn.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># CloudFormation: VPC Link for REST API → internal NLB</span>
+<span class="tok-k">Resources</span>:
+
+  <span class="tok-k">PaymentsNLB</span>:
+    <span class="tok-k">Type</span>: <span class="tok-s">AWS::ElasticLoadBalancingV2::LoadBalancer</span>
+    <span class="tok-k">Properties</span>:
+      <span class="tok-k">Type</span>: <span class="tok-s">network</span>
+      <span class="tok-k">Scheme</span>: <span class="tok-s">internal</span>
+      <span class="tok-k">Subnets</span>:
+        - <span class="tok-s">!Ref PrivateSubnetA</span>
+        - <span class="tok-s">!Ref PrivateSubnetB</span>
+
+  <span class="tok-k">ApiGwVpcLink</span>:
+    <span class="tok-k">Type</span>: <span class="tok-s">AWS::ApiGateway::VpcLink</span>
+    <span class="tok-k">Properties</span>:
+      <span class="tok-k">Name</span>: <span class="tok-s">bank-payments-vpclink</span>
+      <span class="tok-k">TargetArns</span>:
+        - <span class="tok-s">!GetAtt PaymentsNLB.LoadBalancerArn</span>
+
+  <span class="tok-k">PaymentsApi</span>:
+    <span class="tok-k">Type</span>: <span class="tok-s">AWS::ApiGateway::RestApi</span>
+    <span class="tok-k">Properties</span>:
+      <span class="tok-k">Name</span>: <span class="tok-s">payments-api</span>
+      <span class="tok-k">EndpointConfiguration</span>:
+        <span class="tok-k">Types</span>: [ <span class="tok-s">REGIONAL</span> ]     <span class="tok-c"># PRIVATE if this endpoint must not be internet-routable</span>
+
+  <span class="tok-k">PaymentsIntegration</span>:
+    <span class="tok-k">Type</span>: <span class="tok-s">AWS::ApiGateway::Method</span>
+    <span class="tok-k">Properties</span>:
+      <span class="tok-k">Integration</span>:
+        <span class="tok-k">Type</span>: <span class="tok-s">HTTP_PROXY</span>
+        <span class="tok-k">Uri</span>: <span class="tok-s">!Sub "http://${PaymentsNLB.DNSName}/v1/{proxy}"</span>
+        <span class="tok-k">ConnectionType</span>: <span class="tok-s">VPC_LINK</span>
+        <span class="tok-k">ConnectionId</span>: <span class="tok-s">!Ref ApiGwVpcLink</span>
+        <span class="tok-k">TimeoutInMillis</span>: <span class="tok-n">29000</span>   <span class="tok-c"># max for REST API; must be &lt; 29s</span></code></pre>
+          </div>
+
+          <p>Two topology decisions embedded in this snippet that matter for a regulated environment:</p>
+          <ul>
+            <li><strong><code>EndpointConfiguration: REGIONAL</code> vs <code>PRIVATE</code></strong> &mdash; a <em>private</em> endpoint is accessible only from within the VPC via an Interface VPC Endpoint (PrivateLink). No request reaches it from the internet. This is the correct choice for internal APIs consumed by your core banking middleware. A <em>regional</em> endpoint is internet-accessible but WAF-protected &mdash; correct for external partner APIs.</li>
+            <li><strong><code>TimeoutInMillis: 29000</code></strong> &mdash; API Gateway hard-limits integration timeout at 29 seconds. Any synchronous backend call that takes longer will be cut off with a 504, even if the backend eventually responds. Legacy core banking systems with slow SQL calls regularly exceed this. Design your adapter layer to return a correlation ID and use a polling or callback pattern for long-running operations.</li>
+          </ul>
+
+          <h2 id="waf">WAF coupling</h2>
+          <p>AWS WAF v2 is the first line of defence for any internet-facing API Gateway endpoint. It evaluates each request before API Gateway processes it &mdash; blocking at the WAF level costs nothing in API Gateway invocations. The challenge is configuration: WAF ships with managed rule groups that are opinionated and will generate false positives against financial API payloads if tuned carelessly.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>waf-web-acl.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Terraform: WAF WebACL for API Gateway REST endpoint</span>
+<span class="tok-k">resource</span> <span class="tok-s">"aws_wafv2_web_acl"</span> <span class="tok-s">"api_gw_acl"</span> {
+  <span class="tok-k">name</span>  = <span class="tok-s">"bank-apigw-waf"</span>
+  <span class="tok-k">scope</span> = <span class="tok-s">"REGIONAL"</span>    <span class="tok-c"># CLOUDFRONT for edge-optimised endpoints</span>
+
+  <span class="tok-k">default_action</span> { <span class="tok-k">allow</span> {} }
+
+  <span class="tok-k">rule</span> {
+    <span class="tok-k">name</span>     = <span class="tok-s">"AWSManagedRulesCommonRuleSet"</span>
+    <span class="tok-k">priority</span> = <span class="tok-n">1</span>
+    <span class="tok-k">override_action</span> { <span class="tok-k">none</span> {} }  <span class="tok-c"># enforce; change to count{} when tuning</span>
+    <span class="tok-k">statement</span> {
+      <span class="tok-k">managed_rule_group_statement</span> {
+        <span class="tok-k">vendor_name</span> = <span class="tok-s">"AWS"</span>
+        <span class="tok-k">name</span>        = <span class="tok-s">"AWSManagedRulesCommonRuleSet"</span>
+        <span class="tok-c"># SizeRestrictions_BODY blocks payloads &gt; 8KB; ISO 20022 pain.001 exceeds this</span>
+        <span class="tok-k">excluded_rule</span> { <span class="tok-k">name</span> = <span class="tok-s">"SizeRestrictions_BODY"</span> }
+      }
+    }
+    <span class="tok-k">visibility_config</span> {
+      <span class="tok-k">cloudwatch_metrics_enabled</span> = <span class="tok-n">true</span>
+      <span class="tok-k">metric_name</span>                = <span class="tok-s">"CommonRuleSet"</span>
+      <span class="tok-k">sampled_requests_enabled</span>   = <span class="tok-n">true</span>
+    }
+  }
+
+  <span class="tok-k">rule</span> {
+    <span class="tok-k">name</span>     = <span class="tok-s">"AWSManagedRulesKnownBadInputsRuleSet"</span>
+    <span class="tok-k">priority</span> = <span class="tok-n">2</span>
+    <span class="tok-k">override_action</span> { <span class="tok-k">none</span> {} }
+    <span class="tok-k">statement</span> {
+      <span class="tok-k">managed_rule_group_statement</span> {
+        <span class="tok-k">vendor_name</span> = <span class="tok-s">"AWS"</span>
+        <span class="tok-k">name</span>        = <span class="tok-s">"AWSManagedRulesKnownBadInputsRuleSet"</span>
+      }
+    }
+    <span class="tok-k">visibility_config</span> {
+      <span class="tok-k">cloudwatch_metrics_enabled</span> = <span class="tok-n">true</span>
+      <span class="tok-k">metric_name</span>                = <span class="tok-s">"KnownBadInputs"</span>
+      <span class="tok-k">sampled_requests_enabled</span>   = <span class="tok-n">true</span>
+    }
+  }
+
+  <span class="tok-k">rule</span> {
+    <span class="tok-k">name</span>     = <span class="tok-s">"PartnerIPAllowlist"</span>
+    <span class="tok-k">priority</span> = <span class="tok-n">0</span>             <span class="tok-c"># evaluate before managed rules</span>
+    <span class="tok-k">action</span>   { <span class="tok-k">allow</span> {} }    <span class="tok-c"># explicit allow skips remaining rules</span>
+    <span class="tok-k">statement</span> {
+      <span class="tok-k">ip_set_reference_statement</span> {
+        <span class="tok-k">arn</span> = <span class="tok-s">aws_wafv2_ip_set.partner_cidrs.arn</span>
+      }
+    }
+    <span class="tok-k">visibility_config</span> {
+      <span class="tok-k">cloudwatch_metrics_enabled</span> = <span class="tok-n">true</span>
+      <span class="tok-k">metric_name</span>                = <span class="tok-s">"PartnerAllowlist"</span>
+      <span class="tok-k">sampled_requests_enabled</span>   = <span class="tok-n">false</span>
+    }
+  }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">ISO 20022 payloads and the SizeRestrictions_BODY rule</div>
+            <p>The AWS Managed Rules <code>CommonRuleSet</code> includes a <code>SizeRestrictions_BODY</code> rule that blocks request bodies larger than 8&nbsp;KB. ISO&nbsp;20022 payment initiation messages (pain.001) with multiple transaction lines routinely exceed this. Always exclude this rule and replace it with a custom size constraint set to the maximum your payload specification allows &mdash; typically 256&nbsp;KB for a batch payment file. Do not disable size checks entirely; an unbounded payload is a denial-of-service vector.</p>
+          </div>
+
+          <p>WAF tuning is an ongoing activity, not a one-time configuration. The correct procedure for introducing a new managed rule group is:</p>
+          <ol>
+            <li>Set <code>override_action: count</code> &mdash; the rule evaluates but does not block.</li>
+            <li>Run for 7 days under production-representative traffic.</li>
+            <li>Review sampled blocked requests in the WAF console for false positives.</li>
+            <li>Add exclusions for legitimate patterns, then switch to <code>override_action: none</code> (enforce).</li>
+          </ol>
+          <p>Partners calling Open Banking endpoints are particularly sensitive to WAF false positives. A blocked request at the WAF level returns a 403 that API Gateway never sees &mdash; it will not appear in API Gateway access logs, only in WAF logs. Ensure WAF logs are flowing to CloudWatch Logs or S3 before going live.</p>
+
+          <h2 id="authorisers">Custom authorisers</h2>
+          <p>API Gateway offers three authoriser types: Lambda authoriser (TOKEN or REQUEST), JWT authoriser (HTTP API only), and IAM authoriser. For a financial-services regulated endpoint the choice is almost always a <strong>Lambda TOKEN authoriser</strong> for REST API, because it gives you full control over the token validation logic &mdash; including introspection against a Keycloak or ADFS IdP, FAPI 2.0 certificate-bound token checks, and custom claim mapping to API Gateway context variables.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>lambda-authoriser.py</span><span class="code-block__lang">python</span></div>
+<pre><code><span class="tok-k">import</span> <span class="tok-n">os</span>, <span class="tok-n">json</span>, <span class="tok-n">boto3</span>, <span class="tok-n">hashlib</span>
+<span class="tok-k">import</span> <span class="tok-n">urllib.request</span>, <span class="tok-n">urllib.parse</span>
+
+<span class="tok-n">_sm</span> = <span class="tok-n">boto3</span>.<span class="tok-n">client</span>(<span class="tok-s">"secretsmanager"</span>)
+<span class="tok-n">_cache</span> = {}  <span class="tok-c"># in-memory introspection cache (valid for Lambda warm lifecycle only)</span>
+
+<span class="tok-k">def</span> <span class="tok-n">handler</span>(<span class="tok-n">event</span>, <span class="tok-n">context</span>):
+    <span class="tok-n">token</span> = <span class="tok-n">event</span>[<span class="tok-s">"authorizationToken"</span>].<span class="tok-n">removeprefix</span>(<span class="tok-s">"Bearer "</span>)
+    <span class="tok-n">method_arn</span> = <span class="tok-n">event</span>[<span class="tok-s">"methodArn"</span>]
+
+    <span class="tok-c"># FAPI 2.0: certificate-bound token check (cnf.x5t#S256 claim)</span>
+    <span class="tok-n">client_cert_dn</span> = <span class="tok-n">event</span>.<span class="tok-n">get</span>(<span class="tok-s">"requestContext"</span>, {}).<span class="tok-n">get</span>(<span class="tok-s">"identity"</span>, {}).<span class="tok-n">get</span>(<span class="tok-s">"clientCert"</span>, {}).<span class="tok-n">get</span>(<span class="tok-s">"subjectDN"</span>)
+
+    <span class="tok-c"># Cache key: SHA256 of raw token (never cache the token itself)</span>
+    <span class="tok-n">cache_key</span> = <span class="tok-n">hashlib</span>.<span class="tok-n">sha256</span>(<span class="tok-n">token</span>.<span class="tok-n">encode</span>()).<span class="tok-n">hexdigest</span>()[:16]
+    <span class="tok-k">if</span> <span class="tok-n">cache_key</span> <span class="tok-k">in</span> <span class="tok-n">_cache</span>:
+        <span class="tok-k">return</span> <span class="tok-n">_cache</span>[<span class="tok-n">cache_key</span>]
+
+    <span class="tok-n">claims</span> = _introspect(token)
+    <span class="tok-k">if</span> <span class="tok-k">not</span> <span class="tok-n">claims</span> <span class="tok-k">or</span> <span class="tok-k">not</span> <span class="tok-n">claims</span>.<span class="tok-n">get</span>(<span class="tok-s">"active"</span>):
+        <span class="tok-k">raise</span> <span class="tok-n">Exception</span>(<span class="tok-s">"Unauthorized"</span>)  <span class="tok-c"># API Gateway interprets this as 401</span>
+
+    <span class="tok-c"># Verify cert binding (RFC 8705 §3.1) when mTLS is enabled on the API</span>
+    <span class="tok-k">if</span> <span class="tok-n">client_cert_dn</span> <span class="tok-k">and</span> <span class="tok-n">claims</span>.<span class="tok-n">get</span>(<span class="tok-s">"cnf"</span>):
+        <span class="tok-n">_verify_cert_binding</span>(<span class="tok-n">client_cert_dn</span>, <span class="tok-n">claims</span>[<span class="tok-s">"cnf"</span>])
+
+    <span class="tok-n">policy</span> = _build_policy(<span class="tok-n">claims</span>[<span class="tok-s">"sub"</span>], <span class="tok-s">"Allow"</span>, <span class="tok-n">method_arn</span>, <span class="tok-n">claims</span>)
+    <span class="tok-n">_cache</span>[<span class="tok-n">cache_key</span>] = <span class="tok-n">policy</span>
+    <span class="tok-k">return</span> <span class="tok-n">policy</span>
+
+<span class="tok-k">def</span> <span class="tok-n">_build_policy</span>(<span class="tok-n">principal</span>, <span class="tok-n">effect</span>, <span class="tok-n">arn</span>, <span class="tok-n">claims</span>):
+    <span class="tok-c"># Wildcard ARN: policy cached by API Gateway is reused across methods in same stage</span>
+    <span class="tok-n">arn_parts</span> = <span class="tok-n">arn</span>.<span class="tok-n">split</span>(<span class="tok-s">":"</span>)
+    <span class="tok-n">arn_wildcard</span> = <span class="tok-s">":"</span>.<span class="tok-n">join</span>(<span class="tok-n">arn_parts</span>[:<span class="tok-n">6</span>]) + <span class="tok-s">":*/*"</span>
+    <span class="tok-k">return</span> {
+        <span class="tok-s">"principalId"</span>: <span class="tok-n">principal</span>,
+        <span class="tok-s">"policyDocument"</span>: {
+            <span class="tok-s">"Version"</span>: <span class="tok-s">"2012-10-17"</span>,
+            <span class="tok-s">"Statement"</span>: [{<span class="tok-s">"Effect"</span>: <span class="tok-n">effect</span>, <span class="tok-s">"Action"</span>: <span class="tok-s">"execute-api:Invoke"</span>, <span class="tok-s">"Resource"</span>: <span class="tok-n">arn_wildcard</span>}]
+        },
+        <span class="tok-s">"context"</span>: {
+            <span class="tok-s">"sub"</span>:   <span class="tok-n">claims</span>.<span class="tok-n">get</span>(<span class="tok-s">"sub"</span>, <span class="tok-s">""</span>),
+            <span class="tok-s">"scope"</span>: <span class="tok-n">claims</span>.<span class="tok-n">get</span>(<span class="tok-s">"scope"</span>, <span class="tok-s">""</span>),
+            <span class="tok-s">"acr"</span>:   <span class="tok-n">claims</span>.<span class="tok-n">get</span>(<span class="tok-s">"acr"</span>, <span class="tok-s">""</span>),
+        },
+    }</code></pre>
+          </div>
+
+          <p>The context map returned by the authoriser is available in API Gateway mapping templates and access log format strings as <code>$context.authorizer.sub</code>, <code>$context.authorizer.scope</code>, etc. This is how you pass validated claims downstream to the backend without exposing the raw token.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Authoriser caching and the 5-minute window</div>
+            <p>API Gateway caches authoriser results by the token value (or the combination of identity sources for REQUEST authorisers) for a configurable TTL &mdash; default 300 seconds. This means a revoked token is still valid from API Gateway&rsquo;s perspective for up to 5 minutes. For payment APIs this is a significant risk window. Either set <code>AuthorizerResultTtlInSeconds</code> to 0 (no caching; every call invokes Lambda) or implement short-lived tokens with a max lifetime of 60 seconds in your IdP. Caching is an important cost optimisation at high volume &mdash; weigh the latency and cost saving against the revocation window.</p>
+          </div>
+
+          <h2 id="mtls">mTLS configuration</h2>
+          <p>AWS API Gateway supports mutual TLS for REST API and HTTP API regional and private endpoints. The configuration is different from Kong: you provide a truststore (a PEM bundle of trusted CA certificates) stored in S3, referenced in the API Gateway configuration. API Gateway evaluates the client certificate against the truststore on every TLS handshake and rejects the connection if the certificate is not signed by a trusted CA.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>mtls-config.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Terraform: mutual TLS on API Gateway custom domain</span>
+<span class="tok-k">resource</span> <span class="tok-s">"aws_api_gateway_domain_name"</span> <span class="tok-s">"ob_partner"</span> {
+  <span class="tok-k">domain_name</span>              = <span class="tok-s">"api.acme-bank.com"</span>
+  <span class="tok-k">regional_certificate_arn</span> = <span class="tok-s">aws_acm_certificate.api_cert.arn</span>
+  <span class="tok-k">security_policy</span>          = <span class="tok-s">"TLS_1_2"</span>   <span class="tok-c"># SAMA CSF requires TLS 1.2 minimum</span>
+
+  <span class="tok-k">mutual_tls_authentication</span> {
+    <span class="tok-c"># S3 object containing PEM bundle of trusted partner CA certificates</span>
+    <span class="tok-k">truststore_uri</span>     = <span class="tok-s">"s3://acme-bank-apigw-config/partner-ca-bundle.pem"</span>
+    <span class="tok-k">truststore_version</span> = <span class="tok-s">aws_s3_object.partner_ca_bundle.version_id</span>
+  }
+
+  <span class="tok-k">endpoint_configuration</span> {
+    <span class="tok-k">types</span> = [<span class="tok-s">"REGIONAL"</span>]
+  }
+}
+
+<span class="tok-c"># Versioned S3 object for the truststore — rotation = upload new version and update version_id</span>
+<span class="tok-k">resource</span> <span class="tok-s">"aws_s3_object"</span> <span class="tok-s">"partner_ca_bundle"</span> {
+  <span class="tok-k">bucket</span> = <span class="tok-s">"acme-bank-apigw-config"</span>
+  <span class="tok-k">key</span>    = <span class="tok-s">"partner-ca-bundle.pem"</span>
+  <span class="tok-k">source</span> = <span class="tok-s">"./pki/partner-ca-bundle.pem"</span>
+  <span class="tok-k">etag</span>   = <span class="tok-s">filemd5("./pki/partner-ca-bundle.pem")</span>
+}</code></pre>
+          </div>
+
+          <p>There are two operational gaps in the AWS mTLS model compared to Kong. First, when a partner certificate is rejected at the TLS layer, the response is a TLS alert, not an HTTP 401 &mdash; it is invisible in API Gateway access logs and in the Lambda authoriser. You must enable WAF logging (which captures the TLS handshake failure) or CloudTrail to detect rejected client certificates. Second, there is no built-in certificate expiry monitoring in API Gateway. Build a Lambda function that periodically parses the truststore PEM bundle, extracts NotAfter fields, and publishes a CloudWatch metric that alarms 60 days before expiry.</p>
+
+          <h2 id="usage-plans">Throttling &amp; usage plans</h2>
+          <p>API Gateway throttling operates at two levels: the account-level default (10,000 requests/second, 5,000 burst by default in the <code>me-south-1</code> Bahrain region) and the usage-plan level (per API key, per stage, per method). Usage plans are the mechanism for encoding partner quotas.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Create a usage plan per partner tier</h4>
+              <p>Create separate usage plans for each commercial tier: <em>standard</em> (1,000 req/day, 10 req/sec), <em>premium</em> (100,000 req/day, 50 req/sec), <em>bulk</em> (1,000,000 req/day, 100 req/sec). Usage plans are not per-partner &mdash; they are per tier. Multiple partners share a plan; their individual quota consumption is tracked by their API key.</p>
+            </li>
+            <li>
+              <h4>Generate and issue API keys at partner onboarding</h4>
+              <p>Create one API key per partner per environment (not one key shared across environments). Associate the key with the appropriate usage plan and the target API stage. Store the key in Secrets Manager and provide it to the partner via a secure channel &mdash; never by email.</p>
+            </li>
+            <li>
+              <h4>Configure per-method throttling overrides</h4>
+              <p>Payment initiation endpoints (POST /payments) deserve lower burst limits than account inquiry (GET /accounts). Use per-method stage-level throttle overrides to enforce this independently of the usage plan limits.</p>
+            </li>
+            <li>
+              <h4>Enable usage plan quota reset and monitor</h4>
+              <p>Quotas reset at the beginning of each calendar day (UTC) by default. If a partner&rsquo;s quota resets at midnight Riyadh time (UTC+3), set the quota reset to 21:00 UTC. CloudWatch metric <code>Count</code> filtered by <code>ApiKeyId</code> gives you per-partner request counts for quota audit.</p>
+            </li>
+            <li>
+              <h4>Export usage data for billing and dispute resolution</h4>
+              <p>The <code>GetUsage</code> API returns per-API-key usage for a date range. Automate a daily export to S3 in Parquet format; this is the durable audit record that answers &ldquo;how many requests did partner X make on date Y&rdquo; in a dispute or SAMA audit.</p>
+            </li>
+          </ol>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Account-level throttle limits are shared across all APIs</div>
+            <p>The account-level throttle in API Gateway applies to the entire AWS account in a region. If your account hosts both the Open Banking partner gateway and an internal microservice gateway, a traffic spike on the internal APIs can consume the account-level token bucket and throttle the partner APIs. Request a limit increase from AWS Support for critical regulated accounts, and consider separating regulated-partner APIs into a dedicated AWS account with its own throttle budget.</p>
+          </div>
+
+          <h2 id="transformations">Request/response transformations</h2>
+          <p>API Gateway REST API uses <strong>Apache Velocity Template Language (VTL)</strong> for request and response mapping templates. VTL is powerful but idiosyncratic &mdash; it is the most common source of subtle bugs in an API Gateway integration. HTTP API uses a simpler payload format version 2.0 with limited transformation support.</p>
+          <p>The use cases where VTL earns its keep in a bank environment:</p>
+          <ul>
+            <li>Extracting a correlation ID from an incoming ISO 20022 message and injecting it as a request header (<code>X-Correlation-ID</code>) for distributed tracing.</li>
+            <li>Mapping a legacy SOAP response from an IBM MQ-backed service into a JSON structure expected by a modern mobile client &mdash; avoiding a Lambda proxy layer purely for shape translation.</li>
+            <li>Normalising currency codes: incoming <code>SAR</code> → downstream <code>682</code> (ISO 4217 numeric) expected by the core banking system.</li>
+          </ul>
+          <p>VTL templates are part of the API definition, tested in the API Gateway console (Test Invoke) or via the <code>aws apigateway test-invoke-method</code> CLI. The absence of unit tests for VTL is a common gap &mdash; treat templates as code, store them in version control, and test them in a dev stage before deploying to production.</p>
+
+          <h2 id="observability">Observability &amp; audit logging</h2>
+          <p>API Gateway provides three observability primitives: CloudWatch Metrics (auto-enabled), CloudWatch Logs access logging (opt-in, requires a CloudWatch Logs role ARN on the account), and AWS X-Ray distributed tracing (opt-in per stage).</p>
+          <p>The access log format is configurable via a JSON template. For SAMA compliance, the minimum fields are:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>access-log-format.json</span><span class="code-block__lang">json</span></div>
+<pre><code><span class="tok-p">{</span>
+  <span class="tok-k">"requestId"</span>:       <span class="tok-s">"$context.requestId"</span>,
+  <span class="tok-k">"ip"</span>:              <span class="tok-s">"$context.identity.sourceIp"</span>,
+  <span class="tok-k">"caller"</span>:          <span class="tok-s">"$context.identity.caller"</span>,
+  <span class="tok-k">"user"</span>:            <span class="tok-s">"$context.identity.user"</span>,
+  <span class="tok-k">"apiKey"</span>:          <span class="tok-s">"$context.identity.apiKey"</span>,
+  <span class="tok-k">"clientCertDN"</span>:    <span class="tok-s">"$context.identity.clientCert.subjectDN"</span>,
+  <span class="tok-k">"requestTime"</span>:     <span class="tok-s">"$context.requestTime"</span>,
+  <span class="tok-k">"httpMethod"</span>:      <span class="tok-s">"$context.httpMethod"</span>,
+  <span class="tok-k">"resourcePath"</span>:    <span class="tok-s">"$context.resourcePath"</span>,
+  <span class="tok-k">"status"</span>:          <span class="tok-s">"$context.status"</span>,
+  <span class="tok-k">"protocol"</span>:        <span class="tok-s">"$context.protocol"</span>,
+  <span class="tok-k">"responseLatency"</span>: <span class="tok-s">"$context.responseLatency"</span>,
+  <span class="tok-k">"integrationLatency"</span>: <span class="tok-s">"$context.integrationLatency"</span>,
+  <span class="tok-k">"authoriserSub"</span>:   <span class="tok-s">"$context.authorizer.sub"</span>,
+  <span class="tok-k">"authoriserScope"</span>: <span class="tok-s">"$context.authorizer.scope"</span>,
+  <span class="tok-k">"wafResponse"</span>:     <span class="tok-s">"$context.wafResponseCode"</span>,
+  <span class="tok-k">"errorMessage"</span>:    <span class="tok-s">"$context.error.message"</span>
+<span class="tok-p">}</span></code></pre>
+          </div>
+
+          <p>Forward these logs to your SIEM using a CloudWatch Logs subscription filter pointing to a Kinesis Data Firehose delivery stream, which lands them in S3 (Parquet with Glue catalog) or directly in your SIEM ingest endpoint. The <code>clientCertDN</code> field is only populated when mTLS is enabled on the custom domain; for API-key-authenticated traffic it will be empty. The <code>authoriserSub</code> field relies on the Lambda authoriser returning it in the context map &mdash; as shown in the code block above.</p>
+
+          <h2 id="topology">Production topology</h2>
+          <p>A production API Gateway topology for a regulated KSA bank uses the Bahrain region (<code>me-south-1</code>) as the primary, with a secondary in UAE (<code>me-central-1</code>) for disaster recovery. Route 53 latency routing or health-check failover handles the DNS tier.</p>
+
+          <div class="diagram" role="img" aria-label="Multi-region API Gateway topology: Route 53 resolves to primary in Bahrain and DR in UAE; each region has WAF, API Gateway, VPC Link to private NLB, and separate CloudWatch log groups with cross-region replication to S3 for SIEM">
+            <div class="diagram__inner">
+              <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="mr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="mr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="mr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Consumer -->
+                <rect x="10" y="130" width="90" height="55" rx="6" fill="#16161f" stroke="#ef4444"/>
+                <text x="55" y="152" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Partner</text>
+                <text x="55" y="167" text-anchor="middle" fill="#71717a" font-size="9">HTTPS+mTLS</text>
+                <text x="55" y="180" text-anchor="middle" fill="#71717a" font-size="9">API Key</text>
+
+                <!-- Route 53 -->
+                <rect x="120" y="140" width="100" height="40" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="170" y="158" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Route 53</text>
+                <text x="170" y="172" text-anchor="middle" fill="#71717a" font-size="9">failover / latency</text>
+
+                <!-- Primary region: Bahrain -->
+                <rect x="240" y="20" width="240" height="190" rx="8" fill="none" stroke="#00d4aa" stroke-dasharray="5 3"/>
+                <text x="258" y="40" fill="#00d4aa" font-size="10" font-weight="600">PRIMARY: me-south-1 (BH)</text>
+
+                <rect x="255" y="50" width="90" height="35" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="300" y="66" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">AWS WAF v2</text>
+                <text x="300" y="79" text-anchor="middle" fill="#71717a" font-size="8">rule groups</text>
+
+                <rect x="360" y="50" width="105" height="35" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="412" y="66" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">API Gateway</text>
+                <text x="412" y="79" text-anchor="middle" fill="#71717a" font-size="8">REST / regional</text>
+
+                <rect x="255" y="105" width="90" height="35" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="300" y="121" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">VPC Link</text>
+                <text x="300" y="135" text-anchor="middle" fill="#71717a" font-size="8">ENI in VPC</text>
+
+                <rect x="360" y="105" width="105" height="35" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="412" y="121" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">Private NLB</text>
+                <text x="412" y="135" text-anchor="middle" fill="#71717a" font-size="8">payments/accounts</text>
+
+                <rect x="255" y="160" width="210" height="35" rx="4" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="360" y="176" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">CloudWatch Logs (access + WAF)</text>
+                <text x="360" y="189" text-anchor="middle" fill="#71717a" font-size="8">→ Kinesis Firehose → S3 / SIEM</text>
+
+                <!-- DR region: UAE -->
+                <rect x="500" y="20" width="260" height="190" rx="8" fill="none" stroke="#a78bfa" stroke-dasharray="5 3"/>
+                <text x="518" y="40" fill="#a78bfa" font-size="10" font-weight="600">DR: me-central-1 (UAE)</text>
+
+                <rect x="515" y="50" width="90" height="35" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="560" y="66" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">AWS WAF v2</text>
+                <text x="560" y="79" text-anchor="middle" fill="#71717a" font-size="8">same rule set</text>
+
+                <rect x="620" y="50" width="120" height="35" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="680" y="66" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">API Gateway</text>
+                <text x="680" y="79" text-anchor="middle" fill="#71717a" font-size="8">REST / regional (warm)</text>
+
+                <rect x="515" y="105" width="90" height="35" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="560" y="121" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">VPC Link</text>
+                <text x="560" y="135" text-anchor="middle" fill="#71717a" font-size="8">DR VPC ENI</text>
+
+                <rect x="620" y="105" width="120" height="35" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="680" y="121" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">Private NLB</text>
+                <text x="680" y="135" text-anchor="middle" fill="#71717a" font-size="8">DR services (RO)</text>
+
+                <!-- S3 cross-region replication -->
+                <rect x="290" y="240" width="420" height="40" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="500" y="257" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">S3 Cross-Region Replication → SIEM (Splunk / QRadar)</text>
+                <text x="500" y="273" text-anchor="middle" fill="#71717a" font-size="9">7-year retention &middot; Object Lock (WORM) &middot; KMS encryption</text>
+
+                <!-- Arrows -->
+                <line x1="100" y1="157" x2="118" y2="157" stroke="#00d4aa" stroke-width="2" marker-end="url(#mr1)"/>
+                <line x1="220" y1="150" x2="253" y2="70" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#mr1)"/>
+                <line x1="220" y1="165" x2="513" y2="70" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#mr2)"/>
+                <line x1="345" y1="67" x2="362" y2="67" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#mr3)"/>
+                <line x1="360" y1="195" x2="360" y2="238" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#mr3)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Multi-region API Gateway topology: Bahrain primary, UAE DR; shared S3 audit log store with cross-region replication for SIEM ingest</div>
+          </div>
+
+          <p>Infrastructure-as-code discipline is non-negotiable here. The API definition, WAF rule set, Lambda authoriser code, VPC link configuration, and CloudWatch log format must all be in Terraform or CloudFormation and deployed through a CI/CD pipeline &mdash; not hand-configured in the console. A SAMA audit will ask for change history on the security configuration; a Git-controlled IaC repository provides that history. Console changes do not.</p>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">The 29-second integration timeout is absolute</div>
+            <p>API Gateway REST API will terminate any backend integration that does not respond within 29 seconds and return a 504 to the caller. There is no configuration override. Any synchronous API that calls a core banking system with batch-style SQL queries is at risk. The architectural fix is to design these as asynchronous APIs: POST returns 202 with a job ID, GET /jobs/{id} polls for completion. This is also the correct pattern for ISO 20022 payment initiation, which has intrinsically asynchronous settlement semantics.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Lambda cold starts under mTLS scrutiny</div>
+            <p>If your Lambda authoriser uses provisioned concurrency 0, cold starts add 300&ndash;800ms to the first request latency in a warm-up period. For a partner mTLS endpoint where the SLA is 1 second end-to-end, a cold authoriser start is a SLA breach. Use provisioned concurrency for the Lambda authoriser function &mdash; the cost is modest relative to the SLA exposure. Alternatively, use API Gateway&rsquo;s built-in authoriser result cache with a short TTL to absorb the cold-start penalty on subsequent requests.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Private endpoint resource policies are additive, not replace</div>
+            <p>When you configure a private API Gateway endpoint (accessible only within your VPC), AWS creates an implicit &ldquo;deny all&rdquo; policy. You must explicitly create a resource policy that allows access from your VPC Interface Endpoint. A common mistake is applying only an IAM policy and wondering why requests are still blocked. Both the resource policy (which controls network access from the VPC endpoint) and the authoriser (which controls per-caller access) are independently evaluated.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">WAF does not attach natively to HTTP API</div>
+            <p>AWS WAF v2 can be associated directly with a REST API stage, but <em>not</em> directly with an HTTP API. For HTTP API, WAF must be placed on a CloudFront distribution in front of the API. This adds a CloudFront hop, changes the latency profile, and requires managing a CloudFront distribution as part of the API infrastructure. If WAF enforcement is required (and it is for any external API in a SAMA-regulated environment), REST API is the simpler topology choice.</p>
+          </div>
+
+          <h2 id="comparison">Comparison with Kong &amp; IBM API Connect</h2>
+          <p>AWS API Gateway is a managed service that eliminates the operational overhead of running gateway infrastructure. Kong and IBM API Connect are self-managed (or vendor-SaaS) products that give you more control over the feature set and the deployment topology. Neither model is universally better; the choice depends on which dimension of control matters most.</p>
+
+          <table>
+            <thead>
+              <tr><th>Dimension</th><th>AWS API Gateway</th><th>Kong Gateway 3.x</th><th>IBM API Connect 10.x</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Operational overhead</strong></td>
+                <td>Near-zero. AWS manages patching, scaling, HA, and certificate renewal for the gateway itself.</td>
+                <td>Moderate. Team manages Kong pods, upgrades, Redis for rate limiting, and the Postgres or control-plane instance.</td>
+                <td>High. IBM cluster (OCP), DataPower appliances, and gateway services require dedicated operational capacity.</td>
+              </tr>
+              <tr>
+                <td><strong>mTLS enforcement</strong></td>
+                <td>Truststore in S3, evaluated at TLS layer on custom domain. No built-in certificate inventory or expiry monitoring.</td>
+                <td>CA certificate registered in Kong, mapped to consumer by DN. Kong Manager shows cert status.</td>
+                <td>DataPower provides the TLS stack. Certificate lifecycle managed via APIM console. Most mature model.</td>
+              </tr>
+              <tr>
+                <td><strong>Rate limiting &amp; quotas</strong></td>
+                <td>Usage plans with API keys. Per-method throttling. No sliding-window counters; fixed-window per day.</td>
+                <td>Sliding-window via Redis, per consumer, per route. Highly configurable. Supports burst + daily windows simultaneously.</td>
+                <td>Rate-limit plans tied to product subscriptions. Quota management through API manager portal. Billing-integration ready.</td>
+              </tr>
+              <tr>
+                <td><strong>Request transformation</strong></td>
+                <td>VTL mapping templates (REST API). Powerful but operationally fragile. No debugging tooling.</td>
+                <td>Lua/Go plugins. More testable than VTL; plugin PDK has unit test framework.</td>
+                <td>DataPower GatewayScript / XSLT / assembly policies. Industrial-strength; designed for complex message transformations.</td>
+              </tr>
+              <tr>
+                <td><strong>Vendor lock-in</strong></td>
+                <td>High. API definitions, authoriser Lambda code, and VTL templates are AWS-specific. Migration cost is real.</td>
+                <td>Moderate. Kong declarative config is portable; plugin dependencies create soft lock-in.</td>
+                <td>Very high. DataPower assemblies and IBM OIDC flows are proprietary. Migration is a multi-year effort.</td>
+              </tr>
+              <tr>
+                <td><strong>SAMA / regulated environment fit</strong></td>
+                <td>Good, with configuration discipline. Data residency relies on correct region selection; no guarantee of on-prem data plane.</td>
+                <td>Excellent for cloud-native Kubernetes environments. Data plane fully within your control.</td>
+                <td>Excellent for on-premises or hybrid. Data plane is in your data centre; no cloud dependency required.</td>
+              </tr>
+              <tr>
+                <td><strong>TCO at 100M calls/month</strong></td>
+                <td>REST API: ~$350/month in <code>me-south-1</code>. No infrastructure overhead. WAF and Lambda authoriser add ~$100&ndash;200.</td>
+                <td>Kong OSS: infrastructure cost (3 pods + Redis). Kong Enterprise: licence plus infrastructure.</td>
+                <td>IBM licence + OCP cluster cost. Typically 5&ndash;10&times; more expensive at equivalent call volume.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="decision">Decision framework</h2>
+          <p>The question &ldquo;should we use AWS API Gateway?&rdquo; decomposes into four sub-questions that each have a clear answer for most regulated banks:</p>
+          <ul>
+            <li><strong>Is the workload on AWS?</strong> AWS API Gateway is the lowest-friction choice when your backend services are on ECS, EKS, or Lambda. The VPC Link integration is tight. If your backend is on-prem or on another cloud, the VPC Link requires a VPN or Direct Connect to close the network path, and the latency overhead may be significant.</li>
+            <li><strong>Do you need a developer portal and API catalogue?</strong> AWS API Gateway does not include a developer portal. Consumers discover APIs through the developer team, not through a managed catalogue. If you have external third-party developers onboarding to your APIs, you need to build or buy a portal separately (AWS does not have one; consider a custom one via Backstage or a commercial add-on). Kong Enterprise includes a portal; IBM API Connect includes the most mature one in the market.</li>
+            <li><strong>Is vendor lock-in a constraint?</strong> SAMA&rsquo;s IT Governance Framework explicitly calls out cloud provider lock-in as a risk to manage. AWS API Gateway&rsquo;s VTL templates and authoriser model are not portable. Kong&rsquo;s declarative config can be migrated to a self-hosted cluster. If your institution&rsquo;s cloud strategy requires gateway portability, Kong with a cloud-agnostic Kubernetes platform is the lower lock-in option.</li>
+            <li><strong>Who will operate it?</strong> AWS API Gateway requires almost no operational staffing for the gateway itself, but it requires significant IaC and security-policy expertise to configure correctly. Kong requires operational staffing for the gateway, but the configuration is more inspectable and debuggable. The right answer depends on the skill profile of the platform team, not on the product feature list.</li>
+          </ul>
+
+          <p>For a greenfield API programme on AWS &mdash; cloud-native backend, small team, no existing gateway investment &mdash; AWS API Gateway REST API with WAF and a Lambda authoriser is the correct starting point. Add Kong later if the consumer management and developer portal requirements outgrow what API Gateway provides natively. For a migration from IBM API Connect in a hybrid/on-prem environment, Kong is the closer semantic fit and the lower lock-in choice.</p>
+
+          <nav class="article-nav">
+            <a href="../api-gateway.html">
+              <div class="article-nav__label">&larr; Back to</div>
+              <div class="article-nav__title">API Gateway</div>
+            </a>
+            <a href="kong-and-envoy.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Kong &amp; Envoy at the Edge &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){
+          if (s.offsetTop <= fromTop) current = s.id;
+        });
+        links.forEach(function(l){
+          l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+        });
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
