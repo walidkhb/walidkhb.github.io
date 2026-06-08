@@ -1,81 +1,84 @@
 # wbadawi.info
 
-Personal website for Waleed Albadawi — enterprise technology leader, integration architect, and digital transformation specialist.
+Personal executive platform for **Waleed Albadawi** — Enterprise Technology Executive, Head of Integration at Saudi Investment Bank.
+
+A premium, restrained, board-ready brand site for CIO / CTO / Group Technology Executive positioning across Saudi banking and GCC enterprise.
+
+## Design
+
+- **Theme:** light, executive (paper + deep navy + steel gray, minimal antique gold accent)
+- **Display:** `Fraunces` (italic display serif accents only)
+- **Heading:** `Inter Tight`
+- **Body:** `Inter`
+- **Layout:** generous whitespace, subtle fades, no gimmicks
+- **Inspiration:** McKinsey / Microsoft Executive Bio / Fortune 500 CIO profile
 
 ## Stack
 
 - **Pure HTML/CSS/JS** — no build tools, no dependencies
-- **GitHub Pages** — hosted and deployed automatically via GitHub Actions
-- **Google Fonts** — Playfair Display (headings) + Inter (body)
-- **SVG icons** — inline, no external icon libraries
+- **GitHub Pages** — deployed via GitHub Actions
+- **Google Fonts** — Fraunces + Inter Tight + Inter
+- **Inline SVG icons**
 
 ## Structure
 
 ```
-├── index.html          # Home — hero, capabilities, featured work, CTA
-├── about.html          # About — background, philosophy, values
-├── experience.html     # Experience — career timeline, domain expertise
-├── projects.html       # Initiatives — strategic programs & open source
-├── expertise.html      # Expertise — skills, technologies, methodologies
-├── resume.html         # Resume/CV — printable, comprehensive
-├── contact.html        # Contact — details, areas of interest
-├── blog.html           # Insights — thought leadership perspectives
+├── index.html          # Home (hero, pillars, impact, philosophy, boardroom capabilities, perspective teaser)
+├── about.html          # Profile (executive identity, philosophy, trajectory)
+├── experience.html     # Experience (executive-language progression)
+├── projects.html       # Strategic Initiatives (case studies)
+├── expertise.html      # Boardroom Capabilities (8 disciplines + domain depth)
+├── perspective.html    # CIO Perspective (5 executive articles)
+├── resume.html         # Executive Brief (credentials, downloadable PDF)
+├── contact.html        # Contact (premium executive layout)
+├── blog.html           # Insights (working notes)
+├── technical.html      # Engineering Lab
 ├── 404.html            # Custom 404 page
-├── CNAME               # Custom domain configuration
+├── CNAME               # Custom domain
 ├── robots.txt          # Search engine directives
-├── sitemap.xml         # XML sitemap for SEO
+├── sitemap.xml         # XML sitemap
 ├── assets/
-│   ├── css/style.css   # Complete design system & styles
-│   ├── js/main.js      # Navigation, scroll effects, animations
-│   └── img/favicon.svg # SVG favicon
-└── .github/
-    └── workflows/
-        └── pages.yml   # GitHub Actions deployment workflow
+│   ├── css/style.css   # Design system — navy/white/steel/gold
+│   ├── js/main.js      # Header, mobile menu, reveal animations
+│   └── img/favicon.svg # Executive monogram
+└── .github/workflows/  # GitHub Actions deployment
 ```
 
-## Setup
+## Editing
 
-1. **Fork or clone** this repository
-2. **Enable GitHub Pages**: Settings > Pages > Source: GitHub Actions
-3. **Custom domain** (optional): Update `CNAME` with your domain, then configure DNS:
-   - `A` record → `185.199.108.153` (and .109, .110, .111)
-   - `CNAME` record for `www` → `walidkhb.github.io`
+All content lives in plain HTML files. Update the relevant `.html` file, commit, push. GitHub Actions deploys within ~60 seconds.
 
-## Updating Content
+### Key files to personalize
 
-All content is in plain HTML files. To update:
+- **`index.html`** — hero, pillars, impact metrics, capabilities grid
+- **`about.html`** — profile narrative, leadership philosophy, trajectory
+- **`experience.html`** — career timeline (executive language)
+- **`expertise.html`** — boardroom capabilities + domain depth
+- **`projects.html`** — strategic initiatives + institutional significance
+- **`perspective.html`** — CIO Perspective articles
+- **`resume.html`** — executive brief + downloadable PDF (uses `window.print()`)
+- **`contact.html`** — direct contact + areas of engagement
 
-1. Edit the relevant `.html` file
-2. Commit and push to `master`
-3. GitHub Actions deploys automatically (typically under 60 seconds)
+### Design tokens (`assets/css/style.css`)
 
-### Key files to personalize:
-- **`index.html`** — Hero text, capability cards, featured initiatives
-- **`about.html`** — Background story, philosophy, values
-- **`experience.html`** — Career timeline entries
-- **`expertise.html`** — Skill tags and categories
-- **`resume.html`** — CV content (also supports Print/PDF)
-- **`contact.html`** — Contact details and social links
-
-### Design tokens (in `assets/css/style.css`):
-- Colors: `--color-primary`, `--color-accent`, etc.
-- Fonts: `--font-heading`, `--font-body`
-- Spacing: `--space-xs` through `--space-2xl`
+- **Palette:** `--navy-900`, `--paper`, `--steel-*`, `--gold-500`, `--accent`
+- **Fonts:** `--font-display` (Fraunces), `--font-heading` (Inter Tight), `--font-body` (Inter)
+- **Spacing:** `--space-xs` through `--space-2xl`
+- **Sections:** `.section--alt`, `.section--soft`, `.section--dark`
 
 ## Custom Domain
 
-The site is configured for `wbadawi.info` via the `CNAME` file. DNS must point to GitHub Pages IPs. See [GitHub's custom domain docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site) for details.
+Configured for `wbadawi.info` via `CNAME`. DNS must point to GitHub Pages IPs.
 
-## Future Enhancements
+## Future Additions
 
-- Add a profile photo to the hero and about sections
-- Expand blog/insights with full article pages
-- Add dark mode toggle
-- Add LinkedIn and other social media links
-- Add project screenshots and case study detail pages
-- Implement a contact form via Formspree or similar
-- Add structured data (JSON-LD) for enhanced search results
-- Add Open Graph images for social sharing previews
+- Executive portrait photo (replace the monogram in `hero__portrait`)
+- Downloadable PDF brief generated from `resume.html` print stylesheet
+- Speaking / panel section populated as engagements happen
+- Recommendations populated as collected (LinkedIn export)
+- Multilingual surface (Arabic) for GCC executive audiences
+- Press / media kit page
+- Long-form CIO Perspective articles on individual pages with deeper SEO
 
 ## License
 

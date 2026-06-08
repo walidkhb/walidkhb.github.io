@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Google tag (gtag.js) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -10,30 +10,59 @@
     gtag('js', new Date());
     gtag('config', 'G-CM7GZQSLWB');
   </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Page Not Found — Waleed Albadawi</title>
-  <meta name="description" content="The page you're looking for doesn't exist. Return to Waleed Albadawi's enterprise technology leadership portfolio.">
+  <meta name="description" content="The page you are looking for is not available. Return to Waleed Albadawi's executive technology leadership platform.">
   <meta name="robots" content="noindex">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/img/favicon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/img/favicon-192.png">
   <link rel="apple-touch-icon" href="assets/img/favicon-192.png">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    .error-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
-    .error-page h1 { font-size: 6rem; color: var(--color-border); margin-bottom: 1rem; }
+    .error-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: linear-gradient(180deg, var(--navy-950) 0%, var(--navy-900) 100%);
+      color: #fff;
+      padding: 4rem 1rem;
+    }
+    .error-page h1 {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 400;
+      font-size: clamp(5rem, 14vw, 9rem);
+      color: var(--gold-400);
+      margin-bottom: 1rem;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+    }
+    .error-page h2 { color: #fff; margin-bottom: 1.25rem; }
+    .error-page p { color: var(--ink-inverse-soft); max-width: 480px; margin: 0 auto 2rem; }
+    .error-page__nav {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
   <section class="error-page">
-    <div class="container">
+    <div>
       <h1>404</h1>
-      <h2 class="mb-3">Page not found.</h2>
-      <p class="lead mb-4">The page you're looking for doesn't exist or has been moved.</p>
-      <a href="index.html" class="btn btn--primary">Back to Home</a>
+      <h2>This page is no longer here.</h2>
+      <p class="lead">The page you are looking for does not exist or has been moved. Return to the main executive profile or open a conversation.</p>
+      <div class="error-page__nav">
+        <a href="index.html" class="btn btn--primary">Return Home</a>
+        <a href="contact.html" class="btn btn--outline">Open a Conversation</a>
+      </div>
     </div>
   </section>
 </body>
