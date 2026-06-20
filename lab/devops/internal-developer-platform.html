@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevOps &amp; Platform Engineering &mdash; Internal Developer Platform &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Building a self-service internal developer platform for integration teams: Backstage portal, golden-path scaffolders, Crossplane infrastructure provisioning, and the catalog patterns that turn repeated ticket-filing into reproducible developer workflows.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="DevOps &amp; Platform Engineering &mdash; Internal Developer Platform for Integration Teams">
+  <meta property="og:description" content="Backstage, golden paths, scaffolders &mdash; building self-service IDP for integration teams without a snowflake per team.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/devops/internal-developer-platform.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Internal Developer Platform for Integration Teams &mdash; Backstage &amp; Golden Paths">
+  <meta name="twitter:description" content="Backstage, scaffolders, and golden paths for integration teams on OpenShift.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/devops/internal-developer-platform.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Internal Developer Platform for Integration Teams: Backstage, Golden Paths &amp; Scaffolders on OpenShift",
+    "description": "Building a self-service internal developer platform for integration teams: Backstage portal, golden-path scaffolders, Crossplane infrastructure provisioning, and the catalog patterns that turn repeated ticket-filing into reproducible developer workflows.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-06-20",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/devops/internal-developer-platform.html",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/technical.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform</a><span>/</span>Internal Developer Platform</div>
+          <span class="overline">Lab Article</span>
+          <h1>DevOps &amp; Platform Engineering</h1>
+          <p class="lead">Building a self-service internal developer platform for integration teams: Backstage as the developer portal, golden-path scaffolders that generate production-ready integration skeletons, Crossplane for infrastructure provisioning on demand, and the catalog discipline that prevents the IDP from becoming yet another snowflake.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#why-idp">Why self-service fails</a></li>
+            <li><a href="#backstage">Backstage portal</a></li>
+            <li><a href="#scaffolders">Scaffolder templates</a></li>
+            <li><a href="#golden-paths">Golden paths</a></li>
+            <li><a href="#catalog">Software catalog</a></li>
+            <li><a href="#crossplane">Infrastructure on demand</a></li>
+            <li><a href="#rbac">RBAC &amp; multi-tenancy</a></li>
+            <li><a href="#metrics">IDP metrics</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Backstage 1.x / OpenShift 4.x / Tekton / Crossplane / Helm</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Integration teams in financial services operate under a peculiar kind of friction. Spinning up a new integration service requires a Jira ticket to request a namespace, another to get a Kafka topic created, a third to have the MQ queue configured, a fourth for the Vault secret path, and then a wait &mdash; often measured in days &mdash; while each team processes the request in sequence. By the time the integration engineer has an environment they can write code against, three of them have switched to other work and the original deadline has moved.</p>
+          <p>An Internal Developer Platform (IDP) collapses that queue. The developer fills out a form, the scaffolder creates the repo from a template, the Tekton pipeline wires up CI, and Crossplane provisions the Kafka topic and namespace in a single reconcile loop. The platform team&rsquo;s job is to build and maintain the paved path; the integration team&rsquo;s job is to write the integration logic, not the scaffolding around it.</p>
+          <p>The trade-off that most teams underestimate: building an IDP is a significant engineering investment with delayed payback. The first three months feel like you are solving the wrong problem. The payback arrives at scale &mdash; when 15 teams are onboarding simultaneously and none of them are filing tickets.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">IDP is a product, not a project</div>
+            <p>The failure mode for most IDPs is treating them as a one-time build. Backstage requires continuous maintenance: plugin updates, catalog data quality, scaffolder templates that drift as platform conventions evolve. Assign a product owner to the IDP, maintain a public roadmap, and collect NPS from the integration teams who use it. If your IDP doesn&rsquo;t have a product owner, it will be abandoned in 12 months.</p>
+          </div>
+
+          <h2 id="why-idp">Why self-service fails without a platform</h2>
+          <p>Self-service attempts without a platform follow a predictable arc. A motivated platform engineer writes a bash script or an Ansible playbook that automates the ticket-filing sequence. The script works for one team&rsquo;s setup, breaks when another team has a slightly different namespace convention, gets forked, and within six months there are seven versions of the onboarding script, none of which are authoritative.</p>
+          <p>The underlying problem is that &ldquo;self-service&rdquo; without abstractions is just automation of the ticket. The developer still needs to know which Kafka cluster to target, which secret store path to use, which Helm chart version is current, which namespace naming convention applies to their service type. An IDP hides those decisions behind a form backed by opinionated defaults; the platform team encodes the conventions once in the scaffolder, and every team who uses it gets the current convention automatically.</p>
+
+          <div class="diagram" role="img" aria-label="IDP architecture: Backstage portal, scaffolders, Tekton, Crossplane, and cluster state">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="idp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="idp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="idp3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                </defs>
+
+                <!-- Developer -->
+                <rect x="20" y="150" width="110" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="75" y="171" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Developer</text>
+                <text x="75" y="187" text-anchor="middle" fill="#71717a" font-size="9">fills IDP form</text>
+
+                <!-- Backstage -->
+                <rect x="175" y="60" width="150" height="60" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="250" y="84" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Backstage</text>
+                <text x="250" y="100" text-anchor="middle" fill="#71717a" font-size="9">portal &middot; catalog &middot; scaffolder</text>
+
+                <!-- Git -->
+                <rect x="385" y="60" width="130" height="60" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="450" y="84" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">Git</text>
+                <text x="450" y="100" text-anchor="middle" fill="#71717a" font-size="9">app repo + env repo</text>
+
+                <!-- Tekton -->
+                <rect x="570" y="60" width="130" height="60" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="635" y="84" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">Tekton</text>
+                <text x="635" y="100" text-anchor="middle" fill="#71717a" font-size="9">CI pipeline triggered</text>
+
+                <!-- Crossplane -->
+                <rect x="175" y="240" width="150" height="60" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="250" y="264" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Crossplane</text>
+                <text x="250" y="280" text-anchor="middle" fill="#71717a" font-size="9">provisions infra claims</text>
+
+                <!-- Kafka / MQ / Vault -->
+                <rect x="385" y="240" width="130" height="60" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="450" y="261" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">Kafka &middot; MQ</text>
+                <text x="450" y="278" text-anchor="middle" fill="#71717a" font-size="9">topics &middot; queues</text>
+                <text x="450" y="293" text-anchor="middle" fill="#71717a" font-size="9">Vault secret paths</text>
+
+                <!-- Namespace -->
+                <rect x="570" y="240" width="130" height="60" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="635" y="264" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">OCP Namespace</text>
+                <text x="635" y="280" text-anchor="middle" fill="#71717a" font-size="9">RBAC &middot; NetworkPolicy</text>
+                <text x="635" y="296" text-anchor="middle" fill="#71717a" font-size="9">ResourceQuota</text>
+
+                <!-- ArgoCD -->
+                <rect x="385" y="155" width="130" height="55" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="450" y="178" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">ArgoCD</text>
+                <text x="450" y="194" text-anchor="middle" fill="#71717a" font-size="9">syncs env repo to cluster</text>
+
+                <!-- Arrows: Developer -> Backstage -->
+                <line x1="130" y1="175" x2="173" y2="110" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#idp1)"/>
+
+                <!-- Backstage -> Git -->
+                <line x1="325" y1="90" x2="383" y2="90" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#idp1)"/>
+
+                <!-- Git -> Tekton -->
+                <line x1="515" y1="90" x2="568" y2="90" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#idp1)"/>
+
+                <!-- Backstage -> Crossplane -->
+                <line x1="250" y1="120" x2="250" y2="238" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#idp2)"/>
+
+                <!-- Crossplane -> Kafka/MQ -->
+                <line x1="325" y1="270" x2="383" y2="270" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#idp2)"/>
+
+                <!-- Crossplane -> Namespace -->
+                <line x1="325" y1="280" x2="568" y2="280" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#idp2)"/>
+
+                <!-- Tekton -> ArgoCD (via git bump) -->
+                <line x1="635" y1="120" x2="510" y2="153" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#idp1)"/>
+
+                <!-- ArgoCD -> Namespace -->
+                <line x1="515" y1="183" x2="568" y2="260" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#idp3)"/>
+
+                <!-- Labels -->
+                <text x="148" y="133" fill="#00d4aa" font-size="8">scaffold</text>
+                <text x="338" y="83" fill="#00d4aa" font-size="8">creates repo</text>
+                <text x="248" y="192" fill="#a78bfa" font-size="8">XRD claim</text>
+                <text x="540" y="148" fill="#fbbf24" font-size="8">image+tag</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; IDP flow: Backstage scaffolds the repo and raises infrastructure claims; Crossplane provisions Kafka/MQ/namespace; ArgoCD reconciles deployments</div>
+          </div>
+
+          <h2 id="backstage">Backstage portal</h2>
+          <p>Backstage is Spotify&rsquo;s open-source developer portal, now a CNCF incubating project. Its three core capabilities for integration teams are the <strong>Software Catalog</strong> (a registry of all services, APIs, and integrations), the <strong>Scaffolder</strong> (a form-based service generator backed by git templates), and <strong>TechDocs</strong> (documentation pulled from the repo and rendered in the portal).</p>
+          <p>Running Backstage on OpenShift requires a PostgreSQL instance (the catalog backend), a Kubernetes service account with read access to the cluster, and OAuth integration with your IdP (Entra ID or Keycloak). The Red Hat Developer Hub, which is the supported downstream of Backstage, ships as an Operator on OpenShift and is the supported path for production use under a SAMA audit.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>app-config.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">app</span>:
+  <span class="tok-k">title</span>: <span class="tok-s">SAIB Integration Platform</span>
+  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.saib.internal</span>
+
+<span class="tok-k">backend</span>:
+  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.saib.internal</span>
+  <span class="tok-k">database</span>:
+    <span class="tok-k">client</span>: <span class="tok-s">pg</span>
+    <span class="tok-k">connection</span>:
+      <span class="tok-k">host</span>: <span class="tok-s">${POSTGRES_HOST}</span>
+      <span class="tok-k">port</span>: <span class="tok-n">5432</span>
+      <span class="tok-k">user</span>: <span class="tok-s">${POSTGRES_USER}</span>
+      <span class="tok-k">password</span>: <span class="tok-s">${POSTGRES_PASSWORD}</span>
+      <span class="tok-k">database</span>: <span class="tok-s">backstage</span>
+
+<span class="tok-k">auth</span>:
+  <span class="tok-k">providers</span>:
+    <span class="tok-k">microsoft</span>:
+      <span class="tok-k">development</span>:
+        <span class="tok-k">clientId</span>: <span class="tok-s">${ENTRA_CLIENT_ID}</span>
+        <span class="tok-k">clientSecret</span>: <span class="tok-s">${ENTRA_CLIENT_SECRET}</span>
+        <span class="tok-k">tenantId</span>: <span class="tok-s">${ENTRA_TENANT_ID}</span>
+
+<span class="tok-k">catalog</span>:
+  <span class="tok-k">providers</span>:
+    <span class="tok-k">github</span>:
+      <span class="tok-k">integrationOrg</span>:
+        <span class="tok-k">organization</span>: <span class="tok-s">saib-integration</span>
+        <span class="tok-k">catalogPath</span>: <span class="tok-s">/catalog-info.yaml</span>
+        <span class="tok-k">filters</span>:
+          <span class="tok-k">branch</span>: <span class="tok-s">main</span>
+          <span class="tok-k">repository</span>: <span class="tok-s">.*-integration</span>   <span class="tok-c"># only integration repos</span>
+        <span class="tok-k">schedule</span>:
+          <span class="tok-k">frequency</span>: { <span class="tok-k">minutes</span>: <span class="tok-n">30</span> }
+          <span class="tok-k">timeout</span>: { <span class="tok-k">minutes</span>: <span class="tok-n">3</span> }</code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Red Hat Developer Hub vs. upstream Backstage</div>
+            <p>Upstream Backstage upgrades weekly and community plugins break on every minor release. For a bank environment where every dependency change needs a vulnerability scan, use Red Hat Developer Hub (RHDH). It bundles a curated, tested set of plugins, upgrades quarterly, and carries enterprise support. The plugin catalog is smaller but everything in it works together. Accept the constraint; the operational stability is worth more than the bleeding-edge plugin choice.</p>
+          </div>
+
+          <h2 id="scaffolders">Scaffolder templates</h2>
+          <p>A scaffolder template is a Backstage entity stored in git that defines a form, a set of parameters, and a sequence of steps that execute when the form is submitted. Steps are Backstage actions: create a git repo, open a PR, create a Crossplane claim, trigger a Tekton pipeline. The template itself is YAML; the form renders in the Backstage UI.</p>
+          <p>For integration teams, the two most valuable templates are the <strong>ACE Flow service template</strong> (creates an IBM ACE project skeleton with a Tekton pipeline and an ArgoCD Application) and the <strong>Kafka consumer template</strong> (creates a Java/Quarkus service skeleton with the correct Kafka consumer configuration, a topic claim, and a Vault secret claim for the SASL credentials).</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ace-flow-template.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">scaffolder.backstage.io/v1beta3</span>
+<span class="tok-k">kind</span>: <span class="tok-s">Template</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">ace-flow-service</span>
+  <span class="tok-k">title</span>: <span class="tok-s">IBM ACE Integration Flow</span>
+  <span class="tok-k">description</span>: <span class="tok-s">New IBM ACE message flow with CI/CD, ArgoCD, and Vault secrets</span>
+  <span class="tok-k">tags</span>: [<span class="tok-s">ace</span>, <span class="tok-s">ibm</span>, <span class="tok-s">integration</span>]
+<span class="tok-k">spec</span>:
+  <span class="tok-k">owner</span>: <span class="tok-s">platform-engineering</span>
+  <span class="tok-k">type</span>: <span class="tok-s">integration-service</span>
+  <span class="tok-k">parameters</span>:
+    - <span class="tok-k">title</span>: <span class="tok-s">Service details</span>
+      <span class="tok-k">required</span>: [<span class="tok-s">name</span>, <span class="tok-s">domain</span>, <span class="tok-s">owner</span>]
+      <span class="tok-k">properties</span>:
+        <span class="tok-k">name</span>:
+          <span class="tok-k">title</span>: <span class="tok-s">Service name</span>
+          <span class="tok-k">type</span>: <span class="tok-s">string</span>
+          <span class="tok-k">pattern</span>: <span class="tok-s">'^[a-z][a-z0-9-]{2,30}$'</span>
+        <span class="tok-k">domain</span>:
+          <span class="tok-k">title</span>: <span class="tok-s">Business domain</span>
+          <span class="tok-k">type</span>: <span class="tok-s">string</span>
+          <span class="tok-k">enum</span>: [<span class="tok-s">payments</span>, <span class="tok-s">lending</span>, <span class="tok-s">treasury</span>, <span class="tok-s">retail</span>, <span class="tok-s">corporate</span>]
+        <span class="tok-k">owner</span>:
+          <span class="tok-k">title</span>: <span class="tok-s">Team</span>
+          <span class="tok-k">type</span>: <span class="tok-s">string</span>
+          <span class="tok-k">ui:field</span>: <span class="tok-s">OwnerPicker</span>
+          <span class="tok-k">ui:options</span>: { <span class="tok-k">allowedKinds</span>: [<span class="tok-s">Group</span>] }
+  <span class="tok-k">steps</span>:
+    - <span class="tok-k">id</span>: <span class="tok-s">fetch-template</span>
+      <span class="tok-k">name</span>: <span class="tok-s">Fetch skeleton</span>
+      <span class="tok-k">action</span>: <span class="tok-s">fetch:template</span>
+      <span class="tok-k">input</span>:
+        <span class="tok-k">url</span>: <span class="tok-s">./skeleton</span>
+        <span class="tok-k">values</span>:
+          <span class="tok-k">name</span>: <span class="tok-s">${{ parameters.name }}</span>
+          <span class="tok-k">domain</span>: <span class="tok-s">${{ parameters.domain }}</span>
+          <span class="tok-k">owner</span>: <span class="tok-s">${{ parameters.owner }}</span>
+
+    - <span class="tok-k">id</span>: <span class="tok-s">publish</span>
+      <span class="tok-k">name</span>: <span class="tok-s">Create repository</span>
+      <span class="tok-k">action</span>: <span class="tok-s">publish:github</span>
+      <span class="tok-k">input</span>:
+        <span class="tok-k">repoUrl</span>: <span class="tok-s">github.com?owner=saib-integration&repo=${{ parameters.name }}-integration</span>
+        <span class="tok-k">defaultBranch</span>: <span class="tok-s">main</span>
+        <span class="tok-k">repoVisibility</span>: <span class="tok-s">private</span>
+        <span class="tok-k">topics</span>: [<span class="tok-s">integration</span>, <span class="tok-s">${{ parameters.domain }}</span>, <span class="tok-s">ace</span>]
+
+    - <span class="tok-k">id</span>: <span class="tok-s">infra-claim</span>
+      <span class="tok-k">name</span>: <span class="tok-s">Provision infrastructure</span>
+      <span class="tok-k">action</span>: <span class="tok-s">kubernetes:apply</span>
+      <span class="tok-k">input</span>:
+        <span class="tok-k">clusterRef</span>: <span class="tok-s">dev-cluster</span>
+        <span class="tok-k">namespace</span>: <span class="tok-s">crossplane-system</span>
+        <span class="tok-k">manifest</span>: <span class="tok-s">./claims/integration-env-claim.yaml</span>
+
+    - <span class="tok-k">id</span>: <span class="tok-s">register</span>
+      <span class="tok-k">name</span>: <span class="tok-s">Register in catalog</span>
+      <span class="tok-k">action</span>: <span class="tok-s">catalog:register</span>
+      <span class="tok-k">input</span>:
+        <span class="tok-k">repoContentsUrl</span>: <span class="tok-s">${{ steps['publish'].output.repoContentsUrl }}</span>
+        <span class="tok-k">catalogInfoPath</span>: <span class="tok-s">/catalog-info.yaml</span></code></pre>
+          </div>
+
+          <p>The key design choice: keep templates thin. A template should set names, owners, and domain; it should not encode platform implementation details like Kafka cluster hostnames or Vault paths. Those come from the Crossplane composition, which the platform team controls. If a team forks the template to hard-code a hostname, the template has failed at its job.</p>
+
+          <h2 id="golden-paths">Golden paths</h2>
+          <p>A golden path is the happy path the platform team has paved, tested, and recommends. It is not the only path &mdash; teams can deviate with explicit approval &mdash; but it is the path that requires zero ticket-filing and comes with platform support. For integration teams on OpenShift running ACE and Kafka, three golden paths cover 90% of new work:</p>
+
+          <table>
+            <thead>
+              <tr><th>Path</th><th>Stack</th><th>Scaffolder template</th><th>Time to first deploy</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>ACE flow with MQ</td><td>IBM ACE 12 &middot; MQ 9 &middot; OpenShift</td><td>ace-flow-service</td><td>&lt;30 min</td></tr>
+              <tr><td>Kafka consumer/producer</td><td>Quarkus 3.x &middot; Strimzi &middot; Vault</td><td>kafka-consumer-service</td><td>&lt;20 min</td></tr>
+              <tr><td>REST API integration</td><td>Camel K 2 &middot; OpenShift &middot; API Connect</td><td>camel-rest-integration</td><td>&lt;25 min</td></tr>
+            </tbody>
+          </table>
+
+          <p>&ldquo;Time to first deploy&rdquo; means from filling the scaffolder form to a running pod in the dev cluster. That metric is the north star for IDP quality &mdash; if it drifts above an hour, developers stop using the IDP and file tickets again.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Golden path drift is silent and lethal</div>
+            <p>A golden path that has not been updated in six months will silently conflict with a cluster upgrade, a Vault namespace change, or a new RBAC policy. Run the golden paths through their own CI pipeline: a nightly job that spins up a test cluster, runs each scaffolder template end-to-end, and alerts if the &ldquo;time to first deploy&rdquo; SLO breaks. Treat the IDP like a product with a test suite.</p>
+          </div>
+
+          <h2 id="catalog">Software catalog</h2>
+          <p>The Backstage Software Catalog is a registry of every service, API, resource, and team in the integration estate. Its value is not discovery &mdash; engineers already know what exists &mdash; it is operational: every component has a listed owner, a runbook link, an on-call contact, and a dependency graph. When an integration fails at 2&nbsp;a.m., the on-call engineer needs to know who owns the upstream API, what SLA it carries, and where the runbook is. The catalog answers those questions without a Slack DM.</p>
+          <p>Every repo created by the scaffolder includes a <code>catalog-info.yaml</code> at root. Backstage ingests it and registers the component automatically. The platform team owns the schema; service teams fill in the values.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>catalog-info.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">backstage.io/v1alpha1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">Component</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments-ips-adapter</span>
+  <span class="tok-k">description</span>: <span class="tok-s">IPS payment instruction adapter — ISO 20022 to ACH transform</span>
+  <span class="tok-k">annotations</span>:
+    <span class="tok-k">backstage.io/techdocs-ref</span>: <span class="tok-s">dir:.</span>
+    <span class="tok-k">github.com/project-slug</span>: <span class="tok-s">saib-integration/payments-ips-adapter-integration</span>
+    <span class="tok-k">argocd/app-name</span>: <span class="tok-s">payments-ips-adapter-prod</span>
+  <span class="tok-k">tags</span>: [<span class="tok-s">payments</span>, <span class="tok-s">iso20022</span>, <span class="tok-s">ace</span>, <span class="tok-s">ips</span>]
+  <span class="tok-k">links</span>:
+    - <span class="tok-k">url</span>: <span class="tok-s">https://wiki.saib.internal/runbooks/payments-ips-adapter</span>
+      <span class="tok-k">title</span>: <span class="tok-s">Runbook</span>
+      <span class="tok-k">icon</span>: <span class="tok-s">docs</span>
+    - <span class="tok-k">url</span>: <span class="tok-s">https://monitoring.saib.internal/d/payments-ips</span>
+      <span class="tok-k">title</span>: <span class="tok-s">Dashboard</span>
+      <span class="tok-k">icon</span>: <span class="tok-s">dashboard</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">type</span>: <span class="tok-s">integration-service</span>
+  <span class="tok-k">lifecycle</span>: <span class="tok-s">production</span>
+  <span class="tok-k">owner</span>: <span class="tok-s">group:payments-integration-team</span>
+  <span class="tok-k">system</span>: <span class="tok-s">payments-platform</span>
+  <span class="tok-k">dependsOn</span>:
+    - <span class="tok-s">component:ips-clearing-api</span>
+    - <span class="tok-s">resource:mq-payments-cluster</span>
+  <span class="tok-k">providesApis</span>:
+    - <span class="tok-s">payments-ips-adapter-api</span></code></pre>
+          </div>
+
+          <p>Catalog data quality degrades if teams see it as bureaucracy. The platform team&rsquo;s job is to make the catalog useful enough that teams fill it in because it helps them, not because they are told to. Wiring the ArgoCD sync status, the Tekton pipeline status, and the last deploy date into the catalog entity page is usually enough to tip the balance &mdash; teams start maintaining the catalog to get the operational view for free.</p>
+
+          <h2 id="crossplane">Infrastructure on demand</h2>
+          <p>Crossplane is the Kubernetes-native infrastructure provisioner. Rather than filing a ticket to the Kafka admin team, an integration team submits a <code>KafkaTopic</code> claim; the Crossplane composition resolves it to the correct Strimzi cluster, creates the topic with the right partition count and retention policy, and writes the connection details to a Vault secret that the service can consume.</p>
+          <p>The key abstraction is the <strong>Composite Resource Definition (XRD)</strong>: the platform team defines what the claim looks like and what the provisioning rules are; the service team only sees the claim API. They do not need to know which Strimzi cluster is the target, what the naming convention for topic names is, or what retention policy SAMA requires for financial event data.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>xrd-integration-env.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Composite Resource Definition — what service teams submit</span>
+<span class="tok-k">apiVersion</span>: <span class="tok-s">apiextensions.crossplane.io/v1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">CompositeResourceDefinition</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">xintegrationenvironments.platform.saib.internal</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">group</span>: <span class="tok-s">platform.saib.internal</span>
+  <span class="tok-k">names</span>:
+    <span class="tok-k">kind</span>: <span class="tok-s">XIntegrationEnvironment</span>
+    <span class="tok-k">plural</span>: <span class="tok-s">xintegrationenvironments</span>
+  <span class="tok-k">claimNames</span>:
+    <span class="tok-k">kind</span>: <span class="tok-s">IntegrationEnvironment</span>    <span class="tok-c"># what teams create</span>
+    <span class="tok-k">plural</span>: <span class="tok-s">integrationenvironments</span>
+  <span class="tok-k">versions</span>:
+    - <span class="tok-k">name</span>: <span class="tok-s">v1alpha1</span>
+      <span class="tok-k">served</span>: <span class="tok-n">true</span>
+      <span class="tok-k">referenceable</span>: <span class="tok-n">true</span>
+      <span class="tok-k">schema</span>:
+        <span class="tok-k">openAPIV3Schema</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">object</span>
+          <span class="tok-k">properties</span>:
+            <span class="tok-k">spec</span>:
+              <span class="tok-k">type</span>: <span class="tok-s">object</span>
+              <span class="tok-k">required</span>: [<span class="tok-s">serviceName</span>, <span class="tok-s">domain</span>, <span class="tok-s">tier</span>]
+              <span class="tok-k">properties</span>:
+                <span class="tok-k">serviceName</span>: { <span class="tok-k">type</span>: <span class="tok-s">string</span> }
+                <span class="tok-k">domain</span>:
+                  <span class="tok-k">type</span>: <span class="tok-s">string</span>
+                  <span class="tok-k">enum</span>: [<span class="tok-s">payments</span>, <span class="tok-s">lending</span>, <span class="tok-s">treasury</span>, <span class="tok-s">retail</span>, <span class="tok-s">corporate</span>]
+                <span class="tok-k">tier</span>:
+                  <span class="tok-k">type</span>: <span class="tok-s">string</span>
+                  <span class="tok-k">enum</span>: [<span class="tok-s">dev</span>, <span class="tok-s">test</span>, <span class="tok-s">prod</span>]
+                <span class="tok-k">kafkaTopics</span>:
+                  <span class="tok-k">type</span>: <span class="tok-s">array</span>
+                  <span class="tok-k">items</span>:
+                    <span class="tok-k">type</span>: <span class="tok-s">object</span>
+                    <span class="tok-k">required</span>: [<span class="tok-s">name</span>, <span class="tok-s">partitions</span>]
+                    <span class="tok-k">properties</span>:
+                      <span class="tok-k">name</span>: { <span class="tok-k">type</span>: <span class="tok-s">string</span> }
+                      <span class="tok-k">partitions</span>: { <span class="tok-k">type</span>: <span class="tok-s">integer</span>, <span class="tok-k">minimum</span>: <span class="tok-n">1</span>, <span class="tok-k">maximum</span>: <span class="tok-n">48</span> }
+                      <span class="tok-k">retentionMs</span>: { <span class="tok-k">type</span>: <span class="tok-s">integer</span> }</code></pre>
+          </div>
+
+          <p>The composition that backs this XRD creates the OpenShift namespace, the Strimzi <code>KafkaTopic</code> objects, the Vault secret path, and an <code>ExternalSecret</code> that copies the Kafka credentials into the namespace. The service team submits one claim; four resources are provisioned in the correct order with the correct naming conventions. That is the value of Crossplane over Terraform: the claim is reconciled continuously &mdash; if someone deletes the namespace manually, Crossplane recreates it.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Composition complexity compounds</div>
+            <p>Crossplane compositions get complex fast when you try to encode every edge case. Keep the composition for the common path; let edge cases raise a ticket. A composition that handles 80% of cases cleanly is more valuable than one that handles 100% of cases messily. If a team&rsquo;s requirements cannot be expressed in the claim schema, that is a signal the requirements need to be discussed, not that the schema needs to be extended.</p>
+          </div>
+
+          <h2 id="rbac">RBAC &amp; multi-tenancy</h2>
+          <p>Integration teams in a bank are not equal in their trust level. The payments team&rsquo;s namespace has PCI-DSS classification; the retail banking team&rsquo;s namespace does not. Both use the same IDP, but the Crossplane composition that provisions a payments-domain service must enforce stricter NetworkPolicy (deny all egress except to known payment system CIDRs), a more restrictive ResourceQuota, and a Vault policy that limits which secret paths the service account can read.</p>
+
+          <p>The approach that scales: encode the classification in the claim schema (<code>domain: payments</code>), and use the composition to inject domain-specific constraints. The service team never writes NetworkPolicy; the composition injects the correct policy based on domain. Auditors can then verify that every namespace in the payments domain has the required NetworkPolicy by querying the Crossplane composite resources rather than inspecting 40 namespaces individually.</p>
+
+          <ol class="step-list">
+            <li>
+              <strong>Define domain groups in Backstage.</strong> Each business domain (payments, lending, treasury, retail, corporate) maps to a Backstage Group entity. Users belong to one or more groups. The group membership drives which scaffolder templates they can access and which domains their claims can target.
+            </li>
+            <li>
+              <strong>Enforce claim namespace via OPA / Kyverno.</strong> A Kyverno policy validates that every <code>IntegrationEnvironment</code> claim is submitted from a namespace owned by the declaring team. A claim targeting <code>domain: payments</code> submitted from the lending team&rsquo;s namespace is rejected at admission.
+            </li>
+            <li>
+              <strong>Map domain to Vault policy in the composition.</strong> The composition reads the <code>domain</code> field and applies the corresponding Vault policy to the generated service account. The payments domain policy allows reads from <code>secret/payments/*</code>; it does not allow reads from <code>secret/treasury/*</code>.
+            </li>
+            <li>
+              <strong>Inject NetworkPolicy from the composition.</strong> Each domain has a baseline NetworkPolicy stored in a ConfigMap in the crossplane namespace. The composition patches the correct policy into the provisioned namespace. Override policies require a platform team PR and a change record.
+            </li>
+            <li>
+              <strong>Surface the policy in the Backstage catalog.</strong> The catalog entity for each service shows the effective NetworkPolicy, the Vault policy, and the ResourceQuota. Auditors get a single pane; platform engineers can see immediately if a service is mis-classified.
+            </li>
+            <li>
+              <strong>Test multi-tenancy with negative-path assertions.</strong> Add a nightly CI job that tries to submit a cross-domain claim and verifies it is rejected. A policy that is never tested is a policy that will fail silently when it matters.
+            </li>
+          </ol>
+
+          <h2 id="metrics">IDP metrics</h2>
+          <p>Three metrics determine whether the IDP is delivering value. Measure them weekly; trend them quarterly.</p>
+
+          <table>
+            <thead>
+              <tr><th>Metric</th><th>Target</th><th>Source</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Time-to-first-deploy (new service)</td><td>&lt;30 min</td><td>Scaffolder step timing + ArgoCD sync event</td></tr>
+              <tr><td>% services onboarded via IDP</td><td>&gt;80% new services</td><td>Catalog: component count vs. manual namespace count</td></tr>
+              <tr><td>Developer NPS (quarterly survey)</td><td>&gt;+30</td><td>Survey sent via Backstage announcements plugin</td></tr>
+            </tbody>
+          </table>
+
+          <p>A secondary metric worth tracking: <strong>ticket deflection</strong>. Count the infra-related Jira tickets filed to the platform team per month before and after IDP launch. A successful IDP should reduce that count by 60&ndash;70% within three months of reaching critical mass. If ticket deflection is low, the templates are not covering the real bottlenecks &mdash; go back and interview the teams about where they still need to file tickets.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">NPS below +30 is an early warning</div>
+            <p>Developer NPS for an IDP below +30 almost always traces back to one of three root causes: scaffolder templates that generate broken repos (the golden path broke and nobody noticed), catalog data that is stale and misleading, or documentation that exists in the portal but is three versions behind the actual behavior. Fix the highest-friction items from the NPS verbatims before adding new features. An IDP with low NPS that keeps adding features is a platform nobody trusts.</p>
+          </div>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Building the IDP in a silo</div>
+            <p>The most common IDP failure: the platform team builds in isolation for six months, launches, and discovers the templates do not match what integration teams actually need. Build in public from week one. Ship a working template that covers one golden path; get three teams using it; iterate based on feedback. Avoid the grand launch.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Treating Backstage as the IDP</div>
+            <p>Backstage is the portal layer; it is not the IDP. The IDP is the combination of the scaffolders, the Crossplane compositions, the Tekton pipeline catalog, the ArgoCD application set templates, and the Vault policies. If the Backstage instance disappears, teams should still be able to create namespaces and deploy services by submitting Crossplane claims directly. Backstage is a UX convenience; the control plane is Kubernetes.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Plugin sprawl</div>
+            <p>Backstage has hundreds of community plugins. Resist the temptation to install everything. Each plugin is a dependency that needs to be maintained, security-scanned, and tested on upgrades. Keep the core plugin set small &mdash; catalog, scaffolder, TechDocs, ArgoCD, Kubernetes &mdash; and evaluate new plugins on a quarterly cadence rather than ad hoc. A Backstage instance that tries to do everything becomes too fragile to upgrade.</p>
+          </div>
+
+          <h2 id="checklist">Production checklist</h2>
+          <ol>
+            <li>Backstage backed by PostgreSQL; config in Vault via External Secrets; no plaintext credentials in app-config.yaml.</li>
+            <li>Auth via Entra ID or Keycloak; group membership synced automatically; no manually maintained user list.</li>
+            <li>Software Catalog populated via automated GitHub discovery; stale component detection alert wired to platform team.</li>
+            <li>At least two golden-path scaffolder templates covering &gt;60% of new integration service types; each tested nightly in CI.</li>
+            <li>Crossplane compositions for namespace, Kafka topics, MQ queues, and Vault secret paths; all idempotent and drift-correcting.</li>
+            <li>Domain-based NetworkPolicy injected by Crossplane composition; no team-written NetworkPolicy in production namespaces.</li>
+            <li>Kyverno admission policy blocking cross-domain claims; negative-path tests in nightly CI.</li>
+            <li>Time-to-first-deploy SLO measured and alerted; target &lt;30 min for all golden paths.</li>
+            <li>Developer NPS collected quarterly; top verbatim items triaged into IDP backlog within 2 weeks.</li>
+            <li>IDP itself operated as a production service: SLO, on-call rotation, incident process, changelog.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="tekton-and-argocd.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Tekton &amp; ArgoCD: CI/CD for Integration Platforms</div>
+            </a>
+            <a href="../devops.html" class="article-nav__next">
+              <div class="article-nav__label">Back to</div>
+              <div class="article-nav__title">DevOps &amp; Platform &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
