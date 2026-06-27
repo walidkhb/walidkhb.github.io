@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legacy Integration &mdash; Mainframe Modernisation Roadmap &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Sequencing a multi-year mainframe migration: dependency analysis, capability slicing, parallel run patterns, IBM IIDR, and the metrics that prove progress to stakeholders.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Legacy Integration &mdash; Mainframe Modernisation Roadmap &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Sequencing a multi-year mainframe migration: dependency analysis, capability slicing, and parallel run patterns.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/legacy-integration/mainframe-modernisation-roadmap.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Legacy Integration &mdash; Mainframe Modernisation Roadmap">
+  <meta name="twitter:description" content="Sequencing a multi-year mainframe migration: dependency analysis, capability slicing, and parallel run patterns.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration/mainframe-modernisation-roadmap.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Legacy Integration: Mainframe Modernisation Roadmap",
+    "description": "Sequencing a multi-year mainframe migration: dependency analysis, capability slicing, parallel run patterns, IBM IIDR, and the metrics that prove progress.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-06-27",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/legacy-integration/mainframe-modernisation-roadmap.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Legacy Integration &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/legacy-integration.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../legacy-integration.html">Legacy Integration</a><span>/</span>Mainframe Modernisation Roadmap</div>
+          <span class="overline">Lab Article</span>
+          <h1>Legacy Integration: Mainframe Modernisation Roadmap</h1>
+          <p class="lead">Sequencing a multi-year migration: dependency analysis, capability slicing, parallel run patterns, IBM IIDR for CDC, and the metrics that prove progress to stakeholders who neither trust the estimate nor understand the architecture.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#dependency-analysis">Dependency analysis</a></li>
+            <li><a href="#capability-slicing">Capability slicing</a></li>
+            <li><a href="#migration-waves">Migration waves</a></li>
+            <li><a href="#parallel-run">Parallel run patterns</a></li>
+            <li><a href="#toolchain">Toolchain: IIDR &amp; CDC</a></li>
+            <li><a href="#metrics">Metrics that prove progress</a></li>
+            <li><a href="#risk-governance">Risk &amp; governance</a></li>
+            <li><a href="#sama-context">KSA / SAMA context</a></li>
+            <li><a href="#cutover-checklist">Cutover checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM IIDR 11.4 &middot; z/OS 2.5 &middot; IBM i 7.4 &middot; OpenShift 4.16</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Multi-year mainframe migrations fail not because the technology is hard but because the planning assumes a single team can hold the whole programme in its head across years, staffing changes, and budget cycles. The roadmap exists to break that dependency. A well-structured programme sequences work in waves, runs legacy and modern systems in parallel for long enough to build real confidence, and measures progress in units the business understands &mdash; not velocity points.</p>
+          <p>This article covers the planning and execution arc for a bank-scale mainframe modernisation: how to scope it, sequence it, run both systems in parallel, and prove progress month over month. The principles apply whether you are migrating a 1990s-era z/OS core running CICS and DB2 or an IBM i (AS/400) running RPG and DB2/400. The tools differ; the sequencing logic does not.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Prerequisite: the strangler fig pattern</div>
+            <p>This article covers the programme and tooling layer above the execution pattern. If you have not read the companion article on <a href="strangler-and-cics.html">Strangler Fig &amp; CICS</a>, start there &mdash; it covers the façade, ACL, MQ-CICS bridge, and migration step mechanics that this article builds on.</p>
+          </div>
+
+          <h2 id="dependency-analysis">Dependency analysis</h2>
+          <p>Before you sequence anything, you need to know what calls what. On a mature mainframe, this is harder than it sounds. CICS programs call other CICS programs via <code>EXEC CICS LINK</code> &mdash; a dependency invisible to most architecture docs. Batch jobs share VSAM files with online CICS programs through timing conventions, not explicit contracts. Some programs are invoked from 3270 screens that still have human operators who will tell you the program &ldquo;never runs&rdquo; until it runs at year-end.</p>
+          <p>Dependency analysis has three layers, and all three are required:</p>
+          <ul>
+            <li><strong>Static analysis.</strong> Parse JCL, PROC, and COBOL source for <code>CALL</code> and <code>EXEC CICS LINK</code> statements. Build a directed graph of who calls whom.</li>
+            <li><strong>Runtime capture.</strong> IBM IIDR CDC or SMF (System Management Facilities) records during a peak week capture actual transaction IDs and DB2 table access patterns that static analysis misses because they are computed at runtime.</li>
+            <li><strong>Data lineage.</strong> Identify which VSAM files and DB2 tables are read/written by which programs. A program with no callers but exclusive write access to a file is not a candidate for early retirement &mdash; something upstream depends on that file being populated.</li>
+          </ul>
+          <p>The output is a directed dependency graph. Run it through a visualisation tool (Neo4j or even <code>dot</code> from GraphViz) to identify clusters of tightly coupled programs &mdash; those clusters become candidate capability slices.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>extract-link-deps.sh</span><span class="code-block__lang">bash</span></div>
+<pre><code><span class="tok-c">#!/usr/bin/env bash</span>
+<span class="tok-c"># Extract EXEC CICS LINK targets from COBOL source and flag unknowns</span>
+
+<span class="tok-c"># Step 1: collect all LINK targets</span>
+grep -rh <span class="tok-s">'EXEC CICS LINK PROGRAM'</span> <span class="tok-s">./cbl/*.cbl</span> \
+  | awk <span class="tok-s">'{for(i=1;i&lt;=NF;i++) if($i=="PROGRAM(") print $(i+1)}'</span> \
+  | tr -d <span class="tok-s">'()'</span> \
+  | sort -u \
+  &gt; link-targets.txt
+
+<span class="tok-c"># Step 2: cross-reference against registered transactions</span>
+comm -<span class="tok-n">23</span> \
+  &lt;(sort link-targets.txt) \
+  &lt;(sort transaction-registry.txt) \
+  &gt; unknown-targets.txt
+
+echo <span class="tok-s">"$(wc -l &lt; link-targets.txt) LINK targets found"</span>
+echo <span class="tok-s">"$(wc -l &lt; unknown-targets.txt) targets NOT in registry &mdash; investigate before slicing"</span>
+
+<span class="tok-c"># Step 3: build adjacency list for Neo4j import</span>
+grep -rh <span class="tok-s">'EXEC CICS LINK PROGRAM'</span> <span class="tok-s">./cbl/*.cbl</span> \
+  | awk <span class="tok-s">'{src=FILENAME; gsub(/.*\//,"",src); gsub(/.cbl/,"",src);
+    for(i=1;i&lt;=NF;i++) if($i=="PROGRAM(") print src "|" $(i+1)}'</span> \
+  | tr -d <span class="tok-s">'()'</span> \
+  &gt; call-graph.csv</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Runtime surprises dwarf static analysis</div>
+            <p>Every static analysis project underestimates the runtime dependency count by at least 30%. Dynamic program calls (where the program name is built from data values at runtime), JCL <code>INCLUDE</code> chains assembled by the scheduler, and REXX scripts that invoke CICS directly via CSRV do not appear in source. Treat static analysis as the floor, not the ceiling.</p>
+          </div>
+
+          <h2 id="capability-slicing">Capability slicing</h2>
+          <p>With the dependency graph, group programs into bounded contexts. The rule: a capability slice is a set of CICS programs, DB2 tables, and VSAM files that form a coherent business function and have <em>minimal</em> cross-slice data coupling. Minimal, not zero &mdash; some coupling is inevitable and acceptable. The question is whether you can define a clear data contract at the boundary.</p>
+
+          <p>Clean slices migrate first. Messy slices get decomposed before migration:</p>
+
+          <table>
+            <thead>
+              <tr><th>Slice type</th><th>Characteristic</th><th>Migration approach</th><th>Typical wave</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Clean read</strong></td><td>No writes to shared tables; output is derived data</td><td>Dual-read: compare against mainframe until confident</td><td>Wave 1</td></tr>
+              <tr><td><strong>Clean write</strong></td><td>Owns its tables; callers use only its API</td><td>Shadow write + reconcile, then cut</td><td>Wave 1&ndash;2</td></tr>
+              <tr><td><strong>Shared-write</strong></td><td>Multiple programs write the same table under different keys</td><td>Partition the table by key range before migrating either side</td><td>Wave 2&ndash;3</td></tr>
+              <tr><td><strong>Atomic cross-slice</strong></td><td>Single CICS transaction writes to two logical domains</td><td>Introduce saga / compensating transaction before migration</td><td>Wave 3+</td></tr>
+              <tr><td><strong>Batch-online shared</strong></td><td>VSAM file written by batch, read by online CICS</td><td>Replace VSAM with DB2 table, migrate batch separately</td><td>Wave 2&ndash;3</td></tr>
+            </tbody>
+          </table>
+
+          <p>The messy slices are not blockers; they are <em>sequencing constraints</em>. Migrate the clean slices first. Design the decomposition work for the messy ones in Year 1, execute it alongside Wave 1 migration, so the complex slices are ready for Wave 2.</p>
+
+          <h2 id="migration-waves">Migration waves</h2>
+
+          <div class="diagram" role="img" aria-label="Three-year migration wave timeline showing six capability tracks across Year 1, Year 2, and Year 3">
+            <div class="diagram__inner">
+              <svg width="780" height="390" viewBox="0 0 780 390" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+
+                <!-- Year column headers -->
+                <text x="253" y="22" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">YEAR 1</text>
+                <text x="463" y="22" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">YEAR 2</text>
+                <text x="673" y="22" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">YEAR 3</text>
+
+                <!-- Grid border -->
+                <rect x="148" y="30" width="625" height="300" fill="none" stroke="#2a2a3a" stroke-width="1"/>
+
+                <!-- Year column backgrounds -->
+                <rect x="148" y="30" width="210" height="300" fill="#1a1a26"/>
+                <rect x="358" y="30" width="210" height="300" fill="#1c1c28"/>
+                <rect x="568" y="30" width="205" height="300" fill="#1a1a26"/>
+
+                <!-- Year dividers -->
+                <line x1="358" y1="30" x2="358" y2="330" stroke="#2a2a3a" stroke-width="1"/>
+                <line x1="568" y1="30" x2="568" y2="330" stroke="#2a2a3a" stroke-width="1"/>
+
+                <!-- Row separators -->
+                <line x1="148" y1="80" x2="773" y2="80" stroke="#2a2a3a" stroke-width="1"/>
+                <line x1="148" y1="130" x2="773" y2="130" stroke="#2a2a3a" stroke-width="1"/>
+                <line x1="148" y1="180" x2="773" y2="180" stroke="#2a2a3a" stroke-width="1"/>
+                <line x1="148" y1="230" x2="773" y2="230" stroke="#2a2a3a" stroke-width="1"/>
+                <line x1="148" y1="280" x2="773" y2="280" stroke="#2a2a3a" stroke-width="1"/>
+
+                <!-- Row labels -->
+                <text x="140" y="60" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Integration</text>
+                <text x="140" y="72" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Façade / ACL</text>
+                <text x="140" y="110" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Customer</text>
+                <text x="140" y="122" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Master</text>
+                <text x="140" y="160" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Core</text>
+                <text x="140" y="172" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Accounts</text>
+                <text x="140" y="210" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Payment</text>
+                <text x="140" y="222" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Processing</text>
+                <text x="140" y="260" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Cards</text>
+                <text x="140" y="300" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Batch /</text>
+                <text x="140" y="312" text-anchor="end" fill="#e4e4e7" font-size="9" font-weight="500">Reporting</text>
+
+                <!-- Façade row -->
+                <rect x="153" y="36" width="200" height="38" rx="3" fill="#a78bfa" opacity="0.85"/>
+                <text x="253" y="59" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">Build façade &amp; ACL</text>
+                <rect x="363" y="36" width="200" height="38" rx="3" fill="#00d4aa" opacity="0.55"/>
+                <text x="463" y="59" text-anchor="middle" fill="#e4e4e7" font-size="9">Façade stable &mdash; extend routes</text>
+                <rect x="573" y="36" width="195" height="38" rx="3" fill="#00d4aa" opacity="0.30"/>
+                <text x="670" y="59" text-anchor="middle" fill="#a0a0b0" font-size="9">Façade stable</text>
+
+                <!-- Customer Master row -->
+                <rect x="153" y="86" width="200" height="38" rx="3" fill="#3a3a50"/>
+                <text x="253" y="109" text-anchor="middle" fill="#71717a" font-size="9">Inventory &amp; ACL design</text>
+                <rect x="363" y="86" width="100" height="38" rx="3" fill="#fbbf24" opacity="0.85"/>
+                <text x="413" y="109" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">Shadow</text>
+                <rect x="467" y="86" width="96" height="38" rx="3" fill="#00d4aa" opacity="0.85"/>
+                <text x="515" y="109" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">Cut</text>
+                <rect x="573" y="86" width="195" height="38" rx="3" fill="#4a9eff" opacity="0.45"/>
+                <text x="670" y="109" text-anchor="middle" fill="#e4e4e7" font-size="9">Mainframe path retired</text>
+
+                <!-- Core Accounts row -->
+                <rect x="153" y="136" width="200" height="38" rx="3" fill="#3a3a50"/>
+                <text x="253" y="159" text-anchor="middle" fill="#71717a" font-size="9">COMMAREA mapping</text>
+                <rect x="363" y="136" width="110" height="38" rx="3" fill="#a78bfa" opacity="0.80"/>
+                <text x="418" y="159" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">Build svc</text>
+                <rect x="477" y="136" width="86" height="38" rx="3" fill="#fbbf24" opacity="0.85"/>
+                <text x="520" y="159" text-anchor="middle" fill="#fff" font-size="9">Shadow</text>
+                <rect x="573" y="136" width="98" height="38" rx="3" fill="#00d4aa" opacity="0.85"/>
+                <text x="622" y="159" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">Cut</text>
+                <rect x="675" y="136" width="93" height="38" rx="3" fill="#4a9eff" opacity="0.45"/>
+                <text x="721" y="159" text-anchor="middle" fill="#e4e4e7" font-size="9">Retired</text>
+
+                <!-- Payments row -->
+                <text x="253" y="213" text-anchor="middle" fill="#3a3a50" font-size="10">&mdash;</text>
+                <rect x="363" y="186" width="200" height="38" rx="3" fill="#3a3a50"/>
+                <text x="463" y="209" text-anchor="middle" fill="#71717a" font-size="9">Inventory &amp; interface analysis</text>
+                <rect x="573" y="186" width="104" height="38" rx="3" fill="#fbbf24" opacity="0.85"/>
+                <text x="625" y="209" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">Shadow</text>
+                <rect x="681" y="186" width="87" height="38" rx="3" fill="#00d4aa" opacity="0.70"/>
+                <text x="724" y="209" text-anchor="middle" fill="#fff" font-size="9">Cut</text>
+
+                <!-- Cards row -->
+                <text x="253" y="263" text-anchor="middle" fill="#3a3a50" font-size="10">&mdash;</text>
+                <text x="463" y="263" text-anchor="middle" fill="#3a3a50" font-size="10">&mdash;</text>
+                <rect x="573" y="236" width="195" height="38" rx="3" fill="#a78bfa" opacity="0.45"/>
+                <text x="670" y="259" text-anchor="middle" fill="#e4e4e7" font-size="9">Inventory &amp; façade</text>
+
+                <!-- Batch/Reporting row -->
+                <text x="253" y="313" text-anchor="middle" fill="#3a3a50" font-size="10">&mdash;</text>
+                <rect x="363" y="286" width="200" height="38" rx="3" fill="#3a3a50" opacity="0.70"/>
+                <text x="463" y="309" text-anchor="middle" fill="#71717a" font-size="9">Assessment &amp; dependency map</text>
+                <text x="670" y="309" text-anchor="middle" fill="#3a3a50" font-size="9">Backlog &mdash; Year 4+</text>
+
+                <!-- Legend -->
+                <rect x="148" y="342" width="10" height="10" rx="2" fill="#a78bfa" opacity="0.85"/>
+                <text x="162" y="351" fill="#71717a" font-size="8">Build / Façade</text>
+                <rect x="245" y="342" width="10" height="10" rx="2" fill="#fbbf24" opacity="0.85"/>
+                <text x="259" y="351" fill="#71717a" font-size="8">Shadow</text>
+                <rect x="308" y="342" width="10" height="10" rx="2" fill="#00d4aa" opacity="0.85"/>
+                <text x="322" y="351" fill="#71717a" font-size="8">Cut to new</text>
+                <rect x="395" y="342" width="10" height="10" rx="2" fill="#4a9eff" opacity="0.45"/>
+                <text x="409" y="351" fill="#71717a" font-size="8">Mainframe retired</text>
+                <rect x="510" y="342" width="10" height="10" rx="2" fill="#3a3a50"/>
+                <text x="524" y="351" fill="#71717a" font-size="8">Inventory / assess</text>
+
+                <text x="460" y="375" text-anchor="middle" fill="#71717a" font-size="9">Capabilities migrate independently &mdash; only the façade contract is shared across all waves</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Three-year migration wave plan across six capability domains</div>
+          </div>
+
+          <p>A <strong>wave</strong> is a cohort of capabilities that share the same infrastructure: the same façade endpoint, the same ACL, the same routing toggle. Within a wave, shadow and dual-write windows run concurrently across the cohort. Cutover can happen capability-by-capability within the wave &mdash; you do not need to cut all capabilities in Wave 1 at the same instant.</p>
+
+          <p>Wave 0 is the foundation wave and it is often invisible to business stakeholders because no capability migrates. Everything happens in the integration layer: build the façade, implement the ACL, deploy the routing infrastructure, migrate every consumer from direct mainframe calls to the façade. Wave 0 takes six to nine months and is the most important wave. A poorly built façade blocks every subsequent wave; a well-built one lets Waves 1 through 3 move at pace.</p>
+
+          <h2 id="parallel-run">Parallel run patterns</h2>
+          <p>Three modes, used in sequence. The transition between modes requires an explicit gate decision, not a calendar date.</p>
+
+          <p><strong>Shadow mode.</strong> Write to both systems; read exclusively from the mainframe; compare the new service&rsquo;s response asynchronously. The new service is invisible to the business. Only goal: build confidence that the new service produces equivalent output. Do not promote a capability out of shadow until you have a meaningful sample across all transaction types, including edge cases and month-end volumes.</p>
+
+          <p><strong>Dual-write mode.</strong> Write to both systems; read from the new service. The mainframe is still consistent. Daily reconciliation compares the two systems and reports drift. The new service is the functional system-of-record, but the mainframe remains the fallback. This is the highest-anxiety mode: you are trusting the new system with real traffic but keeping the safety net active, which means the safety net has to be healthy too.</p>
+
+          <p><strong>Read-from-new (cutover).</strong> Stop writing to the mainframe entirely. The mainframe path is warm but idle. Monitor for 30 days before initiating retirement. Retirement means decommissioning the CICS transaction, dropping the DB2 tables, and releasing the MIPS. Only retirement produces real cost savings.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Shadow mode is not a test environment</div>
+            <p>Shadow responses are real production transactions. If the new service has a bug that corrupts its database during shadow, that database will be promoted to system-of-record when dual-write starts. Keep the shadow database <em>isolated</em> and on a wipe-and-resync cycle from mainframe before each promotion decision. Never treat shadow data as golden until you have explicitly made it golden.</p>
+          </div>
+
+          <p>The shadow-to-dual-write gate requires a measurable condition, not a feeling. Define it before you build the shadow infrastructure. A typical gate: <em>14 consecutive calendar days with zero reconciliation breaks per capability, including at least one month-end window.</em> Make the gate public in the programme plan so stakeholders know what &ldquo;ready to promote&rdquo; means before the question is live.</p>
+
+          <h2 id="toolchain">Toolchain: IIDR &amp; CDC</h2>
+          <p>IBM InfoSphere Data Replication (IIDR) is the production choice for CDC from z/OS DB2 and IBM i DB2/400. It is the only tool with IBM-supported log-based capture for both platforms, mature conflict detection, and a Kafka delivery target that integrates cleanly with the OpenShift-based integration layer.</p>
+          <p>Debezium with the community DB2 connector works for shadow read use cases where eventual consistency is acceptable, but it is not supported for DB2 z/OS CDC in production by IBM, and its log position recovery after a z/OS IPL is manual and fragile. Use IIDR for dual-write and cutover phases; use Debezium only if IIDR licensing is blocked by procurement timelines and the use case is read-only shadow.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>iidr-subscription.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># IBM IIDR 11.4 subscription definition for customer master CDC</span>
+<span class="tok-c"># Apply via IIDR Management Console or REST API</span>
+subscription:
+  name: <span class="tok-s">CUSTMAST_TO_KAFKA</span>
+  source:
+    datastore: <span class="tok-s">SAIB_MAINFRAME_DB2</span>  <span class="tok-c"># z/OS DB2 12 subsystem</span>
+    schema: <span class="tok-s">COREDB</span>
+    tables:
+      - <span class="tok-s">CUSTMAST</span>
+      - <span class="tok-s">CUSTADDR</span>
+      - <span class="tok-s">CUSTACC</span>
+    capture_mode: <span class="tok-s">log_based</span>
+    begin_from: <span class="tok-s">current</span>  <span class="tok-c"># set to bookmark for initial load resume</span>
+
+  target:
+    datastore: <span class="tok-s">KAFKA_OCP_CLUSTER</span>
+    format: <span class="tok-s">avro</span>
+    topic_prefix: <span class="tok-s">iidr.coredb</span>  <span class="tok-c"># topics: iidr.coredb.CUSTMAST etc</span>
+    include_before_image: <span class="tok-k">true</span>  <span class="tok-c"># required for conflict detection</span>
+    schema_registry: <span class="tok-s">http://schema-registry.integration.svc:8081</span>
+
+  conflict_detection:
+    enabled: <span class="tok-k">true</span>
+    strategy: <span class="tok-s">source_wins</span>  <span class="tok-c"># mainframe wins during dual-write phase</span>
+    detection_window_ms: <span class="tok-n">5000</span>
+
+  latency_target_ms: <span class="tok-n">500</span>  <span class="tok-c"># p99 end-to-end; alert if exceeded</span>
+  error_action: <span class="tok-s">stop</span>      <span class="tok-c"># never silently skip; stop and alert</span></code></pre>
+          </div>
+
+          <p>IIDR&rsquo;s initial load and CDC capture operate in two phases. The initial load takes a consistent snapshot of the source table with a log bookmark; CDC then replays changes from that bookmark forward. The initial load of a large CUSTMAST table (20M+ rows on a typical Saudi commercial bank) takes six to twelve hours under a batch window and must be coordinated with the mainframe operations team to avoid contention with the end-of-day batch.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>reconciliation-check.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- Daily reconciliation: compare customer master row counts and checksums</span>
+<span class="tok-c">-- Run in OpenShift Job at 02:00 AST after mainframe end-of-day batch</span>
+
+<span class="tok-k">WITH</span> mainframe_snapshot <span class="tok-k">AS</span> (
+  <span class="tok-k">SELECT</span>
+    COUNT(*)                   <span class="tok-k">AS</span> row_count,
+    SUM(HASH(CUST_ID, CUST_STATUS, CUST_SEGMENT))
+                               <span class="tok-k">AS</span> checksum
+  <span class="tok-k">FROM</span> fdw_mainframe.CUSTMAST  <span class="tok-c">-- foreign data wrapper to IIDR shadow table</span>
+  <span class="tok-k">WHERE</span> LAST_UPDATE &lt; <span class="tok-s">'2026-06-27 00:00:00'</span>  <span class="tok-c">-- yesterday boundary</span>
+),
+modern_snapshot <span class="tok-k">AS</span> (
+  <span class="tok-k">SELECT</span>
+    COUNT(*)                   <span class="tok-k">AS</span> row_count,
+    SUM(HASH(customer_id, status, segment))
+                               <span class="tok-k">AS</span> checksum
+  <span class="tok-k">FROM</span> customers.customer_master
+  <span class="tok-k">WHERE</span> updated_at &lt; <span class="tok-s">'2026-06-27 00:00:00'</span>
+)
+<span class="tok-k">SELECT</span>
+  m.row_count        <span class="tok-k">AS</span> mainframe_rows,
+  n.row_count        <span class="tok-k">AS</span> modern_rows,
+  m.row_count - n.row_count
+                     <span class="tok-k">AS</span> row_delta,
+  CASE WHEN m.checksum = n.checksum <span class="tok-k">THEN</span> <span class="tok-s">'OK'</span>
+       <span class="tok-k">ELSE</span> <span class="tok-s">'BREAK'</span>
+  <span class="tok-k">END</span>                <span class="tok-k">AS</span> reconciliation_status
+<span class="tok-k">FROM</span> mainframe_snapshot m, modern_snapshot n;</code></pre>
+          </div>
+
+          <h2 id="metrics">Metrics that prove progress</h2>
+          <p>The metric that matters is <strong>MIPS consumed per quarter</strong>. Not story points, not percentage of programs migrated, not number of CICS transactions renamed. MIPS is the unit the CFO approved the programme to reduce. Every other metric is internal scaffolding; only MIPS appears on the boardroom slide.</p>
+          <p>Three secondary metrics make the MIPS number credible:</p>
+          <ul>
+            <li><strong>Reconciliation break rate.</strong> Breaks per million transactions in dual-write mode. Target: zero. Any non-zero value is a bug that must be fixed before promotion. Track it by capability slice &mdash; a break in customer master does not block accounts from cutting over.</li>
+            <li><strong>Rollback incident count.</strong> How many times did you flip traffic back to the mainframe after a cutover? Zero is the target; two in a wave is a signal to slow down and investigate; three is a programme health issue.</li>
+            <li><strong>Mean time to detect regression.</strong> How long from a shadow deployment to the first reconciliation alert catching a divergence? Drives continuous improvement in the reconciliation pipeline. Sub-24 hours is the target; anything over 72 hours means you are flying blind.</li>
+          </ul>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Report MIPS reduction, not migration progress</div>
+            <p>Wave 0 produces zero MIPS reduction &mdash; the façade adds overhead while the mainframe still runs all logic. Wave 1 produces modest MIPS reduction when the Customer Master retires. Payments and Core Accounts (Waves 2&ndash;3) drive the majority of reduction because they are the highest-volume CICS transactions. Set stakeholder expectations early: Year 1 is investment; Year 2 is where the numbers start moving; Year 3 is where the CFO sees payback.</p>
+          </div>
+
+          <h2 id="risk-governance">Risk &amp; governance</h2>
+          <p>Three governance bodies need to be in the room for a mainframe modernisation programme, and all three need different content from you:</p>
+          <ul>
+            <li><strong>Architecture Review Board (ARB).</strong> Owns the façade contract, approves capability slice boundaries, and gates new service architecture before it enters shadow mode. The ARB needs: slice boundary definitions, data contract specifications, anti-corruption layer design.</li>
+            <li><strong>Change Advisory Board (CAB).</strong> Gates each dual-write promotion and each mainframe retirement event. The CAB needs: reconciliation results for the gate period, rollback procedure evidence (rehearsal log), blast radius assessment for the capability being retired.</li>
+            <li><strong>Compliance / Risk.</strong> SAMA notification for material changes to core banking systems. Compliance needs: notification letter, audit trail continuity evidence, data residency confirmation, and the programme risk register updated to reflect the new risk posture after each wave.</li>
+          </ul>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Do not treat CAB as a rubber stamp</div>
+            <p>Every major mainframe cutover incident in banking over the past decade involved a CAB process that was nominally followed but lacked meaningful challenge. CAB is effective only when the reviewers are given enough time to read the evidence, ask questions, and reject a promotion if the evidence is insufficient. A CAB meeting that approves a cutover in under 15 minutes without questions is a CAB meeting that is not doing its job. Build a 72-hour evidence review window into your programme plan before every wave cutover.</p>
+          </div>
+
+          <p>Rollback criteria must be defined before each wave, not invented on the night. Typical triggers: reconciliation breaks exceeding threshold within the first 72 hours post-cutover; p99 latency of the new service exceeding 2&times; the mainframe baseline; any downstream system reporting data inconsistency. The on-call team must be able to re-route traffic to the mainframe without escalation &mdash; the runbook is the proof, and the CAB evidence package includes a rehearsal log showing sub-15-minute recovery.</p>
+
+          <h2 id="sama-context">KSA / SAMA context</h2>
+          <p>Saudi banks face a compounding constraint. Vision 2030&rsquo;s financial sector targets &mdash; open banking via SAMA Phase 2, real-time ISO 20022 payment rails, digital account origination &mdash; require API-native architectures. The mainframe as an integration bottleneck is not a technical preference; it is a strategic ceiling on competitive velocity. Modernisation is the prerequisite, not the goal.</p>
+          <p>SAMA&rsquo;s Technology Risk Management framework (Circular 41038/BCR/2023) requires prior notification for material changes to core banking systems. A mainframe migration qualifies. The notification starts a 30-day review clock; plan for it in the programme timeline for each wave, not as an afterthought. The review does not typically block the programme, but late notification is a compliance finding that complicates the next wave.</p>
+          <p>Two SAMA-specific constraints shape sequencing decisions:</p>
+          <ul>
+            <li><strong>Data residency.</strong> All customer data must remain within KSA borders throughout migration. Cross-region staging environments, even for non-production shadow copies, invalidate residency compliance if the data is real. Use synthetic data generators in development; use a Saudi-region cloud zone or on-premises OpenShift for shadow.</li>
+            <li><strong>Audit trail continuity.</strong> SAMA requires a complete, unbroken audit trail through any migration event. A gap in the audit log during shadow mode &mdash; where the new service is writing but not yet logging to the authoritative audit trail &mdash; is a compliance finding. Wire the new service into the enterprise audit trail on Day 1 of shadow, not on Day 1 of cutover.</li>
+          </ul>
+
+          <h2 id="cutover-checklist">Cutover checklist</h2>
+          <p>These six conditions must all be true before any capability is promoted from dual-write to cutover. Document the evidence for each in the CAB package:</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Reconciliation gate met</h4>
+              <p>30 consecutive calendar days in dual-write mode with zero reconciliation breaks per capability. The 30-day window must include at least one month-end batch run. Evidence: reconciliation job output from the period, signed off by the integration lead.</p>
+            </li>
+            <li>
+              <h4>Performance validated under peak load</h4>
+              <p>New service p99 latency is within mainframe p99 at 2&times; peak load, sustained for 30 minutes. Tested in a load environment that mirrors production topology (same OpenShift cluster class, same IIDR replication latency). Evidence: load test report with latency percentile graphs.</p>
+            </li>
+            <li>
+              <h4>Rollback rehearsal completed</h4>
+              <p>The on-call team completed a rollback rehearsal in the staging environment within the prior two weeks and achieved sub-15-minute re-route to mainframe. Evidence: rehearsal log with timestamps, names, and the specific runbook version used.</p>
+            </li>
+            <li>
+              <h4>Audit trail verified end-to-end</h4>
+              <p>An independent audit trace from originating API call through the new service to settlement, with no gaps in the enterprise audit log, verified by Compliance. Evidence: sample trace report across five representative transaction types including exception paths.</p>
+            </li>
+            <li>
+              <h4>SAMA notification acknowledged</h4>
+              <p>SAMA notification filed no later than 35 days before cutover. The 30-day review window has closed with no material findings. Evidence: SAMA acknowledgement letter or portal confirmation attached to CAB package.</p>
+            </li>
+            <li>
+              <h4>On-call runbook signed off</h4>
+              <p>First-line support team can handle the top 10 expected incident types for the new service without escalation to the integration engineering team. The escalation matrix is updated. Evidence: runbook sign-off from the operations lead, updated in the incident management platform.</p>
+            </li>
+          </ol>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never waive the gate under programme pressure</div>
+            <p>The most common cause of cutover failure is a shortened gate period approved under time pressure from a programme manager whose quarterly target depends on the migration happening in Q3 not Q4. The gate period exists precisely because the problems it catches do not show up in the first two weeks. A capability that looks clean at Day 14 and breaks at Day 22 will break in production if you cut over before Day 30. The gate is not a formality; it is the risk control. Shorten it and you are accepting the risk that the reconciliation catches. Accept it explicitly, in writing, with sign-off at VP level &mdash; do not let it happen informally under schedule pressure.</p>
+          </div>
+
+          <nav class="article-nav">
+            <a href="strangler-and-cics.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Strangler Fig &amp; CICS</div>
+            </a>
+            <a href="../data-sync.html" class="article-nav__next">
+              <div class="article-nav__label">Next topic</div>
+              <div class="article-nav__title">Data Sync &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
