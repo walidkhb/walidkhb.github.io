@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Sourcing in Payments: The Architecture Decision Your CTO and Compliance Team Both Own &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Event sourcing is an audit trail architecture, not just an engineering pattern. The business decision is whether the regulator's evidence requirements, the fraud team's temporal queries, and the reversibility demands of payment flows are worth the write complexity and eventual-consistency trade-offs it introduces.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/event-sourcing-cqrs-payments-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Event Sourcing in Payments &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Event Sourcing in Payments: The Architecture Decision Your CTO and Compliance Team Both Own &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Event sourcing is an audit trail architecture, not just an engineering pattern. The business decision is whether the regulator&rsquo;s evidence requirements are worth the write complexity it introduces.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/event-sourcing-cqrs-payments-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Event Sourcing in Payments: The Architecture Decision Your CTO and Compliance Team Both Own">
+  <meta name="twitter:description" content="Event sourcing is an audit trail architecture. The VP&rsquo;s job is deciding when the compliance benefit justifies the engineering cost.">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Event Sourcing in Payments: The Architecture Decision Your CTO and Compliance Team Both Own",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-07-04",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/event-sourcing-cqrs-payments-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>Event Sourcing Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; July 4, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">Event Sourcing in Payments: The Architecture Decision Your CTO and Compliance Team Both Own</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Every payment system accumulates a compliance burden over time: regulators asking for transaction histories at specific timestamps, fraud teams querying what the system believed when a suspicious transaction cleared, audit committees requesting evidence that a reversal happened in the correct sequence. In most banks, these questions are answered by a patchwork of archive tables, audit triggers, and CDC export jobs that were added reactively, one at a time, every time an examiner asked a question the current system couldn&rsquo;t answer.</p>
+
+        <p>Event sourcing is the architecture that answers all of those questions structurally &mdash; by design, from day one, without bolt-ons. The event log is the transaction record. The audit trail is the data model. The temporal query (&ldquo;what did the system know at 14:32:05 on the day the transaction cleared?&rdquo;) is a replay operation against an immutable sequence, not a forensic reconstruction across three archive schemas.</p>
+
+        <p>But this is not a free upgrade. Event sourcing introduces real costs that the architecture team will correctly identify and that leadership needs to weigh honestly: a steeper engineering model, eventual consistency in query results, projection rebuild cycles when the read schema changes, and a growing event store that you are committed to retaining for a decade. The VP&rsquo;s job is not to know how Axon Framework handles snapshotting &mdash; it is to decide whether the compliance benefit justifies those costs for the specific domain in question, and to set the governance conditions that make the pattern sustainable once adopted.</p>
+
+        <p class="article-section">The compliance case</p>
+
+        <p>SAMA&rsquo;s Technology Risk Management framework is explicit: financial institutions must maintain a complete, tamper-evident record of all material transactions, with the ability to reconstruct any transaction state at any point in time, retained for at least ten years. The word &ldquo;tamper-evident&rdquo; is where conventional audit log implementations typically fall short. A trigger-based audit trail in a CRUD database is writable by any database administrator with sufficient privilege; a shadow table populated by application code can be bypassed by any process that updates the primary table directly. Neither satisfies the spirit of the requirement, even if both technically produce a log.</p>
+
+        <p>An event store implemented as an append-only table &mdash; where the application user has <code>INSERT</code> but not <code>UPDATE</code> or <code>DELETE</code> &mdash; is structurally tamper-evident at the database layer. Any SAMA examiner can verify the immutability constraint by querying the role privileges directly. This is the kind of evidence that survives a Technology Risk examination without requiring an explanation of your audit log architecture.</p>
+
+        <p>Beyond compliance, the fraud team&rsquo;s use case is equally compelling. Fraud pattern analysis depends heavily on temporal reconstruction: &ldquo;on this account, what was the velocity of payment initiations in the ten minutes before this fraudulent transaction cleared?&rdquo; With CRUD, that question requires joining the current transactions table against an audit log, interpreting status transitions from timestamps, and hoping the archive is complete. With event sourcing, it is a replay bounded by a sequence range and a time window &mdash; a query pattern that generalises to any forensic question the fraud model needs answered.</p>
+
+        <blockquote>
+          <p>The event store does not just record what happened. It records what was decided, and what each decision was based on. That distinction &mdash; between recording outcomes and recording the decision sequence &mdash; is what separates an audit trail from a transaction log.</p>
+        </blockquote>
+
+        <p class="article-section">What the trade-off looks like to the business</p>
+
+        <p>There are three costs that leadership needs to be prepared for, because they will not go away and cannot be engineered around.</p>
+
+        <p>The first is write-side complexity. An event-sourced payment system requires engineers who understand the aggregate model, the command/event separation, and the projection pattern. This is not difficult to learn, but it requires deliberate training and a period of reduced velocity while the team internalises the model. Budget three to six months of slower delivery on the first event-sourced service. The velocity recovers as the pattern becomes habitual; it does not recover faster than that.</p>
+
+        <p>The second is eventual consistency in the read model. Query results for payment status, account balance, and settlement state are derived from event projections, which update asynchronously. In a well-tuned system, the lag is seconds. But &ldquo;seconds of lag&rdquo; means that a customer who initiates a payment and immediately queries their balance may see the pre-payment balance for a brief window. The product team needs to know this and design the UX accordingly &mdash; typically a &ldquo;pending&rdquo; state that resolves cleanly once the projection catches up. This is solvable at the product level, but it requires the product and engineering conversation to happen early.</p>
+
+        <p>The third is storage growth. An append-only event store grows linearly with transaction volume and never shrinks. For a bank processing hundreds of thousands of payments per day, the event store will accumulate hundreds of millions of rows per year. SAMA&rsquo;s ten-year retention requirement means you are committing to a decade of unbounded growth. This is a budgeted storage commitment, not a technical surprise &mdash; it should be in the architecture decision record and in the infrastructure cost model from the outset.</p>
+
+        <p class="article-section">Where to apply it</p>
+
+        <p>Event sourcing is the right architecture for domains where audit completeness, temporal queries, or reversibility are hard requirements &mdash; and the wrong architecture for domains where none of those apply. The payment ledger and the settlement instruction flow are the clearest candidates in a KSA bank. The account master data service, the product catalogue, and the customer preference store are not &mdash; they are better served by CRUD, and introducing event sourcing there adds complexity without adding compliance value.</p>
+
+        <p>The decision about which domains get event sourcing should be made at the programme architecture level and documented explicitly. Leaving it to individual teams to decide independently will produce inconsistency: some teams will adopt it for domains that don&rsquo;t need it; others will avoid it for domains that do. The output of the architecture decision should be a list: these contexts use event sourcing; these do not; here is why.</p>
+
+        <p class="article-section">What the team needs from leadership to ship it</p>
+
+        <p>The engineering team adopting event sourcing for the first time needs three things from leadership that are not on the backlog.</p>
+
+        <p>First, protected time for the learning curve. The team will not deliver at the same pace as a CRUD service for the first quarter. Leadership needs to absorb that in the schedule, not pressure the team into taking shortcuts &mdash; shortcuts in event sourcing typically mean mixing command handlers and state mutations, which breaks the audit trail guarantees that justified the pattern in the first place.</p>
+
+        <p>Second, a compliance sponsor. The SAMA audit trail benefit is only realised if the compliance team accepts the event store as evidence. This requires a conversation between engineering and compliance before the service goes to production, not a governance review after the first examiner asks a question the new system can&rsquo;t answer. The VP needs to facilitate that conversation at programme start.</p>
+
+        <p>Third, a clear boundary for the first deployment. The first event-sourced service should be narrow in scope, high in audit value, and not on the critical customer transaction path during the initial delivery period. Payment initiation and status tracking is the right first target: the business value is clear, the audit requirement is unambiguous, and the failure mode (a slow projection) is visible rather than silent. Payment settlement instruction &mdash; which involves multi-step coordination with IPS &mdash; is a better second service once the pattern is proven.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind this pattern &mdash; aggregate design, CQRS projection implementation, ISO 20022 event schema, idempotency, SAMA-compliant event store DDL, and Kafka fan-out architecture &mdash; see the companion Lab article: <a href="../lab/event-driven/event-sourcing-and-cqrs.html" style="color:var(--color-accent);">Event Sourcing &amp; CQRS in Payments</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

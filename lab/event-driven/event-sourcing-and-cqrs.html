@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Sourcing &amp; CQRS in Payments &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="When event sourcing is worth the cost in payments: event store design, CQRS projection patterns, ISO 20022 schema alignment, snapshotting, idempotency, SAMA audit trail requirements, and the Kafka-backed read model that scales.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Event Sourcing &amp; CQRS in Payments &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Production event sourcing and CQRS patterns for regulated payment systems.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/event-sourcing-and-cqrs.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Event Sourcing &amp; CQRS in Payments &mdash; Lab">
+  <meta name="twitter:description" content="Event sourcing and CQRS for regulated payment systems: patterns that hold up in production.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/event-sourcing-and-cqrs.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Event Sourcing &amp; CQRS in Payments",
+    "description": "When event sourcing is worth the cost in payments: event store design, CQRS projection patterns, ISO 20022 schema alignment, snapshotting, idempotency, SAMA audit trail requirements, and the Kafka-backed read model that scales.",
+    "url": "https://www.wbadawi.info/lab/event-driven/event-sourcing-and-cqrs.html",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
+    "image": "https://www.wbadawi.info/assets/img/og-image.png"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Event Sourcing &amp; CQRS</div>
+          <span class="overline">Lab Article</span>
+          <h1>Event Sourcing &amp; CQRS in Payments</h1>
+          <p class="lead">When event sourcing is worth the cost, how to structure the write and read sides of a payment aggregate, ISO 20022 event schema alignment, snapshotting, idempotency guarantees, and the audit trail the regulator expects for free &mdash; without a commercial event-store vendor.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#when-worth-it">When it&rsquo;s worth the cost</a></li>
+            <li><a href="#core-model">Core model</a></li>
+            <li><a href="#payment-aggregate">Payment aggregate</a></li>
+            <li><a href="#write-side">Write side: commands &amp; handlers</a></li>
+            <li><a href="#projection-patterns">Projection patterns</a></li>
+            <li><a href="#iso20022">ISO 20022 schema alignment</a></li>
+            <li><a href="#snapshotting">Snapshotting</a></li>
+            <li><a href="#idempotency">Idempotency &amp; exactly-once</a></li>
+            <li><a href="#sama-audit">SAMA audit trail</a></li>
+            <li><a href="#kafka-projectors">Kafka-backed projectors</a></li>
+            <li><a href="#tradeoffs">ES vs CRUD trade-offs</a></li>
+            <li><a href="#antipatterns">Anti-patterns</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Axon Framework 4.9 / Spring Boot 3.3 / Kafka 3.7 / PostgreSQL 15 (event store)</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="when-worth-it">When it&rsquo;s worth the cost</h2>
+          <p>Event sourcing is not a default architecture. It carries real costs: a steeper learning curve than CRUD, eventual consistency in the read model, projection rebuild time when you add a new query view, and the operational overhead of managing a growing event stream. The question is whether the problem you are solving actually justifies those costs.</p>
+          <p>In banking payments, three properties tip the balance decisively in favour of event sourcing:</p>
+          <ul>
+            <li><strong>Audit trail completeness.</strong> SAMA&rsquo;s Technology Risk Management framework requires a complete, tamper-evident record of every state change on a financial transaction. With CRUD, the audit trail is a side effect you bolt on &mdash; a trigger, a shadow table, a log line. With event sourcing, the audit trail <em>is</em> the data model. The events are the truth; the current state is a derived view.</li>
+            <li><strong>Business event explicitness.</strong> A payment moves through distinct, named states: <code>PaymentInitiated</code>, <code>FraudCheckPassed</code>, <code>LiquidityReserved</code>, <code>SettlementInstructed</code>, <code>Settled</code>, <code>Reversed</code>. These are business concepts, not database column transitions. Event sourcing forces the team to name every state transition, which eliminates the implicit &ldquo;what does <code>status = 3</code> mean?&rdquo; class of bugs.</li>
+            <li><strong>Temporal queries.</strong> Regulators, auditors, and fraud teams all ask &ldquo;what did the system know at time T?&rdquo; With CRUD, that question requires a time-travel query against archive tables that may or may not exist. With event sourcing, the answer is replay up to the relevant event sequence number.</li>
+          </ul>
+          <p>Where event sourcing is <em>not</em> worth the cost: reference data services (account master, product catalogue), reporting aggregates with no audit requirement, any domain where every query is against the current state with no temporal dimension, and greenfield teams without event-driven discipline. Use CRUD there and save event sourcing for the transaction ledger.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Start with the right bounded context</div>
+            <p>Event sourcing a single bounded context &mdash; the payment lifecycle &mdash; is tractable. Event sourcing your entire bank is a project that will outlive your tenure. Start with the context where the audit trail and temporal query requirements are hardest to meet with CRUD, deliver it, then expand. The pattern proves itself or fails fast on a bounded surface area.</p>
+          </div>
+
+          <h2 id="core-model">Core model</h2>
+          <p>Four concepts cover the whole model. Everything else is an implementation detail.</p>
+
+          <div class="diagram" role="img" aria-label="Event sourcing core model: Command arrives at aggregate, aggregate emits events, events stored in event store, projectors build read views">
+            <div class="diagram__inner">
+              <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="es1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="es2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="es3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Command box -->
+                <rect x="20" y="120" width="140" height="60" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="90" y="145" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">COMMAND</text>
+                <text x="90" y="162" text-anchor="middle" fill="#71717a" font-size="9">InitiatePayment</text>
+                <text x="90" y="174" text-anchor="middle" fill="#71717a" font-size="9">ConfirmPayment &hellip;</text>
+
+                <!-- Aggregate box -->
+                <rect x="220" y="80" width="160" height="140" rx="6" fill="#1c1c28" stroke="#00d4aa" stroke-width="2"/>
+                <text x="300" y="108" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">AGGREGATE</text>
+                <text x="300" y="125" text-anchor="middle" fill="#e4e4e7" font-size="10">PaymentAggregate</text>
+                <line x1="230" y1="135" x2="370" y2="135" stroke="#2a2a3a" stroke-width="1"/>
+                <text x="300" y="153" text-anchor="middle" fill="#71717a" font-size="9">@CommandHandler</text>
+                <text x="300" y="167" text-anchor="middle" fill="#71717a" font-size="9">validates invariants</text>
+                <text x="300" y="181" text-anchor="middle" fill="#71717a" font-size="9">decides &amp; emits events</text>
+                <text x="300" y="198" text-anchor="middle" fill="#71717a" font-size="9">@EventSourcingHandler</text>
+                <text x="300" y="212" text-anchor="middle" fill="#71717a" font-size="9">applies state from events</text>
+
+                <!-- Event store box -->
+                <rect x="450" y="80" width="160" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="530" y="108" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">EVENT STORE</text>
+                <text x="530" y="125" text-anchor="middle" fill="#e4e4e7" font-size="10">append-only</text>
+                <text x="530" y="140" text-anchor="middle" fill="#71717a" font-size="9">seq# · timestamp · payload</text>
+                <text x="530" y="153" text-anchor="middle" fill="#71717a" font-size="9">aggregateId · version</text>
+
+                <!-- Projectors box -->
+                <rect x="450" y="200" width="160" height="80" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="530" y="228" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">PROJECTORS</text>
+                <text x="530" y="245" text-anchor="middle" fill="#e4e4e7" font-size="10">build read views</text>
+                <text x="530" y="260" text-anchor="middle" fill="#71717a" font-size="9">eventually consistent</text>
+                <text x="530" y="273" text-anchor="middle" fill="#71717a" font-size="9">rebuildable</text>
+
+                <!-- Query box -->
+                <rect x="660" y="200" width="110" height="60" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="715" y="225" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">QUERY</text>
+                <text x="715" y="242" text-anchor="middle" fill="#71717a" font-size="9">read from views</text>
+                <text x="715" y="254" text-anchor="middle" fill="#71717a" font-size="9">no event store</text>
+
+                <!-- Arrows -->
+                <line x1="160" y1="150" x2="218" y2="150" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#es1)"/>
+                <text x="189" y="144" text-anchor="middle" fill="#4a9eff" font-size="8">send</text>
+
+                <line x1="380" y1="120" x2="448" y2="120" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#es2)"/>
+                <text x="414" y="114" text-anchor="middle" fill="#00d4aa" font-size="8">append</text>
+
+                <line x1="530" y1="160" x2="530" y2="198" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#es2)"/>
+                <text x="545" y="182" fill="#a78bfa" font-size="8">publish</text>
+
+                <line x1="610" y1="240" x2="658" y2="240" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#es3)"/>
+                <text x="634" y="234" text-anchor="middle" fill="#fbbf24" font-size="8">read</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Write path (Command &rarr; Aggregate &rarr; Event Store) and read path (Event Store &rarr; Projectors &rarr; Query views)</div>
+          </div>
+
+          <ul>
+            <li><strong>Command.</strong> An intent to change state. Commands are rejected if they violate a business rule. They contain all the data the aggregate needs to decide.</li>
+            <li><strong>Aggregate.</strong> The consistency boundary. It holds the domain invariants, decides whether to accept or reject a command, and emits domain events. It never exposes its state directly to the outside world.</li>
+            <li><strong>Event.</strong> A fact that happened. Immutable, past-tense, version-numbered. The event store is the only place events are persisted; you never update or delete them.</li>
+            <li><strong>Projection.</strong> A read model built by replaying events. You can have as many projections as you have query shapes. Projections are disposable: if you need a new query, add a new projector and rebuild from the event history.</li>
+          </ul>
+
+          <h2 id="payment-aggregate">Payment aggregate</h2>
+          <p>A payment in a KSA bank passes through a lifecycle governed by SAMA&rsquo;s IPS rules and the bank&rsquo;s internal fraud and liquidity controls. The aggregate encodes the lifecycle and enforces the invariants.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentAggregate.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Aggregate</span>
+<span class="tok-t">public class</span> <span class="tok-n">PaymentAggregate</span> {
+
+    <span class="tok-k">@AggregateIdentifier</span>
+    <span class="tok-t">private</span> <span class="tok-n">String</span> paymentId;
+    <span class="tok-t">private</span> <span class="tok-n">PaymentStatus</span> status;
+    <span class="tok-t">private</span> <span class="tok-n">BigDecimal</span> amount;
+    <span class="tok-t">private</span> <span class="tok-n">Currency</span> currency;
+    <span class="tok-t">private</span> <span class="tok-t">boolean</span> fraudCleared;
+    <span class="tok-t">private</span> <span class="tok-t">boolean</span> liquidityReserved;
+
+    <span class="tok-c">// Required by Axon</span>
+    <span class="tok-t">protected</span> <span class="tok-n">PaymentAggregate</span>() {}
+
+    <span class="tok-k">@CommandHandler</span>
+    <span class="tok-t">public</span> <span class="tok-n">PaymentAggregate</span>(<span class="tok-n">InitiatePaymentCommand</span> cmd) {
+        <span class="tok-c">// Validate: amount positive, currency supported</span>
+        <span class="tok-n">Assert</span>.isTrue(cmd.getAmount().compareTo(<span class="tok-n">BigDecimal</span>.ZERO) > <span class="tok-n">0</span>,
+            <span class="tok-s">"Payment amount must be positive"</span>);
+        <span class="tok-n">AggregateLifecycle</span>.apply(<span class="tok-t">new</span> <span class="tok-n">PaymentInitiatedEvent</span>(
+            cmd.getPaymentId(), cmd.getDebtorIban(), cmd.getCreditorIban(),
+            cmd.getAmount(), cmd.getCurrency(), cmd.getEndToEndId(),
+            cmd.getInstructedDate()
+        ));
+    }
+
+    <span class="tok-k">@CommandHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">handle</span>(<span class="tok-n">ClearFraudCheckCommand</span> cmd) {
+        <span class="tok-n">Assert</span>.isTrue(status == <span class="tok-n">PaymentStatus</span>.INITIATED,
+            <span class="tok-s">"Fraud check only valid on INITIATED payment"</span>);
+        <span class="tok-n">AggregateLifecycle</span>.apply(<span class="tok-t">new</span> <span class="tok-n">FraudCheckPassedEvent</span>(
+            paymentId, cmd.getFraudScore(), cmd.getClearedBy()
+        ));
+    }
+
+    <span class="tok-k">@CommandHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">handle</span>(<span class="tok-n">ReserveOutboundLiquidityCommand</span> cmd) {
+        <span class="tok-n">Assert</span>.isTrue(fraudCleared,
+            <span class="tok-s">"Liquidity reservation requires fraud clearance"</span>);
+        <span class="tok-n">Assert</span>.isTrue(!liquidityReserved,
+            <span class="tok-s">"Liquidity already reserved"</span>);
+        <span class="tok-n">AggregateLifecycle</span>.apply(<span class="tok-t">new</span> <span class="tok-n">LiquidityReservedEvent</span>(
+            paymentId, cmd.getReservationRef(), amount
+        ));
+    }
+
+    <span class="tok-k">@CommandHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">handle</span>(<span class="tok-n">InstructSettlementCommand</span> cmd) {
+        <span class="tok-n">Assert</span>.isTrue(liquidityReserved, <span class="tok-s">"Liquidity must be reserved before settlement"</span>);
+        <span class="tok-n">Assert</span>.isTrue(status != <span class="tok-n">PaymentStatus</span>.SETTLED, <span class="tok-s">"Payment already settled"</span>);
+        <span class="tok-n">AggregateLifecycle</span>.apply(<span class="tok-t">new</span> <span class="tok-n">SettlementInstructedEvent</span>(
+            paymentId, cmd.getIpsReference(), cmd.getSettlementDate()
+        ));
+    }
+
+    <span class="tok-k">@EventSourcingHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">PaymentInitiatedEvent</span> e) {
+        paymentId = e.getPaymentId();
+        status = <span class="tok-n">PaymentStatus</span>.INITIATED;
+        amount = e.getAmount();
+        currency = e.getCurrency();
+        fraudCleared = <span class="tok-t">false</span>;
+        liquidityReserved = <span class="tok-t">false</span>;
+    }
+
+    <span class="tok-k">@EventSourcingHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">FraudCheckPassedEvent</span> e)    { fraudCleared = <span class="tok-t">true</span>; }
+
+    <span class="tok-k">@EventSourcingHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">LiquidityReservedEvent</span> e)   { liquidityReserved = <span class="tok-t">true</span>; status = <span class="tok-n">PaymentStatus</span>.LIQUIDITY_RESERVED; }
+
+    <span class="tok-k">@EventSourcingHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">SettlementInstructedEvent</span> e) { status = <span class="tok-n">PaymentStatus</span>.SETTLEMENT_INSTRUCTED; }
+
+    <span class="tok-k">@EventSourcingHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">PaymentSettledEvent</span> e)      { status = <span class="tok-n">PaymentStatus</span>.SETTLED; }
+
+    <span class="tok-k">@EventSourcingHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">PaymentReversedEvent</span> e)      { status = <span class="tok-n">PaymentStatus</span>.REVERSED; }
+}</code></pre>
+          </div>
+
+          <p>The pattern that matters here: <code>@CommandHandler</code> validates and emits; <code>@EventSourcingHandler</code> mutates state. These two concerns must never mix. If you write <code>this.status = SETTLED</code> inside a command handler, you have coupled the state mutation to the command path and broken the ability to reconstruct state by replaying events.</p>
+
+          <h2 id="write-side">Write side: commands &amp; handlers</h2>
+          <p>Commands flow through a command bus to the aggregate. Axon routes them by aggregate identifier. The critical constraint: every command handler either applies an event or throws &mdash; it never writes to a database, calls an external service, or makes a state mutation directly.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">No side effects in command handlers</div>
+            <p>A command handler that calls a fraud-check API inline will make your aggregate non-deterministic during event replay. Move external calls to a saga or an event handler that runs outside the aggregate consistency boundary. The aggregate handles invariant enforcement; the saga handles process choreography.</p>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>InitiatePaymentCommand.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-t">public record</span> <span class="tok-n">InitiatePaymentCommand</span>(
+    <span class="tok-k">@TargetAggregateIdentifier</span>
+    <span class="tok-n">String</span>     paymentId,       <span class="tok-c">// UUID generated by the API gateway</span>
+    <span class="tok-n">String</span>     debtorIban,
+    <span class="tok-n">String</span>     creditorIban,
+    <span class="tok-n">BigDecimal</span> amount,
+    <span class="tok-n">String</span>     currency,
+    <span class="tok-n">String</span>     endToEndId,      <span class="tok-c">// ISO 20022 end-to-end reference, caller-supplied</span>
+    <span class="tok-n">LocalDate</span>  instructedDate
+) {}
+
+<span class="tok-c">// Command handler result: the event is stored and the future resolves</span>
+<span class="tok-c">// Command validation failures throw CommandExecutionException (HTTP 422)</span></code></pre>
+          </div>
+
+          <h2 id="projection-patterns">Projection patterns</h2>
+          <p>A projection is a query view built by consuming the event stream. Three projection shapes cover most payment query needs.</p>
+
+          <table>
+            <thead>
+              <tr><th>Projection</th><th>Contents</th><th>Rebuilt from</th><th>Lag tolerance</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Payment status view</td><td>Current status, latest timestamps per transition</td><td>All events for aggregate ID</td><td>Seconds (ops dashboard)</td></tr>
+              <tr><td>Account ledger view</td><td>Balance, pending debits/credits, settled entries</td><td>LiquidityReserved + Settled + Reversed</td><td>Seconds (mobile banking)</td></tr>
+              <tr><td>SAMA audit view</td><td>Full event log per payment, immutable, WORM</td><td>All events, append-only insert</td><td>Zero: synchronous projection, before HTTP response</td></tr>
+              <tr><td>Fraud analytics view</td><td>Feature vector per payment attempt</td><td>Initiated + FraudCheckPassed/Failed</td><td>Minutes (batch scoring)</td></tr>
+              <tr><td>Settlement reconciliation</td><td>IPS reference mapped to internal payment</td><td>SettlementInstructed + Settled</td><td>Minutes (end-of-day)</td></tr>
+            </tbody>
+          </table>
+
+          <p>The SAMA audit view is the only projection that must be synchronous with the command. All others are eventual.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentStatusProjector.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Component</span>
+<span class="tok-t">public class</span> <span class="tok-n">PaymentStatusProjector</span> {
+
+    <span class="tok-k">@EventHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">PaymentInitiatedEvent</span> e, <span class="tok-k">@Timestamp</span> <span class="tok-n">Instant</span> ts) {
+        repo.save(<span class="tok-t">new</span> <span class="tok-n">PaymentStatusRow</span>(
+            e.getPaymentId(), <span class="tok-s">"INITIATED"</span>,
+            e.getDebtorIban(), e.getCreditorIban(),
+            e.getAmount(), e.getCurrency(), ts
+        ));
+    }
+
+    <span class="tok-k">@EventHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">FraudCheckPassedEvent</span> e, <span class="tok-k">@Timestamp</span> <span class="tok-n">Instant</span> ts) {
+        repo.updateStatus(e.getPaymentId(), <span class="tok-s">"FRAUD_CLEARED"</span>, ts);
+    }
+
+    <span class="tok-k">@EventHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">LiquidityReservedEvent</span> e, <span class="tok-k">@Timestamp</span> <span class="tok-n">Instant</span> ts) {
+        repo.updateStatus(e.getPaymentId(), <span class="tok-s">"LIQUIDITY_RESERVED"</span>, ts);
+    }
+
+    <span class="tok-k">@EventHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">PaymentSettledEvent</span> e, <span class="tok-k">@Timestamp</span> <span class="tok-n">Instant</span> ts) {
+        repo.updateStatus(e.getPaymentId(), <span class="tok-s">"SETTLED"</span>, ts);
+        repo.recordSettledAt(e.getPaymentId(), ts, e.getIpsReference());
+    }
+}</code></pre>
+          </div>
+
+          <h2 id="iso20022">ISO 20022 schema alignment</h2>
+          <p>IPS payments in Saudi Arabia use ISO 20022 message schemas &mdash; <code>pacs.008</code> (credit transfer initiation), <code>pacs.004</code> (payment return), <code>camt.054</code> (settlement notification). The event store events do not need to be ISO 20022 payloads, but they must capture enough data to reconstruct any ISO 20022 message on demand.</p>
+
+          <div class="diagram" role="img" aria-label="ISO 20022 message types mapped to event sourcing events in the payment lifecycle">
+            <div class="diagram__inner">
+              <svg width="780" height="280" viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="iso1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <!-- Timeline -->
+                <line x1="40" y1="140" x2="740" y2="140" stroke="#2a2a3a" stroke-width="2"/>
+
+                <!-- Events on timeline -->
+                <circle cx="80" cy="140" r="8" fill="#00d4aa"/>
+                <text x="80" y="125" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">PaymentInitiated</text>
+                <text x="80" y="165" text-anchor="middle" fill="#4a9eff" font-size="8">pacs.008 in</text>
+
+                <circle cx="220" cy="140" r="8" fill="#a78bfa"/>
+                <text x="220" y="125" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">FraudCheckPassed</text>
+                <text x="220" y="165" text-anchor="middle" fill="#71717a" font-size="8">internal</text>
+
+                <circle cx="360" cy="140" r="8" fill="#a78bfa"/>
+                <text x="360" y="125" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">LiquidityReserved</text>
+                <text x="360" y="165" text-anchor="middle" fill="#71717a" font-size="8">internal</text>
+
+                <circle cx="510" cy="140" r="8" fill="#fbbf24"/>
+                <text x="510" y="125" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">SettlementInstructed</text>
+                <text x="510" y="165" text-anchor="middle" fill="#4a9eff" font-size="8">pacs.008 out &rarr; IPS</text>
+
+                <circle cx="660" cy="140" r="8" fill="#00d4aa"/>
+                <text x="660" y="125" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">PaymentSettled</text>
+                <text x="660" y="165" text-anchor="middle" fill="#4a9eff" font-size="8">camt.054 from IPS</text>
+
+                <!-- Annotation boxes -->
+                <rect x="30" y="185" width="160" height="50" rx="4" fill="#0f0f16" stroke="#4a9eff" stroke-dasharray="3 2"/>
+                <text x="110" y="205" text-anchor="middle" fill="#4a9eff" font-size="9">ISO 20022 fields captured</text>
+                <text x="110" y="220" text-anchor="middle" fill="#71717a" font-size="8">endToEndId · instrId · creditor</text>
+                <text x="110" y="232" text-anchor="middle" fill="#71717a" font-size="8">debtor · amt · ccy · date</text>
+
+                <rect x="460" y="185" width="180" height="50" rx="4" fill="#0f0f16" stroke="#fbbf24" stroke-dasharray="3 2"/>
+                <text x="550" y="205" text-anchor="middle" fill="#fbbf24" font-size="9">IPS round-trip stored</text>
+                <text x="550" y="220" text-anchor="middle" fill="#71717a" font-size="8">ipsReference · settlementDate</text>
+                <text x="550" y="232" text-anchor="middle" fill="#71717a" font-size="8">returnReason (on Reversed)</text>
+
+                <line x1="110" y1="185" x2="80" y2="150" stroke="#4a9eff" stroke-width="1" stroke-dasharray="2 2"/>
+                <line x1="550" y1="185" x2="510" y2="150" stroke="#fbbf24" stroke-width="1" stroke-dasharray="2 2"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; ISO 20022 message type anchors on the payment event timeline</div>
+          </div>
+
+          <p>The rule for schema alignment: capture the raw ISO 20022 identifiers (<code>endToEndId</code>, <code>instrId</code>, <code>txId</code>) as first-class fields in your events &mdash; not buried inside a serialised XML blob. This means you can reconstruct a <code>pacs.008</code> from <code>PaymentInitiatedEvent</code> at any point without parsing an archive file, and your reconciliation queries can join on <code>endToEndId</code> against the IPS settlement report without an intermediate transform step.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Version your events from day one</div>
+            <p>Add a <code>schemaVersion</code> field to every event payload. When you add a field to <code>PaymentInitiatedEvent</code> six months from now, old events in the store will still deserialise correctly because your upcaster knows <code>schemaVersion = 1</code> events need a default for the new field. Retrofitting versioning into an unversioned event store is painful &mdash; the cost of adding it on day one is near zero.</p>
+          </div>
+
+          <h2 id="snapshotting">Snapshotting</h2>
+          <p>A payment aggregate with a normal lifecycle &mdash; seven to twelve events &mdash; replays fast enough that snapshotting adds complexity without measurable benefit. Snapshot when replay latency becomes a problem, which typically means: aggregates with hundreds of events (reversals, partial payments, split flows), or latency-sensitive command paths where 200ms is the SLA and replaying 300 events on an Initiated aggregate is measurable.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Configure a snapshot threshold</h4>
+              <p>Axon&rsquo;s <code>EventCountSnapshotTriggerDefinition</code> takes a snapshot after N events. For a payment aggregate, N = 50 is a reasonable starting point. Below 50 events, the replay is cheap; above 50, the aggregate is unusual and snapshot coverage is worth the storage.</p>
+            </li>
+            <li>
+              <h4>Store snapshots separately</h4>
+              <p>Keep snapshots in the same PostgreSQL database as the event store, in a separate <code>snapshots</code> table. Never store snapshots in the event stream itself &mdash; mixing them makes replay logic conditional on event type, which is fragile.</p>
+            </li>
+            <li>
+              <h4>Snapshot as the full aggregate state</h4>
+              <p>The snapshot is the aggregate serialised at a given sequence number. Axon stores the aggregate class state as JSON or XStream-serialised bytes. Ensure the class is serialisable: no transient dependencies, no thread-local state.</p>
+            </li>
+            <li>
+              <h4>Replay still works without the snapshot</h4>
+              <p>The snapshot is a performance optimisation, not a replacement for the event history. The event log must always be complete and independently replayable. Snapshots can be deleted and rebuilt; the event log cannot.</p>
+            </li>
+            <li>
+              <h4>Don&rsquo;t snapshot audit aggregates</h4>
+              <p>If you have a dedicated audit aggregate that captures every state transition for the SAMA trail, do not snapshot it. The entire value of that aggregate is its full event history; a snapshot collapses the history you are trying to preserve.</p>
+            </li>
+          </ol>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>AxonConfiguration.java &mdash; snapshot trigger</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Bean</span>
+<span class="tok-t">public</span> <span class="tok-n">SnapshotTriggerDefinition</span> <span class="tok-n">paymentSnapshotTrigger</span>(
+        <span class="tok-n">Snapshotter</span> snapshotter) {
+    <span class="tok-t">return new</span> <span class="tok-n">EventCountSnapshotTriggerDefinition</span>(snapshotter, <span class="tok-n">50</span>);
+}
+
+<span class="tok-k">@Bean</span>
+<span class="tok-t">public</span> <span class="tok-n">AggregateFactory</span>&lt;<span class="tok-n">PaymentAggregate</span>&gt; <span class="tok-n">paymentAggregateFactory</span>(
+        <span class="tok-n">SnapshotTriggerDefinition</span> trigger) {
+    <span class="tok-t">return</span> <span class="tok-n">GenericAggregateFactory</span>
+        .forType(<span class="tok-n">PaymentAggregate</span>.<span class="tok-t">class</span>)
+        .withSnapshotTriggerDefinition(trigger);
+}</code></pre>
+          </div>
+
+          <h2 id="idempotency">Idempotency &amp; exactly-once</h2>
+          <p>Exactly-once command processing requires three things working together: an idempotency key on every command, a deduplication store, and a transaction boundary that spans the event-store append and the deduplication record creation.</p>
+
+          <p>The payment layer at a KSA bank processes IPS transactions where the IPS network may replay a <code>pacs.008</code> on network timeout. Without idempotency, a replayed initiation creates a duplicate payment. The end-to-end reference (<code>EndToEndId</code>) from the ISO 20022 message is the natural idempotency key &mdash; it is set by the originator and must be unique per transaction per day.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">The duplicate payment trap</div>
+            <p>Using <code>paymentId</code> (your internal UUID) as the idempotency key only works if the caller supplies the same UUID on retry. Most client libraries on network failure generate a new UUID and retry. The safe key is the caller-supplied <code>endToEndId</code>. Validate its uniqueness at the command handler entry point, before the aggregate is loaded.</p>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>IdempotencyInterceptor.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Component</span>
+<span class="tok-t">public class</span> <span class="tok-n">IdempotencyInterceptor</span> <span class="tok-t">implements</span> <span class="tok-n">MessageHandlerInterceptor</span>&lt;<span class="tok-n">CommandMessage</span>&lt;?&gt;&gt; {
+
+    <span class="tok-k">@Override</span>
+    <span class="tok-t">public</span> <span class="tok-n">Object</span> <span class="tok-n">handle</span>(<span class="tok-n">UnitOfWork</span>&lt;? <span class="tok-t">extends</span> <span class="tok-n">CommandMessage</span>&lt;?&gt;&gt; uow,
+                         <span class="tok-n">InterceptorChain</span> chain) <span class="tok-t">throws</span> <span class="tok-n">Exception</span> {
+
+        <span class="tok-t">if</span> (uow.getMessage().getPayload() <span class="tok-t">instanceof</span> <span class="tok-n">InitiatePaymentCommand</span> cmd) {
+            <span class="tok-n">String</span> key = cmd.endToEndId();
+            <span class="tok-t">if</span> (idempotencyStore.exists(key)) {
+                <span class="tok-c">// Return the stored result without re-processing</span>
+                <span class="tok-t">return</span> idempotencyStore.getResult(key);
+            }
+            <span class="tok-n">Object</span> result = chain.proceed();
+            idempotencyStore.store(key, result);
+            <span class="tok-t">return</span> result;
+        }
+        <span class="tok-t">return</span> chain.proceed();
+    }
+}</code></pre>
+          </div>
+
+          <p>The idempotency store is a <code>payment_idempotency</code> table with a unique constraint on <code>end_to_end_id</code>. The insert and the event-store append must run in the same database transaction. If the event store is PostgreSQL, this is straightforward. If the event store is a separate service (EventStoreDB), you need a saga-based idempotency pattern or an outbox on the event store commit.</p>
+
+          <h2 id="sama-audit">SAMA audit trail</h2>
+          <p>SAMA&rsquo;s Technology Risk Management framework requires financial institutions to maintain a tamper-evident record of all transactions with the ability to reconstruct any transaction state at any point in time, retained for at least ten years.</p>
+          <p>Event sourcing satisfies this requirement structurally if &mdash; and only if &mdash; the event store is configured as append-only with no delete or update path. Two implementation decisions matter:</p>
+
+          <ul>
+            <li><strong>Append-only at the database level.</strong> Revoke <code>DELETE</code> and <code>UPDATE</code> on the events table for the application user. The application can only <code>INSERT</code>. Even if a developer makes a mistake in application code, the database rejects the mutation.</li>
+            <li><strong>Immutable timestamps.</strong> Event timestamps are set by the server at insert time, not by the application. The events table has a <code>recorded_at TIMESTAMPTZ DEFAULT NOW()</code> column that the application cannot set &mdash; this prevents backdating.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>event_store DDL &mdash; PostgreSQL</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-k">CREATE TABLE</span> domain_event_entry (
+    global_index   <span class="tok-t">BIGSERIAL</span>    <span class="tok-k">PRIMARY KEY</span>,
+    aggregate_id   <span class="tok-t">VARCHAR</span>(255) <span class="tok-k">NOT NULL</span>,
+    type           <span class="tok-t">VARCHAR</span>(255) <span class="tok-k">NOT NULL</span>,
+    sequence_number <span class="tok-t">BIGINT</span>      <span class="tok-k">NOT NULL</span>,
+    event_type     <span class="tok-t">VARCHAR</span>(255) <span class="tok-k">NOT NULL</span>,
+    payload        <span class="tok-t">JSONB</span>        <span class="tok-k">NOT NULL</span>,
+    metadata       <span class="tok-t">JSONB</span>        <span class="tok-k">NOT NULL</span>,
+    recorded_at    <span class="tok-t">TIMESTAMPTZ</span>  <span class="tok-k">NOT NULL DEFAULT NOW</span>(),
+    <span class="tok-k">UNIQUE</span> (aggregate_id, sequence_number)
+);
+
+<span class="tok-c">-- Revoke mutation access from the application user</span>
+<span class="tok-k">REVOKE</span> <span class="tok-n">UPDATE</span>, <span class="tok-n">DELETE</span>, <span class="tok-n">TRUNCATE</span> <span class="tok-k">ON</span> domain_event_entry <span class="tok-k">FROM</span> payments_app;
+
+<span class="tok-c">-- Auditors and SIEM ingestion via a read-only role</span>
+<span class="tok-k">GRANT</span> <span class="tok-n">SELECT</span> <span class="tok-k">ON</span> domain_event_entry <span class="tok-k">TO</span> audit_reader;</code></pre>
+          </div>
+
+          <p>For the SIEM forwarding requirement, a Change Data Capture connector (Debezium) on the events table feeds every insert to a Kafka topic. A Vector pipeline forwards the topic to Splunk via HEC. This means the SIEM has a near-real-time copy of the event log, independent of the application &mdash; even if the application is compromised, the audit copy in the SIEM pre-dates the compromise.</p>
+
+          <h2 id="kafka-projectors">Kafka-backed projectors</h2>
+          <p>For a single payment service with one projector, running projections in-process with Axon&rsquo;s event bus is fine. When you have multiple services that need payment events &mdash; a fraud analytics engine, a notification service, a settlement reconciler &mdash; the pattern shifts: the event store publishes to Kafka, and each consumer service runs its own projector against the Kafka topic.</p>
+
+          <div class="diagram" role="img" aria-label="Event store publishing to Kafka topic, multiple consumer services each building their own projection from the same topic">
+            <div class="diagram__inner">
+              <svg width="780" height="300" viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="k1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="k2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Event store -->
+                <rect x="20" y="110" width="150" height="70" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="95" y="135" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">EVENT STORE</text>
+                <text x="95" y="152" text-anchor="middle" fill="#71717a" font-size="9">PostgreSQL</text>
+                <text x="95" y="165" text-anchor="middle" fill="#71717a" font-size="9">append-only</text>
+
+                <!-- Debezium + Kafka -->
+                <rect x="220" y="90" width="160" height="110" rx="6" fill="#0f0f16" stroke="#00d4aa" stroke-width="2"/>
+                <text x="300" y="115" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Kafka Topic</text>
+                <text x="300" y="130" text-anchor="middle" fill="#71717a" font-size="9">payments.events.v1</text>
+                <line x1="230" y1="140" x2="370" y2="140" stroke="#2a2a3a" stroke-width="1"/>
+                <text x="300" y="155" text-anchor="middle" fill="#71717a" font-size="8">Debezium CDC</text>
+                <text x="300" y="168" text-anchor="middle" fill="#71717a" font-size="8">partitioned by aggregateId</text>
+                <text x="300" y="181" text-anchor="middle" fill="#71717a" font-size="8">log-compacted</text>
+
+                <!-- Consumer services -->
+                <rect x="450" y="30" width="150" height="55" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="525" y="53" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">fraud-analytics</text>
+                <text x="525" y="70" text-anchor="middle" fill="#71717a" font-size="8">feature vectors &rarr; model</text>
+
+                <rect x="450" y="110" width="150" height="55" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="525" y="133" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">notification-svc</text>
+                <text x="525" y="150" text-anchor="middle" fill="#71717a" font-size="8">SMS/push on Settled</text>
+
+                <rect x="450" y="190" width="150" height="55" rx="4" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="525" y="213" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">settlement-recon</text>
+                <text x="525" y="230" text-anchor="middle" fill="#71717a" font-size="8">IPS ref &harr; internal</text>
+
+                <!-- Arrows -->
+                <line x1="170" y1="145" x2="218" y2="145" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#k1)"/>
+                <line x1="380" y1="120" x2="448" y2="57" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#k2)"/>
+                <line x1="380" y1="145" x2="448" y2="137" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#k2)"/>
+                <line x1="380" y1="170" x2="448" y2="215" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#k2)"/>
+
+                <!-- Consumer group labels -->
+                <text x="450" y="95" fill="#71717a" font-size="8">consumer-group: fraud</text>
+                <text x="450" y="175" fill="#71717a" font-size="8">consumer-group: notifications</text>
+                <text x="450" y="255" fill="#71717a" font-size="8">consumer-group: settlement</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 3 &mdash; Event store &rarr; Kafka fan-out: each consumer service projects independently</div>
+          </div>
+
+          <p>Partition the Kafka topic by <code>aggregateId</code>. This guarantees that all events for a given payment arrive at the same consumer instance in sequence &mdash; a requirement for stateful projectors that maintain per-payment running totals or enforce ordering invariants in the read model.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Log compaction is not the audit copy</div>
+            <p>Log compaction on the Kafka topic is useful for keeping the topic size manageable, but it discards intermediate events if the key appears again. Never use a compacted topic as the primary audit trail &mdash; the event store database is the audit copy. Kafka is the fan-out mechanism; PostgreSQL is the source of truth.</p>
+          </div>
+
+          <h2 id="tradeoffs">ES vs CRUD trade-offs</h2>
+
+          <table>
+            <thead>
+              <tr><th>Dimension</th><th>Event Sourcing</th><th>CRUD</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Audit trail</td><td>Built-in, tamper-evident, free</td><td>Side-effect, bolt-on, fragile</td></tr>
+              <tr><td>Temporal queries (&ldquo;state at T&rdquo;)</td><td>Replay to sequence N, exact</td><td>Requires archive tables or CDC history</td></tr>
+              <tr><td>Write complexity</td><td>High: aggregate, command, event model</td><td>Low: validate + insert/update</td></tr>
+              <tr><td>Read complexity</td><td>High: eventual consistency, rebuild on schema change</td><td>Low: query current state directly</td></tr>
+              <tr><td>Schema migration</td><td>Event upcasters, non-destructive</td><td>ALTER TABLE, destructive if not careful</td></tr>
+              <tr><td>Storage growth</td><td>Unbounded (append-only)</td><td>Bounded (current state only)</td></tr>
+              <tr><td>Query flexibility</td><td>High: add projectors without touching the aggregate</td><td>Medium: limited to current schema without migrations</td></tr>
+              <tr><td>Team learning curve</td><td>Steep: new mental model for every developer</td><td>Shallow: SQL is universal</td></tr>
+              <tr><td>Regulator evidence</td><td>Strong: event log is self-describing</td><td>Weak: requires additional tooling</td></tr>
+              <tr><td>Suitable domains</td><td>Payment ledger, account history, audit-intensive</td><td>Product catalogue, reference data, session state</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="antipatterns">Anti-patterns</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Aggregate too large</div>
+            <p>If your <code>PaymentAggregate</code> handles forty-plus event types and its <code>@EventSourcingHandler</code> methods span hundreds of lines, you have one aggregate doing work that belongs in several. Split by consistency boundary: the payment lifecycle is one aggregate; the settlement instruction is another; the fraud scoring result is a value object on the fraud check event, not a nested aggregate.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Mutable events</div>
+            <p>Allowing <code>UPDATE</code> on the event store table &mdash; even for &ldquo;just a correction&rdquo; &mdash; invalidates the audit trail and makes any projection that consumed the original event potentially inconsistent with the store. Corrections belong as new, explicit events: <code>PaymentAmountCorrectedEvent</code> with the correction reason and the correcting user ID, applied on top of the original event stream.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Projecting synchronously on the command path</div>
+            <p>With the exception of the SAMA audit projection, projecting to a read model synchronously on the command path couples the write latency to the read-model build latency. A slow projection (joining to an external service, building a complex denormalised view) makes every command slow. Project asynchronously, accept eventual consistency, and document the lag SLA for each query view.</p>
+          </div>
+
+          <nav class="article-nav">
+            <a href="../event-driven.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Event-Driven Architecture</div>
+            </a>
+            <a href="kafka-and-mq.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Kafka &amp; IBM MQ &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
