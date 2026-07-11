@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distributed Caching &mdash; Hazelcast IMDG for In-Process State &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Hazelcast IMDG embedded grid topology, partition awareness, near-cache patterns, and the stateful financial workloads where embedding state inside application pods beats a shared Redis cluster on every latency benchmark.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Distributed Caching &mdash; Hazelcast IMDG for In-Process State">
+  <meta property="og:description" content="Embedded grid topology, partition awareness, and the use cases where Hazelcast wins over Redis for stateful financial workloads.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/distributed-caching/hazelcast-imdg-in-process-state.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Hazelcast IMDG for In-Process State &mdash; Lab">
+  <meta name="twitter:description" content="Embedded grid topology and the use cases where Hazelcast beats Redis for stateful financial workloads.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/distributed-caching/hazelcast-imdg-in-process-state.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Hazelcast IMDG for In-Process State",
+    "description": "Embedded grid topology, partition awareness, near-cache patterns, and the stateful financial workloads where Hazelcast beats a shared Redis cluster.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-07-11",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/distributed-caching/hazelcast-imdg-in-process-state.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Distributed Caching &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/distributed-caching.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "Distributed Caching"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Hazelcast IMDG</div>
+          <span class="overline">Lab Article</span>
+          <h1>Distributed Caching: Hazelcast IMDG for In-Process State</h1>
+          <p class="lead">Embedded grid topology, partition awareness, near-cache configuration, and the stateful financial workloads where collapsing the network hop between your application and its data beats every Redis Cluster benchmark you will run &mdash; and the real costs of that trade-off in a containerised, cloud-native deployment.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#topology">Topology modes</a></li>
+            <li><a href="#partition-awareness">Partition awareness</a></li>
+            <li><a href="#data-structures">Distributed data structures</a></li>
+            <li><a href="#near-cache">Near-cache</a></li>
+            <li><a href="#deploy">Deploying on Kubernetes</a></li>
+            <li><a href="#config">Configuration</a></li>
+            <li><a href="#consistency">Consistency model</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#when-hazelcast">When Hazelcast wins</a></li>
+            <li><a href="#pitfalls">Production pitfalls</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Hazelcast 5.4 / Spring Boot 3.2 / Kubernetes / OCP 4.14</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>The default answer for a distributed cache in any greenfield discussion is Redis. That default is usually correct. But it rests on an implicit assumption: that the value you are caching is a serialised blob that lives outside your JVM, retrieved over a TCP socket. For the subset of financial workloads where the cached object is actively computed against &mdash; a risk engine iterating a portfolio, a payment router evaluating limit structures, a fraud model hydrating feature vectors &mdash; the network round trip to Redis becomes the bottleneck, not the database query you were trying to avoid.</p>
+          <p>Hazelcast IMDG (In-Memory Data Grid) places the data inside the application process or, in client-server mode, inside a co-located cluster that your code reaches via a smart client that knows which node owns each partition. The canonical Hazelcast embed eliminates the serialisation/network/deserialisation cycle entirely for local reads. The trade-off is that your data grid is now part of your application process: JVM heap pressure, GC pauses, and ClassLoader isolation all become caching concerns.</p>
+          <p>This article covers when that trade-off is worth it, how to configure it correctly, and what breaks in production if you get the topology wrong.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">IMDG vs Jet vs Platform</div>
+            <p>Hazelcast has rebranded and consolidated products over the years. What this article calls IMDG is the core distributed data structure layer available in the open-source <code>hazelcast</code> JAR (formerly <code>hazelcast-imdg</code>). Hazelcast Jet is the stream-processing engine built on top; Hazelcast Platform is the commercial bundle. Unless you need distributed pipelines, the open-source JAR is sufficient for the caching use cases covered here.</p>
+          </div>
+
+          <h2 id="topology">Topology modes</h2>
+          <p>Hazelcast supports two deployment topologies. The choice determines where partitions live and how the application accesses them.</p>
+
+          <div class="diagram" role="img" aria-label="Hazelcast embedded vs client-server topology comparison">
+            <div class="diagram__inner">
+              <svg width="780" height="400" viewBox="0 0 780 400" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="hz1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="hz2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- EMBEDDED MODE -->
+                <text x="200" y="24" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">EMBEDDED MODE</text>
+
+                <rect x="20" y="40" width="360" height="160" rx="8" fill="#0f0f16" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="200" y="60" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">JVM / Pod</text>
+
+                <rect x="40" y="70" width="140" height="110" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="110" y="92" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">App code</text>
+                <text x="110" y="110" text-anchor="middle" fill="#71717a" font-size="9">Business logic</text>
+                <text x="110" y="126" text-anchor="middle" fill="#71717a" font-size="9">IMap.get(key)</text>
+                <text x="110" y="142" text-anchor="middle" fill="#71717a" font-size="9">→ direct heap</text>
+                <text x="110" y="158" text-anchor="middle" fill="#71717a" font-size="9">access, 0 network</text>
+
+                <rect x="210" y="70" width="140" height="110" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="280" y="92" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">HZ member</text>
+                <text x="280" y="110" text-anchor="middle" fill="#71717a" font-size="9">Partitions 0–85</text>
+                <text x="280" y="126" text-anchor="middle" fill="#71717a" font-size="9">Backup partitions</text>
+                <text x="280" y="142" text-anchor="middle" fill="#71717a" font-size="9">from other nodes</text>
+                <text x="280" y="158" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">lives in heap</text>
+
+                <line x1="180" y1="125" x2="208" y2="125" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#hz1)"/>
+
+                <text x="200" y="218" text-anchor="middle" fill="#71717a" font-size="9">Member auto-discovery via Kubernetes API</text>
+                <text x="200" y="232" text-anchor="middle" fill="#71717a" font-size="9">Cluster forms at pod startup &middot; backup count = 1</text>
+
+                <!-- CLIENT-SERVER MODE -->
+                <text x="580" y="24" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">CLIENT-SERVER MODE</text>
+
+                <rect x="410" y="40" width="140" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="480" y="64" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Smart client</text>
+                <text x="480" y="82" text-anchor="middle" fill="#71717a" font-size="9">Partition table</text>
+                <text x="480" y="98" text-anchor="middle" fill="#71717a" font-size="9">routes to owner</text>
+
+                <rect x="570" y="40" width="90" height="60" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="615" y="64" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">HZ-1</text>
+                <text x="615" y="82" text-anchor="middle" fill="#71717a" font-size="9">P0–P85</text>
+
+                <rect x="670" y="40" width="90" height="60" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="715" y="64" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">HZ-2</text>
+                <text x="715" y="82" text-anchor="middle" fill="#71717a" font-size="9">P86–P170</text>
+
+                <rect x="620" y="120" width="90" height="60" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="665" y="144" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">HZ-3</text>
+                <text x="665" y="162" text-anchor="middle" fill="#71717a" font-size="9">P171–P270</text>
+
+                <line x1="550" y1="70" x2="568" y2="70" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#hz2)"/>
+                <line x1="480" y1="120" x2="614" y2="132" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3 2"/>
+                <line x1="480" y1="120" x2="664" y2="120" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3 2"/>
+
+                <text x="580" y="218" text-anchor="middle" fill="#71717a" font-size="9">Client does NOT hold data &middot; 1 network hop to partition owner</text>
+                <text x="580" y="232" text-anchor="middle" fill="#71717a" font-size="9">HZ cluster scales independently of app replicas</text>
+
+                <!-- Divider -->
+                <line x1="0" y1="248" x2="780" y2="248" stroke="#71717a" stroke-dasharray="3 3"/>
+
+                <!-- Comparison table headers -->
+                <text x="30" y="272" fill="#e4e4e7" font-size="10" font-weight="600">Property</text>
+                <text x="220" y="272" fill="#00d4aa" font-size="10" font-weight="600">Embedded</text>
+                <text x="500" y="272" fill="#a78bfa" font-size="10" font-weight="600">Client-Server</text>
+
+                <text x="30" y="295" fill="#71717a" font-size="9">Read latency (local partition)</text>
+                <text x="220" y="295" fill="#e4e4e7" font-size="9">sub-microsecond (heap)</text>
+                <text x="500" y="295" fill="#e4e4e7" font-size="9">~0.1–0.5 ms (network)</text>
+
+                <text x="30" y="315" fill="#71717a" font-size="9">GC impact</text>
+                <text x="220" y="315" fill="#fbbf24" font-size="9">High &mdash; data is on-heap</text>
+                <text x="500" y="315" fill="#e4e4e7" font-size="9">None on app pod</text>
+
+                <text x="30" y="335" fill="#71717a" font-size="9">Independent scaling</text>
+                <text x="220" y="335" fill="#fbbf24" font-size="9">No &mdash; coupled to app pods</text>
+                <text x="500" y="335" fill="#e4e4e7" font-size="9">Yes &mdash; HZ scales separately</text>
+
+                <text x="30" y="355" fill="#71717a" font-size="9">Best for</text>
+                <text x="220" y="355" fill="#00d4aa" font-size="9">Compute-intensive lookups</text>
+                <text x="500" y="355" fill="#a78bfa" font-size="9">Large data, shared across services</text>
+
+                <text x="30" y="375" fill="#71717a" font-size="9">k8s discovery</text>
+                <text x="220" y="375" fill="#e4e4e7" font-size="9">HazelcastKubernetes plugin</text>
+                <text x="500" y="375" fill="#e4e4e7" font-size="9">HazelcastKubernetes plugin</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Embedded (peer) topology vs client-server: topology determines where latency lives</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr><th>Topology</th><th>Data location</th><th>Read path</th><th>When to use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Embedded</strong></td><td>JVM heap of every app pod</td><td>Local partition: heap read. Remote partition: one network hop to owning pod.</td><td>Compute-intensive workloads, small data volume, homogeneous app fleet</td></tr>
+              <tr><td><strong>Client-server</strong></td><td>Dedicated HZ cluster pods</td><td>Always one hop to the owning HZ pod (smart client skips extra hops)</td><td>Large working set, heterogeneous consumers, need to scale cache independently</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Embedded mode and rolling deploys do not mix cleanly</div>
+            <p>When app pods restart during a rolling deploy, their embedded HZ members leave the cluster. Data partitions migrate to surviving members. During migration, reads for the affected partition block briefly. With 3 replicas and backup-count=1, you have a short migration window on every deploy &mdash; not a problem for cache data, but worth knowing before you embed anything you cannot afford to re-read from the database.</p>
+          </div>
+
+          <h2 id="partition-awareness">Partition awareness</h2>
+          <p>Hazelcast divides its keyspace into 271 partitions (the default, tunable at cluster creation). Every key is assigned to exactly one primary partition via a consistent-hash of its serialised form, with one backup partition elsewhere in the cluster. The smart client (in client-server mode) and the embedded member both maintain a local partition table that maps partition ID to cluster member address.</p>
+          <p>The consequence: a <code>map.get(key)</code> from a smart client resolves the owning member locally and sends exactly one network message. There is no proxy or router in the data path. This is what separates Hazelcast's read latency from Redis Cluster at scale &mdash; Redis Cluster also routes efficiently, but it adds a protocol-level MOVED/ASK redirect cycle for misrouted commands; Hazelcast's smart client is always correct on the first send.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PartitionRouting.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-c">// Partition-aware key design: co-locate related data on same partition</span>
+<span class="tok-c">// by wrapping the key with PartitionAware</span>
+<span class="tok-k">public class</span> <span class="tok-t">AccountKey</span> <span class="tok-k">implements</span> PartitionAware&lt;<span class="tok-t">String</span>&gt;, Serializable {
+    <span class="tok-k">private final</span> <span class="tok-t">String</span> accountId;
+    <span class="tok-k">private final</span> <span class="tok-t">String</span> txnId;
+
+    <span class="tok-c">// All keys for the same account land on the same partition.</span>
+    <span class="tok-c">// EntryProcessor.executeOnKey() then avoids any remote call.</span>
+    @Override
+    <span class="tok-k">public</span> <span class="tok-t">String</span> getPartitionKey() {
+        <span class="tok-k">return</span> accountId;
+    }
+}
+
+<span class="tok-c">// EntryProcessor runs on the owning partition member: no serialisation round-trip</span>
+<span class="tok-t">BigDecimal</span> newBalance = (BigDecimal) accountMap.executeOnKey(
+    <span class="tok-k">new</span> AccountKey(acctId, txnId),
+    <span class="tok-k">new</span> DebitEntryProcessor(amount)
+);</code></pre>
+          </div>
+
+          <p>The <code>PartitionAware</code> key is the most important performance primitive in Hazelcast for financial workloads. By co-locating all account-level keys on the same partition, an <code>EntryProcessor</code> that debits a balance, updates a limit counter, and appends an audit entry can do all three operations in a single partition-local transaction &mdash; no distributed coordination, no network round trips within the operation.</p>
+
+          <h2 id="data-structures">Distributed data structures</h2>
+          <p>Hazelcast provides a richer type system than Redis. The structures most useful in financial integration workloads:</p>
+
+          <table>
+            <thead>
+              <tr><th>Structure</th><th>API</th><th>Financial use case</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>IMap</strong></td><td><code>ConcurrentMap</code>-compatible</td><td>Reference data cache, limit cache, session state</td></tr>
+              <tr><td><strong>MultiMap</strong></td><td>One key &rarr; multiple values</td><td>Account &rarr; active transaction IDs, customer &rarr; cards</td></tr>
+              <tr><td><strong>IQueue</strong></td><td>Distributed blocking queue</td><td>Work queue for async payment processing</td></tr>
+              <tr><td><strong>IAtomicLong</strong></td><td>Distributed atomic counter</td><td>Sequence number generator (idempotency keys)</td></tr>
+              <tr><td><strong>FencedLock</strong></td><td>CP-subsystem distributed lock</td><td>Distributed mutex on settlement window</td></tr>
+              <tr><td><strong>CPMap</strong></td><td>Linearizable map (CP subsystem)</td><td>Configuration that must be consistent across all nodes</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--note">
+            <div class="callout__title">AP vs CP structures</div>
+            <p>IMap is AP &mdash; it uses eventual consistency with configurable backup-count. FencedLock and CPMap belong to the CP subsystem, which runs a Raft group and guarantees linearizability at the cost of requiring an odd-number quorum (&ge;3 CP members). Do not mix AP and CP expectations on the same data: IMap cannot guarantee mutual exclusion; FencedLock cannot be sharded across 271 partitions.</p>
+          </div>
+
+          <h2 id="near-cache">Near-cache</h2>
+          <p>Near-cache adds a local in-process cache in front of the remote partition. On a read, if the key is in near-cache, the response is a heap lookup &mdash; no serialisation, no network. This is the pattern that takes client-server read latency below 50 &mu;s on hot keys.</p>
+          <p>Near-cache introduces stale reads. By default, invalidation is pushed from the owning partition on every write. This means all clients holding a near-cached value receive an invalidation message within milliseconds of an update. In practice, for reference data that updates once per minute or slower (exchange rates, product configurations, limit matrices), near-cache is safe and the latency benefit is dramatic. For data that changes per-transaction, near-cache is wrong &mdash; the invalidation traffic becomes its own bottleneck.</p>
+
+          <div class="diagram" role="img" aria-label="Near-cache read path: local hit vs remote partition read">
+            <div class="diagram__inner">
+              <svg width="780" height="280" viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="hz3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="hz4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <text x="20" y="24" fill="#e4e4e7" font-size="11" font-weight="600">Near-cache read path</text>
+
+                <!-- App pod -->
+                <rect x="20" y="40" width="200" height="200" rx="8" fill="#0f0f16" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="120" y="62" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">App pod (client)</text>
+
+                <rect x="40" y="72" width="160" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="120" y="92" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Near-cache (heap)</text>
+                <text x="120" y="108" text-anchor="middle" fill="#71717a" font-size="9">IMap near-cache partition</text>
+
+                <rect x="40" y="140" width="160" height="50" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="120" y="160" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Smart client</text>
+                <text x="120" y="176" text-anchor="middle" fill="#71717a" font-size="9">Partition table cache</text>
+
+                <!-- HIT path -->
+                <text x="270" y="62" fill="#00d4aa" font-size="10" font-weight="600">HIT (&lt; 1 &mu;s)</text>
+                <path d="M 200 97 C 250 97 250 97 265 97" stroke="#00d4aa" stroke-width="1.5" fill="none" marker-end="url(#hz3)"/>
+                <rect x="268" y="72" width="180" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="358" y="92" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Return cached value</text>
+                <text x="358" y="108" text-anchor="middle" fill="#71717a" font-size="9">No network, no deser.</text>
+
+                <!-- MISS path -->
+                <text x="270" y="152" fill="#fbbf24" font-size="10" font-weight="600">MISS (&lt; 0.5 ms)</text>
+                <path d="M 200 165 C 250 165 250 165 265 165" stroke="#fbbf24" stroke-width="1.5" fill="none" marker-end="url(#hz4)"/>
+                <rect x="268" y="140" width="180" height="50" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="358" y="160" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Route to partition owner</text>
+                <text x="358" y="176" text-anchor="middle" fill="#71717a" font-size="9">1 network hop, populate NC</text>
+
+                <!-- HZ cluster -->
+                <rect x="490" y="72" width="140" height="120" rx="8" fill="#0f0f16" stroke="#a78bfa"/>
+                <text x="560" y="94" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">HZ Cluster</text>
+                <text x="560" y="114" text-anchor="middle" fill="#71717a" font-size="9">Owning member</text>
+                <text x="560" y="130" text-anchor="middle" fill="#71717a" font-size="9">for this partition</text>
+
+                <!-- Invalidation arrow -->
+                <path d="M 490 165 C 450 165 450 92 450 92 L 448 92" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 2" fill="none"/>
+                <text x="452" y="130" text-anchor="end" fill="#ef4444" font-size="8">Invalidation push</text>
+                <text x="452" y="142" text-anchor="end" fill="#ef4444" font-size="8">on remote write</text>
+
+                <!-- Near-cache eviction note -->
+                <rect x="650" y="72" width="120" height="120" rx="6" fill="#0f0f16" stroke="#71717a"/>
+                <text x="710" y="96" text-anchor="middle" fill="#71717a" font-size="9" font-weight="600">NC eviction</text>
+                <text x="710" y="114" text-anchor="middle" fill="#71717a" font-size="8">max-size policy</text>
+                <text x="710" y="130" text-anchor="middle" fill="#71717a" font-size="8">LRU or LFU</text>
+                <text x="710" y="148" text-anchor="middle" fill="#71717a" font-size="8">time-to-live</text>
+                <text x="710" y="164" text-anchor="middle" fill="#71717a" font-size="8">max-idle-seconds</text>
+
+                <text x="390" y="248" text-anchor="middle" fill="#71717a" font-size="9">Near-cache hit rate is the primary metric. Below 80% it adds memory cost without latency benefit.</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Near-cache hit path (heap read) vs miss path (one network hop to partition owner)</div>
+          </div>
+
+          <h2 id="deploy">Deploying on Kubernetes</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Add the Kubernetes discovery plugin</h4>
+              <p>The <code>hazelcast-kubernetes</code> plugin uses the Kubernetes API to discover cluster members. It requires a ServiceAccount with <code>get</code> and <code>list</code> on Endpoints and Pods. Create the ClusterRole once per namespace; bind it to the pod's ServiceAccount.</p>
+            </li>
+            <li>
+              <h4>Choose embedded or client-server</h4>
+              <p>For embedded: include <code>hazelcast</code> as a compile dependency and Hazelcast boots with the Spring application context. For client-server: deploy a separate StatefulSet for the HZ cluster and add <code>hazelcast-client</code> as a dependency instead &mdash; <strong>not</strong> <code>hazelcast</code>. Mixing <code>hazelcast</code> and <code>hazelcast-client</code> in the same pod is valid for development; avoid it in production.</p>
+            </li>
+            <li>
+              <h4>Configure member discovery</h4>
+              <p>Set <code>kubernetes</code> discovery in the Hazelcast YAML. Point it at the headless Service used by the StatefulSet (client-server) or at the app Deployment's label selector (embedded). The headless Service is simpler and more reliable than namespace-scoped pod listing.</p>
+            </li>
+            <li>
+              <h4>Set partition backup count</h4>
+              <p>For 3-node clusters, <code>backup-count: 1</code> means every partition has one sync backup. With <code>async-backup-count: 1</code> you get two copies (primary + async backup) without synchronous replication latency. For financial data where loss is unacceptable, use <code>backup-count: 1</code> (synchronous) and ensure you have at least 3 members at all times.</p>
+            </li>
+            <li>
+              <h4>Configure graceful shutdown</h4>
+              <p>Add <code>SIGTERM</code> handling so Hazelcast migrates its partitions before the pod terminates. Set <code>hazelcast.shutdownhook.policy=GRACEFUL</code> and set <code>terminationGracePeriodSeconds</code> in the Deployment to at least 60 seconds. Rolling deploys without graceful shutdown trigger partition migration under traffic &mdash; avoidable latency spikes.</p>
+            </li>
+            <li>
+              <h4>Size JVM heap conservatively</h4>
+              <p>In embedded mode, Hazelcast competes with the application for heap. Allocate at least 40% of the container memory limit to non-Hazelcast objects (thread stacks, code cache, application working set). Hazelcast stores serialised bytes on heap by default; if data volume is large, consider HD Memory (Hazelcast Platform only) or client-server to keep the app heap clean.</p>
+            </li>
+          </ol>
+
+          <h2 id="config">Configuration</h2>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>hazelcast.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">hazelcast</span><span class="tok-p">:</span>
+  <span class="tok-k">cluster-name</span><span class="tok-p">:</span> <span class="tok-s">saib-payment-grid</span>
+
+  <span class="tok-k">network</span><span class="tok-p">:</span>
+    <span class="tok-k">join</span><span class="tok-p">:</span>
+      <span class="tok-k">multicast</span><span class="tok-p">:</span>
+        <span class="tok-k">enabled</span><span class="tok-p">:</span> <span class="tok-s">false</span>
+      <span class="tok-k">kubernetes</span><span class="tok-p">:</span>
+        <span class="tok-k">enabled</span><span class="tok-p">:</span> <span class="tok-s">true</span>
+        <span class="tok-k">namespace</span><span class="tok-p">:</span> <span class="tok-s">payments</span>
+        <span class="tok-k">service-name</span><span class="tok-p">:</span> <span class="tok-s">payment-svc-hazelcast</span>   <span class="tok-c"># headless Service</span>
+
+  <span class="tok-k">map</span><span class="tok-p">:</span>
+    <span class="tok-c"># Limit reference data: stable, high-read, low-cardinality</span>
+    <span class="tok-k">limit-matrix</span><span class="tok-p">:</span>
+      <span class="tok-k">backup-count</span><span class="tok-p">:</span> <span class="tok-n">1</span>
+      <span class="tok-k">async-backup-count</span><span class="tok-p">:</span> <span class="tok-n">0</span>
+      <span class="tok-k">time-to-live-seconds</span><span class="tok-p">:</span> <span class="tok-n">300</span>
+      <span class="tok-k">max-idle-seconds</span><span class="tok-p">:</span> <span class="tok-n">0</span>
+      <span class="tok-k">eviction</span><span class="tok-p">:</span>
+        <span class="tok-k">eviction-policy</span><span class="tok-p">:</span> <span class="tok-s">LRU</span>
+        <span class="tok-k">max-size-policy</span><span class="tok-p">:</span> <span class="tok-s">PER_NODE</span>
+        <span class="tok-k">size</span><span class="tok-p">:</span> <span class="tok-n">50000</span>
+      <span class="tok-k">near-cache</span><span class="tok-p">:</span>
+        <span class="tok-k">time-to-live-seconds</span><span class="tok-p">:</span> <span class="tok-n">60</span>
+        <span class="tok-k">max-idle-seconds</span><span class="tok-p">:</span> <span class="tok-n">30</span>
+        <span class="tok-k">invalidate-on-change</span><span class="tok-p">:</span> <span class="tok-s">true</span>
+        <span class="tok-k">eviction</span><span class="tok-p">:</span>
+          <span class="tok-k">eviction-policy</span><span class="tok-p">:</span> <span class="tok-s">LFU</span>
+          <span class="tok-k">max-size-policy</span><span class="tok-p">:</span> <span class="tok-s">ENTRY_COUNT</span>
+          <span class="tok-k">size</span><span class="tok-p">:</span> <span class="tok-n">5000</span>
+
+    <span class="tok-c"># Payment session: per-transaction, short TTL, no near-cache</span>
+    <span class="tok-k">payment-session</span><span class="tok-p">:</span>
+      <span class="tok-k">backup-count</span><span class="tok-p">:</span> <span class="tok-n">1</span>
+      <span class="tok-k">time-to-live-seconds</span><span class="tok-p">:</span> <span class="tok-n">120</span>
+      <span class="tok-k">eviction</span><span class="tok-p">:</span>
+        <span class="tok-k">eviction-policy</span><span class="tok-p">:</span> <span class="tok-s">LRU</span>
+        <span class="tok-k">max-size-policy</span><span class="tok-p">:</span> <span class="tok-s">PER_NODE</span>
+        <span class="tok-k">size</span><span class="tok-p">:</span> <span class="tok-n">200000</span>
+
+  <span class="tok-k">cp-subsystem</span><span class="tok-p">:</span>
+    <span class="tok-k">cp-member-count</span><span class="tok-p">:</span> <span class="tok-n">3</span>    <span class="tok-c"># Raft quorum for FencedLock / CPMap</span>
+    <span class="tok-k">group-size</span><span class="tok-p">:</span> <span class="tok-n">3</span>
+
+  <span class="tok-k">properties</span><span class="tok-p">:</span>
+    <span class="tok-k">hazelcast.shutdownhook.policy</span><span class="tok-p">:</span> <span class="tok-s">GRACEFUL</span>
+    <span class="tok-k">hazelcast.graceful.shutdown.max.wait</span><span class="tok-p">:</span> <span class="tok-n">60</span>
+    <span class="tok-k">hazelcast.logging.type</span><span class="tok-p">:</span> <span class="tok-s">slf4j</span></code></pre>
+          </div>
+
+          <h3>Spring Boot integration</h3>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>CacheConfig.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Configuration</span>
+<span class="tok-k">@EnableCaching</span>
+<span class="tok-k">public class</span> <span class="tok-t">CacheConfig</span> {
+
+    <span class="tok-k">@Bean</span>
+    <span class="tok-k">public</span> <span class="tok-t">HazelcastInstance</span> hazelcastInstance() {
+        <span class="tok-t">Config</span> config = <span class="tok-k">new</span> YamlConfigBuilder(
+            getClass().getResourceAsStream(<span class="tok-s">"/hazelcast.yaml"</span>)).build();
+        <span class="tok-k">return</span> Hazelcast.newHazelcastInstance(config);
+    }
+
+    <span class="tok-k">@Bean</span>
+    <span class="tok-k">public</span> <span class="tok-t">CacheManager</span> cacheManager(<span class="tok-t">HazelcastInstance</span> hz) {
+        <span class="tok-c">// Wraps IMap as a Spring Cache &mdash; @Cacheable works transparently</span>
+        <span class="tok-k">return new</span> HazelcastCacheManager(hz);
+    }
+}
+
+<span class="tok-c">// Usage: cache-aside with TTL inherited from hazelcast.yaml map config</span>
+<span class="tok-k">@Cacheable</span>(value = <span class="tok-s">"limit-matrix"</span>, key = <span class="tok-s">"#productCode + ':' + #currency"</span>)
+<span class="tok-k">public</span> <span class="tok-t">LimitMatrix</span> getLimitMatrix(<span class="tok-t">String</span> productCode, <span class="tok-t">String</span> currency) {
+    <span class="tok-k">return</span> limitRepository.findByProductAndCurrency(productCode, currency);
+}</code></pre>
+          </div>
+
+          <h2 id="consistency">Consistency model</h2>
+          <p>IMap is AP in CAP terms: it prioritises availability over strict consistency. In practice this means:</p>
+          <ul>
+            <li><strong>Writes are synchronous to the primary partition and asynchronous to backups</strong> when <code>async-backup-count &gt; 0</code>. A primary failure before backup sync completes loses the write.</li>
+            <li><strong>Reads from the primary partition are always current.</strong> Reads from a replica (if you configure read-from-backup) may be stale by the replication lag.</li>
+            <li><strong>EntryProcessor is atomic on the partition.</strong> It reads, modifies, and writes in a single partition-local operation with no other thread interleaving. This is the right tool for read-modify-write on IMap without external locking.</li>
+          </ul>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">IMap.get() + IMap.put() is not atomic</div>
+            <p>The common mistake: reading a value, modifying it in the application, and writing it back. Between <code>get</code> and <code>put</code>, another node can modify the same key. The result is a lost update. Use <code>EntryProcessor</code>, <code>map.replace(key, expectedValue, newValue)</code>, or the CP subsystem's <code>CPMap</code> when atomicity matters. This is the class of bug that produces incorrect limit consumption in a payment router under concurrent load.</p>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>DebitEntryProcessor.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-c">// Safe: runs atomically on the partition that owns accountId</span>
+<span class="tok-k">public class</span> <span class="tok-t">DebitEntryProcessor</span>
+    <span class="tok-k">implements</span> EntryProcessor&lt;<span class="tok-t">AccountKey</span>, <span class="tok-t">AccountState</span>, <span class="tok-t">DebitResult</span>&gt; {
+
+    <span class="tok-k">private final</span> <span class="tok-t">BigDecimal</span> amount;
+
+    @Override
+    <span class="tok-k">public</span> <span class="tok-t">DebitResult</span> process(<span class="tok-t">Map.Entry</span>&lt;<span class="tok-t">AccountKey</span>, <span class="tok-t">AccountState</span>&gt; entry) {
+        <span class="tok-t">AccountState</span> state = entry.getValue();
+        <span class="tok-k">if</span> (state == <span class="tok-k">null</span>) <span class="tok-k">return</span> DebitResult.NOT_FOUND;
+        <span class="tok-k">if</span> (state.getAvailableBalance().compareTo(amount) &lt; <span class="tok-n">0</span>)
+            <span class="tok-k">return</span> DebitResult.INSUFFICIENT_FUNDS;
+
+        state.debit(amount);
+        entry.setValue(state);   <span class="tok-c">// writes back atomically</span>
+        <span class="tok-k">return</span> DebitResult.SUCCESS;
+    }
+}</code></pre>
+          </div>
+
+          <h2 id="observability">Observability</h2>
+          <p>Hazelcast 5.x exposes metrics via Micrometer when <code>hazelcast-spring</code> is on the classpath. Key metrics to alert on in production:</p>
+          <ul>
+            <li><strong>hazelcast.map.get.hits / (hits + misses).</strong> Near-cache hit rate. Alert if near-cache hit rate for <code>limit-matrix</code> drops below 80% &mdash; means invalidation is too aggressive or TTL is too short.</li>
+            <li><strong>hazelcast.map.put.count.</strong> Write rate per IMap. Useful to detect unexpected write bursts that trigger invalidation floods.</li>
+            <li><strong>hazelcast.partition.migration.active.</strong> Alert if this stays &gt;0 for more than 30 seconds &mdash; indicates a member left and partitions are migrating, which degrades read latency.</li>
+            <li><strong>hazelcast.executor.queue.size</strong> for the partition executor. A queue buildup means partition threads are saturated &mdash; check for slow EntryProcessor implementations or lock contention.</li>
+            <li><strong>JVM heap.</strong> In embedded mode, Hazelcast lives on the same heap as the application. Watch <code>jvm.memory.used</code> and alert at 75% of <code>-Xmx</code>, not the Kubernetes memory limit, to leave room for GC overhead.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>prometheus-rules.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">groups</span><span class="tok-p">:</span>
+  <span class="tok-p">-</span> <span class="tok-k">name</span><span class="tok-p">:</span> <span class="tok-s">hazelcast</span>
+    <span class="tok-k">rules</span><span class="tok-p">:</span>
+      <span class="tok-p">-</span> <span class="tok-k">alert</span><span class="tok-p">:</span> <span class="tok-s">HazelcastNearCacheHitRateLow</span>
+        <span class="tok-k">expr</span><span class="tok-p">: |</span>
+          <span class="tok-s">rate(hazelcast_map_get_hits_total{map="limit-matrix"}[5m])</span>
+          <span class="tok-s">/ rate(hazelcast_map_gets_total{map="limit-matrix"}[5m]) &lt; 0.8</span>
+        <span class="tok-k">for</span><span class="tok-p">:</span> <span class="tok-s">10m</span>
+        <span class="tok-k">labels</span><span class="tok-p">:</span>
+          <span class="tok-k">severity</span><span class="tok-p">:</span> <span class="tok-s">warning</span>
+
+      <span class="tok-p">-</span> <span class="tok-k">alert</span><span class="tok-p">:</span> <span class="tok-s">HazelcastPartitionMigrating</span>
+        <span class="tok-k">expr</span><span class="tok-p">:</span> <span class="tok-s">hazelcast_partition_migration_active &gt; 0</span>
+        <span class="tok-k">for</span><span class="tok-p">:</span> <span class="tok-s">30s</span>
+        <span class="tok-k">labels</span><span class="tok-p">:</span>
+          <span class="tok-k">severity</span><span class="tok-p">:</span> <span class="tok-s">critical</span></code></pre>
+          </div>
+
+          <h2 id="when-hazelcast">When Hazelcast wins</h2>
+          <p>Three situations in KSA financial services where Hazelcast consistently outperforms a Redis-based architecture:</p>
+
+          <p><strong>1. Risk computation with large object graphs.</strong> A risk engine that loads a portfolio of 500 instruments, computes VaR using Monte Carlo, and returns a scalar might read 500 Redis keys, deserialise each object, build the graph in Java, compute, and discard. With embedded Hazelcast, the portfolio objects are already in the JVM heap. The computation runs on the data in place. At SAIB scale &mdash; hundreds of portfolios evaluated per minute at batch cut-off &mdash; the serialisation/network overhead in Redis is a measurable share of processing time.</p>
+
+          <p><strong>2. Stateful payment routing with limit enforcement.</strong> A payment router that must check 4 limit counters (daily, weekly, monthly, per-beneficiary) before authorising a payment can do so with a single <code>executeOnKey</code> call if the counters are co-located on the same Hazelcast partition via <code>PartitionAware</code>. The atomic EntryProcessor gives linearizable read-modify-write semantics without distributed locking. The same pattern in Redis requires a Lua script with 4 HINCRBY calls and a transaction, and the network round trip is unavoidable.</p>
+
+          <p><strong>3. Rate-limiting and velocity checks.</strong> Fraud detection velocity checks (N transactions per account in 5 minutes) require an in-process sliding window. With embedded Hazelcast, the window lives in the JVM heap and the check is a heap read. With Redis, it is a ZRANGE + ZADD + ZREMRANGEBYSCORE sequence &mdash; three round trips or one Lua script. Sub-10 ms fraud pre-screening is achievable with Hazelcast; it requires real investment in Redis pipeline design to match.</p>
+
+          <table>
+            <thead>
+              <tr><th>Use case</th><th>Hazelcast (embedded)</th><th>Redis Cluster</th><th>Winner</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Reference data cache, large objects</td><td>Heap read + near-cache</td><td>GET + deserialise</td><td>Hazelcast</td></tr>
+              <tr><td>Atomic read-modify-write</td><td>EntryProcessor, partition-local</td><td>Lua script, network</td><td>Hazelcast</td></tr>
+              <tr><td>Shared session state across heterogeneous services</td><td>Requires common data model</td><td>Any client reads any key</td><td>Redis</td></tr>
+              <tr><td>Very large working set (&gt;50 GB)</td><td>JVM heap pressure</td><td>External, no GC impact</td><td>Redis</td></tr>
+              <tr><td>Pub/sub or Streams</td><td>ITopic (limited)</td><td>Pub/Sub, Streams, rich</td><td>Redis</td></tr>
+              <tr><td>Multi-language consumers</td><td>Hazelcast client for each language</td><td>Native clients everywhere</td><td>Redis</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="pitfalls">Production pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Split-brain</div>
+            <p>A network partition can divide a Hazelcast cluster into two groups, each believing it is the primary for the same partitions. Both sides continue to accept writes; when the partition heals, Hazelcast must merge the two versions. Configure <code>merge-policy</code> explicitly &mdash; the default is <code>PutIfAbsentMergePolicy</code>, which silently drops one side's writes. For limit counters, use <code>PassThroughMergePolicy</code> and a compensating reconciliation job. In Kubernetes, split-brain is most likely during node drain events with long-lived TCP connections; mitigate by keeping cluster size at 3 or 5 (odd quorum).</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Serialisation versioning</div>
+            <p>A rolling deploy upgrades half the pods to a new version while old pods still run. If the new version adds a field to a serialised class that Hazelcast stores on the heap, the old pods will fail to deserialise it when they receive a partition backup. Use <code>IdentifiedDataSerializable</code> or <code>Portable</code> serialisation with explicit version fields &mdash; not Java's default serialisation, which does not support forward compatibility.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Don&rsquo;t use IMap as a message queue</div>
+            <p>IMap with an <code>EntryListener</code> is not a reliable queue. Listeners are best-effort and fire asynchronously; they do not guarantee exactly-once delivery and are not persisted across cluster restarts. For reliable work distribution, use <code>IQueue</code> or a proper broker (Kafka, IBM MQ). This distinction has caused several missed payment notifications in banking deployments that tried to use map listeners as event triggers.</p>
+          </div>
+
+          <nav class="article-nav">
+            <a href="../distributed-caching.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Distributed Caching</div>
+            </a>
+            <a href="redis-cluster.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Redis Cluster &amp; Sentinel &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
