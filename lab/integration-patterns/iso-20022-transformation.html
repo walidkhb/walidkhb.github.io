@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISO 20022 Transformation Patterns &mdash; MT-to-MX Migration &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Mapping legacy SWIFT MT messages to ISO 20022 pacs.* and pain.* flows in production: translation layers, validation strategy, IBM ACE mappings, Apache Camel routes, truncation traps, and the SAMA migration timeline.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="ISO 20022 Transformation Patterns &mdash; MT-to-MX Migration &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Mapping legacy MT messages to ISO 20022 pacs.* and pain.* flows, validation strategies, and the migration paths regulators expect.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/iso-20022-transformation.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ISO 20022 Transformation Patterns &mdash; MT-to-MX Migration">
+  <meta name="twitter:description" content="Mapping legacy MT messages to ISO 20022 pacs.* and pain.* flows for KSA banking.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/iso-20022-transformation.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "ISO 20022 Transformation Patterns: MT-to-MX Migration in Production",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-07-25",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/integration-patterns/iso-20022-transformation.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Integration Design Patterns &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/integration-patterns.html"
+    },
+    "description": "Mapping legacy SWIFT MT messages to ISO 20022 pacs.* and pain.* flows in production: translation layers, validation strategy, IBM ACE mappings, Apache Camel routes, truncation traps, and the SAMA migration timeline.",
+    "proficiencyLevel": "Expert",
+    "audience": {
+      "@type": "Audience",
+      "audienceType": "Software Engineers, Integration Architects"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>ISO 20022 Transformation</div>
+          <span class="overline">Lab Article</span>
+          <h1>ISO 20022 Transformation Patterns: MT-to-MX Migration in Production</h1>
+          <p class="lead">Mapping legacy SWIFT MT messages to ISO 20022 pacs.* and pain.* message types in a live KSA bank: translation architecture, enrichment and validation strategy, the truncation traps that cause SAMA rejects, and what actually ships in production.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#message-landscape">Message landscape</a></li>
+            <li><a href="#mt-to-mx">MT-to-MX translation</a></li>
+            <li><a href="#canonical-pivot">Canonical pivot model</a></li>
+            <li><a href="#ace-mapping">IBM ACE mapping</a></li>
+            <li><a href="#camel-route">Camel route approach</a></li>
+            <li><a href="#validation-enrichment">Validation &amp; enrichment</a></li>
+            <li><a href="#error-handling">Error handling &amp; rejects</a></li>
+            <li><a href="#performance">Performance &amp; scalability</a></li>
+            <li><a href="#testing">Testing strategy</a></li>
+            <li><a href="#sama-timeline">SAMA migration timeline</a></li>
+            <li><a href="#production-reality">What production tells you</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> ISO 20022 / SWIFT MT / IBM ACE 12 / Apache Camel 4 / Symitar / SAMA</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>ISO 20022 is the message standard that replaced SWIFT MT for cross-border payments in the Arab Monetary Fund&rsquo;s Arab Regional Payments (BUNA) scheme, underpins SAMA&rsquo;s IPS (Immediate Payment System), and is the required format for pacs.008 credit transfers across the GCC clearing infrastructure. For any KSA bank still running a core that speaks SWIFT MT &mdash; MT103 for customer transfers, MT202 for bank-to-bank, MT940 for statements &mdash; ISO 20022 migration is not optional and not far away.</p>
+          <p>The engineering problem is messier than it looks from the standards documentation. MT messages are line-structured, positional, and deliberately terse. MX (ISO 20022 XML) messages are schema-validated, richly structured, and carry a data model that has no direct mapping for large chunks of what MT uses. The translation is <strong>lossy in both directions</strong>: MT-to-MX loses data that MX requires but MT cannot carry; MX-to-MT truncates data that exceeds MT field limits. The integration layer that sits between your legacy core and the payment scheme infrastructure has to handle both directions, recover gracefully from truncation, and produce SAMA-compliant messages on every payment path.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Scope: pacs.008 and pain.001</div>
+            <p>This article focuses on the two message types that affect the most payment volume in a KSA retail and commercial bank: <strong>pacs.008</strong> (FIToFICustomerCreditTransfer &mdash; the replacement for MT103) and <strong>pain.001</strong> (CustomerCreditTransferInitiation &mdash; the corporate-to-bank initiation format). Pain.002 acknowledgements and camt.053 statements follow similar patterns and are covered where they diverge.</p>
+          </div>
+
+          <h2 id="message-landscape">Message landscape</h2>
+          <p>Before writing a single mapping rule, you need to know which message types flow across your estate and which direction each flows. The diagram below shows the typical topology for a KSA commercial bank connected to both SAMA IPS and the BUNA cross-border scheme.</p>
+
+          <div class="diagram" role="img" aria-label="ISO 20022 message flow across a KSA bank payment estate">
+            <div class="diagram__inner">
+              <svg width="780" height="400" viewBox="0 0 780 400" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="iso1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="iso2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="iso3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Corporate channel -->
+                <rect x="20" y="30" width="130" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="85" y="52" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Corporate Portal</text>
+                <text x="85" y="68" text-anchor="middle" fill="#71717a" font-size="9">pain.001 init</text>
+
+                <!-- Retail channel -->
+                <rect x="20" y="110" width="130" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="85" y="132" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Retail Banking App</text>
+                <text x="85" y="148" text-anchor="middle" fill="#71717a" font-size="9">pain.001 / REST</text>
+
+                <!-- Integration layer -->
+                <rect x="210" y="20" width="170" height="360" rx="8" fill="#0f0f16" stroke="#00d4aa" stroke-width="2"/>
+                <text x="295" y="44" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">INTEGRATION LAYER</text>
+                <text x="295" y="60" text-anchor="middle" fill="#71717a" font-size="8">IBM ACE / Apache Camel</text>
+
+                <rect x="225" y="75" width="140" height="45" rx="5" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="295" y="96" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">MT &harr; MX Translator</text>
+                <text x="295" y="111" text-anchor="middle" fill="#71717a" font-size="8">field mapping &middot; enrichment</text>
+
+                <rect x="225" y="135" width="140" height="45" rx="5" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="295" y="156" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Schema Validator</text>
+                <text x="295" y="171" text-anchor="middle" fill="#71717a" font-size="8">ISO 20022 XSD &middot; SAMA rules</text>
+
+                <rect x="225" y="195" width="140" height="45" rx="5" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="295" y="216" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Canonical Router</text>
+                <text x="295" y="231" text-anchor="middle" fill="#71717a" font-size="8">IPS / BUNA / SWIFT</text>
+
+                <rect x="225" y="255" width="140" height="45" rx="5" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="295" y="276" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Reject Handler</text>
+                <text x="295" y="291" text-anchor="middle" fill="#71717a" font-size="8">pain.002 / pacs.002</text>
+
+                <rect x="225" y="315" width="140" height="45" rx="5" fill="#1c1c28" stroke="#71717a"/>
+                <text x="295" y="336" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Audit &amp; Archive</text>
+                <text x="295" y="351" text-anchor="middle" fill="#71717a" font-size="8">immutable log &middot; 7y retention</text>
+
+                <!-- Downstream targets -->
+                <rect x="450" y="30" width="140" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="520" y="52" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">SAMA IPS</text>
+                <text x="520" y="68" text-anchor="middle" fill="#71717a" font-size="9">pacs.008 &middot; pacs.002</text>
+
+                <rect x="450" y="105" width="140" height="50" rx="6" fill="#16161f" stroke="#a78bfa"/>
+                <text x="520" y="127" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">BUNA / GCC</text>
+                <text x="520" y="143" text-anchor="middle" fill="#71717a" font-size="9">pacs.008 cross-border</text>
+
+                <rect x="450" y="180" width="140" height="50" rx="6" fill="#16161f" stroke="#fbbf24"/>
+                <text x="520" y="202" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">SWIFT Network</text>
+                <text x="520" y="218" text-anchor="middle" fill="#71717a" font-size="9">MT103 (parallel run)</text>
+
+                <rect x="450" y="255" width="140" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="520" y="277" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Core Banking</text>
+                <text x="520" y="293" text-anchor="middle" fill="#71717a" font-size="9">CICS / Temenos / TCS</text>
+
+                <!-- Arrows left to integration -->
+                <line x1="150" y1="55" x2="208" y2="97" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#iso1)"/>
+                <line x1="150" y1="135" x2="208" y2="130" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#iso1)"/>
+
+                <!-- Arrows integration to right -->
+                <line x1="366" y1="100" x2="448" y2="55" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#iso1)"/>
+                <line x1="366" y1="155" x2="448" y2="130" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#iso2)"/>
+                <line x1="366" y1="215" x2="448" y2="205" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#iso3)"/>
+                <line x1="366" y1="275" x2="448" y2="280" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#iso1)"/>
+
+                <!-- Labels -->
+                <text x="610" y="30" text-anchor="middle" fill="#71717a" font-size="8">Outbound pacs.008</text>
+                <text x="610" y="105" text-anchor="middle" fill="#71717a" font-size="8">Cross-border MX</text>
+                <text x="610" y="180" text-anchor="middle" fill="#71717a" font-size="8">Parallel run / coex</text>
+                <text x="610" y="255" text-anchor="middle" fill="#71717a" font-size="8">MT inbound / status</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; ISO 20022 transformation layer in a KSA bank: inbound pain.001 is enriched and translated outbound to pacs.008 for IPS, BUNA, or SWIFT.</div>
+          </div>
+
+          <h2 id="mt-to-mx">MT-to-MX translation</h2>
+          <p>The mapping between MT103 and pacs.008 is not one-to-one. The table below captures the field-level relationships that cause the most production issues.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>MT103 Field</th>
+                <th>ISO 20022 / pacs.008 Element</th>
+                <th>Translation risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>:20: TxRef</code></td>
+                <td><code>CdtTrfTxInf/PmtId/InstrId</code></td>
+                <td>MT max 16 chars; pacs.008 allows 35. Outbound OK; inbound may need padding.</td>
+              </tr>
+              <tr>
+                <td><code>:32A: ValueDate/CCY/Amt</code></td>
+                <td><code>IntrBkSttlmDt</code> + <code>IntrBkSttlmAmt</code></td>
+                <td>Date format YYMMDD &rarr; YYYY-MM-DD. Amount implicit decimal &rarr; explicit decimal.</td>
+              </tr>
+              <tr>
+                <td><code>:50K: OrderingCustomer</code></td>
+                <td><code>Dbtr</code> + <code>DbtrAcct/Id/IBAN</code></td>
+                <td>MT carries name + account free-text. MX requires IBAN. IBAN derivation may need core lookup.</td>
+              </tr>
+              <tr>
+                <td><code>:57A: AccountWithInstitution</code></td>
+                <td><code>CdtrAgt/FinInstnId/BICFI</code></td>
+                <td>Direct BIC-to-BIC mapping; straightforward.</td>
+              </tr>
+              <tr>
+                <td><code>:59: Beneficiary</code></td>
+                <td><code>Cdtr</code> + <code>CdtrAcct/Id/IBAN</code></td>
+                <td>Same IBAN derivation issue as :50K. Name max 35 chars in MT; 140 chars in MX &mdash; no truncation outbound, but sanitise Arabic characters.</td>
+              </tr>
+              <tr>
+                <td><code>:70: RemittanceInfo</code></td>
+                <td><code>RmtInf/Ustrd</code></td>
+                <td>MT field 4 lines &times; 35 chars = 140 chars. MX <code>Ustrd</code> allows 140 chars &mdash; fits exactly. Character set difference: MT uses SWIFT-X character set; MX allows UTF-8.</td>
+              </tr>
+              <tr>
+                <td><code>:71A: ChargesCode</code></td>
+                <td><code>ChrgBr</code></td>
+                <td>BEN/OUR/SHA &rarr; CRED/DEBT/SHAR. One-to-one mapping; never guess on this field.</td>
+              </tr>
+              <tr>
+                <td><em>(no MT equivalent)</em></td>
+                <td><code>SttlmMtd</code> = CLRG</td>
+                <td>Required by SAMA IPS. Must be added during enrichment; not present in any MT field.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">The IBAN gap is the most common migration blocker</div>
+            <p>MT103 field <code>:59:</code> carries an account number in whatever format the ordering bank chose &mdash; IBAN, BBAN, or free-text. ISO 20022 pacs.008 requires an IBAN in <code>CdtrAcct/Id/IBAN</code>. If your core banking system can resolve a domestic BBAN to IBAN, wire that lookup into the translation layer at enrichment time. If it cannot, the payment must be rejected before it reaches SAMA IPS, not after. The failure mode is a pacs.002 reject with reason code <code>AC01</code> (Incorrect Account Number), which starts a manual repair cycle.</p>
+          </div>
+
+          <h2 id="canonical-pivot">Canonical pivot model</h2>
+          <p>The safest architecture for a bank that speaks multiple message formats &mdash; MT inbound from SWIFT, pacs.008 outbound to IPS, pain.001 inbound from corporate channels &mdash; is a <strong>canonical pivot</strong>: all messages are translated to a single internal representation at the integration boundary, and all outbound translation happens from the canonical form. This avoids N&times;M mappings (where N is the number of input formats and M is the number of output schemes).</p>
+          <p>The canonical form for a payment at SAIB is richer than any single ISO 20022 message type because it carries fields needed by the internal audit trail, risk scoring, and sanctions screening that no external message format requires. Keep the canonical form internal &mdash; it is never serialised to disk as-is, only as the source of outbound message generation.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>canonical-payment-v2.xsd (key elements)</span><span class="code-block__lang">xsd</span></div>
+<pre><code><span class="tok-k">&lt;xs:schema</span> xmlns:xs=<span class="tok-s">"http://www.w3.org/2001/XMLSchema"</span>
+           targetNamespace=<span class="tok-s">"http://acmebank.com/canonical/payment/v2"</span>&gt;
+
+  <span class="tok-k">&lt;xs:complexType</span> name=<span class="tok-s">"CanonicalPayment"</span>&gt;
+    <span class="tok-k">&lt;xs:sequence&gt;</span>
+      <span class="tok-c">&lt;!-- Routing &amp; identity --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"msgId"</span>       type=<span class="tok-s">"xs:string"</span>/&gt;  <span class="tok-c">&lt;!-- internal UUID --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"srcRef"</span>      type=<span class="tok-s">"xs:string"</span>/&gt;  <span class="tok-c">&lt;!-- original :20: or InstrId --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"scheme"</span>      type=<span class="tok-s">"SchemeEnum"</span>/&gt; <span class="tok-c">&lt;!-- IPS | BUNA | SWIFT --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"priority"</span>    type=<span class="tok-s">"xs:string"</span>/&gt;  <span class="tok-c">&lt;!-- HIGH | NORM | BULK --&gt;</span>
+
+      <span class="tok-c">&lt;!-- Parties (always IBAN for KSA) --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"debtorIban"</span>  type=<span class="tok-s">"xs:string"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"debtorName"</span>  type=<span class="tok-s">"xs:string"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"debtorBic"</span>   type=<span class="tok-s">"xs:string"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"creditorIban"</span> type=<span class="tok-s">"xs:string"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"creditorName"</span> type=<span class="tok-s">"xs:string"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"creditorBic"</span>  type=<span class="tok-s">"xs:string"</span>/&gt;
+
+      <span class="tok-c">&lt;!-- Amount --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"amount"</span>      type=<span class="tok-s">"xs:decimal"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"currency"</span>    type=<span class="tok-s">"xs:string"</span>/&gt;  <span class="tok-c">&lt;!-- ISO 4217 --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"valueDate"</span>   type=<span class="tok-s">"xs:date"</span>/&gt;
+
+      <span class="tok-c">&lt;!-- Enrichment fields (not in MT/MX) --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"sanctionsId"</span> type=<span class="tok-s">"xs:string"</span> minOccurs=<span class="tok-s">"0"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"riskScore"</span>   type=<span class="tok-s">"xs:integer"</span> minOccurs=<span class="tok-s">"0"</span>/&gt;
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"remittance"</span>  type=<span class="tok-s">"xs:string"</span> minOccurs=<span class="tok-s">"0"</span>/&gt;
+    <span class="tok-k">&lt;/xs:sequence&gt;</span>
+  <span class="tok-k">&lt;/xs:complexType&gt;</span>
+
+<span class="tok-k">&lt;/xs:schema&gt;</span></code></pre>
+          </div>
+
+          <h2 id="ace-mapping">IBM ACE mapping</h2>
+          <p>IBM ACE is the dominant runtime for MT-to-MX translation in Saudi banks that already run an IBM middleware stack. ACE 12&rsquo;s graphical <code>Mapping</code> node with ISO 20022 DFDL schemas is the recommended approach for new flows; ESQL is acceptable for short enrichment logic where a visual mapping would be harder to review.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Parse the inbound MT103</h4>
+              <p>Attach a DFDL message set with the MT103 schema. IBM provides a SWIFT MT DFDL library for ACE; import it into the BAR and configure the <code>MQInput</code> node&rsquo;s parser to use it. The result is a fully navigable <code>MRM</code> tree in the local environment tree.</p>
+            </li>
+            <li>
+              <h4>Validate IBAN and BIC before mapping</h4>
+              <p>Use a <code>Compute</code> node or a Java plugin call to validate <code>:50K:</code> account against MOD-97 before any transformation. A validation failure goes to the error subflow, not the mapping node. This surfaces bad data early with a structured reject, not a downstream SAMA reject.</p>
+            </li>
+            <li>
+              <h4>Map to canonical form</h4>
+              <p>The <code>Mapping</code> node maps MT tree fields to the canonical XSD type. Configure date format transformation (YYMMDD &rarr; YYYY-MM-DD) in the mapping function panel. Amount mapping: strip any implied decimal and recast with explicit decimal using the <code>CAST&hellip;AS DECIMAL</code> function.</p>
+            </li>
+            <li>
+              <h4>Enrich from core</h4>
+              <p>A <code>DatabaseRetrieve</code> or <code>HTTPRequest</code> node looks up the debtor IBAN from the core banking account master if it is absent. Use a 500ms timeout and a circuit breaker. If the lookup fails, fail the payment with a structured error &mdash; do not propagate a payment with an unknown IBAN.</p>
+            </li>
+            <li>
+              <h4>Generate pacs.008</h4>
+              <p>A second <code>Mapping</code> node transforms from canonical to the pacs.008 XSD. Set the message domain to <code>XMLNSC</code> and attach the ISO 20022 XSD. The generated XML must be namespace-correct &mdash; the ACE XMLNSC domain handles this automatically when the schema is correctly associated.</p>
+            </li>
+            <li>
+              <h4>Validate against SAMA ruleset</h4>
+              <p>A <code>Validate</code> node with the SAMA-extended XSD (SAMA publishes an XSD overlay for IPS) catches any missing mandatory extensions before the message leaves the bank.</p>
+            </li>
+            <li>
+              <h4>Route and dispatch</h4>
+              <p>A <code>RouteToLabel</code> node reads the <code>scheme</code> field from the canonical form and routes to the IPS MQ queue, BUNA HTTPS endpoint, or the SWIFT Alliance Lite2 connector. Each route uses the failure terminal for DLQ handling.</p>
+            </li>
+          </ol>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>EnrichAndRoute.esql &mdash; IBAN validation &amp; scheme routing</span><span class="code-block__lang">esql</span></div>
+<pre><code><span class="tok-k">CREATE COMPUTE MODULE</span> EnrichAndRoute
+  <span class="tok-k">CREATE FUNCTION</span> Main() <span class="tok-k">RETURNS</span> BOOLEAN
+  <span class="tok-k">BEGIN</span>
+    <span class="tok-k">DECLARE</span> iban    <span class="tok-k">CHARACTER</span>;
+    <span class="tok-k">DECLARE</span> credBic <span class="tok-k">CHARACTER</span>;
+
+    <span class="tok-k">SET</span> iban    = InputRoot.XMLNSC.CanonicalPayment.creditorIban;
+    <span class="tok-k">SET</span> credBic = InputRoot.XMLNSC.CanonicalPayment.creditorBic;
+
+    <span class="tok-c">-- Validate IBAN check digit (mod-97)</span>
+    <span class="tok-k">IF NOT</span> com.acmebank.ValidateIBAN(iban) <span class="tok-k">THEN</span>
+      <span class="tok-k">SET</span> OutputRoot.XMLNSC.Reject.code = <span class="tok-s">'AC01'</span>;
+      <span class="tok-k">SET</span> OutputRoot.XMLNSC.Reject.ref  = InputRoot.XMLNSC.CanonicalPayment.srcRef;
+      <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out_reject'</span>;
+      <span class="tok-k">RETURN</span> FALSE;
+    <span class="tok-k">END IF</span>;
+
+    <span class="tok-c">-- Determine scheme by creditor BIC prefix</span>
+    <span class="tok-k">IF</span> credBic <span class="tok-k">LIKE</span> <span class="tok-s">'SA%'</span> <span class="tok-k">THEN</span>
+      <span class="tok-c">-- Domestic: route to SAMA IPS</span>
+      <span class="tok-k">SET</span> OutputRoot = InputRoot;
+      <span class="tok-k">SET</span> OutputRoot.XMLNSC.CanonicalPayment.scheme = <span class="tok-s">'IPS'</span>;
+      <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out_ips'</span>;
+    <span class="tok-k">ELSEIF</span> credBic <span class="tok-k">LIKE</span> <span class="tok-s">'AE%'</span> <span class="tok-k">OR</span> credBic <span class="tok-k">LIKE</span> <span class="tok-s">'KW%'</span>
+        <span class="tok-k">OR</span> credBic <span class="tok-k">LIKE</span> <span class="tok-s">'QA%'</span> <span class="tok-k">OR</span> credBic <span class="tok-k">LIKE</span> <span class="tok-s">'BH%'</span>
+        <span class="tok-k">OR</span> credBic <span class="tok-k">LIKE</span> <span class="tok-s">'OM%'</span> <span class="tok-k">THEN</span>
+      <span class="tok-c">-- GCC cross-border: BUNA</span>
+      <span class="tok-k">SET</span> OutputRoot = InputRoot;
+      <span class="tok-k">SET</span> OutputRoot.XMLNSC.CanonicalPayment.scheme = <span class="tok-s">'BUNA'</span>;
+      <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out_buna'</span>;
+    <span class="tok-k">ELSE</span>
+      <span class="tok-c">-- International: SWIFT (parallel run period)</span>
+      <span class="tok-k">SET</span> OutputRoot = InputRoot;
+      <span class="tok-k">SET</span> OutputRoot.XMLNSC.CanonicalPayment.scheme = <span class="tok-s">'SWIFT'</span>;
+      <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out_swift'</span>;
+    <span class="tok-k">END IF</span>;
+
+    <span class="tok-k">RETURN</span> FALSE;
+  <span class="tok-k">END</span>;
+<span class="tok-k">END MODULE</span>;</code></pre>
+          </div>
+
+          <h2 id="camel-route">Camel route approach</h2>
+          <p>Apache Camel 4 with the <code>camel-iso20022</code> community component and a custom XSLT-based translator is a viable alternative for greenfield or cloud-native integration contexts where IBM licensing is not already in place. Camel K on OpenShift runs ISO 20022 translation flows as lightweight pods with a lower memory footprint than an ACE integration server.</p>
+          <p>The trade-off: Camel&rsquo;s ISO 20022 support is less mature than ACE&rsquo;s DFDL SWIFT library. You own the XSLT maintenance. ACE&rsquo;s IBM-provided parsers and the SWIFT DFDL library are commercially supported and auditable for a regulated institution &mdash; a material difference when your SAMA auditor asks who maintains the translation logic.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>iso20022-transform-route.yaml &mdash; Camel K DSL</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">- route</span>:
+    <span class="tok-k">id</span>: <span class="tok-s">mt103-to-pacs008</span>
+    <span class="tok-k">from</span>:
+      <span class="tok-k">uri</span>: <span class="tok-s">mq:queue:INBOUND.MT103</span>
+      <span class="tok-k">parameters</span>:
+        <span class="tok-k">connectionFactory</span>: <span class="tok-s">#mqConnectionFactory</span>
+    <span class="tok-k">steps</span>:
+      <span class="tok-c"># Parse and unmarshal MT103 text to intermediate bean</span>
+      - <span class="tok-k">bean</span>:
+          <span class="tok-k">ref</span>: <span class="tok-s">mt103Parser</span>
+          <span class="tok-k">method</span>: <span class="tok-s">parse</span>
+
+      <span class="tok-c"># Enrich: lookup IBAN from account master service</span>
+      - <span class="tok-k">enrich</span>:
+          <span class="tok-k">expression</span>:
+            <span class="tok-k">simple</span>:
+              <span class="tok-k">expression</span>: <span class="tok-s">http://account-master/resolve-iban?account=${body.debtorAccount}</span>
+          <span class="tok-k">aggregationStrategy</span>: <span class="tok-s">#ibanMergeStrategy</span>
+          <span class="tok-k">timeout</span>: <span class="tok-n">500</span>
+
+      <span class="tok-c"># XSLT transformation: canonical → pacs.008</span>
+      - <span class="tok-k">to</span>:
+          <span class="tok-k">uri</span>: <span class="tok-s">xslt:classpath:xslt/canonical-to-pacs008.xslt</span>
+          <span class="tok-k">parameters</span>:
+            <span class="tok-k">contentCache</span>: <span class="tok-n">true</span>
+            <span class="tok-k">saxon</span>: <span class="tok-n">true</span>
+
+      <span class="tok-c"># Validate against SAMA IPS XSD</span>
+      - <span class="tok-k">to</span>:
+          <span class="tok-k">uri</span>: <span class="tok-s">validator:classpath:xsd/sama-pacs008-v3.xsd</span>
+
+      <span class="tok-c"># Content-based routing to IPS vs BUNA</span>
+      - <span class="tok-k">choice</span>:
+          <span class="tok-k">when</span>:
+            - <span class="tok-k">simple</span>:
+                <span class="tok-k">expression</span>: <span class="tok-s">${body.creditorBic} starts with 'SA'</span>
+              <span class="tok-k">steps</span>:
+                - <span class="tok-k">to</span>: <span class="tok-s">mq:queue:OUTBOUND.IPS.PACS008</span>
+          <span class="tok-k">otherwise</span>:
+            <span class="tok-k">steps</span>:
+              - <span class="tok-k">to</span>: <span class="tok-s">mq:queue:OUTBOUND.BUNA.PACS008</span>
+
+      <span class="tok-c"># Dead letter on any validation failure</span>
+      - <span class="tok-k">onException</span>:
+          <span class="tok-k">exception</span>: <span class="tok-s">org.apache.camel.ValidationException</span>
+          <span class="tok-k">handled</span>: <span class="tok-n">true</span>
+          <span class="tok-k">steps</span>:
+            - <span class="tok-k">bean</span>:
+                <span class="tok-k">ref</span>: <span class="tok-s">rejectEnricher</span>
+                <span class="tok-k">method</span>: <span class="tok-s">buildPacs002Reject</span>
+            - <span class="tok-k">to</span>: <span class="tok-s">mq:queue:OUTBOUND.REJECTS</span></code></pre>
+          </div>
+
+          <h2 id="validation-enrichment">Validation &amp; enrichment</h2>
+          <p>ISO 20022 messages are schema-valid by construction if you use a typed mapping tool. That is necessary but not sufficient for SAMA IPS acceptance. The IPS Technical Specifications impose a second layer of business-rule validation on top of the XSD that is not expressible in a schema alone.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">SAMA IPS mandatory fields not in the base XSD</div>
+            <p>The IPS Technical Specifications (available through SAMA&rsquo;s participant portal) mandate several extensions beyond the base pacs.008 v09 schema: a <code>SttlmMtd</code> of <code>CLRG</code>, a <code>ClrSys</code> code of <code>IPS</code>, and a <code>Purp/Cd</code> element populated from the SAMA-published purpose code table. These must be present and correctly valued or the message is rejected at the gateway with a pacs.002 reason code &mdash; there is no partial acceptance.</p>
+          </div>
+
+          <p>The enrichment sequence that reliably produces an accepted pacs.008 for a domestic SAR transfer:</p>
+          <ul>
+            <li><strong>IBAN resolution</strong>: debtor and creditor IBANs validated (MOD-97) and confirmed against the core account master.</li>
+            <li><strong>BIC lookup</strong>: creditor BIC resolved from the national IBAN registry (SAMA publishes a BIC directory for KSA IBANs).</li>
+            <li><strong>Purpose code</strong>: mapped from the internal payment type code to a SAMA-approved ISO 20022 purpose code. Maintain a lookup table in a database table, not hardcoded in the flow.</li>
+            <li><strong>Settlement method</strong>: always <code>CLRG</code> for IPS; always <code>INGA</code> for BUNA unless otherwise specified in the scheme rules.</li>
+            <li><strong>Charge bearer</strong>: derive from the originating channel or product type; default to <code>SHAR</code> for retail, <code>DEBT</code> for corporate bulk.</li>
+          </ul>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Arabic character set: the silent truncation trap</div>
+            <p>MT messages use the SWIFT-X character set &mdash; Latin characters, digits, and a small set of special characters. ISO 20022 MX messages allow UTF-8, which means Arabic names and remittance text are valid. But: if your translation layer outputs a pacs.008 with Arabic characters in the <code>Cdtr/Nm</code> element and the downstream SWIFT gateway is still in the parallel-run MT period, the MT103 generation from that pacs.008 will silently transliterate or strip the Arabic characters. Build a transliteration step for any field that may flow back through a SWIFT MT path, and include it in your testing matrix.</p>
+          </div>
+
+          <h2 id="error-handling">Error handling &amp; rejects</h2>
+          <p>Two reject paths must be handled explicitly. Both paths produce a pain.002 (CustomerPaymentStatusReport) back to the originating channel and a pacs.002 (FIToFIPaymentStatusReport) back to the sending bank if the payment arrived from another bank.</p>
+
+          <p><strong>Pre-send validation failure</strong> (caught in the integration layer): the flow generates a pain.002 with a <code>Rjct</code> status and the appropriate reason code, routes it back to the originating channel queue, and logs the failure with the original message reference. The failed message is moved to a quarantine queue for manual triage, not the DLQ &mdash; it is structurally valid but failed a business rule, and the distinction matters for support.</p>
+          <p><strong>SAMA IPS reject</strong> (pacs.002 returned from IPS): the integration layer must consume the pacs.002 from the IPS response queue, correlate it to the original payment by <code>OrgnlMsgId</code>, update the payment status in the core banking system, and generate a pain.002 back to the originating channel. This is the path that surprises teams: the reject is asynchronous, and if there is no consumer for the IPS response queue the reject silently queues and the originating channel never receives a status update.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Always consume the response queue, even in dev</div>
+            <p>A common pattern in early-stage IPS integration is to deploy the outbound path and leave the response queue unconfigured in the development environment. This works until the first reject message arrives from the SAMA sandbox &mdash; then the reject queue fills, the IPS test environment stops accepting messages once the queue depth hits the sandbox limit, and the team spends a day figuring out why their outbound path suddenly stopped working. Wire the response consumer before sending a single test message.</p>
+          </div>
+
+          <h2 id="performance">Performance &amp; scalability</h2>
+          <p>ISO 20022 XML messages are verbose. A pacs.008 for a single credit transfer is typically 3&ndash;5 KB of XML before envelope wrappers. Under IPS peak traffic &mdash; 5,000 transactions per second is a realistic Saudi market target at full rollout &mdash; the transformation layer must process 15&ndash;25 MB/s of XML, which means XSLT-based translation is not the right approach without Saxon-optimised streaming. The ACE mapping node uses a compiled binary format internally and is more efficient for sustained throughput.</p>
+          <p>Capacity planning for the translation layer: benchmark at the message size and transaction rate you expect at peak. For a mid-size KSA bank targeting 200 TPS peak for domestic IPS, a single ACE integration server with 2 vCPUs and 2 GB memory handles the load comfortably. Scale horizontally by adding replicas; ACE MQ input nodes consume from the same queue without coordinator conflict.</p>
+
+          <h2 id="testing">Testing strategy</h2>
+          <p>ISO 20022 transformation testing has a dimension that standard API testing does not: message version compatibility. SAMA IPS runs on pacs.008.001.09 today; SWIFT&rsquo;s CBPR+ programme targets pacs.008.001.10 for the 2027 coexistence deadline. Your transformation layer must be schema-version-aware, and your test suite must cover both.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Test type</th>
+                <th>Coverage</th>
+                <th>Tooling</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Field mapping unit tests</strong></td>
+                <td>Each MT field &rarr; MX element mapping, including edge cases (empty optional fields, maximum-length values, date format boundary)</td>
+                <td>JUnit 5 + XMLUnit 2; ACE flow unit testing framework</td>
+              </tr>
+              <tr>
+                <td><strong>Schema validation</strong></td>
+                <td>Generated MX messages validated against SAMA XSD overlay on every test run</td>
+                <td>Maven Surefire + Saxon EE</td>
+              </tr>
+              <tr>
+                <td><strong>IBAN resolution integration test</strong></td>
+                <td>Lookup service mock for valid, invalid, and unavailable scenarios</td>
+                <td>WireMock &middot; Pact contract testing</td>
+              </tr>
+              <tr>
+                <td><strong>SAMA sandbox connectivity test</strong></td>
+                <td>End-to-end submission and pacs.002 consumption against the SAMA participant sandbox</td>
+                <td>SAMA IPS sandbox; manual regression before each release</td>
+              </tr>
+              <tr>
+                <td><strong>Volume test</strong></td>
+                <td>200 TPS sustained for 30 minutes; p99 latency under 200ms for inbound-to-MQ-dispatch</td>
+                <td>Gatling &middot; JMeter; ACE statistics endpoint metrics</td>
+              </tr>
+              <tr>
+                <td><strong>Reject path test</strong></td>
+                <td>All pacs.002 reason codes that SAMA IPS can return, including asynchronous rejects arriving 30s after send</td>
+                <td>SAMA sandbox &middot; synthetic message injection</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="sama-timeline">SAMA migration timeline</h2>
+          <p>SAMA&rsquo;s IPS participation mandate and the CBPR+ coexistence window create three distinct deadlines that affect how you architect the translation layer today.</p>
+          <ul>
+            <li><strong>IPS live participation</strong>: banks connected to IPS are already sending and receiving pacs.008 v09. This is not a future requirement &mdash; if you are on IPS, you are already in production ISO 20022.</li>
+            <li><strong>SWIFT CBPR+ coexistence period (2025&ndash;2027)</strong>: cross-border SWIFT traffic runs in parallel: the sending bank may send MT103 or pacs.008; the receiving bank must accept both. Your translation layer must handle inbound MT103 <em>and</em> inbound pacs.008 during this window, converting both to canonical form for downstream processing.</li>
+            <li><strong>SWIFT MT decommission (November 2027)</strong>: after this date, MT messages will not be accepted for new cross-border payments through SWIFT. Any integration that still generates MT103 for cross-border must be migrated before this deadline. The translation layer built for IPS is the foundation; the SWIFT outbound path is the remaining work.</li>
+          </ul>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Coexistence is the hardest period, not post-migration</div>
+            <p>The temptation is to build a clean MX-only stack and skip the MT coexistence path. Resist it. During 2025&ndash;2027, a significant fraction of inbound payments will arrive as MT103 from correspondents who have not yet migrated. If your translation layer cannot handle inbound MT103, you will reject legitimate payments. The two-year coexistence window is shorter than it looks when you account for procurement, testing, SAMA certification, and parallel run periods.</p>
+          </div>
+
+          <h2 id="production-reality">What production tells you</h2>
+          <p>Three things consistently surface in production ISO 20022 deployments at KSA banks that documentation does not prepare you for:</p>
+
+          <p><strong>The purpose code table drifts.</strong> SAMA updates the IPS purpose code list. If your purpose code lookup is hardcoded in a flow or in a static configuration file, you will ship a pacs.008 with a deprecated purpose code the day after SAMA publishes an update. Store the purpose code table in a database with a version date; build a change-notification process that alerts the integration team when SAMA publishes an updated list.</p>
+          <p><strong>The pacs.002 reason code set is underdocumented.</strong> SAMA&rsquo;s IPS Technical Specifications list the reason codes; the operational guide describes the common ones. In production you will encounter reason codes that are in neither document, because they originate from the downstream core banking system of the receiving bank, not from IPS itself. Build your reject handler to log the raw reason code before mapping it to a human-readable status, because your support team will need the raw code to diagnose bank-specific issues.</p>
+          <p><strong>Test with Arabic names before go-live, not after.</strong> The first time a payment with an Arabic name in the creditor field hits a downstream system that was only tested with Latin-character names, you will discover a character-set issue in production. This is recoverable &mdash; it is not a data loss &mdash; but it is a support incident during what should be a smooth go-live period. Maintain a test dataset with Arabic names, numbers at field length limits, and all special characters allowed in the SWIFT-X and UTF-8 character sets.</p>
+
+          <nav class="article-nav">
+            <a href="../integration-patterns.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Integration Design Patterns</div>
+            </a>
+            <a href="ibm-ace.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Integration Design Patterns &amp; IBM ACE &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

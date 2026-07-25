@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISO 20022 Migration: The Strategic Decision Your Bank Can&rsquo;t Delegate to the Integration Team &mdash; Waleed Albadawi</title>
+  <meta name="description" content="ISO 20022 is not an integration project. The translation layer is the easy part. The hard decisions &mdash; coexistence strategy, purpose code governance, testing mandates &mdash; are leadership decisions that determine whether the migration lands cleanly or becomes a long-tail support problem.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/iso-20022-migration-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ISO 20022 Migration Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="ISO 20022 Migration: The Strategic Decision Your Bank Can&rsquo;t Delegate to the Integration Team &mdash; Waleed Albadawi">
+  <meta property="og:description" content="The translation layer is the easy part of ISO 20022 migration. What the leadership team has to decide: coexistence posture, purpose code governance, testing mandate, and what SAMA actually audits.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/iso-20022-migration-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ISO 20022 Migration: The Strategic Decision Your Bank Can&rsquo;t Delegate to the Integration Team">
+  <meta name="twitter:description" content="What the leadership team has to decide about ISO 20022: coexistence posture, purpose code governance, testing mandate, and what SAMA actually audits.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "ISO 20022 Migration: The Strategic Decision Your Bank Can't Delegate to the Integration Team",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-07-25",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/iso-20022-migration-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>ISO 20022 Migration</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; July 25, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">ISO 20022 Migration: The Strategic Decision Your Bank Can&rsquo;t Delegate to the Integration Team</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Every KSA bank that connects to SAMA IPS is already running ISO 20022. The pacs.008 credit transfer message is live. The reject path &mdash; the pacs.002 status report arriving asynchronously from IPS &mdash; is live. In most banks, the team that built that integration has moved on, the documentation is incomplete, and the coexistence problem &mdash; handling inbound MT103 from SWIFT correspondents who have not yet migrated &mdash; has been deferred to &ldquo;later.&rdquo; Later is 2027.</p>
+
+        <p>ISO 20022 is not primarily an integration project. The translation layer is the tractable part: a mapping from SWIFT MT fields to ISO 20022 XML elements, enriched with IBANs from the core account master and a purpose code from a lookup table. Engineers can build that in weeks. The hard part &mdash; the part that stalls at a VP&rsquo;s desk &mdash; is everything that sits around the translation: who owns the purpose code table when SAMA updates it, what the coexistence strategy is for the two-year period before SWIFT retires MT, and what it means when the first batch of SWIFT rejects arrives and the team discovers the reject-handling path was never tested.</p>
+
+        <p class="article-section">What SAMA actually audits</p>
+
+        <p>SAMA&rsquo;s IPS Technical Specifications are publicly available to participants. What is less obvious is what the SAMA examiner actually looks for during a payments infrastructure review. The answer is not the architecture diagram. It is the operational evidence: the test logs from the SAMA sandbox, the reject-handling procedure, the purpose code governance process, and the monitoring dashboard that shows pacs.002 consumption latency.</p>
+
+        <p>A bank that has built a technically correct translation layer and can demonstrate a tested reject path, a maintained purpose code table, and a monitoring setup that surfaces IPS connectivity failures within sixty seconds is in a better position with SAMA than a bank that has an elegant architecture with no operational evidence behind it. The examiner&rsquo;s question is not &ldquo;explain your mapping logic.&rdquo; It is: &ldquo;Show me the last test you ran against the SAMA sandbox and what you found.&rdquo;</p>
+
+        <blockquote>
+          <p>Purpose code governance is the most commonly underestimated operational discipline in ISO 20022 programmes. SAMA updates the IPS purpose code list. If nobody owns the update process, the first time a deprecated code is submitted, the payment fails at the IPS gateway with a reason code that the support team does not immediately recognise. That is a SAMA finding, not just a support ticket.</p>
+        </blockquote>
+
+        <p class="article-section">The coexistence decision leadership has to make</p>
+
+        <p>The SWIFT CBPR+ coexistence window &mdash; the period during which both MT103 and pacs.008 are accepted for cross-border payments through SWIFT &mdash; runs from 2025 through November 2027. During that window, a KSA bank will receive inbound payments from correspondents in one of three states: already migrated (sending pacs.008), in coexistence (sending either), or unmigrated (still sending MT103). The receiving bank must handle all three.</p>
+
+        <p>The leadership decision is whether to build the MT coexistence path now or to defer it until the volume of inbound MT traffic forces the issue. This is not a technology decision &mdash; the translation layer can be extended to handle inbound MT103 in parallel with inbound pacs.008, and the engineering complexity is well-understood. It is a resourcing and risk decision: how much incoming payment volume is currently arriving as MT103 from unmigrated correspondents, and what is the business impact of rejecting those payments with a &ldquo;format not supported&rdquo; status?</p>
+
+        <p>For most KSA banks with a mix of GCC and international correspondents, the practical answer is that a non-trivial fraction of inbound cross-border volume will remain in MT103 format through 2026 and into 2027. Deferring the coexistence path means either accepting those payments through a manual workaround or rejecting them, both of which are worse outcomes than the engineering work required to handle them properly.</p>
+
+        <p class="article-section">The decision the architecture team needs from leadership</p>
+
+        <p>Three decisions that cannot be delegated below VP level in a regulated bank:</p>
+
+        <p><strong>What is the coexistence posture?</strong> Does the bank accept inbound MT103 during the CBPR+ window and translate to canonical form, or does it reject MT103 and require correspondents to send pacs.008? The second option is simpler to build but requires communicating a migration deadline to all correspondent banks &mdash; a relationship management exercise, not a technical one.</p>
+
+        <p><strong>Who owns the purpose code table?</strong> The ISO 20022 purpose code is a mandatory element in SAMA IPS submissions. SAMA publishes an approved code list and updates it. Someone has to own the process of monitoring SAMA circulars, updating the lookup table in the integration layer, testing the new codes against the sandbox, and releasing the update before the old codes become invalid. This is a permanent operational function, not a one-time configuration task.</p>
+
+        <p><strong>What is the testing mandate?</strong> The SAMA sandbox exists for a reason: testing ISO 20022 submissions end-to-end, including the asynchronous reject path. The question leadership has to answer is how frequently the integration team must run end-to-end sandbox tests, what the success criteria are, and who signs off the results. Without a mandated testing cadence, the sandbox testing that happened during go-live does not repeat, and the integration drifts from the SAMA specification as purpose codes are added and schema versions change.</p>
+
+        <p class="article-section">What the team needs from leadership to ship it</p>
+
+        <p>The ISO 20022 integration is one of the few integration projects where the operational burden does not diminish after go-live. Most integrations, once stabilised, require only incident response. ISO 20022 requires ongoing attention: SAMA spec updates, purpose code table maintenance, CBPR+ coexistence handling, and the schema version migration that the November 2027 SWIFT deadline will require.</p>
+
+        <p>The ask from the integration team is not additional budget &mdash; the translation layer, once built, is not expensive to run. The ask is a clear ownership model: who monitors for SAMA specification changes, who owns the purpose code governance process, who signs off sandbox test results, and who has the authority to release an updated purpose code table without going through a full change management cycle that takes longer than SAMA&rsquo;s publication lead time.</p>
+
+        <p>The teams that have handled this well at KSA banks have made two structural choices: they have designated a payments operations function (distinct from the integration engineering team) that owns the SAMA relationship and monitors specification changes, and they have built a lightweight, database-backed purpose code lookup that can be updated by the operations function without an engineering release cycle. Neither of these is architecturally complex. Both require a leadership decision to establish them before go-live, not after the first SAMA reject.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind this topic &mdash; MT-to-MX field mapping rules, IBAN enrichment in IBM ACE, Camel K route configuration for ISO 20022 transformation, SAMA IPS mandatory extensions, and the testing matrix for pacs.008 rejects &mdash; see the companion Lab article: <a href="../lab/integration-patterns/iso-20022-transformation.html" style="color:var(--color-accent);">ISO 20022 Transformation Patterns: MT-to-MX Migration in Production</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
