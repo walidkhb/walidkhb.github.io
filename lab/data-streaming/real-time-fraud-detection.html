@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Streaming &mdash; Real-Time Fraud Detection Pipeline &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="End-to-end design of a real-time fraud detection pipeline: feature store, sliding-window velocity checks, Apache Flink model scoring, feedback loops, and the operational patterns that keep sub-100ms latency SLAs intact in a KSA bank environment.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Data Streaming &mdash; Real-Time Fraud Detection Pipeline &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Feature store, sliding-window aggregates, Flink model scoring, and feedback loops for fraud detection at a regulated bank.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/real-time-fraud-detection.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Real-Time Fraud Detection Pipeline &mdash; Production Patterns">
+  <meta name="twitter:description" content="Feature store, Flink scoring, and feedback loops for fraud at a KSA bank.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/real-time-fraud-detection.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Data Streaming: Real-Time Fraud Detection Pipeline",
+    "description": "End-to-end design of a real-time fraud detection pipeline: feature store, sliding-window velocity checks, Apache Flink model scoring, feedback loops, and operational patterns for sub-100ms latency SLAs in a KSA bank.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-08-01",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/data-streaming/real-time-fraud-detection.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Data Streaming &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/data-streaming.html"
+    },
+    "proficiencyLevel": "Expert",
+    "dependencies": "Apache Flink 1.19, Kafka Streams 3.7, Feast 0.38, Redis 7.2, IBM Event Streams"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Real-Time Fraud Detection</div>
+          <span class="overline">Lab Article</span>
+          <h1>Data Streaming: Real-Time Fraud Detection Pipeline</h1>
+          <p class="lead">An end-to-end production design: feature store architecture, sliding-window velocity checks, Apache Flink model scoring on the event stream, feedback loops that close the training cycle, and the operational discipline that keeps sub-100&nbsp;ms latency SLAs intact when transaction volumes spike &mdash; grounded in KSA card and IPS payment environments.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#architecture">Architecture decisions</a></li>
+            <li><a href="#feature-store">Feature store design</a></li>
+            <li><a href="#velocity">Velocity checks</a></li>
+            <li><a href="#scoring">Model scoring on the stream</a></li>
+            <li><a href="#feedback">Feedback loops</a></li>
+            <li><a href="#build">Building the pipeline</a></li>
+            <li><a href="#exactly-once">Exactly-once in fraud</a></li>
+            <li><a href="#operations">Operational concerns</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When not to stream</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Apache Flink 1.19 &middot; Kafka Streams 3.7 &middot; Feast 0.38 &middot; Redis 7.2 &middot; IBM Event Streams</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Fraud detection in a KSA bank is not one pipeline &mdash; it is a set of overlapping pipelines operating on different event streams at different latency budgets. Card authorisations must be screened in under 80&nbsp;ms (Mada network SLA). IPS credit transfers can tolerate 1&ndash;2 seconds before SAMA expects a status response. SADAD bill payments sit in the middle. Each stream has different feature requirements, different false-positive costs, and different consequences of being wrong.</p>
+          <p>What they share is the same structural problem: the signal for fraud lives in the <em>pattern across events</em>, not in any single event. A &pound;200 card transaction is not suspicious; five &pound;200 transactions in eight minutes across three cities is. The pipeline exists to materialise those patterns in real time so a scoring model can evaluate them before the payment instruction leaves the bank.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">The cost asymmetry is not what you think</div>
+            <p>Most teams focus on reducing false negatives (missed fraud). In a KSA card environment, false positives are equally costly: a wrongly declined Mada transaction generates a SAMA complaint category with a mandated resolution window. The model threshold is a business decision about where on the precision-recall curve the bank sits &mdash; engineering cannot set it alone.</p>
+          </div>
+
+          <h2 id="architecture">Architecture decisions</h2>
+          <p>Two decisions shape the whole pipeline: which stream engine to use, and where to put the model. Neither has a universal answer.</p>
+
+          <table>
+            <thead>
+              <tr><th>Decision</th><th>Option A</th><th>Option B</th><th>KSA card verdict</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Stream engine</td><td>Kafka Streams (in-process, per-microservice)</td><td>Apache Flink (dedicated cluster)</td><td>Flink &mdash; cross-stream joins and large state</td></tr>
+              <tr><td>Model location</td><td>Embedded in Flink operator (ONNX/PMML)</td><td>Remote model-serving sidecar (REST)</td><td>Embedded &mdash; avoids round-trip latency</td></tr>
+              <tr><td>Feature store</td><td>Online-only (Redis &plus; Flink computation)</td><td>Unified offline/online (Feast)</td><td>Feast &mdash; training-serving skew is the main failure mode</td></tr>
+              <tr><td>Feedback path</td><td>Manual label upload (ops team)</td><td>Automated via dispute resolution events</td><td>Automated &mdash; manual is too slow for model drift</td></tr>
+              <tr><td>Exactly-once</td><td>Best-effort, idempotent downstream</td><td>Flink checkpoint &plus; idempotent sink</td><td>Checkpoint &mdash; missed fraud signals are not re-processable</td></tr>
+            </tbody>
+          </table>
+
+          <div class="diagram" role="img" aria-label="High-level fraud detection pipeline: event sources, feature computation, scoring, actions, and feedback">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="fd1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="fd2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Event sources -->
+                <rect x="10" y="30" width="110" height="44" rx="5" fill="#16161f" stroke="#00d4aa"/>
+                <text x="65" y="50" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">card-auth</text>
+                <text x="65" y="64" text-anchor="middle" fill="#71717a" font-size="8">Kafka topic</text>
+
+                <rect x="10" y="90" width="110" height="44" rx="5" fill="#16161f" stroke="#00d4aa"/>
+                <text x="65" y="110" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">ips-transfer</text>
+                <text x="65" y="124" text-anchor="middle" fill="#71717a" font-size="8">Kafka topic</text>
+
+                <rect x="10" y="150" width="110" height="44" rx="5" fill="#16161f" stroke="#00d4aa"/>
+                <text x="65" y="170" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">dispute-event</text>
+                <text x="65" y="184" text-anchor="middle" fill="#71717a" font-size="8">Kafka topic</text>
+
+                <!-- Flink Job -->
+                <rect x="160" y="20" width="200" height="240" rx="6" fill="#0f0f16" stroke="#a78bfa" stroke-dasharray="4 2"/>
+                <text x="260" y="40" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">FLINK JOB: fraud-scorer</text>
+
+                <rect x="172" y="52" width="176" height="38" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="260" y="70" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">Feature Extraction</text>
+                <text x="260" y="82" text-anchor="middle" fill="#71717a" font-size="8">keyed by cardId / customerId</text>
+
+                <rect x="172" y="102" width="176" height="38" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="260" y="120" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">Sliding Window Aggregation</text>
+                <text x="260" y="132" text-anchor="middle" fill="#71717a" font-size="8">1min / 5min / 30min buckets</text>
+
+                <rect x="172" y="152" width="176" height="38" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="260" y="170" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">Feature Enrichment</text>
+                <text x="260" y="182" text-anchor="middle" fill="#71717a" font-size="8">Redis lookup: profile &amp; history</text>
+
+                <rect x="172" y="202" width="176" height="38" rx="4" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="260" y="220" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">Model Scoring (ONNX)</text>
+                <text x="260" y="232" text-anchor="middle" fill="#71717a" font-size="8">embedded GBM &mdash; p(fraud)</text>
+
+                <!-- Redis -->
+                <rect x="430" y="100" width="120" height="50" rx="5" fill="#16161f" stroke="#4a9eff"/>
+                <text x="490" y="122" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Redis 7.2</text>
+                <text x="490" y="136" text-anchor="middle" fill="#71717a" font-size="8">online feature store</text>
+
+                <!-- Feast -->
+                <rect x="430" y="170" width="120" height="50" rx="5" fill="#16161f" stroke="#4a9eff"/>
+                <text x="490" y="192" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Feast 0.38</text>
+                <text x="490" y="206" text-anchor="middle" fill="#71717a" font-size="8">offline training data</text>
+
+                <!-- Action sink -->
+                <rect x="600" y="50" width="160" height="44" rx="5" fill="#16161f" stroke="#00d4aa"/>
+                <text x="680" y="70" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">fraud-decisions</text>
+                <text x="680" y="84" text-anchor="middle" fill="#71717a" font-size="8">Kafka sink (approve/flag/block)</text>
+
+                <rect x="600" y="110" width="160" height="44" rx="5" fill="#16161f" stroke="#ef4444"/>
+                <text x="680" y="130" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">fraud-alerts</text>
+                <text x="680" y="144" text-anchor="middle" fill="#71717a" font-size="8">high-score cases &rarr; ops queue</text>
+
+                <!-- Feedback path -->
+                <rect x="430" y="280" width="310" height="50" rx="5" fill="#1c1c28" stroke="#a78bfa" stroke-dasharray="3 2"/>
+                <text x="585" y="302" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Feedback Loop</text>
+                <text x="585" y="316" text-anchor="middle" fill="#71717a" font-size="8">dispute-event &rarr; label store &rarr; offline retraining trigger</text>
+
+                <!-- Arrows: sources to Flink -->
+                <line x1="120" y1="52" x2="158" y2="72" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fd1)"/>
+                <line x1="120" y1="112" x2="158" y2="112" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fd1)"/>
+                <line x1="120" y1="172" x2="158" y2="240" stroke="#00d4aa" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#fd1)"/>
+
+                <!-- Flink to Redis -->
+                <line x1="348" y1="168" x2="428" y2="125" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#fd1)"/>
+
+                <!-- Flink to sinks -->
+                <line x1="348" y1="220" x2="598" y2="72" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fd1)"/>
+                <line x1="348" y1="220" x2="598" y2="132" stroke="#ef4444" stroke-width="1.5" marker-end="url(#fd1)"/>
+
+                <!-- Redis to Feast sync -->
+                <line x1="490" y1="150" x2="490" y2="168" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#fd1)"/>
+
+                <!-- Feedback from dispute to loop -->
+                <line x1="120" y1="172" x2="428" y2="300" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#fd2)"/>
+                <line x1="490" y1="220" x2="490" y2="278" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#fd2)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Fraud detection pipeline: event sources, Flink processing, Redis online store, Feast offline store, and the feedback loop from dispute events</div>
+          </div>
+
+          <h2 id="feature-store">Feature store design</h2>
+          <p>Training-serving skew is the most common reason a fraud model that works in backtest fails in production. The root cause is always the same: the features computed offline for training are computed by a different code path than the features computed online for scoring. The fix is a unified feature store where the same feature definitions drive both paths.</p>
+          <p><strong>Feast</strong> provides this: feature definitions in a Python registry, an offline store backed by a data warehouse (BigQuery, Redshift, Parquet on S3), and an online store (Redis) that is populated by a materialisation job. The Flink pipeline reads from the online store at scoring time; the training pipeline reads from the offline store at retraining time.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>features.py</span><span class="code-block__lang">python</span></div>
+<pre><code><span class="tok-k">from</span> feast <span class="tok-k">import</span> Entity, FeatureView, Field, FileSource
+<span class="tok-k">from</span> feast.types <span class="tok-k">import</span> Float32, Int64
+
+card_entity = Entity(name=<span class="tok-s">"card_id"</span>, join_keys=[<span class="tok-s">"card_id"</span>])
+
+card_velocity_source = FileSource(
+    path=<span class="tok-s">"s3://acmebank-features/card-velocity/</span><span class="tok-n">**</span><span class="tok-s">/*.parquet"</span>,
+    timestamp_field=<span class="tok-s">"event_timestamp"</span>,
+)
+
+card_velocity_fv = FeatureView(
+    name=<span class="tok-s">"card_velocity"</span>,
+    entities=[card_entity],
+    ttl=timedelta(hours=<span class="tok-n">24</span>),
+    schema=[
+        Field(name=<span class="tok-s">"txn_count_1min"</span>,  dtype=Int64),
+        Field(name=<span class="tok-s">"txn_count_5min"</span>,  dtype=Int64),
+        Field(name=<span class="tok-s">"txn_count_30min"</span>, dtype=Int64),
+        Field(name=<span class="tok-s">"amt_sum_5min"</span>,    dtype=Float32),
+        Field(name=<span class="tok-s">"unique_merch_1h"</span>, dtype=Int64),
+        Field(name=<span class="tok-s">"distinct_geo_1h"</span>, dtype=Int64),
+    ],
+    source=card_velocity_source,
+)
+
+<span class="tok-c"># materialise to Redis every 15 minutes</span>
+<span class="tok-c"># feast materialize-incremental $(date -u +%Y-%m-%dT%H:%M:%S)</span></code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">TTL mismatch causes silent errors</div>
+            <p>If the Feast TTL on a FeatureView is shorter than the lookback window your model was trained on, Feast returns <code>None</code> for stale keys and Flink passes <code>NaN</code>/<code>-1</code> to the model. The model predicts on incomplete data without failing. Set TTL to at least 2&times; the longest training window and alert on Redis cache miss rates above 1%.</p>
+          </div>
+
+          <h2 id="velocity">Velocity checks</h2>
+          <p>Velocity features &mdash; transaction count and amount sum over sliding time windows &mdash; are the most reliable fraud signal for card-present and online card fraud. They are also the operationally hardest feature to get right because they require per-key stateful aggregation over time windows that vary from one minute to 24 hours.</p>
+          <p>Flink&rsquo;s <code>KeyedProcessFunction</code> with explicit state timers is the right primitive. Do not use <code>SlidingWindows</code> from the DataStream Window API for low-latency paths &mdash; the default trigger fires only when the watermark advances past the window end, introducing latency proportional to the allowed lateness setting. Instead, maintain a ring buffer in state and compute aggregates inline on each event.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>VelocityAggregator.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public class</span> <span class="tok-t">VelocityAggregator</span>
+    <span class="tok-k">extends</span> <span class="tok-t">KeyedProcessFunction</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">CardAuth</span>, <span class="tok-t">EnrichedAuth</span>&gt; {
+
+  <span class="tok-c">// ring buffer: (timestamp, amount) pairs per card</span>
+  <span class="tok-k">private</span> <span class="tok-t">ListState</span>&lt;<span class="tok-t">TxnEntry</span>&gt; txnBuffer;
+
+  <span class="tok-k">private static final long</span> W1  = <span class="tok-n">60_000L</span>;   <span class="tok-c">// 1 min</span>
+  <span class="tok-k">private static final long</span> W5  = <span class="tok-n">300_000L</span>;  <span class="tok-c">// 5 min</span>
+  <span class="tok-k">private static final long</span> W30 = <span class="tok-n">1_800_000L</span>; <span class="tok-c">// 30 min</span>
+
+  @Override
+  <span class="tok-k">public void</span> processElement(<span class="tok-t">CardAuth</span> auth,
+                              <span class="tok-t">Context</span> ctx,
+                              <span class="tok-t">Collector</span>&lt;<span class="tok-t">EnrichedAuth</span>&gt; out) <span class="tok-k">throws</span> <span class="tok-t">Exception</span> {
+
+    <span class="tok-k">long</span> now = auth.getEventTime();
+
+    <span class="tok-c">// evict entries outside the 30-min window</span>
+    <span class="tok-t">List</span>&lt;<span class="tok-t">TxnEntry</span>&gt; fresh = <span class="tok-t">StreamSupport</span>.stream(txnBuffer.get().spliterator(), <span class="tok-k">false</span>)
+        .filter(e -&gt; e.ts &gt;= now - W30)
+        .collect(<span class="tok-t">Collectors</span>.toList());
+
+    fresh.add(<span class="tok-k">new</span> <span class="tok-t">TxnEntry</span>(now, auth.getAmount()));
+    txnBuffer.update(fresh);
+
+    <span class="tok-t">VelocityFeatures</span> v = computeVelocity(fresh, now);
+
+    out.collect(<span class="tok-k">new</span> <span class="tok-t">EnrichedAuth</span>(auth, v));
+
+    <span class="tok-c">// register cleanup timer so state doesn't leak beyond 30 min</span>
+    ctx.timerService().registerEventTimeTimer(now + W30 + <span class="tok-n">1</span>);
+  }
+
+  <span class="tok-k">private</span> <span class="tok-t">VelocityFeatures</span> computeVelocity(<span class="tok-t">List</span>&lt;<span class="tok-t">TxnEntry</span>&gt; buf, <span class="tok-k">long</span> now) {
+    <span class="tok-k">return new</span> <span class="tok-t">VelocityFeatures</span>(
+        buf.stream().filter(e -&gt; e.ts &gt;= now - W1 ).count(),
+        buf.stream().filter(e -&gt; e.ts &gt;= now - W5 ).count(),
+        buf.stream().filter(e -&gt; e.ts &gt;= now - W30).count(),
+        buf.stream().filter(e -&gt; e.ts &gt;= now - W5 )
+                    .mapToDouble(e -&gt; e.amount).sum()
+    );
+  }
+}</code></pre>
+          </div>
+
+          <h2 id="scoring">Model scoring on the stream</h2>
+          <p>The trade-off between embedded scoring and remote model-serving comes down to latency and operational complexity. For a card authorisation pipeline where the budget is 80&nbsp;ms end-to-end, a round-trip to an external model server (even a sidecar) adds 5&ndash;15&nbsp;ms of network overhead plus serialisation on every event. Over millions of daily transactions that cost compounds into measurable P99 latency.</p>
+          <p>The better approach for latency-sensitive paths: export the model to ONNX and load it as an in-process operator inside Flink. The ONNX Runtime Java bindings support CPU inference at sub-millisecond latency for gradient-boosted models of the size typical in card fraud. Model updates require a Flink job restart, but with Flink&rsquo;s savepoint mechanism this can be achieved with zero event loss.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>FraudScoringOperator.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public class</span> <span class="tok-t">FraudScoringOperator</span>
+    <span class="tok-k">extends</span> <span class="tok-t">RichMapFunction</span>&lt;<span class="tok-t">EnrichedAuth</span>, <span class="tok-t">ScoredAuth</span>&gt; {
+
+  <span class="tok-k">private transient</span> <span class="tok-t">OrtSession</span> session;
+  <span class="tok-k">private transient</span> <span class="tok-t">OrtEnvironment</span> env;
+
+  <span class="tok-k">private final</span> <span class="tok-t">String</span> modelPath; <span class="tok-c">// loaded from job config</span>
+
+  @Override
+  <span class="tok-k">public void</span> open(<span class="tok-t">Configuration</span> cfg) <span class="tok-k">throws</span> <span class="tok-t">Exception</span> {
+    env = <span class="tok-t">OrtEnvironment</span>.getEnvironment();
+    <span class="tok-t">OrtSession.SessionOptions</span> opts = <span class="tok-k">new</span> <span class="tok-t">OrtSession.SessionOptions</span>();
+    opts.setIntraOpNumThreads(<span class="tok-n">2</span>); <span class="tok-c">// don't starve Flink task threads</span>
+    session = env.createSession(modelPath, opts);
+  }
+
+  @Override
+  <span class="tok-k">public</span> <span class="tok-t">ScoredAuth</span> map(<span class="tok-t">EnrichedAuth</span> auth) <span class="tok-k">throws</span> <span class="tok-t">Exception</span> {
+    <span class="tok-k">float</span>[] features = auth.toFeatureVector(); <span class="tok-c">// 42 features</span>
+    <span class="tok-t">OnnxTensor</span> input = <span class="tok-t">OnnxTensor</span>.createTensor(
+        env, <span class="tok-k">new</span> <span class="tok-k">float</span>[][] { features });
+
+    <span class="tok-k">try</span> (<span class="tok-t">OrtSession.Result</span> result = session.run(
+            <span class="tok-t">Collections</span>.singletonMap(<span class="tok-s">"features"</span>, input))) {
+      <span class="tok-k">float</span>[][] proba = (<span class="tok-k">float</span>[][]) result.get(<span class="tok-n">0</span>).getValue();
+      <span class="tok-k">float</span> pFraud = proba[<span class="tok-n">0</span>][<span class="tok-n">1</span>];
+      <span class="tok-k">return new</span> <span class="tok-t">ScoredAuth</span>(auth, pFraud, classify(pFraud));
+    }
+  }
+
+  <span class="tok-k">private</span> <span class="tok-t">Decision</span> classify(<span class="tok-k">float</span> p) {
+    <span class="tok-k">if</span> (p &gt; <span class="tok-n">0.90f</span>) <span class="tok-k">return</span> <span class="tok-t">Decision</span>.BLOCK;
+    <span class="tok-k">if</span> (p &gt; <span class="tok-n">0.65f</span>) <span class="tok-k">return</span> <span class="tok-t">Decision</span>.FLAG;
+    <span class="tok-k">return</span> <span class="tok-t">Decision</span>.APPROVE;
+  }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Model versioning with Flink savepoints</div>
+            <p>When updating the ONNX model, take a savepoint of the running job, update the model path in the job configuration, then restore from the savepoint. All state (velocity ring buffers, windowed aggregations) is preserved. The new model activates on the first event after restore. No events are lost; no window state is reset.</p>
+          </div>
+
+          <h2 id="feedback">Feedback loops</h2>
+          <p>A fraud model that cannot learn is a model that decays. Transaction patterns shift over months; card-not-present fraud especially evolves faster than a quarterly retraining cycle can track. The feedback loop turns resolved disputes back into training labels.</p>
+
+          <div class="diagram" role="img" aria-label="Feedback loop: dispute event lands in Kafka, label writer writes to offline store, retraining pipeline triggers, updated ONNX model replaces the embedded operator">
+            <div class="diagram__inner">
+              <svg width="780" height="200" viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="fd3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <rect x="10" y="70" width="110" height="60" rx="5" fill="#16161f" stroke="#a78bfa"/>
+                <text x="65" y="96" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Dispute CRM</text>
+                <text x="65" y="110" text-anchor="middle" fill="#71717a" font-size="8">customer confirms</text>
+                <text x="65" y="122" text-anchor="middle" fill="#71717a" font-size="8">fraud / not fraud</text>
+
+                <rect x="160" y="70" width="110" height="60" rx="5" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="215" y="96" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">dispute-event</text>
+                <text x="215" y="110" text-anchor="middle" fill="#71717a" font-size="8">Kafka topic</text>
+                <text x="215" y="122" text-anchor="middle" fill="#71717a" font-size="8">label &plusmn; txn_id</text>
+
+                <rect x="310" y="70" width="120" height="60" rx="5" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="370" y="93" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Label Writer</text>
+                <text x="370" y="107" text-anchor="middle" fill="#71717a" font-size="8">Flink job: joins</text>
+                <text x="370" y="120" text-anchor="middle" fill="#71717a" font-size="8">label to original event</text>
+
+                <rect x="480" y="70" width="120" height="60" rx="5" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="540" y="93" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Label Store</text>
+                <text x="540" y="107" text-anchor="middle" fill="#71717a" font-size="8">Feast offline</text>
+                <text x="540" y="120" text-anchor="middle" fill="#71717a" font-size="8">+ S3 Parquet append</text>
+
+                <rect x="650" y="50" width="120" height="44" rx="5" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="710" y="70" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Retraining Job</text>
+                <text x="710" y="84" text-anchor="middle" fill="#71717a" font-size="8">triggered weekly</text>
+
+                <rect x="650" y="110" width="120" height="44" rx="5" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="710" y="128" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Model Registry</text>
+                <text x="710" y="142" text-anchor="middle" fill="#71717a" font-size="8">ONNX artefact &rarr; Flink</text>
+
+                <line x1="120" y1="100" x2="158" y2="100" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#fd3)"/>
+                <line x1="270" y1="100" x2="308" y2="100" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#fd3)"/>
+                <line x1="430" y1="100" x2="478" y2="100" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#fd3)"/>
+                <line x1="600" y1="90" x2="648" y2="72" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fd3)"/>
+                <line x1="710" y1="94" x2="710" y2="108" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fd3)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Feedback loop: resolved disputes create training labels and trigger model retraining</div>
+          </div>
+
+          <p>The label lag is the critical operational parameter. A dispute raised today might not be resolved for 45&ndash;90 days (chargeback cycle). The retraining pipeline must join labels to the original transaction features retrospectively, using the <code>event_timestamp</code> from the scoring-time feature snapshot &mdash; not the current online feature values, which will have changed.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Point-in-time correctness is non-negotiable</div>
+            <p>When building the training dataset, always use <code>get_historical_features</code> with <code>entity_df</code> timestamps set to the original transaction time &mdash; never pull current features for past events. Feast&rsquo;s point-in-time joins handle this; manual Parquet queries almost always get it wrong, producing a dataset that trains on features the model could not have seen at scoring time.</p>
+          </div>
+
+          <h2 id="build">Building the pipeline</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Define Kafka topic layout</h4>
+              <p>One topic per event type (<code>card-auth</code>, <code>ips-transfer</code>, <code>dispute-event</code>, <code>fraud-decisions</code>). Over-partition upfront: 48 partitions on card-auth handles 3x projected peak throughput with room to scale Flink parallelism. Co-partition <code>card-auth</code> and the customer master KTable by <code>card_id</code> with the same partition count &mdash; stream-table joins require it.</p>
+            </li>
+            <li>
+              <h4>Bootstrap the online feature store</h4>
+              <p>Run a full Feast materialisation from the offline store to Redis before the Flink job starts. An empty Redis means every scoring event gets zero-valued features until the ring buffer warms up &mdash; the first 30 minutes after deployment will have systematically lower fraud scores. Schedule a materialisation immediately before each deployment, not only nightly.</p>
+            </li>
+            <li>
+              <h4>Deploy Flink with RocksDB state backend</h4>
+              <p>Configure incremental checkpoints to an S3-compatible store (Ceph in on-prem, AWS S3 on cloud). Checkpoint interval of 60 seconds balances recovery time against overhead. Set <code>state.backend.incremental: true</code>; full checkpoints for large velocity state can take minutes and block processing. Pin RocksDB block cache at 512&nbsp;MB per TaskManager slot &mdash; undersizing causes excessive I/O and kills P99 latency.</p>
+            </li>
+            <li>
+              <h4>Integrate ONNX model</h4>
+              <p>Store the ONNX artefact in a model registry (MLflow, or an S3 path with versioning). Load at job startup via <code>open()</code> on the scoring operator. Wire the model path as a Flink job parameter so it can be changed at savepoint-restore time without code changes. Include the feature vector schema version in the ONNX metadata &mdash; a schema mismatch at restore time should fail fast, not silently pass wrong features.</p>
+            </li>
+            <li>
+              <h4>Wire the decision sink</h4>
+              <p>The <code>fraud-decisions</code> topic is consumed by the authorisation gateway to approve, flag (step-up authentication), or block the transaction. Use an idempotent Kafka sink keyed by <code>txn_id</code> to prevent duplicate decisions under Flink task failure and recovery. The downstream authorisation gateway must deduplicate on <code>txn_id</code> too &mdash; Flink&rsquo;s at-least-once recovery can re-emit the last checkpoint&rsquo;s output.</p>
+            </li>
+            <li>
+              <h4>Activate the feedback pipeline</h4>
+              <p>Deploy the label writer job separately from the scorer &mdash; it runs at lower parallelism and does not need to meet the same latency SLA. Verify that the <code>dispute-event</code> topic includes the original <code>event_timestamp</code> and <code>txn_id</code> as mandatory fields; without them the retrospective feature join is impossible.</p>
+            </li>
+            <li>
+              <h4>Validate with shadow mode</h4>
+              <p>Run the scoring pipeline in shadow mode for two weeks before switching the authorisation gateway to act on its decisions. Shadow mode: score all events, emit to <code>fraud-decisions-shadow</code>, compare with the existing rule-engine output, measure precision and recall against historical confirmed fraud. Ship only when shadow precision matches or exceeds the baseline at the same recall.</p>
+            </li>
+          </ol>
+
+          <h2 id="exactly-once">Exactly-once in fraud</h2>
+          <p>In most stream processing, &ldquo;at least once&rdquo; is acceptable because downstream systems are idempotent. In a fraud pipeline, a duplicated BLOCK decision can create two chargeback records against the same transaction, visible to the customer and reportable to SAMA. Exactly-once delivery from Flink to Kafka is achievable at a throughput cost of roughly 5&ndash;8%.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>flink-job.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">execution</span>:
+  <span class="tok-k">checkpointing</span>:
+    <span class="tok-k">interval</span>: <span class="tok-n">60000</span>   <span class="tok-c"># 60 seconds</span>
+    <span class="tok-k">mode</span>: <span class="tok-s">EXACTLY_ONCE</span>
+    <span class="tok-k">min-pause-between-checkpoints</span>: <span class="tok-n">30000</span>
+    <span class="tok-k">timeout</span>: <span class="tok-n">120000</span>
+    <span class="tok-k">max-concurrent-checkpoints</span>: <span class="tok-n">1</span>
+  <span class="tok-k">state-backend</span>: <span class="tok-s">rocksdb</span>
+  <span class="tok-k">state-backend-incremental</span>: <span class="tok-k">true</span>
+  <span class="tok-k">savepoint-dir</span>: <span class="tok-s">s3://acmebank-flink/savepoints/fraud-scorer</span>
+
+<span class="tok-k">kafka-sink</span>:
+  <span class="tok-k">semantic</span>: <span class="tok-s">EXACTLY_ONCE</span>
+  <span class="tok-k">transaction-timeout</span>: <span class="tok-n">120000</span> <span class="tok-c"># must exceed checkpoint interval</span>
+
+<span class="tok-k">parallelism</span>: <span class="tok-n">12</span>   <span class="tok-c"># = card-auth partition count / 4</span></code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Kafka transaction timeout must exceed checkpoint interval</div>
+            <p>Flink&rsquo;s Kafka sink uses Kafka transactions for exactly-once. The Kafka broker will abort an open transaction that exceeds its <code>transaction.timeout.ms</code>. Set <code>transaction-timeout</code> in the Flink sink config to at least 2&times; the checkpoint interval, and ensure the broker&rsquo;s <code>transaction.max.timeout.ms</code> is set to at least the same value. Mismatching these causes silent data loss on checkpoint barriers.</p>
+          </div>
+
+          <h2 id="operations">Operational concerns</h2>
+          <p>A fraud pipeline that works in testing and fails at 02:00 on a Friday is worse than no pipeline at all &mdash; it blocks card authorisations while the incident response team catches up. Three operational investments pay for themselves within months:</p>
+          <ul>
+            <li><strong>Latency percentile monitoring per operator.</strong> P99 latency at the scoring operator, not just end-to-end job latency. When the ONNX model grows (more features, deeper trees) the scoring operator&rsquo;s P99 spikes first. You want to see it before the authorisation gateway SLA is affected.</li>
+            <li><strong>Consumer lag alerting on the decision sink topic.</strong> If the authorisation gateway stops consuming <code>fraud-decisions</code>, lag grows and eventually Flink back-pressures. This shows up as increasing card authorisation latency before it shows up as an error. Alert at 10 seconds of lag; page at 30 seconds.</li>
+            <li><strong>Weekly shadow-mode comparison.</strong> Continuously run the current production model and a shadow challenger. When the challenger&rsquo;s precision at a given recall threshold exceeds production by &gt;2%, trigger a promotion review. Without this you have no visibility into model drift until fraud losses increase.</li>
+          </ul>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Feature computation outside the Flink job</div>
+            <p>Computing velocity features in a pre-processing microservice and passing them to Flink as enriched events sounds modular but breaks the exactly-once guarantee: if the pre-processor re-emits events on retry, the ring buffer counts the same transaction twice. All stateful feature computation must happen inside the Flink job, under its checkpoint-and-recovery scope.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Unbounded state on card_id keys</div>
+            <p>A card that is blocked after fraud still generates events (declined authorisations) for months. If you never evict state for closed cards, RocksDB grows without bound. Register an event-time timer at <code>now + TTL</code> and clear the velocity ring buffer in <code>onTimer()</code>. Production TTL: 48 hours of inactivity &mdash; any card silent for 48 hours has negligible pending velocity features.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Watermark lateness tuning for IPS</div>
+            <p>IPS credit transfers sometimes arrive out of order when the sending bank retransmits after a timeout. The default watermark allowed lateness of zero drops these events silently. Set <code>WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10))</code> for the IPS source and route late events to a <code>sideOutput</code> for manual review rather than dropping them.</p>
+          </div>
+
+          <h2 id="when-not">When not to stream</h2>
+          <p>Not every fraud detection requirement belongs in a streaming pipeline. Three cases where batch or rule-engine approaches are clearly better:</p>
+          <ul>
+            <li><strong>Account-level pattern analysis.</strong> Detecting a slow-burn account takeover that spans 90 days does not need sub-second latency. A nightly SQL job over the data warehouse is simpler, cheaper, and produces the same alert 24 hours after the pattern completes &mdash; fast enough for account fraud where the loss accumulates over days, not milliseconds.</li>
+            <li><strong>AML transaction monitoring.</strong> SAMA&rsquo;s AML monitoring requirements for CTR/STR filings operate on daily aggregates and multi-day patterns. Running AML logic in Flink adds operational complexity without reducing the regulatory response time. Use a purpose-built AML platform (Actimize, NICE Actimize, Quantexa) that is pre-certified for SAMA reporting.</li>
+            <li><strong>Startup pipelines with under 1&nbsp;M transactions/day.</strong> Below that volume, a Kafka consumer plus PostgreSQL with window aggregation functions in SQL delivers the same velocity features at a fraction of the operational complexity. Reserve Flink for the scale where SQL aggregation latency becomes the bottleneck.</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="../data-streaming.html">
+              <div class="article-nav__label">&larr; Category index</div>
+              <div class="article-nav__title">Data Streaming</div>
+            </a>
+            <a href="kafka-streams-and-flink.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Kafka Streams &amp; Flink &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
