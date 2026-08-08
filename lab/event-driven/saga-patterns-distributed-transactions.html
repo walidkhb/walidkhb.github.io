@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saga Patterns for Distributed Transactions &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Choreography vs orchestration sagas, compensating transactions, and recovery patterns for multi-step financial workflows in a regulated KSA bank environment. What holds up in production.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Saga Patterns for Distributed Transactions &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Choreography vs orchestration sagas, compensating actions, and recovery patterns for multi-step financial workflows.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/saga-patterns-distributed-transactions.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Saga Patterns for Distributed Transactions &mdash; Lab">
+  <meta name="twitter:description" content="Choreography vs orchestration sagas, compensating transactions, and recovery for financial workflows that hold up in production.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/saga-patterns-distributed-transactions.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Saga Patterns for Distributed Transactions",
+    "description": "Choreography vs orchestration sagas, compensating transactions, and recovery patterns for multi-step financial workflows in a regulated KSA bank environment.",
+    "url": "https://www.wbadawi.info/lab/event-driven/saga-patterns-distributed-transactions.html",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
+    "image": "https://www.wbadawi.info/assets/img/og-image.png"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Saga Patterns</div>
+          <span class="overline">Lab Article</span>
+          <h1>Saga Patterns for Distributed Transactions</h1>
+          <p class="lead">Choreography vs orchestration sagas, compensating actions, idempotent saga steps, and recovery patterns for multi-step financial workflows &mdash; grounded in the IPS payment lifecycle at a KSA bank where partial failures are not hypothetical edge cases.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#why-sagas">Why sagas, not 2PC</a></li>
+            <li><a href="#choreography">Choreography sagas</a></li>
+            <li><a href="#orchestration">Orchestration sagas</a></li>
+            <li><a href="#choosing">Choosing between the two</a></li>
+            <li><a href="#compensating">Compensating transactions</a></li>
+            <li><a href="#ips-example">IPS payment saga end-to-end</a></li>
+            <li><a href="#failure-recovery">Failure &amp; recovery patterns</a></li>
+            <li><a href="#idempotency">Idempotency in saga steps</a></li>
+            <li><a href="#testing">Testing sagas</a></li>
+            <li><a href="#antipatterns">Anti-patterns</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Axon Framework 4.9 / Spring Boot 3.3 / Kafka 3.7 / PostgreSQL 15 / Testcontainers 1.19</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="why-sagas">Why sagas, not 2PC</h2>
+          <p>A payment initiation at SAIB crosses at least four bounded contexts before it settles: fraud screening, liquidity reservation, IPS network submission, and notification delivery. Each context has its own database, its own team, and its own deployment cadence. They cannot share a transaction boundary.</p>
+          <p>Two-phase commit (2PC) was the industry answer to this problem for two decades. The XA protocol locks resources across participants during the prepare phase and releases them on commit or rollback. At the scale and latency profile of a modern payment system, 2PC has two fatal problems. First, it holds locks across network calls &mdash; if the IPS network submission times out at 800ms, every row touched in the fraud and liquidity contexts is locked for those 800ms, blocking concurrent payments. Second, XA requires all participants to implement the XA protocol, which eliminates Kafka, most REST services, and any external party. In practice, IPS is a SAMA-operated network with a SWIFT-style asynchronous API. It cannot participate in a synchronous XA commit.</p>
+          <p>The saga pattern replaces the distributed transaction with a sequence of local transactions, each of which publishes an event or sends a command that triggers the next step. Failures are handled by compensating transactions &mdash; explicit, designed rollback actions for each step. The trade-off is clear: you give up atomicity and get availability and decoupling in return. For a payment system, that is the right trade-off. A payment that partially fails and rolls back cleanly is better than a payment system that deadlocks under load.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">BASE, not ACID</div>
+            <p>Sagas operate on BASE semantics: Basically Available, Soft state, Eventual consistency. The intermediate states of a saga &mdash; where fraud is cleared but liquidity is not yet reserved &mdash; are visible to other parts of the system. Design your read models to handle these transient states gracefully rather than pretending they don&rsquo;t exist. A payment in <code>FRAUD_CLEARED</code> status is a valid business state that the customer-facing status API must represent correctly.</p>
+          </div>
+
+          <h2 id="choreography">Choreography sagas</h2>
+          <p>In a choreography saga, each service listens for events and reacts autonomously. There is no central coordinator. The workflow emerges from the sequence of events and reactions.</p>
+
+          <div class="diagram" role="img" aria-label="Choreography saga: payment-svc emits PaymentInitiated, fraud-svc reacts and emits FraudCleared, liquidity-svc reacts and emits LiquidityReserved, ips-svc submits to IPS, notification-svc sends customer alert">
+            <div class="diagram__inner">
+              <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ch1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="ch2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                </defs>
+
+                <!-- Kafka bus -->
+                <rect x="20" y="155" width="740" height="50" rx="6" fill="#0f0f16" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="390" y="177" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Kafka Topic: payments.events.v1</text>
+                <text x="390" y="193" text-anchor="middle" fill="#71717a" font-size="8">partitioned by paymentId &middot; log-retained 7 days</text>
+
+                <!-- Services row -->
+                <rect x="20" y="20" width="120" height="60" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="80" y="45" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">payment-svc</text>
+                <text x="80" y="62" text-anchor="middle" fill="#71717a" font-size="8">initiates &amp; settles</text>
+                <text x="80" y="74" text-anchor="middle" fill="#71717a" font-size="8">payment records</text>
+
+                <rect x="170" y="20" width="120" height="60" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="230" y="45" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">fraud-svc</text>
+                <text x="230" y="62" text-anchor="middle" fill="#71717a" font-size="8">scores &amp; clears</text>
+                <text x="230" y="74" text-anchor="middle" fill="#71717a" font-size="8">or blocks</text>
+
+                <rect x="320" y="20" width="120" height="60" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="380" y="45" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">liquidity-svc</text>
+                <text x="380" y="62" text-anchor="middle" fill="#71717a" font-size="8">reserves funds</text>
+                <text x="380" y="74" text-anchor="middle" fill="#71717a" font-size="8">from nostro</text>
+
+                <rect x="470" y="20" width="120" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="530" y="45" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">ips-svc</text>
+                <text x="530" y="62" text-anchor="middle" fill="#71717a" font-size="8">submits pacs.008</text>
+                <text x="530" y="74" text-anchor="middle" fill="#71717a" font-size="8">to SAMA IPS</text>
+
+                <rect x="620" y="20" width="120" height="60" rx="4" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="680" y="45" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">notify-svc</text>
+                <text x="680" y="62" text-anchor="middle" fill="#71717a" font-size="8">SMS / push</text>
+                <text x="680" y="74" text-anchor="middle" fill="#71717a" font-size="8">to customer</text>
+
+                <!-- Services publish to bus -->
+                <line x1="80" y1="80" x2="80" y2="153" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ch1)"/>
+                <line x1="230" y1="80" x2="230" y2="153" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ch1)"/>
+                <line x1="380" y1="80" x2="380" y2="153" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ch1)"/>
+                <line x1="530" y1="80" x2="530" y2="153" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ch1)"/>
+
+                <!-- Services consume from bus -->
+                <line x1="230" y1="207" x2="230" y2="280" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ch1)"/>
+                <line x1="380" y1="207" x2="380" y2="280" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ch1)"/>
+                <line x1="530" y1="207" x2="530" y2="280" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ch1)"/>
+                <line x1="680" y1="207" x2="680" y2="280" stroke="#ef4444" stroke-width="1.5" marker-end="url(#ch2)"/>
+
+                <!-- Event labels below bus -->
+                <text x="80" y="225" text-anchor="middle" fill="#4a9eff" font-size="7.5">publishes:</text>
+                <text x="80" y="237" text-anchor="middle" fill="#e4e4e7" font-size="7.5">PaymentInitiated</text>
+
+                <rect x="155" y="280" width="150" height="55" rx="4" fill="#0f0f16" stroke="#fbbf24" stroke-dasharray="3 2"/>
+                <text x="230" y="300" text-anchor="middle" fill="#fbbf24" font-size="8" font-weight="600">listens: PaymentInitiated</text>
+                <text x="230" y="314" text-anchor="middle" fill="#e4e4e7" font-size="7.5">emits: FraudCheckPassed</text>
+                <text x="230" y="328" text-anchor="middle" fill="#ef4444" font-size="7.5">or: FraudCheckFailed</text>
+
+                <rect x="305" y="280" width="150" height="55" rx="4" fill="#0f0f16" stroke="#a78bfa" stroke-dasharray="3 2"/>
+                <text x="380" y="300" text-anchor="middle" fill="#a78bfa" font-size="8" font-weight="600">listens: FraudCheckPassed</text>
+                <text x="380" y="314" text-anchor="middle" fill="#e4e4e7" font-size="7.5">emits: LiquidityReserved</text>
+                <text x="380" y="328" text-anchor="middle" fill="#ef4444" font-size="7.5">or: LiquidityInsufficient</text>
+
+                <rect x="455" y="280" width="150" height="55" rx="4" fill="#0f0f16" stroke="#00d4aa" stroke-dasharray="3 2"/>
+                <text x="530" y="300" text-anchor="middle" fill="#00d4aa" font-size="8" font-weight="600">listens: LiquidityReserved</text>
+                <text x="530" y="314" text-anchor="middle" fill="#e4e4e7" font-size="7.5">emits: IPSSubmitted</text>
+                <text x="530" y="328" text-anchor="middle" fill="#ef4444" font-size="7.5">or: IPSRejected</text>
+
+                <rect x="605" y="280" width="150" height="55" rx="4" fill="#0f0f16" stroke="#ef4444" stroke-dasharray="3 2"/>
+                <text x="680" y="300" text-anchor="middle" fill="#ef4444" font-size="8" font-weight="600">listens: PaymentSettled</text>
+                <text x="680" y="314" text-anchor="middle" fill="#e4e4e7" font-size="7.5">sends: SMS / push</text>
+                <text x="680" y="328" text-anchor="middle" fill="#71717a" font-size="7.5">best-effort, retriable</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Choreography saga: each service reacts to events autonomously; Kafka is the shared coordination layer</div>
+          </div>
+
+          <p>The choreography model has significant appeal at the start of a project: no new infrastructure, no coordinator service to build and operate, no single point of failure in the workflow. Each team owns their slice of the workflow and their event contract. The complexity is distributed, not centralised.</p>
+          <p>The catch surfaces as the saga grows. When a payment fails at the IPS submission step and requires a compensating liquidity release, which service is responsible for emitting the compensation trigger? In a choreography model, the answer is the <code>ips-svc</code> emits an <code>IPSRejected</code> event, and the <code>liquidity-svc</code> listens for it and releases the reservation. This works as long as the logic is simple. When you add a third failure path &mdash; a SAMA regulatory hold that can arrive after liquidity is reserved but before IPS submission &mdash; the event graph gains a new edge, and every service that might need to react must be updated. In a choreography saga, the implicit workflow is encoded in the event subscriptions of dozens of services. It is untraceable without distributed tracing, and it cannot be changed without coordinating changes across multiple teams simultaneously.</p>
+
+          <h2 id="orchestration">Orchestration sagas</h2>
+          <p>In an orchestration saga, a dedicated coordinator service drives the workflow by issuing commands to participant services and reacting to their responses. The workflow state lives in the coordinator, not distributed across the event stream.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentSaga.java &mdash; Axon Framework orchestration saga</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Saga</span>
+<span class="tok-t">public class</span> <span class="tok-n">PaymentSaga</span> {
+
+    <span class="tok-k">@Autowired</span>
+    <span class="tok-t">private transient</span> <span class="tok-n">CommandGateway</span> commandGateway;
+
+    <span class="tok-t">private</span> <span class="tok-n">String</span> paymentId;
+    <span class="tok-t">private</span> <span class="tok-n">String</span> debtorIban;
+    <span class="tok-t">private</span> <span class="tok-n">BigDecimal</span> amount;
+    <span class="tok-t">private</span> <span class="tok-n">String</span> reservationRef;       <span class="tok-c">// stored for compensation</span>
+
+    <span class="tok-k">@StartSaga</span>
+    <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">PaymentInitiatedEvent</span> e) {
+        paymentId  = e.getPaymentId();
+        debtorIban = e.getDebtorIban();
+        amount     = e.getAmount();
+        <span class="tok-c">// Step 1: request fraud check</span>
+        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">RequestFraudCheckCommand</span>(paymentId, amount, debtorIban));
+    }
+
+    <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">FraudCheckPassedEvent</span> e) {
+        <span class="tok-c">// Step 2: reserve liquidity</span>
+        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">ReserveLiquidityCommand</span>(paymentId, amount, debtorIban));
+    }
+
+    <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">FraudCheckFailedEvent</span> e) {
+        <span class="tok-c">// Terminal failure &mdash; no compensation needed (nothing reserved yet)</span>
+        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">FailPaymentCommand</span>(paymentId, <span class="tok-s">"FRAUD_DECLINED"</span>, e.getReason()));
+        <span class="tok-n">SagaLifecycle</span>.end();
+    }
+
+    <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">LiquidityReservedEvent</span> e) {
+        reservationRef = e.getReservationRef();
+        <span class="tok-c">// Step 3: submit to IPS</span>
+        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">SubmitToIPSCommand</span>(paymentId, amount, debtorIban, e.getCreditorIban()));
+    }
+
+    <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">LiquidityInsufficientEvent</span> e) {
+        <span class="tok-c">// Terminal failure &mdash; no liquidity reserved, so no compensation</span>
+        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">FailPaymentCommand</span>(paymentId, <span class="tok-s">"INSUFFICIENT_FUNDS"</span>, e.getReason()));
+        <span class="tok-n">SagaLifecycle</span>.end();
+    }
+
+    <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">IPSRejectedEvent</span> e) {
+        <span class="tok-c">// IPS rejected: must release the liquidity reservation</span>
+        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">ReleaseLiquidityCommand</span>(paymentId, reservationRef, <span class="tok-s">"IPS_REJECTED"</span>));
+    }
+
+    <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">LiquidityReleasedEvent</span> e) {
+        <span class="tok-c">// Compensation complete &mdash; mark payment failed</span>
+        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">FailPaymentCommand</span>(paymentId, <span class="tok-s">"IPS_REJECTED"</span>, e.getReason()));
+        <span class="tok-n">SagaLifecycle</span>.end();
+    }
+
+    <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">PaymentSettledEvent</span> e) {
+        <span class="tok-c">// Happy path complete</span>
+        <span class="tok-n">SagaLifecycle</span>.end();
+    }
+}</code></pre>
+          </div>
+
+          <p>The saga state &mdash; the <code>reservationRef</code> field &mdash; is serialised by Axon and stored in the saga store (a <code>saga_entry</code> table in PostgreSQL). If the coordinator restarts between steps, Axon reloads the saga state and continues from where it left off. The workflow is durable: a JVM crash between the <code>LiquidityReservedEvent</code> and the <code>SubmitToIPSCommand</code> does not orphan a reserved liquidity position &mdash; the saga resumes and reissues the command on restart.</p>
+
+          <h2 id="choosing">Choosing between the two</h2>
+
+          <table>
+            <thead>
+              <tr><th>Dimension</th><th>Choreography</th><th>Orchestration</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Workflow visibility</td><td>Distributed across event subscriptions &mdash; hard to trace</td><td>Centralised in the coordinator &mdash; one class, one place</td></tr>
+              <tr><td>Coupling</td><td>Services coupled only to event contracts</td><td>Coordinator knows participant command interfaces</td></tr>
+              <tr><td>Single point of failure</td><td>None &mdash; each service is independent</td><td>Coordinator is a critical service (mitigated by HA)</td></tr>
+              <tr><td>Compensation logic</td><td>Encoded in event subscriptions &mdash; hard to reason about under partial failure</td><td>Encoded in the coordinator &mdash; explicit, testable</td></tr>
+              <tr><td>Adding a new step</td><td>New service subscribes; existing services unaware</td><td>Coordinator updated; all steps in one place</td></tr>
+              <tr><td>Regulatory auditability</td><td>Distributed trace required to reconstruct the workflow</td><td>Saga state table is a complete, queryable workflow log</td></tr>
+              <tr><td>Best fit</td><td>Simple, stable workflows with 2&ndash;3 steps; event fan-out patterns</td><td>Complex multi-step workflows with compensation; regulated processes</td></tr>
+            </tbody>
+          </table>
+
+          <p>For payment workflows in a regulated environment, the recommendation is orchestration. The SAMA audit requirement alone tips the balance: a single <code>saga_entry</code> table that records every state transition of every payment saga &mdash; with timestamps &mdash; satisfies the &ldquo;reconstruct any transaction at time T&rdquo; requirement without stitching together distributed traces from five different services. The coordinator is also easier to explain to an examiner than &ldquo;the workflow is implicit in the event subscriptions across twelve microservices.&rdquo;</p>
+
+          <h2 id="compensating">Compensating transactions</h2>
+          <p>A compensating transaction is not a rollback. A database rollback undoes a local transaction atomically &mdash; as if it never happened. A saga compensation acknowledges that the prior step <em>did</em> happen and applies an explicit corrective action. The prior step&rsquo;s effects may have been visible to other parts of the system during the window between the step completing and the compensation completing. Design compensations accordingly.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Design compensations before you design the forward steps</h4>
+              <p>Every step in a saga must have a defined compensation before the step is implemented. If you cannot design a compensation, the step should not be asynchronous &mdash; either make it synchronous (so it participates in the local transaction boundary) or restructure the domain to make compensation unnecessary (e.g., soft-reserve before hard-reserve).</p>
+            </li>
+            <li>
+              <h4>Compensations must be idempotent</h4>
+              <p>A compensation command may be delivered multiple times if the network times out between the coordinator sending it and the participant acknowledging it. The participant must handle a duplicate <code>ReleaseLiquidityCommand</code> for an already-released reservation without error or double-release. The simplest implementation: check the reservation status before acting; if already released, return success.</p>
+            </li>
+            <li>
+              <h4>Compensations must be retriable</h4>
+              <p>A compensation that fails must be retried until it succeeds. There is no &ldquo;fail the compensation&rdquo; path &mdash; if the compensation fails, the system is in an inconsistent state. The saga coordinator must be configured with a retry policy and a dead-letter queue for compensation commands that cannot be delivered after N retries. A human operations process must exist to resolve dead-lettered compensations.</p>
+            </li>
+            <li>
+              <h4>Order compensations in reverse saga order</h4>
+              <p>If steps A &rarr; B &rarr; C all succeeded and step D failed, compensate in the order C&prime; &rarr; B&prime; &rarr; A&prime;. Do not compensate A before compensating C &mdash; earlier steps may have created dependencies that the later steps rely on. At SAIB, the IPS submission acknowledgement contains the IPS reference number that the liquidity compensation uses; releasing liquidity before the IPS rejection is confirmed loses that reference.</p>
+            </li>
+            <li>
+              <h4>Compensations are business events, not technical housekeeping</h4>
+              <p>A <code>LiquidityReleasedEvent</code> is a business event that fraud analytics, the customer notification service, and the SAMA audit trail all care about. Emit it as a first-class domain event through the same Kafka topic as the forward events. Do not treat compensations as internal plumbing that bypasses the event log.</p>
+            </li>
+            <li>
+              <h4>Some steps are non-compensable</h4>
+              <p>Once a <code>pacs.008</code> is submitted to the IPS network, it cannot be withdrawn &mdash; only returned via a <code>pacs.004</code> payment return, which is a new forward transaction, not a compensation. Model this correctly: the saga compensates by <em>initiating a payment return</em>, not by &ldquo;undoing&rdquo; the IPS submission. The IPS submission is a pivot point &mdash; steps before it can be compensated cleanly; steps after it require a new forward flow.</p>
+            </li>
+          </ol>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Pivot points change the compensation design</div>
+            <p>Identify the pivot point in your saga &mdash; the step after which compensations become forward transactions &mdash; and document it explicitly. For a KSA IPS payment, the pivot is the moment the <code>pacs.008</code> is accepted by the IPS network. Before the pivot: cancel and release. After the pivot: initiate a return. The <code>PaymentSaga</code> needs different code paths for pre-pivot and post-pivot failures.</p>
+          </div>
+
+          <h2 id="ips-example">IPS payment saga end-to-end</h2>
+          <p>A concrete walkthrough of the happy path and the two most common failure paths for an outbound IPS credit transfer at SAIB.</p>
+
+          <div class="diagram" role="img" aria-label="Orchestration saga state machine for IPS payment: PaymentInitiated → FraudCheckPassed → LiquidityReserved → IPSSubmitted → PaymentSettled with failure paths to compensation states">
+            <div class="diagram__inner">
+              <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="sm1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="sm2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="sm3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- States: happy path top row -->
+                <rect x="20" y="50" width="110" height="48" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="75" y="70" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">INITIATED</text>
+                <text x="75" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">PaymentInitiated</text>
+
+                <rect x="175" y="50" width="110" height="48" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="230" y="70" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">FRAUD_CLEARED</text>
+                <text x="230" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">FraudCheckPassed</text>
+
+                <rect x="330" y="50" width="115" height="48" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="387" y="70" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">LIQ_RESERVED</text>
+                <text x="387" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">LiquidityReserved</text>
+
+                <rect x="493" y="50" width="110" height="48" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="548" y="70" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">IPS_SUBMITTED</text>
+                <text x="548" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">IPSSubmitted</text>
+
+                <rect x="650" y="50" width="110" height="48" rx="6" fill="#1c1c28" stroke="#00d4aa" stroke-width="2"/>
+                <text x="705" y="70" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">SETTLED ✓</text>
+                <text x="705" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">PaymentSettled</text>
+
+                <!-- Happy path arrows -->
+                <line x1="130" y1="74" x2="173" y2="74" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sm1)"/>
+                <line x1="285" y1="74" x2="328" y2="74" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sm1)"/>
+                <line x1="445" y1="74" x2="491" y2="74" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sm1)"/>
+                <line x1="603" y1="74" x2="648" y2="74" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sm1)"/>
+
+                <!-- Failure paths: vertical drops -->
+                <!-- Fraud failure -->
+                <line x1="230" y1="98" x2="230" y2="165" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#sm2)"/>
+                <rect x="155" y="165" width="150" height="48" rx="4" fill="#1a0808" stroke="#ef4444"/>
+                <text x="230" y="185" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">FRAUD_DECLINED</text>
+                <text x="230" y="200" text-anchor="middle" fill="#71717a" font-size="7.5">terminal, no compensation</text>
+
+                <!-- Liquidity failure -->
+                <line x1="387" y1="98" x2="387" y2="165" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#sm2)"/>
+                <rect x="312" y="165" width="150" height="48" rx="4" fill="#1a0808" stroke="#ef4444"/>
+                <text x="387" y="185" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">INSUF_FUNDS</text>
+                <text x="387" y="200" text-anchor="middle" fill="#71717a" font-size="7.5">terminal, no compensation</text>
+
+                <!-- IPS rejection with compensation -->
+                <line x1="548" y1="98" x2="548" y2="165" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#sm3)"/>
+                <rect x="473" y="165" width="150" height="48" rx="4" fill="#1a0d00" stroke="#fbbf24"/>
+                <text x="548" y="185" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">IPS_REJECTED</text>
+                <text x="548" y="200" text-anchor="middle" fill="#71717a" font-size="7.5">triggers compensation</text>
+
+                <!-- Compensation flow -->
+                <line x1="548" y1="213" x2="548" y2="258" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#sm3)"/>
+                <rect x="455" y="258" width="185" height="48" rx="4" fill="#0f0f16" stroke="#a78bfa"/>
+                <text x="548" y="278" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">LIQ_RELEASING</text>
+                <text x="548" y="293" text-anchor="middle" fill="#71717a" font-size="7.5">ReleaseLiquidityCommand</text>
+
+                <line x1="455" y1="282" x2="340" y2="282" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#sm3)"/>
+                <rect x="155" y="258" width="185" height="48" rx="4" fill="#1c1c28" stroke="#ef4444" stroke-width="2"/>
+                <text x="248" y="278" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">FAILED ✗</text>
+                <text x="248" y="293" text-anchor="middle" fill="#71717a" font-size="7.5">LiquidityReleased &rarr; FailPayment</text>
+
+                <text x="390" y="270" fill="#a78bfa" font-size="7.5">compensation</text>
+                <text x="390" y="281" fill="#a78bfa" font-size="7.5">complete</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; IPS payment saga state machine: happy path (top), fraud decline (terminal), insufficient funds (terminal), IPS rejection with liquidity compensation</div>
+          </div>
+
+          <p>The IPS rejection path is the one that matters most operationally. An IPS rejection arrives asynchronously &mdash; the <code>pacs.002</code> rejection response from SAMA can arrive seconds to minutes after the <code>pacs.008</code> submission. The saga must hold state (the <code>reservationRef</code>) across that window and act correctly when the rejection arrives. This is the case that synchronous, stateless approaches cannot handle without a polling loop against the IPS network, which introduces its own failure modes.</p>
+
+          <h2 id="failure-recovery">Failure &amp; recovery patterns</h2>
+          <p>Three failure scenarios have distinct handling requirements. Get them wrong and you either orphan resources (reserved funds that are never released) or create phantom payments (payments recorded as settled that were actually rejected).</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Saga step timeout is not the same as saga failure</div>
+            <p>A <code>ReserveLiquidityCommand</code> that times out at 500ms does not mean liquidity reservation failed. It means the coordinator did not receive an acknowledgement. The liquidity service may have processed the command successfully and the response was lost. Before compensating, the coordinator must query the liquidity service&rsquo;s idempotency record for the given <code>paymentId</code>. If it confirms reservation, continue the saga. If it confirms no reservation, retry the command once. Only compensate after a confirmed failure, never after a timeout alone.</p>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>saga-config.yaml &mdash; Axon deadline for IPS acknowledgement timeout</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">axon</span>:
+  <span class="tok-k">deadline</span>:
+    <span class="tok-k">enabled</span>: <span class="tok-n">true</span>
+  <span class="tok-k">serializer</span>:
+    <span class="tok-k">general</span>: <span class="tok-s">xstream</span>
+
+<span class="tok-c"># In PaymentSaga.java — schedule a deadline after IPS submission</span>
+<span class="tok-c"># If IPSAcknowledgedEvent not received in 90s, fire the deadline handler</span>
+<span class="tok-k">deadlineManager</span>.<span class="tok-n">schedule</span>(
+    <span class="tok-n">Duration</span>.ofSeconds(<span class="tok-n">90</span>),
+    <span class="tok-s">"ipsSubmissionTimeout"</span>,
+    <span class="tok-t">new</span> <span class="tok-n">IPSSubmissionDeadline</span>(paymentId)
+);
+
+<span class="tok-c"># Handler: query IPS status, compensate or extend depending on result</span>
+<span class="tok-k">@DeadlineHandler</span>(deadlineName = <span class="tok-s">"ipsSubmissionTimeout"</span>)
+<span class="tok-t">public void</span> <span class="tok-n">onIPSTimeout</span>(<span class="tok-n">IPSSubmissionDeadline</span> deadline) {
+    <span class="tok-n">IPSStatus</span> status = ipsQueryService.<span class="tok-n">checkStatus</span>(deadline.<span class="tok-n">getPaymentId</span>());
+    <span class="tok-t">if</span> (status == <span class="tok-n">IPSStatus</span>.PENDING) {
+        <span class="tok-c">// Extend: IPS is slow, reschedule</span>
+        deadlineManager.<span class="tok-n">schedule</span>(<span class="tok-n">Duration</span>.ofSeconds(<span class="tok-n">30</span>), <span class="tok-s">"ipsSubmissionTimeout"</span>, deadline);
+    } <span class="tok-t">else if</span> (status == <span class="tok-n">IPSStatus</span>.REJECTED) {
+        <span class="tok-n">AggregateLifecycle</span>.<span class="tok-n">apply</span>(<span class="tok-t">new</span> <span class="tok-n">IPSRejectedEvent</span>(paymentId, <span class="tok-s">"TIMEOUT_CONFIRMED_REJECTED"</span>));
+    } <span class="tok-t">else if</span> (status == <span class="tok-n">IPSStatus</span>.UNKNOWN) {
+        <span class="tok-c">// Escalate to ops dead-letter queue</span>
+        deadLetterQueue.<span class="tok-n">park</span>(paymentId, <span class="tok-s">"IPS_STATUS_UNKNOWN"</span>);
+    }
+}</code></pre>
+          </div>
+
+          <p>The <code>UNKNOWN</code> status branch is the one that requires an operational process. When the IPS network is unreachable and the coordinator cannot determine whether the submission was received, the payment cannot be compensated automatically &mdash; compensating an IPS-received submission would abandon the funds in transit. These cases go to a dead-letter queue monitored by the payments operations team, who reconcile directly with SAMA&rsquo;s IPS participant portal before acting.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">The dead-letter queue is a design requirement, not a failure mode</div>
+            <p>Every saga implementation that touches an external network must design for the <code>UNKNOWN</code> state. Build the dead-letter queue, the operational dashboard, and the resolution workflow before the system goes live. At SAIB, the IPS operations team has a reconciliation SLA of 15 minutes for unknown-state payments during business hours. That SLA is achievable only if the tooling was built ahead of go-live.</p>
+          </div>
+
+          <h2 id="idempotency">Idempotency in saga steps</h2>
+          <p>Every saga step must be idempotent at the participant service level. The coordinator may resend a command if it does not receive an acknowledgement. The participant must handle the duplicate without creating a duplicate effect.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>LiquidityService.java &mdash; idempotent reservation</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@CommandHandler</span>
+<span class="tok-t">public</span> <span class="tok-n">ReservationResult</span> <span class="tok-n">handle</span>(<span class="tok-n">ReserveLiquidityCommand</span> cmd) {
+    <span class="tok-c">// Idempotency: check whether reservation already exists for this paymentId</span>
+    <span class="tok-t">return</span> reservationRepo
+        .<span class="tok-n">findByPaymentId</span>(cmd.getPaymentId())
+        .<span class="tok-n">map</span>(existing -&gt; {
+            <span class="tok-c">// Duplicate command: return the existing reservation</span>
+            log.<span class="tok-n">info</span>(<span class="tok-s">"Duplicate ReserveLiquidity for {}: returning existing ref {}"</span>,
+                cmd.getPaymentId(), existing.getReservationRef());
+            <span class="tok-t">return</span> <span class="tok-t">new</span> <span class="tok-n">ReservationResult</span>(existing.getReservationRef(), existing.getReservedAt());
+        })
+        .<span class="tok-n">orElseGet</span>(() -&gt; {
+            <span class="tok-c">// First attempt: create the reservation</span>
+            <span class="tok-n">Account</span> account = accountRepo.<span class="tok-n">findByIban</span>(cmd.getDebtorIban())
+                .<span class="tok-n">orElseThrow</span>(() -&gt; <span class="tok-t">new</span> <span class="tok-n">AccountNotFoundException</span>(cmd.getDebtorIban()));
+            <span class="tok-t">if</span> (account.getAvailableBalance().compareTo(cmd.getAmount()) &lt; <span class="tok-n">0</span>) {
+                <span class="tok-t">throw new</span> <span class="tok-n">InsufficientFundsException</span>(cmd.getPaymentId(), cmd.getAmount());
+            }
+            <span class="tok-n">Reservation</span> reservation = <span class="tok-t">new</span> <span class="tok-n">Reservation</span>(
+                <span class="tok-n">UUID</span>.<span class="tok-n">randomUUID</span>().<span class="tok-n">toString</span>(),
+                cmd.getPaymentId(), cmd.getAmount(), <span class="tok-n">Instant</span>.<span class="tok-n">now</span>()
+            );
+            account.<span class="tok-n">holdAmount</span>(cmd.getAmount());
+            reservationRepo.<span class="tok-n">save</span>(reservation);
+            accountRepo.<span class="tok-n">save</span>(account);
+            <span class="tok-t">return new</span> <span class="tok-n">ReservationResult</span>(reservation.getRef(), reservation.getCreatedAt());
+        });
+}</code></pre>
+          </div>
+
+          <p>The idempotency check uses the <code>paymentId</code> as the natural key, not the <code>CommandMessage</code> identifier. Using the Axon message ID would require the coordinator to always resend with the same message ID, which Axon does not guarantee across restarts. The business key (<code>paymentId</code>) is stable across retries because the coordinator always sends the same command for the same payment.</p>
+
+          <h2 id="testing">Testing sagas</h2>
+          <p>Sagas are integration-heavy components. Unit testing the saga class with mocked events is necessary but not sufficient &mdash; the interesting failure modes require a real Kafka cluster, a real PostgreSQL saga store, and real participant services (or stub implementations with realistic failure injection).</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentSagaIntegrationTest.java &mdash; Testcontainers</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@SpringBootTest</span>
+<span class="tok-k">@Testcontainers</span>
+<span class="tok-t">class</span> <span class="tok-n">PaymentSagaIntegrationTest</span> {
+
+    <span class="tok-k">@Container</span>
+    <span class="tok-t">static</span> <span class="tok-n">PostgreSQLContainer</span>&lt;?&gt; postgres =
+        <span class="tok-t">new</span> <span class="tok-n">PostgreSQLContainer</span>&lt;&gt;(<span class="tok-s">"postgres:15"</span>)
+            .<span class="tok-n">withDatabaseName</span>(<span class="tok-s">"payments_test"</span>);
+
+    <span class="tok-k">@Container</span>
+    <span class="tok-t">static</span> <span class="tok-n">KafkaContainer</span> kafka =
+        <span class="tok-t">new</span> <span class="tok-n">KafkaContainer</span>(<span class="tok-n">DockerImageName</span>.<span class="tok-n">parse</span>(<span class="tok-s">"confluentinc/cp-kafka:7.7.0"</span>));
+
+    <span class="tok-k">@Autowired</span>
+    <span class="tok-t">private</span> <span class="tok-n">CommandGateway</span> commandGateway;
+
+    <span class="tok-k">@Autowired</span>
+    <span class="tok-t">private</span> <span class="tok-n">PaymentStatusRepository</span> statusRepo;
+
+    <span class="tok-k">@Test</span>
+    <span class="tok-t">void</span> <span class="tok-n">ipsRejection_shouldReleaseLiquidityAndFailPayment</span>() <span class="tok-t">throws</span> <span class="tok-n">Exception</span> {
+        <span class="tok-n">String</span> paymentId = <span class="tok-n">UUID</span>.<span class="tok-n">randomUUID</span>().<span class="tok-n">toString</span>();
+
+        <span class="tok-c">// Configure stub IPS service to return rejection</span>
+        ipsStub.<span class="tok-n">willReturn</span>(<span class="tok-s">"REJECTED"</span>, <span class="tok-s">"AC04"</span>);  <span class="tok-c">// AC04 = closed creditor account</span>
+
+        <span class="tok-n">CompletableFuture</span>&lt;?&gt; result = commandGateway.<span class="tok-n">send</span>(<span class="tok-t">new</span> <span class="tok-n">InitiatePaymentCommand</span>(
+            paymentId, <span class="tok-s">"SA4420000001234567891234"</span>, <span class="tok-s">"SA7710000000012345678901"</span>,
+            <span class="tok-t">new</span> <span class="tok-n">BigDecimal</span>(<span class="tok-s">"5000.00"</span>), <span class="tok-s">"SAR"</span>,
+            <span class="tok-s">"E2E-20260808-001"</span>, <span class="tok-n">LocalDate</span>.<span class="tok-n">now</span>()
+        ));
+        result.<span class="tok-n">get</span>();
+
+        <span class="tok-c">// Wait for saga to complete (async: IPS rejection → compensation → terminal)</span>
+        <span class="tok-n">Awaitility</span>.<span class="tok-n">await</span>().<span class="tok-n">atMost</span>(<span class="tok-n">Duration</span>.<span class="tok-n">ofSeconds</span>(<span class="tok-n">10</span>))
+            .<span class="tok-n">until</span>(() -&gt; statusRepo.<span class="tok-n">findByPaymentId</span>(paymentId)
+                .<span class="tok-n">map</span>(s -&gt; <span class="tok-n">PaymentStatus</span>.FAILED == s.getStatus())
+                .<span class="tok-n">orElse</span>(<span class="tok-t">false</span>));
+
+        <span class="tok-n">PaymentStatus</span> status = statusRepo.<span class="tok-n">findByPaymentId</span>(paymentId).<span class="tok-n">orElseThrow</span>();
+        <span class="tok-n">assertThat</span>(status.getFailureReason()).<span class="tok-n">isEqualTo</span>(<span class="tok-s">"IPS_REJECTED"</span>);
+
+        <span class="tok-c">// Verify liquidity was released</span>
+        <span class="tok-n">assertThat</span>(reservationRepo.<span class="tok-n">findByPaymentId</span>(paymentId).<span class="tok-n">get</span>().<span class="tok-n">getStatus</span>())
+            .<span class="tok-n">isEqualTo</span>(<span class="tok-n">ReservationStatus</span>.RELEASED);
+    }
+}</code></pre>
+          </div>
+
+          <p>Integration tests for sagas must cover: the happy path, each individual step failure, the timeout/deadline path, and the duplicate command path (idempotency). The timeout path requires configuring short deadlines in the test context &mdash; a 90-second deadline is untestable in a normal test suite. Use a Spring profile that overrides the deadline to 500ms for integration tests.</p>
+
+          <h2 id="antipatterns">Anti-patterns</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Saga as a substitute for domain design</div>
+            <p>A saga that spans ten steps and compensates eight of them is a sign that the domain model has not been designed correctly. If almost every step needs a compensation, the workflow boundary is probably wrong &mdash; either some steps should be in the same local transaction (same database, same service), or some steps should be decoupled from the main flow and treated as eventual consistency without compensation. Sagas are for the genuinely distributed coordination that cannot be avoided; they are not a way to avoid thinking about bounded context boundaries.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Storing saga state in the event log</div>
+            <p>The saga state table (<code>saga_entry</code>) and the event store serve different purposes. The event store records what happened; the saga table records the coordinator&rsquo;s current position in the workflow. Do not try to derive saga state by replaying events &mdash; the saga coordinator needs to look up its state quickly on restart, not replay a potentially large event history. Axon&rsquo;s saga store serialises and stores the saga state directly; use it.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Choreography for workflows that need auditability</div>
+            <p>A choreography saga that spans five services produces an audit trail distributed across five event streams and five databases. Reconstructing the complete history of a single payment requires joining those streams on <code>paymentId</code> across five different data stores &mdash; which may have different retention policies, different access controls, and different log formats. For SAMA audit purposes, an orchestration saga with a centralised saga state table is significantly easier to present to an examiner. If you are already using choreography, invest in a correlation-ID-based event correlation service that aggregates the per-payment audit trail into a single queryable view.</p>
+          </div>
+
+          <nav class="article-nav">
+            <a href="../event-driven.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Event-Driven Architecture</div>
+            </a>
+            <a href="event-sourcing-and-cqrs.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Event Sourcing &amp; CQRS in Payments &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
