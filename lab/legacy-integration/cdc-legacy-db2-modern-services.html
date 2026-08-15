@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legacy Integration &mdash; CDC from Legacy DB2 to Modern Services &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="IBM IIDR and Debezium against DB2 on z/OS and IBM i: log-based CDC configuration, schema mapping, event envelope design, SAMA audit trail continuity, and the patterns for keeping legacy as system-of-record while shipping new product.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Legacy Integration &mdash; CDC from Legacy DB2 &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="IBM IIDR and Debezium CDC pipelines from DB2 on z/OS and IBM i to modern microservices.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/legacy-integration/cdc-legacy-db2-modern-services.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CDC from Legacy DB2 &mdash; Production Patterns">
+  <meta name="twitter:description" content="IBM IIDR and Debezium CDC pipelines from DB2 on z/OS and IBM i to modern services.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration/cdc-legacy-db2-modern-services.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "CDC from Legacy DB2 to Modern Services",
+    "description": "IBM IIDR and Debezium against DB2 on z/OS and IBM i: log-based CDC, schema mapping, event envelope design, SAMA audit trail continuity, and the patterns for keeping legacy as system-of-record while shipping new product.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-08-15",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/legacy-integration/cdc-legacy-db2-modern-services.html",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "proficiencyLevel": "Expert",
+    "dependencies": "IBM IIDR 11.4, Debezium 2.7, Apache Kafka, DB2 z/OS, DB2 for i"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../legacy-integration.html">Legacy Integration</a><span>/</span>CDC from Legacy DB2</div>
+          <span class="overline">Lab Article</span>
+          <h1>Legacy Integration: CDC from Legacy DB2 to Modern Services</h1>
+          <p class="lead">IBM IIDR and Debezium against DB2 on z/OS and IBM i &mdash; log-based change capture, schema mapping, event envelope design, and the patterns for keeping legacy as system-of-record while shipping new product without polling.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#why-cdc">Why CDC over polling</a></li>
+            <li><a href="#iidr-zos">IBM IIDR on z/OS</a></li>
+            <li><a href="#debezium-ibmi">Debezium on IBM i</a></li>
+            <li><a href="#schema-mapping">Schema mapping</a></li>
+            <li><a href="#event-envelope">Event envelope design</a></li>
+            <li><a href="#steps">Deployment steps</a></li>
+            <li><a href="#reconciliation">Reconciliation &amp; drift</a></li>
+            <li><a href="#sama-compliance">SAMA compliance</a></li>
+            <li><a href="#comparison">Tool comparison</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM IIDR 11.4 &middot; Debezium 2.7 &middot; Apache Kafka &middot; DB2 z/OS &middot; DB2 for i</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>The strangler fig gives you a modern interface in front of the mainframe. CDC gives you the data. These are two separate problems, and confusing them is the source of most long-running legacy integration headaches: teams build the façade, expose a REST API backed by CICS, and then discover that every downstream analytics system, every data warehouse, every new microservice still needs a feed of what changed in the DB2 tables. Without CDC, that feed is a polling job &mdash; and polling jobs compound their costs quietly until they consume a noticeable fraction of your mainframe MIPS.</p>
+          <p>Change Data Capture reads the database transaction log. It sees every insert, update, and delete as it commits, converts it to a structured event, and publishes it to a topic. Consumers subscribe to the topic. The mainframe does not know they exist. This is the only architecture that decouples consumer growth from mainframe overhead.</p>
+          <p>Two tools dominate in practice for IBM environments: <strong>IBM IIDR</strong> (InfoSphere Data Replication, now part of IBM DataStage) for DB2 on z/OS, and <strong>Debezium</strong> for DB2 on IBM i (AS/400). They solve the same problem against different log formats, and they are not interchangeable &mdash; choose based on your platform, not on open-source preference.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Log-based CDC only</div>
+            <p>This article covers log-based CDC exclusively. Trigger-based CDC &mdash; where a database trigger writes to a shadow table and a job polls that table &mdash; works but adds write overhead to the production DB2 instance on z/OS and introduces a polling lag. On a mainframe running under MLC pricing, trigger overhead is directly visible in your software bill. Log-based CDC has zero write overhead on the source.</p>
+          </div>
+
+          <h2 id="why-cdc">Why CDC over polling</h2>
+          <p>The immediate objection to legacy polling is latency: a 5-minute batch job sees data that is 5 minutes old at best. But the real problem is not latency &mdash; it is resource and fragility:</p>
+          <ul>
+            <li><strong>MIPS consumption.</strong> A SELECT * WHERE last_updated &gt; :last_run against a 500M-row account table on z/OS consumes MIPS proportional to the rows scanned, not the rows changed. If 100 rows change per minute and the table has 500M rows, you scan 500M rows to find 100. With CDC you process exactly the 100 rows that changed.</li>
+            <li><strong>No tombstones.</strong> A poll-based job that reads last_updated cannot detect hard deletes. If a record is deleted, it disappears from the result set. CDC surfaces deletes as explicit tombstone events with the before-image of the deleted row.</li>
+            <li><strong>No delta for binary columns.</strong> BLOB and CLOB columns do not have an updatable timestamp you can poll on. CDC reads the full column value from the log on every change.</li>
+            <li><strong>Consumer proliferation.</strong> Every new consumer that needs a data feed writes another polling job. On the mainframe, each job consumes MIPS. CDC amortises the capture cost across all consumers via Kafka: capture once, consume many times.</li>
+          </ul>
+
+          <div class="diagram" role="img" aria-label="CDC pipeline from DB2 z/OS through IBM IIDR and from IBM i through Debezium, converging on Kafka, with consumer microservices on the right">
+            <div class="diagram__inner">
+              <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="cdc1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="cdc2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="cdc3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <text x="90" y="22" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">z/OS PATH</text>
+                <rect x="10" y="34" width="160" height="60" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="90" y="57" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">DB2 on z/OS</text>
+                <text x="90" y="74" text-anchor="middle" fill="#71717a" font-size="9">IFCID 306 (log)</text>
+                <text x="90" y="88" text-anchor="middle" fill="#71717a" font-size="9">ACCOUNTS, LEDGER</text>
+
+                <rect x="200" y="34" width="140" height="60" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="270" y="57" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">IBM IIDR</text>
+                <text x="270" y="74" text-anchor="middle" fill="#71717a" font-size="9">log reader + Kafka</text>
+                <text x="270" y="88" text-anchor="middle" fill="#71717a" font-size="9">producer stage</text>
+
+                <line x1="170" y1="64" x2="198" y2="64" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cdc1)"/>
+
+                <text x="90" y="192" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">IBM i PATH</text>
+                <rect x="10" y="204" width="160" height="60" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="90" y="227" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">DB2 on IBM i</text>
+                <text x="90" y="244" text-anchor="middle" fill="#71717a" font-size="9">journal receivers</text>
+                <text x="90" y="258" text-anchor="middle" fill="#71717a" font-size="9">CUSTOMERS, LOANS</text>
+
+                <rect x="200" y="204" width="140" height="60" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="270" y="227" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Debezium</text>
+                <text x="270" y="244" text-anchor="middle" fill="#71717a" font-size="9">Kafka Connect +</text>
+                <text x="270" y="258" text-anchor="middle" fill="#71717a" font-size="9">DB2 for i connector</text>
+
+                <line x1="170" y1="234" x2="198" y2="234" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cdc1)"/>
+
+                <rect x="380" y="100" width="130" height="110" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="445" y="133" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Kafka</text>
+                <text x="445" y="152" text-anchor="middle" fill="#71717a" font-size="9">accounts.cdc</text>
+                <text x="445" y="168" text-anchor="middle" fill="#71717a" font-size="9">ledger.cdc</text>
+                <text x="445" y="184" text-anchor="middle" fill="#71717a" font-size="9">customers.cdc</text>
+                <text x="445" y="200" text-anchor="middle" fill="#71717a" font-size="9">loans.cdc</text>
+
+                <line x1="340" y1="64" x2="378" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cdc1)"/>
+                <line x1="340" y1="234" x2="378" y2="175" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cdc1)"/>
+
+                <rect x="560" y="60" width="120" height="44" rx="4" fill="#16161f" stroke="#fbbf24"/>
+                <text x="620" y="79" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Payments svc</text>
+                <text x="620" y="95" text-anchor="middle" fill="#71717a" font-size="9">balance cache warm</text>
+
+                <rect x="560" y="118" width="120" height="44" rx="4" fill="#16161f" stroke="#fbbf24"/>
+                <text x="620" y="137" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Analytics DW</text>
+                <text x="620" y="153" text-anchor="middle" fill="#71717a" font-size="9">Flink → Snowflake</text>
+
+                <rect x="560" y="176" width="120" height="44" rx="4" fill="#16161f" stroke="#fbbf24"/>
+                <text x="620" y="195" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Customer svc</text>
+                <text x="620" y="211" text-anchor="middle" fill="#71717a" font-size="9">profile replication</text>
+
+                <rect x="560" y="234" width="120" height="44" rx="4" fill="#16161f" stroke="#fbbf24"/>
+                <text x="620" y="253" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Audit log svc</text>
+                <text x="620" y="269" text-anchor="middle" fill="#71717a" font-size="9">SAMA trail</text>
+
+                <line x1="510" y1="130" x2="558" y2="82" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#cdc3)"/>
+                <line x1="510" y1="145" x2="558" y2="140" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#cdc3)"/>
+                <line x1="510" y1="160" x2="558" y2="198" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#cdc3)"/>
+                <line x1="510" y1="175" x2="558" y2="256" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#cdc3)"/>
+
+                <text x="390" y="335" text-anchor="middle" fill="#71717a" font-size="10">mainframe write overhead = zero &middot; capture once, consume many &middot; deletes surfaced as tombstones</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; CDC pipeline: IIDR (z/OS path) and Debezium (IBM i path) converging on Kafka, fanning out to N consumers</div>
+          </div>
+
+          <h2 id="iidr-zos">IBM IIDR on z/OS</h2>
+          <p>IBM IIDR reads the DB2 for z/OS active and archive logs via the DB2 <strong>IFCID 306</strong> interface (the instrumentation facility component). It requires no table-level changes, no triggers, and no additional indexes. The IIDR agent runs as a started task on z/OS and must be authorised as a DB2 trusted client.</p>
+          <p>IIDR publishes to Kafka via its <em>Kafka stage</em> &mdash; a built-in producer that converts the internal IIDR row-change format to Avro or JSON. The Avro path is strongly preferred in production: it enforces schema at publish time and integrates with Confluent Schema Registry or IBM Event Streams&rsquo; built-in registry.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>iidr-replication.json</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-k">"subscriptionName"</span>: <span class="tok-s">"SAIB_ACCOUNTS_TO_KAFKA"</span>,
+  <span class="tok-k">"source"</span>: {
+    <span class="tok-k">"type"</span>: <span class="tok-s">"DB2ZOS"</span>,
+    <span class="tok-k">"database"</span>: <span class="tok-s">"SAIBPROD"</span>,
+    <span class="tok-k">"schema"</span>: <span class="tok-s">"ACCTDB"</span>,
+    <span class="tok-k">"tables"</span>: [<span class="tok-s">"ACCOUNTS"</span>, <span class="tok-s">"LEDGER_ENTRIES"</span>, <span class="tok-s">"HOLD_ORDERS"</span>],
+    <span class="tok-k">"captureMode"</span>: <span class="tok-s">"LOG_BASED"</span>,        <span class="tok-c">// never TRIGGER</span>
+    <span class="tok-k">"beforeImage"</span>: <span class="tok-n">true</span>,                 <span class="tok-c">// required for audit trail</span>
+    <span class="tok-k">"lobHandling"</span>: <span class="tok-s">"INLINE_UP_TO_32KB"</span>
+  },
+  <span class="tok-k">"target"</span>: {
+    <span class="tok-k">"type"</span>: <span class="tok-s">"KAFKA"</span>,
+    <span class="tok-k">"bootstrapServers"</span>: <span class="tok-s">"kafka-1.saib.internal:9093,kafka-2.saib.internal:9093"</span>,
+    <span class="tok-k">"schemaRegistry"</span>: <span class="tok-s">"https://schema-registry.saib.internal"</span>,
+    <span class="tok-k">"serializationFormat"</span>: <span class="tok-s">"AVRO"</span>,
+    <span class="tok-k">"topicMapping"</span>: {
+      <span class="tok-k">"ACCOUNTS"</span>: <span class="tok-s">"saib.legacy.accounts.cdc"</span>,
+      <span class="tok-k">"LEDGER_ENTRIES"</span>: <span class="tok-s">"saib.legacy.ledger.cdc"</span>,
+      <span class="tok-k">"HOLD_ORDERS"</span>: <span class="tok-s">"saib.legacy.holds.cdc"</span>
+    },
+    <span class="tok-k">"partitionKey"</span>: <span class="tok-s">"ACCOUNT_NBR"</span>,    <span class="tok-c">// ordering guaranteed per account</span>
+    <span class="tok-k">"security"</span>: {
+      <span class="tok-k">"protocol"</span>: <span class="tok-s">"SSL"</span>,
+      <span class="tok-k">"keystorePath"</span>: <span class="tok-s">"/var/iidr/keystores/kafka-client.jks"</span>
+    }
+  },
+  <span class="tok-k">"latencyTargetMs"</span>: <span class="tok-n">500</span>               <span class="tok-c">// IIDR SLA: 500ms capture-to-publish</span>
+}</code></pre>
+          </div>
+
+          <p>Key configuration decisions worth calling out:</p>
+          <ul>
+            <li><strong><code>beforeImage: true</code>.</strong> IIDR captures both the before and after images of every changed row. This is more expensive (doubles the payload for updates) but is non-negotiable if SAMA audit trail continuity applies &mdash; the before-image is the audit record.</li>
+            <li><strong><code>partitionKey: ACCOUNT_NBR</code>.</strong> Partitioning on the business key guarantees that all changes for one account land on the same partition in order. Without this, a consumer can see an UPDATE before the INSERT that created the row.</li>
+            <li><strong>Latency SLA.</strong> 500ms is a realistic IIDR target for a well-sized z/OS agent. The log reader runs in a tight loop; the bottleneck is usually Kafka producer acknowledgement, not log read speed.</li>
+          </ul>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">IIDR versioning and DB2 compatibility</div>
+            <p>IBM IIDR requires specific DB2 for z/OS subsystem versions and PTF levels. Running IIDR 11.4 against a DB2 V12 subsystem that has not applied the required PTFs produces silent data loss &mdash; not an error. Validate the compatibility matrix before installing and revalidate after every DB2 maintenance window. IIDR subscription metadata is stored in a separate DB2 subsystem &mdash; not in the source &mdash; so a DB2 maintenance window that does not include the IIDR control database still requires an IIDR restart.</p>
+          </div>
+
+          <h2 id="debezium-ibmi">Debezium on IBM i</h2>
+          <p>DB2 for IBM i uses <strong>journal receivers</strong> rather than the DB2 z/OS log format. Debezium&rsquo;s IBM i connector reads from the journal via the <code>QSYS2.DISPLAY_JOURNAL</code> table function or, in newer versions, the Change Data Capture journal exit point. Unlike IIDR, Debezium runs outside the IBM i system &mdash; it runs as a Kafka Connect connector on your integration platform and connects to IBM i via JDBC and Toolbox for Java.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>debezium-ibmi-connector.json</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-k">"name"</span>: <span class="tok-s">"saib-ibmi-customers"</span>,
+  <span class="tok-k">"config"</span>: {
+    <span class="tok-k">"connector.class"</span>: <span class="tok-s">"io.debezium.connector.db2i.Db2iConnector"</span>,
+    <span class="tok-k">"database.hostname"</span>: <span class="tok-s">"as400-prod.saib.internal"</span>,
+    <span class="tok-k">"database.port"</span>: <span class="tok-s">"8471"</span>,
+    <span class="tok-k">"database.user"</span>: <span class="tok-s">"CDCUSER"</span>,
+    <span class="tok-k">"database.password"</span>: <span class="tok-s">"${file:/opt/kafka/secrets/ibmi.properties:db.password}"</span>,
+    <span class="tok-k">"database.dbname"</span>: <span class="tok-s">"*LOCAL"</span>,
+    <span class="tok-k">"schema.include.list"</span>: <span class="tok-s">"CUSTLIB"</span>,
+    <span class="tok-k">"table.include.list"</span>: <span class="tok-s">"CUSTLIB.CUSTOMERS,CUSTLIB.LOANS,CUSTLIB.COLLATERAL"</span>,
+    <span class="tok-k">"topic.prefix"</span>: <span class="tok-s">"saib.legacy.ibmi"</span>,
+    <span class="tok-k">"key.converter"</span>: <span class="tok-s">"io.confluent.kafka.serializers.KafkaAvroSerializer"</span>,
+    <span class="tok-k">"value.converter"</span>: <span class="tok-s">"io.confluent.kafka.serializers.KafkaAvroSerializer"</span>,
+    <span class="tok-k">"value.converter.schema.registry.url"</span>: <span class="tok-s">"https://schema-registry.saib.internal"</span>,
+    <span class="tok-k">"journal.name"</span>: <span class="tok-s">"CUSTLIB/CUSTJRN"</span>,
+    <span class="tok-k">"snapshot.mode"</span>: <span class="tok-s">"initial"</span>,            <span class="tok-c">// full snapshot on first run</span>
+    <span class="tok-k">"snapshot.isolation.mode"</span>: <span class="tok-s">"read_committed"</span>,
+    <span class="tok-k">"decimal.handling.mode"</span>: <span class="tok-s">"string"</span>,        <span class="tok-c">// packed decimal → string first</span>
+    <span class="tok-k">"time.precision.mode"</span>: <span class="tok-s">"adaptive_time_microseconds"</span>,
+    <span class="tok-k">"heartbeat.interval.ms"</span>: <span class="tok-s">"10000"</span>
+  }
+}</code></pre>
+          </div>
+
+          <p>The <code>decimal.handling.mode: "string"</code> setting is important: DB2 for i stores monetary amounts as packed decimal (COMP-3 equivalent). Debezium can emit them as Java <code>BigDecimal</code> through Kafka Connect&rsquo;s logical types, but this requires the consuming schema to understand <code>org.apache.kafka.connect.data.Decimal</code>. Emitting as string and converting at the consumer is more portable and avoids precision surprises in intermediate frameworks like Flink that have their own decimal handling.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Journal receiver retention</div>
+            <p>Debezium reads journal receivers sequentially. If Debezium is down for longer than the IBM i journal receiver retention period, it loses its position. The connector then falls back to a snapshot of the current table state &mdash; which is correct but expensive on large tables. Set journal receiver retention to at least 48 hours on any table that Debezium is watching, and alert if the connector lag approaches that threshold.</p>
+          </div>
+
+          <h2 id="schema-mapping">Schema mapping</h2>
+          <p>Legacy DB2 schemas were designed for 1980s storage constraints and programmer conventions, not for API consumers. Mapping them is not optional &mdash; it is the job. The choices you make here determine the maintainability of every downstream consumer for the next decade.</p>
+          <p>Three categories of mapping work appear on every project:</p>
+
+          <ul>
+            <li><strong>Type normalisation.</strong> Convert packed decimal to <code>BigDecimal</code>, Julian dates to ISO 8601, EBCDIC character fields to UTF-8, and CHAR(3) currency codes to ISO 4217 strings. Do this at the CDC layer, not in each consumer.</li>
+            <li><strong>Semantic rename.</strong> <code>ACCT_BAL_AVAIL</code> becomes <code>availableBalance</code>. <code>TXN_DT_YYMMDD</code> becomes <code>transactionDate</code>. This is a one-time investment that pays back in every consumer that no longer needs to know that <code>CUST_TP_CD</code> means customer type.</li>
+            <li><strong>Derived fields.</strong> Sometimes a column does not map cleanly to a single modern concept because it encodes multiple meanings (a status field where values 1&ndash;9 mean &ldquo;active&rdquo; and values 10&ndash;19 mean &ldquo;suspended with different reasons&rdquo;). Add a derived <code>status</code> enum field. Keep the original column too, at least during a transition period.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>accounts-cdc-schema.avsc</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-k">"type"</span>: <span class="tok-s">"record"</span>,
+  <span class="tok-k">"name"</span>: <span class="tok-s">"AccountCdcEvent"</span>,
+  <span class="tok-k">"namespace"</span>: <span class="tok-s">"info.wbadawi.saib.legacy.accounts"</span>,
+  <span class="tok-k">"fields"</span>: [
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"eventType"</span>,         <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"enum"</span>, <span class="tok-k">"name"</span>: <span class="tok-s">"CdcOp"</span>, <span class="tok-k">"symbols"</span>: [<span class="tok-s">"INSERT"</span>,<span class="tok-s">"UPDATE"</span>,<span class="tok-s">"DELETE"</span>] }},
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"capturedAt"</span>,        <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },    <span class="tok-c">// ISO 8601 from DB2 log timestamp</span>
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"accountNumber"</span>,     <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },    <span class="tok-c">// was ACCT_NBR CHAR(16)</span>
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"customerId"</span>,        <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"availableBalance"</span>,  <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },    <span class="tok-c">// string BigDecimal; scale=2</span>
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"ledgerBalance"</span>,     <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"currency"</span>,          <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },    <span class="tok-c">// ISO 4217, was CHAR(3)</span>
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"status"</span>,            <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"enum"</span>, <span class="tok-k">"name"</span>: <span class="tok-s">"AcctStatus"</span>, <span class="tok-k">"symbols"</span>: [<span class="tok-s">"ACTIVE"</span>,<span class="tok-s">"DORMANT"</span>,<span class="tok-s">"SUSPENDED"</span>,<span class="tok-s">"CLOSED"</span>] }},
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"before"</span>, <span class="tok-k">"type"</span>: [<span class="tok-s">"null"</span>, <span class="tok-s">"AccountCdcPayload"</span>], <span class="tok-k">"default"</span>: <span class="tok-k">null</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"after"</span>,  <span class="tok-k">"type"</span>: [<span class="tok-s">"null"</span>, <span class="tok-s">"AccountCdcPayload"</span>], <span class="tok-k">"default"</span>: <span class="tok-k">null</span> }
+  ]
+}</code></pre>
+          </div>
+
+          <h2 id="event-envelope">Event envelope design</h2>
+          <p>A CDC event is not an API response. It is a fact: something changed in the source system at a point in time. The envelope must carry enough metadata that any consumer can answer three questions independently: what changed, when did it change, and was this change an insert, update, or delete?</p>
+          <p>Beyond the Debezium/IIDR defaults, a financial-services CDC envelope needs two additional fields:</p>
+          <ul>
+            <li><strong>Source transaction ID.</strong> The DB2 commit unit identifier. Multiple row changes in the same DB2 transaction produce multiple CDC events. Grouping them by transaction ID is how a consumer reconstructs transactional consistency. IIDR provides this natively; Debezium provides it as <code>source.txId</code>.</li>
+            <li><strong>Change sequence number.</strong> A monotonically increasing number within the source DB2 log. This is the tie-breaker when two CDC events for the same partition key have the same millisecond timestamp. Both IIDR and Debezium expose this; make it a top-level field in your canonical envelope rather than burying it in the source metadata.</li>
+          </ul>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Do not confuse Kafka offset with change sequence</div>
+            <p>Kafka partition offsets are not DB2 log sequence numbers. A Kafka offset tells you where an event sits in a Kafka partition. A DB2 log sequence number tells you where a change sits in the source database transaction log. These are different numbering spaces. If consumers use Kafka offsets to deduplicate or order database changes, they will get it wrong on Kafka topic compaction, partition reassignment, or topic recreation. Always carry the source log sequence number in the event payload.</p>
+          </div>
+
+          <h2 id="steps">Deployment steps</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Map the DB2 schema to a canonical event shape</h4>
+              <p>For each table being captured, produce a canonical Avro schema. Map every column type to its modern equivalent. Identify derived fields. Register the schema in Schema Registry with <code>BACKWARD_TRANSITIVE</code> compatibility (consumers can read any older version; new versions may add optional fields only).</p>
+            </li>
+            <li>
+              <h4>Configure IIDR replication rules (z/OS path)</h4>
+              <p>Install the IIDR agent as a z/OS started task. Grant it DB2 trusted client authority. Create one subscription per table group. Set <code>beforeImage: true</code> and <code>captureMode: LOG_BASED</code>. Validate the DB2 PTF compatibility matrix before starting.</p>
+            </li>
+            <li>
+              <h4>Deploy Debezium Kafka Connect (IBM i path)</h4>
+              <p>Deploy a Kafka Connect cluster (or use your existing one) accessible to the IBM i network segment. Configure the DB2 for i connector with the journal receiver name, schema/table include lists, and Avro serialisation. Run the initial snapshot during a low-traffic window &mdash; it does a full table read via JDBC.</p>
+            </li>
+            <li>
+              <h4>Apply SMTs for EBCDIC normalisation and field rename</h4>
+              <p>Use Kafka Connect Single Message Transforms to rename columns, convert EBCDIC character data, and extract the source transaction ID into a top-level field. Keep SMTs stateless &mdash; any stateful transformation belongs in a Flink or Kafka Streams job downstream, not inside the connector.</p>
+            </li>
+            <li>
+              <h4>Wire consumer services with schema evolution rules</h4>
+              <p>Each consumer registers its expected schema version with Schema Registry. Set consumer compatibility to <code>FORWARD</code>: the consumer can read messages written by any schema version it has registered, plus any newer version that only adds optional fields. Configure a dead-letter queue for any event that fails schema validation &mdash; never discard unreadable events silently.</p>
+            </li>
+            <li>
+              <h4>Enable reconciliation and alert on drift</h4>
+              <p>Within 24 hours of enabling CDC, run the first reconciliation query (see next section). Set a pipeline health alert: if the lag between last captured event timestamp and wall-clock time exceeds 10 minutes, page the on-call engineer. This catches IIDR agent restarts, network partitions, and Kafka producer backpressure before consumers notice.</p>
+            </li>
+          </ol>
+
+          <h2 id="reconciliation">Reconciliation &amp; drift detection</h2>
+          <p>CDC pipelines drift silently. The common failure modes &mdash; an IIDR subscription that paused and resumed, a Debezium connector that fell behind and did a partial re-snapshot, an SMT that mishandled a null value in a column it had never seen null before &mdash; all produce a state where consumers believe they have accurate data but do not. The only reliable counter-measure is a reconciliation query that counts and checksums source vs. consumer state on a schedule.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>reconcile_accounts.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- Run on z/OS DB2 (source of truth)</span>
+<span class="tok-k">SELECT</span>
+  <span class="tok-n">COUNT</span>(*) <span class="tok-k">AS</span> src_count,
+  <span class="tok-n">SUM</span>(<span class="tok-n">DECIMAL</span>(BAL_AVAIL, <span class="tok-n">20</span>, <span class="tok-n">2</span>)) <span class="tok-k">AS</span> src_balance_sum,
+  <span class="tok-n">MAX</span>(LAST_UPD_TS) <span class="tok-k">AS</span> src_max_ts
+<span class="tok-k">FROM</span> ACCTDB.ACCOUNTS
+<span class="tok-k">WHERE</span> ACCT_STATUS <span class="tok-p">!=</span> <span class="tok-s">'C'</span>    <span class="tok-c">-- exclude closed accounts</span>
+  <span class="tok-k">AND</span> LAST_UPD_TS <span class="tok-p">&lt;</span> <span class="tok-n">CURRENT TIMESTAMP</span> <span class="tok-p">-</span> <span class="tok-n">5</span> <span class="tok-n">MINUTES</span>;  <span class="tok-c">-- allow CDC lag</span>
+
+<span class="tok-c">-- Run on consumer DB (Postgres in the Payments service)</span>
+<span class="tok-k">SELECT</span>
+  <span class="tok-n">COUNT</span>(*) <span class="tok-k">AS</span> cdc_count,
+  <span class="tok-n">SUM</span>(available_balance) <span class="tok-k">AS</span> cdc_balance_sum,
+  <span class="tok-n">MAX</span>(captured_at) <span class="tok-k">AS</span> cdc_max_ts
+<span class="tok-k">FROM</span> accounts_replica
+<span class="tok-k">WHERE</span> status <span class="tok-p">!=</span> <span class="tok-s">'CLOSED'</span>;</span>
+
+<span class="tok-c">-- Alert if: ABS(src_count - cdc_count) > 0
+--          OR ABS(src_balance_sum - cdc_balance_sum) > 0.01
+--          OR (src_max_ts - cdc_max_ts) > INTERVAL '5 minutes'</span></code></pre>
+          </div>
+
+          <p>Run this query every 4 hours in normal operation and after every IIDR or Debezium restart. Track the drift count as a metric in your observability stack. A drift of zero for 30 consecutive days before a production cutover is a meaningful confidence bar &mdash; not a guarantee, but the closest proxy available.</p>
+
+          <h2 id="sama-compliance">SAMA compliance</h2>
+          <p>SAMA&rsquo;s Technology Risk Management framework requires that core banking systems maintain a complete and tamper-evident audit trail through any change in how data is processed or replicated. A CDC pipeline that reads the DB2 transaction log and publishes to Kafka introduces two new points where the audit chain can break:</p>
+          <ul>
+            <li><strong>Before-image retention.</strong> The before-image of every changed row must be retained, not just the after-image. If your Kafka topic compaction removes tombstones before the required retention period expires (SAMA expects 10 years for core banking records), you have a gap. Use Kafka topic retention policy <code>delete</code> not <code>compact</code> for CDC topics that carry SAMA-regulated data, and set <code>retention.ms</code> accordingly.</li>
+            <li><strong>Data residency.</strong> All CDC data in transit must stay within KSA. This means your Kafka cluster, Schema Registry, and all consumer services must be hosted in KSA regions or on-premises. Specifically: if you use IBM Event Streams on IBM Cloud, the KSA region is <code>au-syd</code>-equivalent for SAMA purposes only if the tenant is provisioned in your on-premises or co-location facility. Verify with IBM, not with generic cloud region documentation.</li>
+          </ul>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Kafka topic compaction destroys the audit trail</div>
+            <p>Kafka log compaction retains only the latest record per key in a topic. For a CDC topic, this means only the current state of each row survives compaction &mdash; the history of how it got there is gone. For a SAMA-regulated core banking table, you need the full history. Set <code>cleanup.policy=delete</code> (not <code>compact</code>) and set retention to match your regulatory requirement. Use compacted topics only for reference data materialisation, never for the primary CDC stream.</p>
+          </div>
+
+          <h2 id="comparison">Tool comparison</h2>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Capability</th>
+                <th>IBM IIDR 11.4</th>
+                <th>Debezium 2.7</th>
+                <th>Custom polling</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>DB2 z/OS</strong></td>
+                <td>Native, IFCID 306</td>
+                <td>Not supported</td>
+                <td>JDBC, polling only</td>
+              </tr>
+              <tr>
+                <td><strong>DB2 for IBM i</strong></td>
+                <td>Supported (IIDR for i)</td>
+                <td>Native, journal CDC</td>
+                <td>JDBC, polling only</td>
+              </tr>
+              <tr>
+                <td><strong>Write overhead on source</strong></td>
+                <td>Zero (log read)</td>
+                <td>Zero (journal read)</td>
+                <td>High (table scans)</td>
+              </tr>
+              <tr>
+                <td><strong>Delete events</strong></td>
+                <td>Yes, with before-image</td>
+                <td>Yes, with before-image</td>
+                <td>No (row disappears)</td>
+              </tr>
+              <tr>
+                <td><strong>Schema Registry integration</strong></td>
+                <td>Native Avro/JSON</td>
+                <td>Native via Kafka Connect</td>
+                <td>Manual, per-consumer</td>
+              </tr>
+              <tr>
+                <td><strong>Open source</strong></td>
+                <td>No (IBM licence)</td>
+                <td>Yes (Apache 2.0)</td>
+                <td>Yes (build it)</td>
+              </tr>
+              <tr>
+                <td><strong>SAMA audit trail</strong></td>
+                <td>Before-image native</td>
+                <td>Before-image with config</td>
+                <td>Manual instrumentation</td>
+              </tr>
+              <tr>
+                <td><strong>Typical latency</strong></td>
+                <td>&lt;500ms</td>
+                <td>&lt;1s (journal lag)</td>
+                <td>Minutes (poll interval)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>The operative recommendation: <strong>IBM IIDR for z/OS, Debezium for IBM i.</strong> IIDR is not open source and carries an IBM licence cost, but it is the only tool with native IFCID 306 access and IBM-supported SLAs for the z/OS environment. Debezium on IBM i is mature (the DB2 for i connector has been production-grade since 2.3) and avoids an additional IBM licence for that environment. Do not use Debezium on z/OS with an ODBC/JDBC bridge as a cost-saving measure &mdash; JDBC-based CDC on z/OS is still polling, and it costs MIPS proportional to the rows scanned.</p>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Schema evolution breaks consumers silently</div>
+            <p>A DBA adds a NOT NULL column to ACCOUNTS on z/OS. IIDR picks it up immediately. The Avro schema in Schema Registry has no field for it. Debezium consumers configured with <code>BACKWARD</code> compatibility reject the message and route it to the dead-letter queue silently if no alert is configured. You discover the break when a business analyst asks why account counts have dropped. Set up an alert on dead-letter queue depth &mdash; anything above zero in production requires immediate investigation.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Initial snapshot and in-flight transactions</div>
+            <p>When Debezium runs its initial snapshot, it reads the current table state via JDBC while live transactions are committing. The snapshot is not transaction-consistent unless you use <code>snapshot.isolation.mode: serializable</code>, which holds a read lock for the duration of the snapshot &mdash; on a large table, this means a multi-hour lock on a live production table. Use <code>read_committed</code> isolation and accept that the snapshot will contain a mix of states; the subsequent journal-based CDC stream fills in the gaps. Never run the initial snapshot during business hours on a high-write table.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">EBCDIC in string fields</div>
+            <p>IIDR handles EBCDIC-to-UTF-8 conversion internally for character fields. Debezium relies on the JDBC driver&rsquo;s character set handling. If the JDBC connection does not specify the correct CCSID (Coded Character Set Identifier) for the IBM i job, you get question marks for non-ASCII characters in Arabic or French text stored in customer name fields. Set <code>translate binary=true</code> in the JDBC URL and specify <code>ccsid=1208</code> (UTF-8) explicitly.</p>
+          </div>
+
+          <nav class="article-nav">
+            <a href="mainframe-modernisation-roadmap.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Mainframe Modernisation Roadmap</div>
+            </a>
+            <a href="../data-sync.html" class="article-nav__next">
+              <div class="article-nav__label">Next topic</div>
+              <div class="article-nav__title">Data Sync &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
