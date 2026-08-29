@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Synchronisation &mdash; Reconciliation Pipelines for Regulators &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Production reconciliation pipelines for regulated financial systems: daily break detection via CDC fingerprinting, automated break investigation, SAMA-aligned audit trails, and the reporting that survives an examination.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Data Synchronisation &mdash; Reconciliation Pipelines for Regulators">
+  <meta property="og:description" content="CDC fingerprinting, automated break investigation, and SAMA-ready audit trails for reconciliation pipelines.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-sync/reconciliation-pipelines-for-regulators.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Reconciliation Pipelines for Regulators">
+  <meta name="twitter:description" content="Daily reconciliation that catches CDC drift and satisfies SAMA audit requirements.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/reconciliation-pipelines-for-regulators.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Data Synchronisation: Reconciliation Pipelines for Regulators",
+    "description": "Production reconciliation pipelines for regulated financial systems: daily break detection via CDC fingerprinting, automated break investigation, SAMA-aligned audit trails, and the reporting that survives an examination.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-08-29",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/data-sync/reconciliation-pipelines-for-regulators.html",
+    "isPartOf": {
+      "@type": "TechArticleSeries",
+      "name": "Data Synchronisation &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/data-sync.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Reconciliation Pipelines for Regulators</div>
+          <span class="overline">Lab Article</span>
+          <h1>Data Synchronisation: Reconciliation Pipelines for Regulators</h1>
+          <p class="lead">Daily reconciliation jobs that catch CDC drift the application can&rsquo;t see, the audit trail SAMA actually wants, and how to wire up automated break investigation so the morning report isn&rsquo;t a manual spreadsheet ritual.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#cdc-limits">CDC is not an audit story</a></li>
+            <li><a href="#architecture">Pipeline architecture</a></li>
+            <li><a href="#fingerprinting">Fingerprinting &amp; hash comparison</a></li>
+            <li><a href="#scheduling">Scheduling &amp; windowing</a></li>
+            <li><a href="#break-investigation">Automated break investigation</a></li>
+            <li><a href="#audit-trail">SAMA audit trail requirements</a></li>
+            <li><a href="#implementation">Building the pipeline</a></li>
+            <li><a href="#reporting">Regulator-ready reporting</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Apache Flink 1.19 / Debezium 2.x / Kafka / PostgreSQL / Spark (batch) / Grafana</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>CDC keeps distributed data in sync in near-real-time. Reconciliation proves that it worked &mdash; and catches the cases where it didn&rsquo;t. Every production CDC deployment eventually produces a break: a row that was updated on the source while the Debezium connector was down, a slot replay that delivered an event twice, an outbox row deleted before the connector picked it up because someone ran a manual cleanup. These breaks are rare and usually small. In a regulated bank they are also mandatory to detect, investigate, and report within a prescribed window.</p>
+          <p>SAMA&rsquo;s Technology Risk Management (TRM) framework does not prescribe a reconciliation technology stack. It does require that banks demonstrate <em>data integrity controls</em> across system boundaries &mdash; evidence that data transmitted between core systems is complete, accurate, and that discrepancies are detected and resolved. A Debezium connector that &ldquo;mostly works&rdquo; is not a control; a reconciliation job with a break report and an investigation log is.</p>
+          <p>This article covers the full pipeline: fingerprint generation, hash comparison at scale, intraday vs. daily scheduling, automated break classification, and the reporting format that satisfies an examination team.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">This complements, not replaces, CDC monitoring</div>
+            <p>Connector lag, offset freshness, and replication slot disk usage are operational signals that tell you the pipeline is running. Reconciliation is a data signal that tells you the pipeline produced the right result. Both are required; neither substitutes for the other.</p>
+          </div>
+
+          <h2 id="cdc-limits">CDC is not an audit story</h2>
+          <p>CDC captures the <em>log</em> of what the database did. Reconciliation verifies the <em>outcome</em> in the downstream. The gap between them is where the breaks live.</p>
+
+          <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin:1.5rem 0;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--color-border);">
+                <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--color-text-muted);font-weight:500;">Signal</th>
+                <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--color-text-muted);font-weight:500;">What it tells you</th>
+                <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--color-text-muted);font-weight:500;">What it misses</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--color-border);">
+                <td style="padding:0.5rem 0.75rem;">Connector lag (LSN gap)</td>
+                <td style="padding:0.5rem 0.75rem;">Events are flowing / backed up</td>
+                <td style="padding:0.5rem 0.75rem;">Whether downstream applied them correctly</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--color-border);">
+                <td style="padding:0.5rem 0.75rem;">Consumer offset lag</td>
+                <td style="padding:0.5rem 0.75rem;">Consumer is keeping up</td>
+                <td style="padding:0.5rem 0.75rem;">Whether processed events produced correct state</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--color-border);">
+                <td style="padding:0.5rem 0.75rem;">Consumer error rate</td>
+                <td style="padding:0.5rem 0.75rem;">Processing is failing</td>
+                <td style="padding:0.5rem 0.75rem;">Events silently skipped due to bad idempotency logic</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--color-border);">
+                <td style="padding:0.5rem 0.75rem;">Slot reset event</td>
+                <td style="padding:0.5rem 0.75rem;">Replay started</td>
+                <td style="padding:0.5rem 0.75rem;">Whether replay covered all rows correctly</td>
+              </tr>
+              <tr>
+                <td style="padding:0.5rem 0.75rem;color:var(--color-accent);font-weight:600;">Reconciliation hash mismatch</td>
+                <td style="padding:0.5rem 0.75rem;color:var(--color-accent);">Downstream diverged from source</td>
+                <td style="padding:0.5rem 0.75rem;">Nothing &mdash; this is the ground-truth check</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>Four break categories arise in practice:</p>
+          <ul>
+            <li><strong>Missing row.</strong> Source has a record the downstream does not. CDC event was lost or dropped.</li>
+            <li><strong>Stale row.</strong> Source has a newer version of a record than the downstream. An update event was skipped or arrived out of order.</li>
+            <li><strong>Phantom row.</strong> Downstream has a record the source no longer has. A delete event was missed, or an insert was duplicated without deduplication.</li>
+            <li><strong>Field divergence.</strong> Both systems have the row; one or more fields differ. Transformation bug or partial update applied twice.</li>
+          </ul>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Manual SQL queries are not a reconciliation pipeline</div>
+            <p>Comparing two tables by hand each morning with a shared spreadsheet is a control that can&rsquo;t be audited, can&rsquo;t scale to millions of rows, and produces no timestamp evidence. SAMA expects an automated, repeatable process with a stored result log. Manual checks are evidence that the control does not exist.</p>
+          </div>
+
+          <h2 id="architecture">Pipeline architecture</h2>
+          <p>A production reconciliation pipeline has two independent paths: a near-real-time streaming path for intraday alerting, and a batch path for the authoritative daily report. The batch path is what the regulator examines; the streaming path is what the operations team monitors.</p>
+
+          <div class="diagram" role="img" aria-label="Reconciliation pipeline architecture showing source DB, CDC stream, downstream, and two reconciliation paths">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ra1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="ra2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="ra3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                </defs>
+
+                <!-- Source DB -->
+                <rect x="20" y="60" width="130" height="80" rx="8" fill="#16161f" stroke="#4a9eff"/>
+                <text x="85" y="88" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">Source DB</text>
+                <text x="85" y="108" text-anchor="middle" fill="#e4e4e7" font-size="10">PostgreSQL</text>
+                <text x="85" y="126" text-anchor="middle" fill="#71717a" font-size="9">WAL / redo log</text>
+
+                <!-- Debezium -->
+                <rect x="20" y="200" width="130" height="60" rx="8" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="85" y="225" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Debezium</text>
+                <text x="85" y="245" text-anchor="middle" fill="#71717a" font-size="9">Kafka Connect</text>
+
+                <!-- Kafka -->
+                <rect x="210" y="60" width="130" height="200" rx="8" fill="#0f0f16" stroke="#fbbf24"/>
+                <text x="275" y="90" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">Kafka</text>
+                <text x="275" y="110" text-anchor="middle" fill="#71717a" font-size="9">change events</text>
+                <text x="275" y="130" text-anchor="middle" fill="#71717a" font-size="9">topic: db.payments</text>
+                <line x1="265" y1="145" x2="285" y2="145" stroke="#71717a" stroke-width="0.5"/>
+                <text x="275" y="170" text-anchor="middle" fill="#71717a" font-size="9">recon.snapshots</text>
+                <text x="275" y="190" text-anchor="middle" fill="#71717a" font-size="9">topic</text>
+                <line x1="265" y1="205" x2="285" y2="205" stroke="#71717a" stroke-width="0.5"/>
+                <text x="275" y="225" text-anchor="middle" fill="#71717a" font-size="9">recon.breaks</text>
+                <text x="275" y="240" text-anchor="middle" fill="#71717a" font-size="9">topic</text>
+
+                <!-- Downstream -->
+                <rect x="400" y="60" width="130" height="80" rx="8" fill="#16161f" stroke="#00d4aa"/>
+                <text x="465" y="88" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Downstream</text>
+                <text x="465" y="108" text-anchor="middle" fill="#e4e4e7" font-size="10">Search / Analytics</text>
+                <text x="465" y="126" text-anchor="middle" fill="#71717a" font-size="9">Elasticsearch / DWH</text>
+
+                <!-- Streaming Recon (Flink) -->
+                <rect x="400" y="200" width="130" height="70" rx="8" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="465" y="222" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Flink (streaming)</text>
+                <text x="465" y="240" text-anchor="middle" fill="#71717a" font-size="9">hash join, 15-min</text>
+                <text x="465" y="256" text-anchor="middle" fill="#71717a" font-size="9">tumbling window</text>
+
+                <!-- Batch Recon (Spark) -->
+                <rect x="590" y="60" width="170" height="80" rx="8" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="675" y="85" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Spark (batch)</text>
+                <text x="675" y="103" text-anchor="middle" fill="#e4e4e7" font-size="9">daily 02:00 AST</text>
+                <text x="675" y="119" text-anchor="middle" fill="#71717a" font-size="9">full-table hash compare</text>
+                <text x="675" y="133" text-anchor="middle" fill="#71717a" font-size="9">authoritative report</text>
+
+                <!-- Break Store -->
+                <rect x="590" y="200" width="170" height="70" rx="8" fill="#16161f" stroke="#ef4444"/>
+                <text x="675" y="222" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Break Store</text>
+                <text x="675" y="240" text-anchor="middle" fill="#71717a" font-size="9">PostgreSQL</text>
+                <text x="675" y="257" text-anchor="middle" fill="#71717a" font-size="9">recon_runs / breaks</text>
+
+                <!-- Arrows -->
+                <line x1="85" y1="140" x2="85" y2="198" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ra2)"/>
+                <line x1="150" y1="100" x2="208" y2="100" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ra1)"/>
+                <line x1="150" y1="225" x2="208" y2="180" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ra2)"/>
+                <line x1="340" y1="100" x2="398" y2="100" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ra1)"/>
+                <line x1="340" y1="175" x2="398" y2="225" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ra2)"/>
+                <line x1="530" y1="100" x2="588" y2="100" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ra3)"/>
+                <line x1="530" y1="225" x2="588" y2="225" stroke="#ef4444" stroke-width="1.5" marker-end="url(#ra3)"/>
+                <line x1="675" y1="140" x2="675" y2="198" stroke="#ef4444" stroke-width="1.5" marker-end="url(#ra3)"/>
+
+                <!-- Labels -->
+                <rect x="20" y="330" width="740" height="38" rx="6" fill="#0f0f16" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="390" y="348" text-anchor="middle" fill="#71717a" font-size="9">Streaming path: 15-min windows, catches breaks within the hour &middot; Batch path: daily authoritative run, signed result, stored for 7 years per SAMA TRM</text>
+                <text x="390" y="363" text-anchor="middle" fill="#71717a" font-size="9">Both paths write to the Break Store &middot; Batch result is the one that counts for audit</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Dual-path reconciliation: streaming for operations, batch for audit</div>
+          </div>
+
+          <h2 id="fingerprinting">Fingerprinting &amp; hash comparison</h2>
+          <p>The core technique is row fingerprinting: for each row in the source and downstream, compute a deterministic hash of the business-significant columns; compare hashes by primary key. A mismatch on the hash means a break; matching hashes mean the row is in sync. At SAIB&rsquo;s scale (tens of millions of payment records), hashing allows the comparison to run in minutes rather than column-by-column SQL joins that would take hours.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Which columns to hash</div>
+            <p>Do not hash technical columns like <code>updated_at</code>, <code>version</code>, or <code>_kafka_offset</code> &mdash; these legitimately differ between source and downstream by design. Hash only columns that must be identical: amounts, account numbers, reference IDs, status codes, ISO 20022 field values. Document the exclusion list explicitly; it is part of the reconciliation control definition.</p>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>recon-fingerprint.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- Source DB fingerprint: one hash per payment row</span>
+<span class="tok-k">SELECT</span>
+  payment_id,
+  md5(
+    <span class="tok-k">CONCAT</span>(
+      <span class="tok-k">COALESCE</span>(amount::text, <span class="tok-s">''</span>), <span class="tok-s">'|'</span>,
+      <span class="tok-k">COALESCE</span>(currency, <span class="tok-s">''</span>), <span class="tok-s">'|'</span>,
+      <span class="tok-k">COALESCE</span>(debtor_iban, <span class="tok-s">''</span>), <span class="tok-s">'|'</span>,
+      <span class="tok-k">COALESCE</span>(creditor_iban, <span class="tok-s">''</span>), <span class="tok-s">'|'</span>,
+      <span class="tok-k">COALESCE</span>(status, <span class="tok-s">''</span>), <span class="tok-s">'|'</span>,
+      <span class="tok-k">COALESCE</span>(value_date::text, <span class="tok-s">''</span>)
+    )
+  ) <span class="tok-k">AS</span> row_hash,
+  updated_at          <span class="tok-c">-- used to set the reconciliation window boundary</span>
+<span class="tok-k">FROM</span> payments
+<span class="tok-k">WHERE</span> updated_at &lt; :window_end    <span class="tok-c">-- stable window: no rows still in-flight</span>
+  <span class="tok-k">AND</span> updated_at &gt;= :window_start; <span class="tok-c">-- incremental mode: only changed rows</span>
+
+<span class="tok-c">-- Downstream fingerprint (Elasticsearch via JDBC bridge or export)</span>
+<span class="tok-c">-- Same query shape; same column set; same COALESCE defaults</span></code></pre>
+          </div>
+
+          <p>The comparison itself is a hash join on <code>payment_id</code>. Three result sets emerge:</p>
+          <ul>
+            <li><strong>Source only</strong> &mdash; missing rows in downstream</li>
+            <li><strong>Downstream only</strong> &mdash; phantom rows in downstream</li>
+            <li><strong>Hash mismatch</strong> &mdash; field divergence</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ReconJob.java (Flink streaming)</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-c">// KeyedCoProcessFunction comparing source and downstream hash streams</span>
+<span class="tok-k">public class</span> <span class="tok-t">HashCompareFunction</span>
+    <span class="tok-k">extends</span> <span class="tok-t">KeyedCoProcessFunction</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">Fingerprint</span>, <span class="tok-t">Fingerprint</span>, <span class="tok-t">Break</span>&gt; {
+
+  <span class="tok-c">// State: hold source hash until downstream arrives (or TTL fires)</span>
+  <span class="tok-k">private</span> <span class="tok-t">ValueState</span>&lt;<span class="tok-t">Fingerprint</span>&gt; sourceState;
+  <span class="tok-k">private</span> <span class="tok-t">ValueState</span>&lt;<span class="tok-t">Fingerprint</span>&gt; downstreamState;
+
+  <span class="tok-k">@Override</span>
+  <span class="tok-k">public void</span> processElement1(<span class="tok-t">Fingerprint</span> src, <span class="tok-t">Context</span> ctx, <span class="tok-t">Collector</span>&lt;<span class="tok-t">Break</span>&gt; out)
+      <span class="tok-k">throws</span> <span class="tok-t">Exception</span> {
+    <span class="tok-t">Fingerprint</span> ds = downstreamState.value();
+    <span class="tok-k">if</span> (ds == <span class="tok-k">null</span>) {
+      sourceState.update(src);
+      <span class="tok-c">// register a timer: if no downstream arrives, emit MISSING break</span>
+      ctx.timerService().registerEventTimeTimer(src.windowEnd + <span class="tok-n">60_000</span>);
+    } <span class="tok-k">else if</span> (!src.hash.equals(ds.hash)) {
+      out.collect(<span class="tok-t">Break</span>.fieldDivergence(src, ds));
+      clearState();
+    } <span class="tok-k">else</span> {
+      clearState(); <span class="tok-c">// hashes match, no break</span>
+    }
+  }
+
+  <span class="tok-k">@Override</span>
+  <span class="tok-k">public void</span> onTimer(<span class="tok-k">long</span> timestamp, <span class="tok-t">OnTimerContext</span> ctx, <span class="tok-t">Collector</span>&lt;<span class="tok-t">Break</span>&gt; out)
+      <span class="tok-k">throws</span> <span class="tok-t">Exception</span> {
+    <span class="tok-t">Fingerprint</span> src = sourceState.value();
+    <span class="tok-k">if</span> (src != <span class="tok-k">null</span>) out.collect(<span class="tok-t">Break</span>.missing(src));
+    clearState();
+  }
+}</code></pre>
+          </div>
+
+          <h2 id="scheduling">Scheduling &amp; windowing</h2>
+          <p>The hardest design question in reconciliation is when to cut the window. Cut it too early and in-flight events (written to source, not yet propagated via CDC) look like breaks. Cut it too late and the report is not ready for the regulatory deadline.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">CDC propagation lag must be measured, not assumed</div>
+            <p>The window boundary must be set at least as far back as the measured p99 end-to-end CDC latency &mdash; not a round number. If your Debezium-to-downstream p99 is 8 seconds at peak, a window that cuts 5 seconds before query time will consistently flag in-flight events as breaks. Use a 30-second or 60-second lag behind the current wall clock, validated against actual measurements.</p>
+          </div>
+
+          <p>The two scheduling strategies:</p>
+          <ul>
+            <li><strong>Intraday (streaming):</strong> 15-minute tumbling windows, Flink watermark set at window-end minus the measured propagation lag. Result: a near-real-time break count, alerted if it exceeds a threshold (e.g., more than 0 unexplained breaks in a 15-minute window). This feeds the operations dashboard.</li>
+            <li><strong>Daily batch (authoritative):</strong> Runs at 02:00 AST on the prior business day&rsquo;s data. The window is T&minus;1 business day, 00:00:00&ndash;23:59:59 AST, with a 90-second lag. Spark reads source and downstream via JDBC. Result is written to the <code>recon_runs</code> table and signed with a SHA-256 of the result set for tamper evidence. This is the regulatory artefact.</li>
+          </ul>
+
+          <h2 id="break-investigation">Automated break investigation</h2>
+          <p>A break list without a root cause is not an actionable artefact. Automated investigation classifies each break before it reaches the operations team, eliminating the category of breaks that have known-safe explanations.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Check if the break is in a CDC propagation window</h4>
+              <p>If the source row&rsquo;s <code>updated_at</code> is within the propagation lag window of the reconciliation cut-off, the break may be an in-flight event. Flag as <code>PENDING_PROPAGATION</code> and re-evaluate in the next run rather than alerting immediately.</p>
+            </li>
+            <li>
+              <h4>Correlate against the connector restart log</h4>
+              <p>If the Debezium connector restarted or a slot was reset in the reconciliation window, breaks are expected during the replay period. Tag affected rows as <code>CONNECTOR_RESTART</code> and mark as auto-investigated. The connector restart is itself an incident; the breaks are a downstream symptom.</p>
+            </li>
+            <li>
+              <h4>Check for known schema migration windows</h4>
+              <p>A running Flyway migration or Liquibase changeset may produce temporary divergence as the downstream schema catches up. If a deployment occurred during the window, mark affected rows <code>SCHEMA_MIGRATION</code>. Confirm the downstream has converged in the next run.</p>
+            </li>
+            <li>
+              <h4>Re-query the source for the current value</h4>
+              <p>For a row flagged as missing or stale, query the source directly. If the row no longer exists (deleted after the reconciliation window closed), reclassify as <code>POST_WINDOW_DELETE</code> &mdash; not a break. If the row exists and differs from the downstream, escalate to <code>OPEN_BREAK</code>.</p>
+            </li>
+            <li>
+              <h4>Attempt self-heal via replay</h4>
+              <p>For missing and stale rows that remain unexplained, publish a replay request to the <code>recon.replay-requests</code> Kafka topic. The downstream consumer re-fetches the row from the source API and applies it. Log the replay attempt with timestamp and outcome. Do not retry more than once without human sign-off; infinite replays mask a systematic fault.</p>
+            </li>
+            <li>
+              <h4>Escalate OPEN_BREAK items</h4>
+              <p>Any break that survives all the above steps is an <code>OPEN_BREAK</code> requiring human investigation. Write to the <code>break_investigations</code> table, fire a PagerDuty alert, and set an SLA timer. SAMA TRM requires that data integrity failures are investigated and resolved within a documented timeframe &mdash; the timer enforces it.</p>
+            </li>
+          </ol>
+
+          <h2 id="audit-trail">SAMA audit trail requirements</h2>
+          <p>SAMA&rsquo;s Technology Risk Management framework and the Cyber Security Framework both treat data integrity as an auditable control. In practice, an examination team will ask for evidence of three things:</p>
+          <ul>
+            <li><strong>That reconciliation runs on a defined schedule.</strong> The <code>recon_runs</code> table with its <code>scheduled_at</code>, <code>started_at</code>, <code>completed_at</code>, and <code>status</code> columns is this evidence. A run that was skipped must have a reason recorded.</li>
+            <li><strong>That breaks are detected, classified, and resolved within the SLA.</strong> The <code>break_investigations</code> table with its <code>detected_at</code>, <code>classified_at</code>, <code>resolved_at</code>, <code>resolution_type</code>, and <code>resolved_by</code> columns provides the case log.</li>
+            <li><strong>That the reconciliation result cannot be altered after the fact.</strong> The SHA-256 hash of the result set, stored in <code>recon_runs.result_hash</code>, provides tamper evidence. Store the raw result in object storage (S3 or Ceph) under an immutable retention policy.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>recon-schema.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-k">CREATE TABLE</span> recon_runs (
+  run_id          <span class="tok-t">uuid</span>          <span class="tok-k">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  pipeline_name   <span class="tok-t">varchar(128)</span>  <span class="tok-k">NOT NULL</span>,
+  window_start    <span class="tok-t">timestamptz</span>   <span class="tok-k">NOT NULL</span>,
+  window_end      <span class="tok-t">timestamptz</span>   <span class="tok-k">NOT NULL</span>,
+  scheduled_at    <span class="tok-t">timestamptz</span>   <span class="tok-k">NOT NULL</span>,
+  started_at      <span class="tok-t">timestamptz</span>,
+  completed_at    <span class="tok-t">timestamptz</span>,
+  status          <span class="tok-t">varchar(32)</span>   <span class="tok-k">NOT NULL DEFAULT</span> <span class="tok-s">'PENDING'</span>,
+  source_row_count <span class="tok-t">bigint</span>,
+  downstream_row_count <span class="tok-t">bigint</span>,
+  break_count     <span class="tok-t">int</span>           <span class="tok-k">NOT NULL DEFAULT</span> <span class="tok-n">0</span>,
+  result_hash     <span class="tok-t">varchar(64)</span>,   <span class="tok-c">-- SHA-256 of result CSV</span>
+  result_object   <span class="tok-t">text</span>,          <span class="tok-c">-- s3://recon-archive/runs/{run_id}.csv.gz</span>
+  skip_reason     <span class="tok-t">text</span>
+);
+
+<span class="tok-k">CREATE TABLE</span> break_investigations (
+  break_id        <span class="tok-t">uuid</span>          <span class="tok-k">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  run_id          <span class="tok-t">uuid</span>          <span class="tok-k">REFERENCES</span> recon_runs,
+  entity_id       <span class="tok-t">varchar(128)</span>  <span class="tok-k">NOT NULL</span>,
+  break_type      <span class="tok-t">varchar(32)</span>   <span class="tok-k">NOT NULL</span>, <span class="tok-c">-- MISSING | PHANTOM | STALE | FIELD_DIVERGENCE</span>
+  detected_at     <span class="tok-t">timestamptz</span>   <span class="tok-k">NOT NULL DEFAULT</span> now(),
+  auto_classified <span class="tok-t">boolean</span>       <span class="tok-k">NOT NULL DEFAULT</span> false,
+  classification  <span class="tok-t">varchar(64)</span>,   <span class="tok-c">-- PENDING_PROPAGATION | CONNECTOR_RESTART | OPEN_BREAK &hellip;</span>
+  replay_attempted <span class="tok-t">boolean</span>      <span class="tok-k">NOT NULL DEFAULT</span> false,
+  resolved_at     <span class="tok-t">timestamptz</span>,
+  resolution_type <span class="tok-t">varchar(64)</span>,
+  resolved_by     <span class="tok-t">varchar(128)</span>,
+  sla_deadline    <span class="tok-t">timestamptz</span>   <span class="tok-k">GENERATED ALWAYS AS</span>
+                  (detected_at + <span class="tok-k">INTERVAL</span> <span class="tok-s">'4 hours'</span>) <span class="tok-k">STORED</span>
+);</code></pre>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Retention: 7 years, immutable</div>
+            <p>SAMA TRM requires data integrity records to be retained for a minimum of 7 years. The <code>recon_runs</code> and <code>break_investigations</code> tables must be on a retention policy that prevents deletion or modification by application code. Use PostgreSQL row-level security to block DELETEs from the reconciliation service role, and store the result CSVs in an S3 bucket with Object Lock in Compliance mode.</p>
+          </div>
+
+          <h2 id="implementation">Building the pipeline</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Define the reconciliation domain and column set</h4>
+              <p>Write a reconciliation specification document that names: the source table, the downstream store, the primary key, the columns included in the hash (and excluded), the propagation lag SLA, the window schedule, and the break SLA. This document is a control artefact; version it in git and review it with Risk and Compliance before go-live.</p>
+            </li>
+            <li>
+              <h4>Build the fingerprint extractors</h4>
+              <p>Source extractor: a Spark job (for batch) or a Flink source reading from the CDC topic alongside a periodic JDBC snapshot for comparison. Downstream extractor: same column set, same hash function, same <code>COALESCE</code> defaults. Run both extractors against a synthetic dataset and assert that identical rows produce identical hashes &mdash; this is the most common source of false-positive breaks.</p>
+            </li>
+            <li>
+              <h4>Stand up the break store schema</h4>
+              <p>Apply the <code>recon_runs</code> and <code>break_investigations</code> DDL via a versioned migration. Create the application role with INSERT/UPDATE on both tables and SELECT on everything, but no DELETE and no TRUNCATE. Apply row-level security for the mutation restriction.</p>
+            </li>
+            <li>
+              <h4>Implement and test the break investigation logic</h4>
+              <p>The classification pipeline is a state machine. Test each transition with known break scenarios from a staging environment. Run a chaos test: deliberately stop the Debezium connector for 5 minutes, restart, let the replay run, then verify that reconciliation classifies the affected rows as <code>CONNECTOR_RESTART</code> and not as <code>OPEN_BREAK</code>.</p>
+            </li>
+            <li>
+              <h4>Wire the alerting and SLA monitoring</h4>
+              <p>Alert on: any <code>OPEN_BREAK</code> created; any break that reaches 50% of the SLA deadline without a <code>resolved_at</code>; any run that does not start within 15 minutes of its scheduled time. All three are SLA violations under SAMA TRM; all three should page the on-call engineer, not just create a Jira ticket.</p>
+            </li>
+            <li>
+              <h4>Generate and store the result artefact</h4>
+              <p>At the end of each batch run: serialize the full break list as a gzip-compressed CSV; compute the SHA-256 of the raw bytes; upload to S3 with server-side encryption (SSE-S3 at minimum, SSE-KMS preferred); write the object key and hash to <code>recon_runs.result_object</code> and <code>recon_runs.result_hash</code>. The upload must complete before the run is marked <code>COMPLETED</code>.</p>
+            </li>
+            <li>
+              <h4>Run the first production reconciliation under observation</h4>
+              <p>Do not run the self-heal replay step in production until the break classification accuracy has been validated &mdash; an over-eager replay that applies stale source data to a downstream that is actually correct creates a new break rather than resolving one. Disable replay for the first two weeks; classify and manually resolve breaks; then enable replay only for the <code>MISSING</code> break type.</p>
+            </li>
+          </ol>
+
+          <h2 id="reporting">Regulator-ready reporting</h2>
+          <p>The daily report is a two-page summary: a run statistics block and a break detail section. It is produced from the break store and emailed to a distribution list that includes Risk and Compliance. A zero-break day is still a report &mdash; the absence of breaks is itself a data point and the evidence that the pipeline ran.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>daily-recon-report.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- Summary for the prior business day report</span>
+<span class="tok-k">SELECT</span>
+  r.pipeline_name,
+  r.window_start                      <span class="tok-k">AS</span> window_start,
+  r.window_end                        <span class="tok-k">AS</span> window_end,
+  r.source_row_count,
+  r.downstream_row_count,
+  r.source_row_count - r.downstream_row_count
+                                      <span class="tok-k">AS</span> count_variance,
+  r.break_count,
+  <span class="tok-k">COUNT</span>(b.break_id) <span class="tok-k">FILTER</span> (<span class="tok-k">WHERE</span> b.classification = <span class="tok-s">'OPEN_BREAK'</span>)
+                                      <span class="tok-k">AS</span> open_breaks,
+  <span class="tok-k">COUNT</span>(b.break_id) <span class="tok-k">FILTER</span> (<span class="tok-k">WHERE</span> b.resolved_at IS NOT NULL)
+                                      <span class="tok-k">AS</span> resolved_breaks,
+  <span class="tok-k">COUNT</span>(b.break_id) <span class="tok-k">FILTER</span>
+    (<span class="tok-k">WHERE</span> b.sla_deadline &lt; now() <span class="tok-k">AND</span> b.resolved_at IS NULL)
+                                      <span class="tok-k">AS</span> sla_breached,
+  r.result_hash,
+  r.completed_at
+<span class="tok-k">FROM</span> recon_runs r
+<span class="tok-k">LEFT JOIN</span> break_investigations b <span class="tok-k">ON</span> b.run_id = r.run_id
+<span class="tok-k">WHERE</span> r.window_start::date = current_date - <span class="tok-n">1</span>
+<span class="tok-k">GROUP BY</span> r.run_id
+<span class="tok-k">ORDER BY</span> r.pipeline_name;</code></pre>
+          </div>
+
+          <p>Include the <code>result_hash</code> in the email body. If an examiner queries the break list at a later date, they can verify that the report was not modified after the run completed by recomputing the hash from the archived CSV. This is the chain of custody that turns a database query into an auditable control.</p>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Hashing NULL differently on source and downstream</div>
+            <p>A NULL in the source that appears as an empty string in the downstream (due to ORM serialization or JSON coercion) produces a hash mismatch on every row that has any NULL in the hashed column set. Always normalize NULLs to a sentinel value (e.g., empty string) using <code>COALESCE</code> in both extractors. Validate this with a dataset that contains known NULLs before go-live.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Running reconciliation during a CDC replay</div>
+            <p>If the Debezium connector replays events (slot reset, snapshot), the downstream is in a partially-applied state during the replay. A reconciliation run over that window will produce a large number of false breaks. Implement a reconciliation skip mechanism that detects an in-progress replay (check the connector&rsquo;s snapshot mode from the Kafka Connect REST API) and records <code>SKIPPED_DURING_REPLAY</code> in <code>recon_runs.skip_reason</code>. Resume the next scheduled run after replay completion.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Timezone assumptions in window boundaries</div>
+            <p>SAMA reporting deadlines are in AST (UTC+3). If the source DB uses UTC and the downstream uses a different timezone, a naive window boundary will include or exclude the wrong rows at day boundaries. Store all timestamps in UTC in the break store; convert to AST only in the report output layer. A one-hour error in the window boundary can cause an entire hour&rsquo;s worth of rows to appear as breaks.</p>
+          </div>
+
+          <nav class="article-nav">
+            <a href="debezium-and-outbox.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Debezium &amp; Outbox Pattern</div>
+            </a>
+            <a href="../data-sync.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Data Synchronisation &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
