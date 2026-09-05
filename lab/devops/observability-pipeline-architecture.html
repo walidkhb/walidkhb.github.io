@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Observability Pipeline Architecture: OTel, Prometheus, Loki &amp; Tempo &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="End-to-end observability for integration platforms: OpenTelemetry collector pipelines, Prometheus metrics, Loki logs, Tempo distributed traces, and Grafana &mdash; production patterns for regulated financial services.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Observability Pipeline Architecture: OTel, Prometheus, Loki &amp; Tempo &mdash; Lab">
+  <meta property="og:description" content="OTel collector pipelines, Prometheus, Loki, Tempo, and Grafana for integration platform observability at regulated banks.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/devops/observability-pipeline-architecture.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Observability Pipeline Architecture: OTel, Prometheus, Loki &amp; Tempo">
+  <meta name="twitter:description" content="An end-to-end observability platform for an integration estate at scale.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/devops/observability-pipeline-architecture.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Observability Pipeline Architecture: OpenTelemetry, Prometheus, Loki & Tempo",
+    "description": "End-to-end observability for integration platforms: OpenTelemetry collector pipelines, Prometheus metrics, Loki logs, Tempo distributed traces, and Grafana — production patterns for regulated financial services.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/devops/observability-pipeline-architecture.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "DevOps &amp; Platform Engineering &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/devops.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform</a><span>/</span>Observability Pipeline</div>
+          <span class="overline">Lab Article</span>
+          <h1>Observability Pipeline Architecture</h1>
+          <p class="lead">OpenTelemetry collectors, Prometheus for metrics, Loki for logs, Tempo for distributed traces &mdash; an end-to-end observability platform for an integration estate at scale, grounded in regulated financial services constraints.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#three-signals">Three signals</a></li>
+            <li><a href="#otel">OpenTelemetry</a></li>
+            <li><a href="#metrics">Metrics: Prometheus</a></li>
+            <li><a href="#logs">Logs: Loki</a></li>
+            <li><a href="#traces">Traces: Tempo</a></li>
+            <li><a href="#pipeline">Collector pipeline</a></li>
+            <li><a href="#grafana">Grafana: unified pane</a></li>
+            <li><a href="#cardinality">Cardinality &amp; cost</a></li>
+            <li><a href="#compliance">Compliance &amp; governance</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> OTel 0.107 / Prometheus 2.53 / Loki 3.1 / Tempo 2.5 / Grafana 11.1 / OpenShift 4.15</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Observability in integration platforms is harder than in microservice applications because the signals cross more system boundaries. A payment message enters an IBM ACE integration server, publishes to IBM MQ, is consumed by a Kafka Streams processor, triggers an ISO 20022 transformation, calls a core banking REST endpoint, and writes the result to an Oracle database &mdash; all within a single business transaction. If end-to-end latency is 2.3 seconds instead of 400 milliseconds, you need to know which hop is slow and why. Logs from each system alone don&rsquo;t answer that. Metrics alone don&rsquo;t either. Only correlated traces, enriched with metrics and logs, do.</p>
+          <p>The stack that holds in production: <strong>OTel everywhere for instrumentation and collection, Prometheus for metrics, Loki for logs, Tempo for traces, Grafana as the unified query and dashboard layer</strong>. This is not a Grafana Labs advocacy article &mdash; it is the stack that works on OpenShift without a cloud-managed backend, without license cost per node, and without sending regulated data to a SaaS endpoint outside the SAMA regulatory perimeter.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">OpenTelemetry is the instrumentation standard, not a product</div>
+            <p>OpenTelemetry (OTel) defines APIs, SDKs, and a wire protocol (OTLP). It does not store data &mdash; the Collector routes signals to storage backends. Adopting OTel means your instrumentation is backend-agnostic: swap Prometheus for Thanos, Loki for Elastic, or Tempo for Jaeger without touching application code. This portability matters when SAMA or internal security requirements force a backend change mid-programme.</p>
+          </div>
+
+          <h2 id="three-signals">Three Signals</h2>
+          <p>Observability is built on three complementary signal types. They answer different questions and have different cost profiles. Picking the wrong signal for a question is expensive &mdash; querying Loki for a latency answer that Prometheus could return in milliseconds will teach you this immediately.</p>
+
+          <table>
+            <thead>
+              <tr><th>Signal</th><th>Tool</th><th>Resolution</th><th>Hot retention</th><th>Query</th><th>Cost driver</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Metrics</td><td>Prometheus 2.53</td><td>15 s scrape</td><td>15&ndash;30 days</td><td>PromQL</td><td>Series cardinality</td></tr>
+              <tr><td>Logs</td><td>Loki 3.1</td><td>On ingestion</td><td>60&ndash;90 days</td><td>LogQL</td><td>GiB ingested / day</td></tr>
+              <tr><td>Traces</td><td>Tempo 2.5</td><td>Per request</td><td>7&ndash;14 days</td><td>TraceQL</td><td>Span volume &times; retention</td></tr>
+            </tbody>
+          </table>
+
+          <p>Practical guidance: instrument everything with OTel (all three signals), store metrics long, store logs medium, store traces short with head-based sampling for volume and tail-based sampling for errors. Never delete traces for transactions that resulted in errors or regulatory events &mdash; those go to cold storage.</p>
+
+          <h2 id="otel">OpenTelemetry</h2>
+          <p>OTel provides two entry points for Java-based integration services: the <strong>Java Agent</strong> (zero-code instrumentation via <code>-javaagent</code> JAR) and the <strong>SDK</strong> (manual instrumentation for custom spans). IBM ACE integration servers use the Java Agent approach via the server&rsquo;s <code>jvmArgs</code> in <code>server.conf.yaml</code>; Kafka Streams applications use the SDK directly.</p>
+          <p>The OTel Java Agent auto-instruments 60+ libraries at attach time: JDBC, HTTP clients, Kafka producer/consumer, JAX-RS, Spring, gRPC. Spans for each ACE message flow node are created automatically once the agent is attached. For MQ, the IBM MQ JMS client is instrumented by the agent; context propagation across MQ message boundaries requires ACE 12.0.10+ with the OTel trace propagation policy enabled &mdash; more on this in <a href="#pitfalls">pitfalls</a>.</p>
+
+          <div class="diagram" role="img" aria-label="Observability pipeline: ACE, Kafka Streams, and Spring Boot emit OTel signals to a Collector, which routes to Prometheus, Loki, and Tempo, all queried by Grafana">
+            <div class="diagram__inner">
+              <svg width="780" height="390" viewBox="0 0 780 390" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ob-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="ob-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="ob-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                </defs>
+
+                <!-- Services row -->
+                <rect x="10" y="15" width="215" height="55" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="117" y="38" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">ACE Integration Server</text>
+                <text x="117" y="55" text-anchor="middle" fill="#71717a" font-size="9">OTel Java Agent (jvmArgs)</text>
+
+                <rect x="283" y="15" width="215" height="55" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="390" y="38" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Kafka Streams App</text>
+                <text x="390" y="55" text-anchor="middle" fill="#71717a" font-size="9">OTel SDK + auto-instrumentation</text>
+
+                <rect x="556" y="15" width="215" height="55" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="663" y="38" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Spring Boot API</text>
+                <text x="663" y="55" text-anchor="middle" fill="#71717a" font-size="9">OTel SDK (manual spans)</text>
+
+                <!-- Arrows to collector -->
+                <line x1="117" y1="70" x2="117" y2="108" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ob-arr)"/>
+                <line x1="390" y1="70" x2="390" y2="108" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ob-arr)"/>
+                <line x1="663" y1="70" x2="663" y2="108" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ob-arr)"/>
+                <text x="200" y="92" fill="#00d4aa" font-size="9">OTLP/gRPC</text>
+                <text x="420" y="92" fill="#00d4aa" font-size="9">OTLP/gRPC</text>
+
+                <!-- OTel Collector -->
+                <rect x="10" y="110" width="760" height="78" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="390" y="132" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">OpenTelemetry Collector (DaemonSet + Gateway Deployment)</text>
+                <rect x="25" y="142" width="215" height="32" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="132" y="158" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">receivers</text>
+                <text x="132" y="169" text-anchor="middle" fill="#71717a" font-size="8">OTLP &middot; Prometheus &middot; filelog</text>
+                <rect x="288" y="142" width="205" height="32" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="390" y="158" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">processors</text>
+                <text x="390" y="169" text-anchor="middle" fill="#71717a" font-size="8">batch &middot; filter &middot; tail_sampling &middot; resource</text>
+                <rect x="551" y="142" width="205" height="32" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="653" y="158" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">exporters</text>
+                <text x="653" y="169" text-anchor="middle" fill="#71717a" font-size="8">prometheusremotewrite &middot; loki &middot; otlp/tempo</text>
+
+                <!-- Arrows to backends -->
+                <line x1="117" y1="188" x2="117" y2="225" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ob-arr2)"/>
+                <line x1="390" y1="188" x2="390" y2="225" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ob-arr2)"/>
+                <line x1="663" y1="188" x2="663" y2="225" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ob-arr2)"/>
+
+                <!-- Backend boxes -->
+                <rect x="10" y="227" width="215" height="65" rx="6" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="117" y="250" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="600">Prometheus 2.53</text>
+                <text x="117" y="265" text-anchor="middle" fill="#71717a" font-size="9">metrics &middot; PromQL &middot; remote write</text>
+                <text x="117" y="279" text-anchor="middle" fill="#71717a" font-size="9">15 s scrape &middot; 30-day retention</text>
+
+                <rect x="283" y="227" width="215" height="65" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="390" y="250" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Loki 3.1</text>
+                <text x="390" y="265" text-anchor="middle" fill="#71717a" font-size="9">logs &middot; LogQL &middot; label-indexed</text>
+                <text x="390" y="279" text-anchor="middle" fill="#71717a" font-size="9">chunk store &rarr; ODF/S3 object</text>
+
+                <rect x="556" y="227" width="215" height="65" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="663" y="250" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Tempo 2.5</text>
+                <text x="663" y="265" text-anchor="middle" fill="#71717a" font-size="9">traces &middot; TraceQL &middot; TraceID index</text>
+                <text x="663" y="279" text-anchor="middle" fill="#71717a" font-size="9">backend: ODF/S3 &middot; 14-day hot</text>
+
+                <!-- Horizontal bus to Grafana -->
+                <line x1="117" y1="292" x2="117" y2="315" stroke="#4a9eff" stroke-width="1.5"/>
+                <line x1="390" y1="292" x2="390" y2="315" stroke="#4a9eff" stroke-width="1.5"/>
+                <line x1="663" y1="292" x2="663" y2="315" stroke="#4a9eff" stroke-width="1.5"/>
+                <line x1="117" y1="315" x2="663" y2="315" stroke="#4a9eff" stroke-width="1.5"/>
+                <line x1="390" y1="315" x2="390" y2="336" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ob-arr3)"/>
+
+                <!-- Grafana -->
+                <rect x="268" y="338" width="245" height="48" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="390" y="360" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Grafana 11.1</text>
+                <text x="390" y="376" text-anchor="middle" fill="#71717a" font-size="9">unified dashboards &middot; alerts &middot; SLO tracking</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; OTel Collector receives all signals from instrumented services and fans out to Prometheus (metrics), Loki (logs), and Tempo (traces); Grafana provides unified query and dashboarding across all three</div>
+          </div>
+
+          <h2 id="metrics">Metrics: Prometheus</h2>
+          <p>Prometheus is pull-based: it scrapes HTTP endpoints that expose metrics in text format, stores them in its TSDB, and evaluates alerting and recording rules on a configurable interval. In a regulated environment the pull model is an advantage &mdash; the Prometheus server controls what it collects, reducing the risk of a compromised application pushing fabricated metrics.</p>
+          <p>Critical metric categories for an integration platform:</p>
+          <ul>
+            <li><strong>Message flow throughput.</strong> Messages per second entering and leaving each ACE integration server, by flow name. Sudden drops indicate upstream stalls or application errors.</li>
+            <li><strong>End-to-end flow latency.</strong> Time from message receipt to downstream acknowledgement. Track as a histogram &mdash; not a gauge &mdash; so you can compute p50/p95/p99 without re-scraping raw data.</li>
+            <li><strong>MQ queue depth.</strong> Exported via the IBM MQ Prometheus exporter (community). A growing depth is an early warning of a consumer falling behind; alert at 10 000 msgs, page at 50 000.</li>
+            <li><strong>Kafka consumer group lag.</strong> Per topic, per partition, per consumer group. The payments-bridge consumer group lag is the most operationally critical metric in most integration estates.</li>
+            <li><strong>Pipeline CI/CD metrics.</strong> Tekton pipeline duration histogram and success rate by pipeline name. A p95 build time exceeding 15 minutes erodes developer trust faster than failures do.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>recording-rules.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">groups</span>:
+  - <span class="tok-k">name</span>: <span class="tok-s">integration_platform_slos</span>
+    <span class="tok-k">interval</span>: <span class="tok-s">30s</span>
+    <span class="tok-k">rules</span>:
+
+      <span class="tok-c"># 5-minute rate of ACE message flow ingestion</span>
+      - <span class="tok-k">record</span>: <span class="tok-s">job:ace_flow_msgs:rate5m</span>
+        <span class="tok-k">expr</span>: <span class="tok-s">rate(ace_message_flow_input_count_total[5m])</span>
+
+      <span class="tok-c"># p99 end-to-end flow latency</span>
+      - <span class="tok-k">record</span>: <span class="tok-s">job:ace_flow_latency_p99:rate5m</span>
+        <span class="tok-k">expr</span>: |
+          <span class="tok-s">histogram_quantile(0.99, sum by (flow_name, le) (</span>
+          <span class="tok-s">  rate(ace_message_flow_duration_seconds_bucket[5m])</span>
+          <span class="tok-s">))</span>
+
+      <span class="tok-c"># MQ queue depth breach</span>
+      - <span class="tok-k">alert</span>: <span class="tok-s">MQQueueDepthHigh</span>
+        <span class="tok-k">expr</span>: <span class="tok-s">ibmmq_queue_depth > 10000</span>
+        <span class="tok-k">for</span>: <span class="tok-s">5m</span>
+        <span class="tok-k">labels</span>:
+          <span class="tok-k">severity</span>: <span class="tok-s">warning</span>
+        <span class="tok-k">annotations</span>:
+          <span class="tok-k">summary</span>: <span class="tok-s">'MQ {{ $labels.queue }} on {{ $labels.qmgr }}: {{ $value }} msgs'</span>
+          <span class="tok-k">runbook_url</span>: <span class="tok-s">"https://wiki.internal/runbooks/mq-queue-depth"</span>
+
+      <span class="tok-c"># Kafka consumer lag for payments bridge</span>
+      - <span class="tok-k">alert</span>: <span class="tok-s">KafkaConsumerLagCritical</span>
+        <span class="tok-k">expr</span>: <span class="tok-s">kafka_consumer_group_lag{group="payments-bridge"} > 5000</span>
+        <span class="tok-k">for</span>: <span class="tok-s">2m</span>
+        <span class="tok-k">labels</span>:
+          <span class="tok-k">severity</span>: <span class="tok-s">critical</span>
+        <span class="tok-k">annotations</span>:
+          <span class="tok-k">summary</span>: <span class="tok-s">'payments-bridge lag {{ $value }} msgs on {{ $labels.topic }}'</span>
+          <span class="tok-k">runbook_url</span>: <span class="tok-s">"https://wiki.internal/runbooks/kafka-consumer-lag"</span></code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">High cardinality kills Prometheus</div>
+            <p>Every unique label combination creates a new time series. Adding <code>customer_id</code> or <code>transaction_id</code> as a Prometheus label is the most common cause of OOM kills in this stack. Use these values as Loki log fields or Tempo span attributes &mdash; never as metric labels. Budget 500&ndash;2 000 active series per service, enforce it via the OTel Collector&rsquo;s <code>filter/metric</code> processor, and review the cardinality dashboard weekly for the first 90 days after rollout.</p>
+          </div>
+
+          <h2 id="logs">Logs: Loki</h2>
+          <p>Loki is intentionally minimalist: it indexes only stream labels, not log line content. This makes it dramatically cheaper than Elasticsearch at scale, but changes how you query &mdash; you filter by label first, then full-text-search the matching chunks. For integration platforms this is the right trade-off: you almost always know the application, the environment, and the flow name before you need to search content.</p>
+          <p>ACE produces structured JSON logs when <code>userTrace</code> is enabled and the IBM ACE OTel log exporter is configured. MQ channel initiator logs are less structured; parse them in the Collector using a <code>regex_parser</code> operator in the filelog receiver pipeline.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>otel-collector-logs-pipeline.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">receivers</span>:
+  <span class="tok-k">otlp</span>:
+    <span class="tok-k">protocols</span>:
+      <span class="tok-k">grpc</span>: { <span class="tok-k">endpoint</span>: <span class="tok-s">"0.0.0.0:4317"</span> }
+  <span class="tok-k">filelog</span>:
+    <span class="tok-k">include</span>: [<span class="tok-s">"/var/log/ace/*.log"</span>]
+    <span class="tok-k">operators</span>:
+      - <span class="tok-k">type</span>: <span class="tok-s">json_parser</span>
+        <span class="tok-k">timestamp</span>:
+          <span class="tok-k">parse_from</span>: <span class="tok-s">attributes.timestamp</span>
+          <span class="tok-k">layout</span>: <span class="tok-s">"%Y-%m-%dT%H:%M:%S.%fZ"</span>
+      - <span class="tok-k">type</span>: <span class="tok-s">regex_parser</span>   <span class="tok-c"># extract ACE flow name</span>
+        <span class="tok-k">regex</span>: <span class="tok-s">'Flow=(?P&lt;flow_name&gt;[^,;]+)'</span>
+        <span class="tok-k">parse_from</span>: <span class="tok-s">body</span>
+        <span class="tok-k">on_error</span>: <span class="tok-s">send</span>   <span class="tok-c"># don't drop lines that don't match</span>
+
+<span class="tok-k">processors</span>:
+  <span class="tok-k">resource</span>:
+    <span class="tok-k">attributes</span>:
+      - { <span class="tok-k">action</span>: <span class="tok-s">insert</span>, <span class="tok-k">key</span>: <span class="tok-s">loki.resource.labels</span>,
+          <span class="tok-k">value</span>: <span class="tok-s">"service.name,k8s.namespace.name,flow_name"</span> }
+  <span class="tok-k">filter/drop_health</span>:    <span class="tok-c"># suppress heartbeat lines before they leave the node</span>
+    <span class="tok-k">error_mode</span>: <span class="tok-s">ignore</span>
+    <span class="tok-k">logs</span>:
+      <span class="tok-k">log_record</span>:
+        - <span class="tok-s">'body contains "HealthCheck"'</span>
+        - <span class="tok-s">'body contains "BIPE3788I"'</span>  <span class="tok-c"># ACE broker ready heartbeat</span>
+  <span class="tok-k">batch</span>:
+    <span class="tok-k">timeout</span>: <span class="tok-s">5s</span>
+    <span class="tok-k">send_batch_size</span>: <span class="tok-n">8192</span>
+
+<span class="tok-k">exporters</span>:
+  <span class="tok-k">loki</span>:
+    <span class="tok-k">endpoint</span>: <span class="tok-s">"http://loki-gateway.monitoring.svc:3100/loki/api/v1/push"</span>
+    <span class="tok-k">tls</span>:
+      <span class="tok-k">insecure</span>: <span class="tok-n">false</span>
+      <span class="tok-k">ca_file</span>: <span class="tok-s">"/etc/otelcol/certs/internal-ca.crt"</span>
+
+<span class="tok-k">service</span>:
+  <span class="tok-k">pipelines</span>:
+    <span class="tok-k">logs</span>:
+      <span class="tok-k">receivers</span>:  [<span class="tok-s">otlp</span>, <span class="tok-s">filelog</span>]
+      <span class="tok-k">processors</span>: [<span class="tok-s">resource</span>, <span class="tok-s">filter/drop_health</span>, <span class="tok-s">batch</span>]
+      <span class="tok-k">exporters</span>:  [<span class="tok-s">loki</span>]</code></pre>
+          </div>
+
+          <p>Loki&rsquo;s chunk-based storage backs onto object storage &mdash; OpenShift Data Foundation (ODF/Ceph) or an on-premise S3-compatible endpoint. Configure retention per-tenant in Loki&rsquo;s <code>limits_config</code>: 90 days for regulated logs (transaction, audit), 30 days for application INFO, 7 days for debug-level output.</p>
+
+          <h2 id="traces">Distributed Traces: Tempo</h2>
+          <p>Distributed tracing answers the question metrics and logs cannot: which specific code path, in which service, in which call graph, accounted for the latency spike at 14:32 today? A trace is a tree of spans, each representing a unit of work &mdash; a JDBC query, an MQ send, an ACE node execution, an HTTP call. Every span carries a <code>traceId</code> linking it to the root transaction and a <code>parentSpanId</code> linking it to its caller.</p>
+          <p>Tempo stores traces in object storage with no indexing of span content &mdash; only TraceID and service name &mdash; making it significantly cheaper than Jaeger+Elasticsearch at comparable trace volumes. TraceQL (Tempo 2.0+) allows structured queries over span attributes: find all traces where <code>db.statement</code> took over 500 ms, or where <code>rpc.method="ISO20022Transform"</code> returned an error.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">PII in span attributes is a data classification incident</div>
+            <p>The OTel Java Agent captures HTTP request headers, query parameters, and JDBC statement parameters by default &mdash; all of which may carry customer IDs, account numbers, or IBANs. Before enabling any integration service for tracing in production, audit and configure attribute sanitisation. Suppress <code>db.statement</code>, <code>http.url</code> query strings, and any custom attribute that carries personal data. Under SAMA&rsquo;s data classification policy and Saudi Arabia&rsquo;s PDPL, a trace buffer containing IBANs that is accessible to operations engineers is a breach, not an acceptable operational trade-off.</p>
+          </div>
+
+          <p>Use <strong>head-based sampling</strong> at 10% for high-volume services and <strong>tail-based sampling</strong> to keep 100% of error traces, regardless of head sample decision. The OTel Collector&rsquo;s <code>tail_sampling</code> processor implements this by buffering spans for a configurable window (10&ndash;30 s) before evaluating policies.</p>
+
+          <h2 id="pipeline">Collector Pipeline Architecture</h2>
+          <p>Run the Collector in two deployment modes simultaneously: a <strong>DaemonSet</strong> on every node (for pod-local file log and host metrics collection) and a <strong>Gateway Deployment</strong> with horizontal scaling (for OTLP ingest from all pods). This avoids the fan-out problem where every pod opens a direct connection to each backend.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>otel-collector-gateway.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">processors</span>:
+  <span class="tok-k">memory_limiter</span>:          <span class="tok-c"># NEVER skip this — prevents OOM on traffic spike</span>
+    <span class="tok-k">check_interval</span>: <span class="tok-s">1s</span>
+    <span class="tok-k">limit_mib</span>: <span class="tok-n">1500</span>         <span class="tok-c"># 75% of container memory request</span>
+    <span class="tok-k">spike_limit_mib</span>: <span class="tok-n">400</span>
+  <span class="tok-k">batch</span>:
+    <span class="tok-k">timeout</span>: <span class="tok-s">5s</span>
+    <span class="tok-k">send_batch_size</span>: <span class="tok-n">4096</span>
+  <span class="tok-k">tail_sampling</span>:
+    <span class="tok-k">decision_wait</span>: <span class="tok-s">15s</span>
+    <span class="tok-k">num_traces</span>: <span class="tok-n">50000</span>
+    <span class="tok-k">policies</span>:
+      - { <span class="tok-k">name</span>: <span class="tok-s">always-errors</span>, <span class="tok-k">type</span>: <span class="tok-s">status_code</span>,
+          <span class="tok-k">status_code</span>: { <span class="tok-k">status_codes</span>: [<span class="tok-s">ERROR</span>] } }
+      - { <span class="tok-k">name</span>: <span class="tok-s">probabilistic-10pct</span>, <span class="tok-k">type</span>: <span class="tok-s">probabilistic</span>,
+          <span class="tok-k">probabilistic</span>: { <span class="tok-k">sampling_percentage</span>: <span class="tok-n">10</span> } }
+  <span class="tok-k">filter/drop_healthz</span>:
+    <span class="tok-k">error_mode</span>: <span class="tok-s">ignore</span>
+    <span class="tok-k">traces</span>:
+      <span class="tok-k">span</span>:
+        - <span class="tok-s">'attributes["http.route"] == "/healthz"'</span>
+        - <span class="tok-s">'attributes["http.route"] == "/readyz"'</span>
+        - <span class="tok-s">'attributes["http.route"] == "/metrics"'</span>
+
+<span class="tok-k">exporters</span>:
+  <span class="tok-k">prometheusremotewrite</span>:
+    <span class="tok-k">endpoint</span>: <span class="tok-s">"http://prometheus.monitoring.svc:9090/api/v1/write"</span>
+    <span class="tok-k">resource_to_telemetry_conversion</span>: { <span class="tok-k">enabled</span>: <span class="tok-n">true</span> }
+  <span class="tok-k">loki</span>:
+    <span class="tok-k">endpoint</span>: <span class="tok-s">"http://loki-gateway.monitoring.svc:3100/loki/api/v1/push"</span>
+  <span class="tok-k">otlp/tempo</span>:
+    <span class="tok-k">endpoint</span>: <span class="tok-s">"tempo-distributor.monitoring.svc:4317"</span>
+    <span class="tok-k">tls</span>: { <span class="tok-k">insecure</span>: <span class="tok-n">true</span> }   <span class="tok-c"># mTLS handled by service mesh sidecar</span>
+
+<span class="tok-k">service</span>:
+  <span class="tok-k">pipelines</span>:
+    <span class="tok-k">traces</span>:
+      <span class="tok-k">receivers</span>:  [<span class="tok-s">otlp</span>]
+      <span class="tok-k">processors</span>: [<span class="tok-s">memory_limiter</span>, <span class="tok-s">filter/drop_healthz</span>, <span class="tok-s">tail_sampling</span>, <span class="tok-s">batch</span>]
+      <span class="tok-k">exporters</span>:  [<span class="tok-s">otlp/tempo</span>]
+    <span class="tok-k">metrics</span>:
+      <span class="tok-k">receivers</span>:  [<span class="tok-s">otlp</span>]
+      <span class="tok-k">processors</span>: [<span class="tok-s">memory_limiter</span>, <span class="tok-s">resource</span>, <span class="tok-s">batch</span>]
+      <span class="tok-k">exporters</span>:  [<span class="tok-s">prometheusremotewrite</span>]
+    <span class="tok-k">logs</span>:
+      <span class="tok-k">receivers</span>:  [<span class="tok-s">otlp</span>]
+      <span class="tok-k">processors</span>: [<span class="tok-s">memory_limiter</span>, <span class="tok-s">resource</span>, <span class="tok-s">batch</span>]
+      <span class="tok-k">exporters</span>:  [<span class="tok-s">loki</span>]</code></pre>
+          </div>
+
+          <p>Set the Collector container memory request to match expected peak ingest. A rough budget: 500 MiB per 50 000 spans/second at the Gateway; 256 MiB per node at the DaemonSet. Size the DaemonSet filequeue buffer to hold at least 60 seconds of peak log volume so the DaemonSet survives a Gateway restart without data loss.</p>
+
+          <h2 id="grafana">Grafana: Unified Pane</h2>
+          <p>Grafana 11&rsquo;s value is correlation. From a Prometheus alert panel you drill into Loki logs for the same time window and service, then pivot to a Tempo trace for the specific failing request. This reduces mean-time-to-diagnosis from hours of tab-switching to a single page interaction.</p>
+          <p>Three dashboard types cover 80% of operational use on an integration platform:</p>
+          <ul>
+            <li><strong>Platform SLO dashboard.</strong> One row per integration domain: traffic rate, error rate, latency p99, and SLO burn rate. The burn rate panel alerts before the SLO window expires &mdash; not after the SLO has already been breached for the week.</li>
+            <li><strong>Service map.</strong> Tempo&rsquo;s service-graph processor emits inter-service call metrics that Grafana renders as a live dependency graph. Essential for understanding blast radius when a downstream core banking system degrades.</li>
+            <li><strong>Runbook-linked alerts.</strong> Every Prometheus alert annotation carries a <code>runbook_url</code>. Grafana renders the link in the alert detail panel; on-call engineers don&rsquo;t need to remember the procedure under pressure.</li>
+          </ul>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Grafana Alerting replaces separate Alertmanager config</div>
+            <p>Grafana 9+ ships a unified alerting layer that evaluates rules against any datasource &mdash; Prometheus, Loki, or Tempo &mdash; and routes through a single notification policy. You no longer need a separate Alertmanager instance per backend. Route all alerts through Grafana Alerting to a single PagerDuty or OpsGenie integration; Alertmanager instances on each backend become optional forwarding receivers only.</p>
+          </div>
+
+          <h2 id="cardinality">Cardinality and Cost Control</h2>
+          <p>Observability platform cost is determined almost entirely by two variables: Prometheus active series count and Loki ingest volume (GiB/day). Trace volume is manageable once tail-based sampling is in place. The cost conversation with finance is almost always about uncontrolled log volume growth compounding quarterly.</p>
+
+          <ol class="step-list">
+            <li><strong>Audit existing volume.</strong> Run <code>sum(rate(loki_ingester_samples_ingested_total[24h])) by (namespace)</code> to rank namespaces by ingestion rate. Three namespaces typically produce 70% of total volume &mdash; focus cost reduction there first.</li>
+            <li><strong>Drop at the Collector, not at Loki.</strong> Filter health-check, heartbeat, and DEBUG-level log records in the Collector&rsquo;s <code>filter</code> processor before they leave the node. Bytes dropped at source cost nothing; bytes ingested into Loki always consume storage and index.</li>
+            <li><strong>Cap series per application.</strong> Set a Prometheus <code>limits.max_samples_per_send</code> on remote write, or enforce it via the Collector&rsquo;s <code>transform</code> processor to drop labels with unbounded cardinality before they reach Prometheus.</li>
+            <li><strong>Tier log retention by classification.</strong> 7 days for DEBUG, 30 days for INFO, 90+ days for audit, security-event, and transaction logs. Configure per-tenant retention via Loki <code>compactor</code> with <code>retention_enabled: true</code>.</li>
+            <li><strong>Index only what you query by.</strong> Loki&rsquo;s stream index stores label values. Every new unique combination is an index entry. Do not use log content fields as Loki labels &mdash; use the <code>json</code> pipeline stage and query fields with <code>| json | .field == &quot;value&quot;</code> in LogQL.</li>
+            <li><strong>Review monthly.</strong> Loki&rsquo;s built-in usage dashboard breaks down ingestion by namespace, pod, and label. Treat this as a standing monthly review in platform engineering; uncontrolled growth is invisible until the quarterly storage invoice arrives.</li>
+          </ol>
+
+          <h2 id="compliance">Compliance and Data Governance</h2>
+          <p>In a Saudi bank regulated by SAMA and subject to the Personal Data Protection Law (PDPL), the observability pipeline is a data processor. It receives, stores, and potentially exposes customer-adjacent data. Design compliance in from the start; retrofitting access control onto a 90-day log corpus after a SAMA examination request is neither fast nor cheap.</p>
+          <ul>
+            <li><strong>Data residency.</strong> All backends must run on infrastructure within Saudi Arabia. Do not route OTLP to a SaaS collector, even temporarily for testing. ODF/Ceph object storage backing Loki and Tempo must be on-premise or in a SAMA-approved cloud region.</li>
+            <li><strong>Datasource scoping in Grafana.</strong> Use Grafana&rsquo;s organisation/team model and Loki multi-tenancy (<code>X-Scope-OrgID</code> header) to enforce namespace isolation: the payments team can query the payments namespace; they cannot query the treasury namespace. Prometheus has no built-in authorization &mdash; enforce it at the Grafana datasource proxy layer.</li>
+            <li><strong>Audit log for queries.</strong> Grafana&rsquo;s audit log (or Nginx access log in front of Grafana) captures every dashboard view and data query. Alert on any Loki query returning more than 10 000 log lines &mdash; it is a likely data harvesting pattern rather than legitimate troubleshooting.</li>
+            <li><strong>Compactor verification.</strong> Add a Prometheus rule that alerts if Loki/Tempo object store usage grows faster than net ingestion rate &mdash; it means the compactor&rsquo;s retention job is not deleting expired chunks. Verify compaction on a quarterly schedule, not just at initial deployment.</li>
+          </ul>
+
+          <h2 id="pitfalls">Common Pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">OTel Collector as a single point of failure</div>
+            <p>If the Gateway Collector crashes, all telemetry stops. Run the Gateway as a Deployment with at least 3 replicas behind a Kubernetes Service, and set a <code>PodDisruptionBudget</code> allowing at most 1 unavailable pod. The DaemonSet Collectors must buffer to disk (filequeue exporter) if the Gateway is unreachable; without a filequeue, a Gateway restart drops minutes of telemetry silently.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">TraceID not propagated across MQ message boundaries</div>
+            <p>W3C TraceContext propagates via HTTP headers or Kafka record headers &mdash; not through IBM MQ message properties by default. ACE 12.0.10+ supports OTel context propagation through a custom trace propagation policy; without it, traces break at every MQ boundary. You get a forest of disconnected single-service traces rather than end-to-end trees. Verify propagation explicitly before declaring tracing production-ready on any integration flow that crosses an MQ boundary.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Clock skew breaks trace waterfall views</div>
+            <p>Spans are stitched together by timestamp as well as TraceID. If node clocks diverge by more than 500 milliseconds, trace waterfall views show child spans starting before their parent &mdash; confusing enough to make traces useless for diagnosis. Enforce NTP synchronisation across all OpenShift nodes as a platform prerequisite. Alert on clock drift above 200 ms using the <code>node_timex_offset_seconds</code> metric from node exporter.</p>
+          </div>
+
+          <h2 id="checklist">Production Checklist</h2>
+          <ol>
+            <li>OTel Java Agent attached to all ACE and Spring Boot JVMs; OTel SDK in Kafka Streams apps.</li>
+            <li>PII sanitisation config reviewed and tested per service before traces are enabled in prod.</li>
+            <li>Gateway Collector: 3 replicas, <code>PodDisruptionBudget</code>, <code>memory_limiter</code> at 75% of memory request.</li>
+            <li>DaemonSet Collectors buffering to disk (filequeue); buffer sized for 60 s of peak log ingest.</li>
+            <li>Tail-based sampling: 100% error traces kept, 10% of normal traffic.</li>
+            <li>Prometheus recording rules for ACE throughput, MQ depth, Kafka lag, pipeline duration.</li>
+            <li>Loki retention tiered: 90 days audit/transaction, 30 days INFO, 7 days DEBUG.</li>
+            <li>Tempo retention: 14 days hot on ODF; cold archive for error/regulatory traces.</li>
+            <li>Grafana team datasource scopes enforced: payment team cannot query treasury namespace.</li>
+            <li>Alert on Loki queries returning &gt;10 000 lines (data harvesting indicator).</li>
+            <li>Compactor retention verified quarterly; object-store growth rate alert configured.</li>
+            <li>NTP enforced across all nodes; clock drift alert at 200 ms on <code>node_timex_offset_seconds</code>.</li>
+            <li>W3C TraceContext propagation tested across every MQ boundary in the integration estate.</li>
+            <li>Runbook URL set in every Prometheus alert annotation; on-call playbook tested quarterly.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="internal-developer-platform.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Internal Developer Platform</div>
+            </a>
+            <a href="../devops.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">DevOps &amp; Platform &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Observability at Scale: The Platform Decision That Determines Whether Your Integration Estate Runs or Hides &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Building an end-to-end observability platform is not a monitoring upgrade. It is a leadership decision about who is accountable for system health, what the regulator can see on demand, and whether your integration estate can diagnose its own failures before customers notice.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/observability-pipeline-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Observability at Scale &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Observability at Scale: The Platform Decision That Determines Whether Your Integration Estate Runs or Hides &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Building an observability platform is a leadership decision about accountability, regulatory exposure, and whether your teams can diagnose failures before customers do.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/observability-pipeline-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Observability at Scale: The Platform Decision That Determines Whether Your Integration Estate Runs or Hides">
+  <meta name="twitter:description" content="Observability is a leadership decision about accountability, regulatory exposure, and whether your integration estate can diagnose its own failures.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Observability at Scale: The Platform Decision That Determines Whether Your Integration Estate Runs or Hides",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/observability-pipeline-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>Observability Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; September 5, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">Observability at Scale: The Platform Decision That Determines Whether Your Integration Estate Runs or Hides</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Most integration platforms at Saudi banks are monitored. They are not observed. The distinction matters more than it sounds. Monitoring tells you when something has already failed: a queue depth alert fires, a health-check returns 503, a dashboard goes red. Observability tells you <em>why</em> something is failing, across system boundaries, in the specific request that triggered the failure, before the second failure in the cascade makes the first one unrecoverable. The gap between those two postures &mdash; between reactive monitoring and proactive observability &mdash; is the gap between an operations team that closes incidents in hours and one that chases symptoms for days.</p>
+
+        <p>The technical solution is well-defined: OpenTelemetry for instrumentation, Prometheus for metrics, Loki for logs, Tempo for distributed traces, Grafana as the unified query layer. None of these are new technologies, and none of them are expensive relative to the outage costs they prevent. The leadership decision is not whether to adopt the stack. It is whether your organisation is willing to treat observability as infrastructure rather than a tool, to fund it accordingly, and to hold teams accountable for the signal quality their services emit.</p>
+
+        <p class="article-section">What the regulator will ask</p>
+
+        <p>SAMA&rsquo;s Technology Risk Management framework and the Cyber Security Framework both treat operational visibility as a regulated control, not a convenience. The examination question is not &ldquo;do you have dashboards?&rdquo; &mdash; it is &ldquo;can you produce, on demand, a complete audit trail of which system accessed which data, at what time, in response to which user action?&rdquo;</p>
+
+        <p>A distributed tracing platform that correlates every payment instruction from API gateway to core banking system, with timestamps, service identities, and response codes on every hop, answers that question completely. It also answers the question that follows: &ldquo;When the IBAN transfer at 14:32 on the 3rd was delayed by 4 seconds, which system caused the delay?&rdquo; Without correlated traces, that answer requires manually correlating log files across five systems, mapping timestamps that may differ by milliseconds, and hoping that the right log level was enabled at the time. With traces, it is a single query.</p>
+
+        <p>There is also a PDPL dimension. The same instrumentation that makes your integration estate observable can inadvertently capture personal data &mdash; account numbers in HTTP query strings, IBANs in database statements, customer IDs in span attributes. An observability platform that is not governed is a personal data exposure waiting to happen. The correct response is not to avoid instrumentation; it is to treat attribute sanitisation as a mandatory configuration step and to scope access to the telemetry platform using the same team-level controls applied to any other sensitive system.</p>
+
+        <blockquote>
+          <p>An observability platform that captures everything is a liability without governance. An observability platform governed like a data asset is a regulatory advantage.</p>
+        </blockquote>
+
+        <p class="article-section">The trade-off the business needs to own</p>
+
+        <p>Observability infrastructure has a cost that is easy to underestimate in the initial business case. The storage backends &mdash; Prometheus TSDB, Loki object store, Tempo object store &mdash; grow with the number of services instrumented and the retention period required. A 30-service integration estate running at modest load, with 90-day log retention for regulated logs, can accumulate 5&ndash;10 TiB of telemetry data over a year. Object storage is cheap; the index, the compaction jobs, and the query capacity for Loki are not trivially sized.</p>
+
+        <p>The growth is manageable if cost governance is built in from day one: log retention tiered by classification, high-cardinality metrics suppressed at the collector before they reach Prometheus, and trace sampling designed to keep 100% of error traces while sampling normal traffic at 10%. The integration platforms that end up with runaway observability costs are the ones that instrumented everything at full fidelity, set uniform 90-day retention, and never audited volume growth. The quarterly storage invoice is how they discover the problem.</p>
+
+        <p>The second cost is operational. The observability platform is itself a platform that needs to be operated. Someone owns Prometheus capacity, Loki compaction failures, Tempo query timeouts, Grafana upgrades, and OTel Collector version management. If that ownership is assumed rather than assigned &mdash; if the implicit assumption is that &ldquo;the platform team will handle it&rdquo; when the platform team is already at capacity running six other systems &mdash; the observability platform will be the first thing to degrade when it is most needed, which is during an incident.</p>
+
+        <p class="article-section">The decision that leadership has to make</p>
+
+        <p>Three commitments determine whether an observability programme succeeds or produces expensive infrastructure that teams learn to ignore.</p>
+
+        <p>First: <strong>instrument as a mandate, not a recommendation.</strong> Teams that are asked to add OTel instrumentation will do it eventually, unevenly, and with inconsistent attribute naming. Teams that are told every service must emit standard OpenTelemetry signals &mdash; with a validated baseline configuration, enforced by a CI pipeline check, with a named person accountable for signal quality in each domain &mdash; will do it completely. The difference in observability utility between 80% coverage and 100% coverage is not 20%; it is the difference between traces that stop at the boundary of the unmonitored service and traces that span the full call graph.</p>
+
+        <p>Second: <strong>resolve the data residency and access control design before instrumentation begins.</strong> Retrofitting multi-tenancy onto Loki after 60 days of log ingestion means re-labelling six weeks of data or starting again. Retrofitting attribute sanitisation after discovering IBAN leakage in traces means an incident report and a root-cause remediation under time pressure. Neither of these is a platform engineering problem; both are a consequence of governance decisions deferred until it was too late to design them in cleanly.</p>
+
+        <p>Third: <strong>fund the on-call rotation.</strong> An observability platform that pages on its own failures at 2 a.m. without an engineer who knows how to respond is worse than no observability platform, because it erodes trust in alerts and creates alert fatigue. The platform engineering team that builds the observability stack needs at least one engineer with deep expertise in each component &mdash; someone who can diagnose a Loki ingester OOM or a Tempo compactor stall under incident pressure. That expertise is not acquired in passing; it requires dedicated learning time and, ideally, a staging environment that is allowed to fail.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind this decision &mdash; OTel Collector pipeline configuration, Prometheus recording rules for ACE and Kafka, Loki log parsing for IBM MQ, tail-based trace sampling, cardinality control, and the production checklist &mdash; see the companion Lab article: <a href="../lab/devops/observability-pipeline-architecture.html" style="color:var(--color-accent);">DevOps &amp; Platform: Observability Pipeline Architecture</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
