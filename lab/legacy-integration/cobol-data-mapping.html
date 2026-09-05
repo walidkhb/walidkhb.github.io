@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legacy Integration &mdash; COBOL Data Mapping &amp; Type Conversion &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="COBOL copybooks, PIC clause types, EBCDIC conversion, packed decimal (COMP-3) parsing, DFDL in IBM ACE 12, and Java-based approaches &mdash; production patterns for mapping 40-year-old mainframe data formats to JSON and Avro in regulated banking.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Legacy Integration &mdash; COBOL Data Mapping &amp; Type Conversion &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="PIC clauses, COMP-3 packed decimal, EBCDIC, DFDL, and ACE ESQL &mdash; the complete guide to mapping COBOL copybook types to modern JSON and Avro.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/legacy-integration/cobol-data-mapping.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="COBOL Data Mapping &amp; Type Conversion &mdash; Production Patterns">
+  <meta name="twitter:description" content="DFDL, COMP-3 packed decimal, EBCDIC, and ACE ESQL &mdash; mapping COBOL to JSON in regulated banking.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration/cobol-data-mapping.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Legacy Integration: COBOL Data Mapping &amp; Type Conversion",
+    "description": "COBOL copybooks, PIC clause types, EBCDIC conversion, packed decimal (COMP-3) parsing, DFDL in IBM ACE 12, and Java-based approaches &mdash; production patterns for mapping mainframe data formats to JSON and Avro.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/legacy-integration/cobol-data-mapping.html",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "proficiencyLevel": "Expert",
+    "dependencies": "IBM ACE 12.0.10, DFDL, z/OS, Java 21, cb2xml"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../legacy-integration.html">Legacy Integration</a><span>/</span>COBOL Data Mapping</div>
+          <span class="overline">Lab Article</span>
+          <h1>Legacy Integration: COBOL Data Mapping &amp; Type Conversion</h1>
+          <p class="lead">COBOL copybooks define data layouts that have been stable for decades &mdash; but PIC clauses, packed decimal, EBCDIC, and implicit decimal points do not map cleanly to JSON or Avro. DFDL in IBM ACE 12 is the structured answer; this article covers the full conversion path from copybook bytes to typed JSON fields.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#pic-types">PIC clause types</a></li>
+            <li><a href="#ebcdic">EBCDIC conversion</a></li>
+            <li><a href="#packed-decimal">Packed decimal (COMP-3)</a></li>
+            <li><a href="#dfdl">DFDL in ACE</a></li>
+            <li><a href="#ace-mapping">ACE mapping flow</a></li>
+            <li><a href="#java-approach">Java-based parsing</a></li>
+            <li><a href="#testing">Testing COBOL mappings</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM ACE 12.0.10 &middot; DFDL &middot; z/OS &middot; Java 21 &middot; cb2xml</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>COBOL copybooks have defined data layouts in core banking systems for longer than most of the engineers working on them have been alive. That stability is a feature: the PAYMENT-RECORD that worked in 1985 still works today because the mainframe has never been forced to care about REST or JSON. The problem is that every modern integration &mdash; a new microservice, an analytics pipeline, an Open Banking API &mdash; needs to read that data, and the types do not map cleanly.</p>
+          <p>The specific mismatch categories are: <strong>packed decimal (COMP-3)</strong>, where two decimal digits are encoded per byte with a sign nibble that Java has no native type for; <strong>EBCDIC character encoding</strong>, where the character set is entirely different from UTF-8 and several printable characters live at different code points; <strong>implicit decimal points (PIC V)</strong>, where the decimal position is defined in the copybook rather than stored in the data; and <strong>group-level items with REDEFINES</strong>, where the same bytes have two different interpretations depending on a discriminator field that the parser must read first.</p>
+          <p>This article covers the full conversion path: what each PIC clause means in bytes, how to convert EBCDIC and packed decimal, how DFDL in IBM ACE models a copybook, and when a Java-based parser is the right alternative.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">DFDL is the right long-term answer</div>
+            <p>DFDL (Data Format Description Language) separates data format description from transformation logic. A DFDL schema captures the copybook structure once; the ACE <code>ibmDFDL:parseUnparse</code> transform node applies it to any message. When a copybook changes, you update the DFDL schema &mdash; not the transformation code. This is the architectural equivalent of keeping schema and logic separate, and it matters when you have dozens of copybooks and the DBA team changes them quarterly.</p>
+          </div>
+
+          <h2 id="pic-types">PIC Clause Types</h2>
+          <p>Every field in a COBOL copybook is described by a PIC (PICTURE) clause. The clause encodes both the logical type and the physical storage format. Understanding what bytes each type occupies is the prerequisite for writing any parser, DFDL schema, or ESQL mapping.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>PIC Type</th>
+                <th>Bytes on disk</th>
+                <th>Java type</th>
+                <th>JSON mapping</th>
+                <th>Gotcha</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>PIC 9(n)</code></td>
+                <td><em>n</em> bytes (display numeric)</td>
+                <td><code>Long</code> / <code>String</code></td>
+                <td>integer or string</td>
+                <td>Leading zeros present in raw bytes; stripping changes meaning for account numbers</td>
+              </tr>
+              <tr>
+                <td><code>PIC X(n)</code></td>
+                <td><em>n</em> bytes (EBCDIC)</td>
+                <td><code>String</code></td>
+                <td>string</td>
+                <td>Requires EBCDIC&rarr;UTF-8 conversion; code page must match z/OS job CCSID</td>
+              </tr>
+              <tr>
+                <td><code>PIC A(n)</code></td>
+                <td><em>n</em> bytes (EBCDIC alpha)</td>
+                <td><code>String</code></td>
+                <td>string</td>
+                <td>Same physical storage as X; only valid values are alphabetic &mdash; validate after conversion</td>
+              </tr>
+              <tr>
+                <td><code>PIC S9(n) COMP-3</code></td>
+                <td>ceil((<em>n</em>+1)/2) bytes</td>
+                <td><code>BigDecimal</code></td>
+                <td>string (decimal)</td>
+                <td>Sign nibble C=positive, D=negative, F=unsigned; never use float or double</td>
+              </tr>
+              <tr>
+                <td><code>PIC S9(n) COMP</code></td>
+                <td>2 bytes (n&le;4), 4 bytes (n&le;9), 8 bytes (n&le;18)</td>
+                <td><code>Long</code></td>
+                <td>integer</td>
+                <td>Big-endian on z/OS; must byte-swap on little-endian JVMs before casting</td>
+              </tr>
+              <tr>
+                <td><code>PIC S9(n) COMP-5</code></td>
+                <td>Same as COMP</td>
+                <td><code>Long</code></td>
+                <td>integer</td>
+                <td>Native endian (platform-dependent); dangerous if the copybook migrates between z/OS and x86</td>
+              </tr>
+              <tr>
+                <td><code>PIC V</code> (implicit decimal)</td>
+                <td>0 bytes (logical only)</td>
+                <td>N/A (scale modifier)</td>
+                <td>N/A</td>
+                <td>Shifts the decimal point in an adjacent PIC 9 or COMP-3; the scale is in the copybook, not the data</td>
+              </tr>
+              <tr>
+                <td><code>FILLER</code></td>
+                <td>Varies (padding)</td>
+                <td>N/A</td>
+                <td>Omit from JSON</td>
+                <td>Still occupies bytes; must be skipped in the offset calculation or the entire record shifts</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>The most consequential detail in the table: <code>PIC V</code> occupies <strong>zero bytes</strong> but changes the meaning of the digits before it. A field declared as <code>PIC 9(9)V9(2)</code> is 9 bytes on disk (nine display digits), but the value it represents has two decimal places &mdash; a stored value of <code>000001234500</code> is actually <code>12345.00</code>. If you parse without knowing the scale from the copybook, every monetary amount in the system will be off by a factor of 100.</p>
+
+          <h2 id="ebcdic">EBCDIC-to-UTF-8 Conversion</h2>
+          <p>IBM mainframes use EBCDIC (Extended Binary Coded Decimal Interchange Code) as their native character set. It is not ASCII. Most printable characters have different numeric values, and several characters that developers use routinely &mdash; curly braces, square brackets, backslash, the pipe symbol &mdash; live at different code points in different EBCDIC variants.</p>
+          <p>The two EBCDIC code pages relevant to Saudi banking integrations are <strong>IBM Code Page 37</strong> (US English, the historical default for most mainframe installations) and <strong>IBM Code Page 1047</strong> (IBM Open systems, common in more recent z/OS configurations and preferred for UNIX-accessible data). Code page 37 and 1047 agree on most characters but diverge on a subset of special characters: the dollar sign (<code>$</code>), curly braces (<code>{ }</code>), square brackets (<code>[ ]</code>), and the exclamation mark (<code>!</code>) are at different positions. Identifying the wrong code page silently corrupts these characters in string fields.</p>
+          <p>In IBM ACE 12, EBCDIC conversion for MQ messages is handled by the <strong>CCSID</strong> property on the MQ channel definition. If the channel CCSID is set correctly (37 or 1047 matching the z/OS job), ACE converts PIC X fields transparently during parsing. If the CCSID is wrong or set to 0 (no conversion), you receive raw EBCDIC bytes in what ACE treats as a string &mdash; the fields look populated but contain garbage when printed.</p>
+          <p>For direct file-based integration (z/OS datasets transferred via FTP or SFTP), conversion does not happen automatically. Use IBM ICU4J in your ACE Java compute node or in a pre-processing step:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>EbcdicConverter.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">import</span> com.ibm.icu.text.CharsetDetector;
+<span class="tok-k">import</span> java.nio.ByteBuffer;
+<span class="tok-k">import</span> java.nio.charset.Charset;
+
+<span class="tok-k">public class</span> <span class="tok-s">EbcdicConverter</span> {
+
+    <span class="tok-c">// Code page 37 = US EBCDIC (most z/OS SAIB mainframe jobs)</span>
+    <span class="tok-k">private static final</span> Charset CP37  = Charset.forName(<span class="tok-s">"IBM037"</span>);
+    <span class="tok-k">private static final</span> Charset CP1047 = Charset.forName(<span class="tok-s">"IBM1047"</span>);
+
+    <span class="tok-k">public static</span> String convertToUtf8(byte[] ebcdicBytes, String ccsid) {
+        Charset source = <span class="tok-s">"1047"</span>.equals(ccsid) ? CP1047 : CP37;
+        <span class="tok-c">// decode EBCDIC bytes to Java String (Unicode internally)</span>
+        <span class="tok-k">return</span> <span class="tok-k">new</span> String(ebcdicBytes, source).trim(); <span class="tok-c">// trim EBCDIC spaces (X'40')</span>
+    }
+
+    <span class="tok-c">// Validate that a converted field contains only expected characters</span>
+    <span class="tok-k">public static</span> <span class="tok-k">boolean</span> isValidAlphanumeric(String value) {
+        <span class="tok-k">return</span> value.chars().allMatch(c -&gt; c &gt;= 0x20 &amp;&amp; c &lt; 0x7F);
+    }
+}</code></pre>
+          </div>
+
+          <p>One particularly important detail for Saudi Arabia deployments: Arabic characters stored in COBOL PIC X fields require a <strong>hybrid encoding</strong> arrangement. Core banking systems at Saudi banks sometimes store Arabic customer names in UTF-8 or Windows-1256 within what the copybook declares as a PIC X field, because the mainframe was configured with a dual code-page arrangement. If character set negotiation is wrong, Arabic names appear as question marks or Latin garbage. Validate every Arabic-capable string field against real mainframe test data before certifying the conversion.</p>
+
+          <h2 id="packed-decimal">Packed Decimal (COMP-3) Parsing</h2>
+          <p>COMP-3 is the most common storage format for monetary amounts and large counters in COBOL. It packs two decimal digits into each byte, with the last nibble reserved for the sign. A field declared as <code>PIC S9(11) COMP-3</code> stores 11 digits in 6 bytes (two digits per byte for the first 5 bytes, one digit plus sign in the last byte).</p>
+          <p>The sign nibble values: <code>C</code> (hex C, binary 1100) = positive, <code>D</code> (hex D, binary 1101) = negative, <code>F</code> (hex F, binary 1111) = unsigned. A value of positive 12345 in a <code>PIC S9(5) COMP-3</code> field (3 bytes) looks like: <code>0x01 0x23 0x4C</code>. Negative 12345 looks like: <code>0x01 0x23 0x4D</code>.</p>
+          <p>The length calculation trap: a <code>PIC S9(11) COMP-3</code> has 11 digits plus 1 sign nibble = 12 nibbles = 6 bytes. A <code>PIC S9(10) COMP-3</code> has 10 digits plus 1 sign nibble = 11 nibbles = 5.5 bytes, rounded up to 6. Both take 6 bytes. The general formula: <code>ceil((n+1)/2)</code> where <em>n</em> is the digit count in the PIC clause.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PackedDecimalParser.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">import</span> java.math.BigDecimal;
+
+<span class="tok-k">public class</span> <span class="tok-s">PackedDecimalParser</span> {
+
+    <span class="tok-c">/**
+     * Parse a COMP-3 (packed decimal) field.
+     *
+     * @param bytes     Raw bytes from the COBOL record
+     * @param offset    Start offset within bytes[]
+     * @param picDigits Number of digits declared in PIC clause (e.g. 11 for S9(11))
+     * @param scale     Implicit decimal places from PIC V clause (0 if no V)
+     * @return          BigDecimal representation with correct sign and scale
+     */</span>
+    <span class="tok-k">public static</span> BigDecimal parse(byte[] bytes, <span class="tok-k">int</span> offset, <span class="tok-k">int</span> picDigits, <span class="tok-k">int</span> scale) {
+        <span class="tok-k">int</span> byteLen = (picDigits + <span class="tok-n">2</span>) / <span class="tok-n">2</span>; <span class="tok-c">// ceil((n+1)/2)</span>
+        StringBuilder digits = <span class="tok-k">new</span> StringBuilder(picDigits + <span class="tok-n">1</span>);
+
+        <span class="tok-k">for</span> (<span class="tok-k">int</span> i = <span class="tok-n">0</span>; i &lt; byteLen - <span class="tok-n">1</span>; i++) {
+            <span class="tok-k">int</span> b = bytes[offset + i] &amp; <span class="tok-n">0xFF</span>;
+            digits.append((char) (<span class="tok-s">'0'</span> + (b &gt;&gt;&gt; <span class="tok-n">4</span>)));   <span class="tok-c">// high nibble</span>
+            digits.append((char) (<span class="tok-s">'0'</span> + (b &amp; <span class="tok-n">0x0F</span>)));  <span class="tok-c">// low nibble</span>
+        }
+
+        <span class="tok-c">// Last byte: high nibble = last digit, low nibble = sign</span>
+        <span class="tok-k">int</span> lastByte = bytes[offset + byteLen - <span class="tok-n">1</span>] &amp; <span class="tok-n">0xFF</span>;
+        digits.append((char) (<span class="tok-s">'0'</span> + (lastByte &gt;&gt;&gt; <span class="tok-n">4</span>)));
+        <span class="tok-k">int</span> signNibble = lastByte &amp; <span class="tok-n">0x0F</span>;
+
+        <span class="tok-c">// D = negative; C and F = positive (unsigned treated as positive)</span>
+        <span class="tok-k">boolean</span> negative = (signNibble == <span class="tok-n">0x0D</span>);
+
+        BigDecimal unscaled = <span class="tok-k">new</span> BigDecimal(digits.toString());
+        BigDecimal result   = unscaled.movePointLeft(scale);
+        <span class="tok-k">return</span> negative ? result.negate() : result;
+    }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never use Java float or double for COMP-3 amounts</div>
+            <p>IEEE 754 floating-point cannot represent many decimal fractions exactly. A COMP-3 field holding <code>12345678901234567.89</code> (18 digits, scale 2 &mdash; plausible for a notional on a SAMA RTGS settlement) will lose the last several digits silently when stored in a Java <code>double</code>. There will be no exception. The wrong value will propagate to downstream systems, settlement instructions, and ledger entries. Always use <code>java.math.BigDecimal</code> for every COMP-3 field that represents a monetary amount, rate, or quantity. This is non-negotiable.</p>
+          </div>
+
+          <h2 id="dfdl">DFDL in IBM ACE 12</h2>
+          <p>DFDL (Data Format Description Language, IBM standard) allows you to describe the structure of a binary or text data format in an XML schema, then parse or serialise messages of that format inside an IBM ACE message flow without writing parsing code. For COBOL copybooks, DFDL is the structured alternative to hand-coding an ESQL parser: you describe the copybook once in DFDL, and the <code>ibmDFDL:parseUnparse</code> transform node handles the byte-level parsing.</p>
+          <p>ACE 12.0.10 ships with a DFDL test tool (accessible via the Toolkit: <em>Run &rarr; Run DFDL Schema Editor</em>) that lets you paste raw hex bytes, select a DFDL schema, and see the parsed logical tree. Use this during development to verify your schema before wiring it into a message flow. A DFDL schema that parses a 20-field copybook correctly in the test tool will parse it correctly in production &mdash; the parser is the same.</p>
+          <p>The recommended workflow for generating a DFDL schema from a copybook is to first convert the copybook to XML using <strong>cb2xml</strong> (an open-source COBOL copybook parser), then hand-edit the cb2xml output into DFDL format. IBM also provides a DFDL schema wizard in ACE Toolkit that accepts COBOL copybook syntax directly, but it handles only a subset of COBOL syntax &mdash; REDEFINES, OCCURS DEPENDING ON, and nested group items often require manual correction.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payment-record.dfdl.xsd</span><span class="code-block__lang">xml</span></div>
+<pre><code><span class="tok-k">&lt;?xml</span> version=<span class="tok-s">"1.0"</span> encoding=<span class="tok-s">"UTF-8"</span><span class="tok-k">?&gt;</span>
+<span class="tok-k">&lt;xs:schema</span>
+  xmlns:xs=<span class="tok-s">"http://www.w3.org/2001/XMLSchema"</span>
+  xmlns:dfdl=<span class="tok-s">"http://www.ogf.org/dfdl/dfdl-1.0/"</span>
+  xmlns:ibmDFDL=<span class="tok-s">"http://www.ibm.com/dfdl/EDI"</span><span class="tok-k">&gt;</span>
+
+  <span class="tok-c">&lt;!-- Global format: EBCDIC binary record, no line terminator --&gt;</span>
+  <span class="tok-k">&lt;xs:annotation&gt;&lt;xs:appinfo source=</span><span class="tok-s">"http://www.ogf.org/dfdl/dfdl-1.0/"</span><span class="tok-k">&gt;</span>
+    <span class="tok-k">&lt;dfdl:format</span>
+      encoding=<span class="tok-s">"IBM037"</span>
+      byteOrder=<span class="tok-s">"bigEndian"</span>
+      bitOrder=<span class="tok-s">"mostSignificantBitFirst"</span>
+      lengthKind=<span class="tok-s">"implicit"</span>
+      representation=<span class="tok-s">"binary"</span>
+      occursCountKind=<span class="tok-s">"fixed"</span>
+      textTrimKind=<span class="tok-s">"none"</span>
+      initiator=<span class="tok-s">""</span> terminator=<span class="tok-s">""</span> separator=<span class="tok-s">""</span><span class="tok-k">/&gt;</span>
+  <span class="tok-k">&lt;/xs:appinfo&gt;&lt;/xs:annotation&gt;</span>
+
+  <span class="tok-c">&lt;!-- Root: PAYMENT-RECORD --&gt;</span>
+  <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"PAYMENT-RECORD"</span><span class="tok-k">&gt;</span>
+    <span class="tok-k">&lt;xs:complexType&gt;&lt;xs:sequence&gt;</span>
+
+      <span class="tok-c">&lt;!-- PIC X(16): alphanumeric account number, EBCDIC --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"ACCOUNT-NBR"</span> type=<span class="tok-s">"xs:string"</span><span class="tok-k">&gt;</span>
+        <span class="tok-k">&lt;xs:annotation&gt;&lt;xs:appinfo source=</span><span class="tok-s">"http://www.ogf.org/dfdl/dfdl-1.0/"</span><span class="tok-k">&gt;</span>
+          <span class="tok-k">&lt;dfdl:element</span> representation=<span class="tok-s">"text"</span> encoding=<span class="tok-s">"IBM037"</span>
+            lengthKind=<span class="tok-s">"explicit"</span> length=<span class="tok-s">"16"</span> lengthUnits=<span class="tok-s">"bytes"</span><span class="tok-k">/&gt;</span>
+        <span class="tok-k">&lt;/xs:appinfo&gt;&lt;/xs:annotation&gt;</span>
+      <span class="tok-k">&lt;/xs:element&gt;</span>
+
+      <span class="tok-c">&lt;!-- PIC S9(11) COMP-3: payment amount, scale 2, 6 bytes --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"PAYMENT-AMT"</span> type=<span class="tok-s">"xs:decimal"</span><span class="tok-k">&gt;</span>
+        <span class="tok-k">&lt;xs:annotation&gt;&lt;xs:appinfo source=</span><span class="tok-s">"http://www.ogf.org/dfdl/dfdl-1.0/"</span><span class="tok-k">&gt;</span>
+          <span class="tok-k">&lt;dfdl:element</span>
+            representation=<span class="tok-s">"binary"</span>
+            binaryNumberRep=<span class="tok-s">"packed"</span>
+            lengthKind=<span class="tok-s">"explicit"</span> length=<span class="tok-s">"6"</span> lengthUnits=<span class="tok-s">"bytes"</span>
+            totalDigits=<span class="tok-s">"11"</span> fractionDigits=<span class="tok-s">"2"</span><span class="tok-k">/&gt;</span>
+        <span class="tok-k">&lt;/xs:appinfo&gt;&lt;/xs:annotation&gt;</span>
+      <span class="tok-k">&lt;/xs:element&gt;</span>
+
+      <span class="tok-c">&lt;!-- PIC 9(7): Julian date YYYYDDD, display numeric --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"VALUE-DATE"</span> type=<span class="tok-s">"xs:string"</span><span class="tok-k">&gt;</span>
+        <span class="tok-k">&lt;xs:annotation&gt;&lt;xs:appinfo source=</span><span class="tok-s">"http://www.ogf.org/dfdl/dfdl-1.0/"</span><span class="tok-k">&gt;</span>
+          <span class="tok-k">&lt;dfdl:element</span> representation=<span class="tok-s">"text"</span> encoding=<span class="tok-s">"IBM037"</span>
+            lengthKind=<span class="tok-s">"explicit"</span> length=<span class="tok-s">"7"</span> lengthUnits=<span class="tok-s">"bytes"</span><span class="tok-k">/&gt;</span>
+        <span class="tok-k">&lt;/xs:appinfo&gt;&lt;/xs:annotation&gt;</span>
+      <span class="tok-k">&lt;/xs:element&gt;</span>
+
+      <span class="tok-c">&lt;!-- FILLER 3 bytes: must be accounted for even though omitted from output --&gt;</span>
+      <span class="tok-k">&lt;xs:element</span> name=<span class="tok-s">"FILLER-1"</span> type=<span class="tok-s">"xs:hexBinary"</span><span class="tok-k">&gt;</span>
+        <span class="tok-k">&lt;xs:annotation&gt;&lt;xs:appinfo source=</span><span class="tok-s">"http://www.ogf.org/dfdl/dfdl-1.0/"</span><span class="tok-k">&gt;</span>
+          <span class="tok-k">&lt;dfdl:element</span> representation=<span class="tok-s">"binary"</span>
+            lengthKind=<span class="tok-s">"explicit"</span> length=<span class="tok-s">"3"</span> lengthUnits=<span class="tok-s">"bytes"</span><span class="tok-k">/&gt;</span>
+        <span class="tok-k">&lt;/xs:appinfo&gt;&lt;/xs:annotation&gt;</span>
+      <span class="tok-k">&lt;/xs:element&gt;</span>
+
+    <span class="tok-k">&lt;/xs:sequence&gt;&lt;/xs:complexType&gt;</span>
+  <span class="tok-k">&lt;/xs:element&gt;</span>
+
+<span class="tok-k">&lt;/xs:schema&gt;</span></code></pre>
+          </div>
+
+          <h2 id="ace-mapping">ACE Mapping Flow</h2>
+          <p>Once DFDL has parsed the raw binary record into an ACE logical tree, ESQL transforms individual fields from the COBOL representation to JSON-ready values. The DFDL parser handles byte layout; ESQL handles semantic conversion &mdash; sign propagation, decimal placement, null equivalents, and field renaming.</p>
+          <p>COBOL null equivalents differ by field type. A PIC X field containing all LOW-VALUE bytes (<code>X'00...'</code>) typically represents &ldquo;not present.&rdquo; A PIC X field containing all SPACE bytes (<code>X'40...'</code> in EBCDIC) typically represents &ldquo;initialised but empty.&rdquo; A COMP-3 field containing all zero bytes with a positive sign is genuinely zero. These distinctions matter for downstream services: mapping LOW-VALUE to <code>null</code> and SPACE to <code>""</code> is different from mapping both to <code>null</code>.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentRecordMap.esql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-k">CREATE COMPUTE MODULE</span> PaymentRecordToJSON_Map
+
+  <span class="tok-k">CREATE FUNCTION</span> Main() <span class="tok-k">RETURNS BOOLEAN</span>
+  <span class="tok-k">BEGIN</span>
+
+    <span class="tok-c">-- DFDL has already parsed InputBody; fields are now typed</span>
+    <span class="tok-k">DECLARE</span> srcAmt  <span class="tok-s">DECIMAL</span>;
+    <span class="tok-k">DECLARE</span> srcDate <span class="tok-s">CHARACTER</span>;
+    <span class="tok-k">DECLARE</span> scale   <span class="tok-s">INTEGER</span> <span class="tok-n">2</span>;  <span class="tok-c">-- PIC V9(2): 2 implicit decimal places</span>
+
+    <span class="tok-c">-- COMP-3 PAYMENT-AMT: DFDL gives us xs:decimal with fractionDigits=2</span>
+    <span class="tok-c">-- but we cast explicitly to ensure scale and sign are preserved</span>
+    <span class="tok-k">SET</span> srcAmt = <span class="tok-k">CAST</span>(InputBody.PAYMENT-RECORD.PAYMENT-AMT <span class="tok-k">AS</span> DECIMAL);
+
+    <span class="tok-c">-- Validate: COMP-3 field must not be negative for a debit-only record type</span>
+    <span class="tok-k">IF</span> InputBody.PAYMENT-RECORD.TXN-TYPE = <span class="tok-s">'D'</span> <span class="tok-k">AND</span> srcAmt &lt; <span class="tok-n">0</span> <span class="tok-k">THEN</span>
+      <span class="tok-k">THROW</span> USER EXCEPTION VALUES(<span class="tok-s">'Negative amount on debit record'</span>,
+        <span class="tok-k">CAST</span>(srcAmt <span class="tok-k">AS</span> CHARACTER));
+    <span class="tok-k">END IF</span>;
+
+    <span class="tok-c">-- Julian date YYYYDDD → ISO 8601 YYYY-MM-DD</span>
+    <span class="tok-k">SET</span> srcDate = InputBody.PAYMENT-RECORD.VALUE-DATE;
+    <span class="tok-k">DECLARE</span> isoDate <span class="tok-s">CHARACTER</span> JulianToISO(srcDate);
+
+    <span class="tok-c">-- Build JSON output tree</span>
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.accountNumber =
+        <span class="tok-k">TRIM</span>(InputBody.PAYMENT-RECORD.ACCOUNT-NBR);  <span class="tok-c">-- remove EBCDIC trailing spaces</span>
+
+    <span class="tok-c">-- Emit amount as string to preserve scale (never as float)</span>
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.amount =
+        <span class="tok-k">CAST</span>(srcAmt <span class="tok-k">AS</span> CHARACTER);                  <span class="tok-c">-- e.g. "12345.67"</span>
+
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.currency = <span class="tok-s">'SAR'</span>;    <span class="tok-c">-- ISO 4217</span>
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.valueDate = isoDate;
+
+    <span class="tok-c">-- Null equivalent: LOW-VALUE account number → omit field</span>
+    <span class="tok-k">IF</span> BITAND(CCSID(InputBody.PAYMENT-RECORD.ACCOUNT-NBR), <span class="tok-n">0xFF</span>) = <span class="tok-n">0</span> <span class="tok-k">THEN</span>
+      <span class="tok-k">SET</span> OutputRoot.JSON.Data.accountNumber = <span class="tok-k">NULL</span>;
+    <span class="tok-k">END IF</span>;
+
+    <span class="tok-k">RETURN TRUE</span>;
+  <span class="tok-k">END</span>;
+
+<span class="tok-k">END MODULE</span>;</code></pre>
+          </div>
+
+          <div class="diagram" role="img" aria-label="COBOL copybook to JSON output pipeline through DFDL and ACE, with a parallel path showing raw hex bytes through a packed decimal parser to BigDecimal">
+            <div class="diagram__inner">
+              <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="cb-arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="cb-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="cb-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- TOP PATH: DFDL route -->
+                <text x="390" y="20" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">DFDL ROUTE (recommended)</text>
+
+                <rect x="10" y="32" width="148" height="56" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="84" y="55" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">COBOL Copybook</text>
+                <text x="84" y="70" text-anchor="middle" fill="#71717a" font-size="9">PIC clauses, REDEFINES</text>
+                <text x="84" y="83" text-anchor="middle" fill="#71717a" font-size="9">FILLER, OCCURS</text>
+
+                <line x1="158" y1="60" x2="192" y2="60" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cb-arr1)"/>
+                <text x="175" y="53" text-anchor="middle" fill="#00d4aa" font-size="8">cb2xml</text>
+
+                <rect x="193" y="32" width="148" height="56" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="267" y="55" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">DFDL Schema</text>
+                <text x="267" y="70" text-anchor="middle" fill="#71717a" font-size="9">binaryNumberRep=packed</text>
+                <text x="267" y="83" text-anchor="middle" fill="#71717a" font-size="9">encoding=IBM037</text>
+
+                <line x1="341" y1="60" x2="375" y2="60" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cb-arr1)"/>
+
+                <rect x="376" y="32" width="148" height="56" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="450" y="52" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">ACE Transform Node</text>
+                <text x="450" y="67" text-anchor="middle" fill="#71717a" font-size="9">ibmDFDL:parseUnparse</text>
+                <text x="450" y="80" text-anchor="middle" fill="#71717a" font-size="9">ESQL field mapping</text>
+
+                <line x1="524" y1="60" x2="558" y2="60" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#cb-arr2)"/>
+
+                <rect x="559" y="32" width="148" height="56" rx="6" fill="#16161f" stroke="#fbbf24"/>
+                <text x="633" y="52" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">JSON Output</text>
+                <text x="633" y="67" text-anchor="middle" fill="#71717a" font-size="9">amount: "12345.67"</text>
+                <text x="633" y="80" text-anchor="middle" fill="#71717a" font-size="9">accountNumber: "..."</text>
+
+                <!-- DIVIDER -->
+                <line x1="10" y1="118" x2="770" y2="118" stroke="#2a2a3a" stroke-width="1" stroke-dasharray="4,3"/>
+                <text x="390" y="135" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">JAVA PARSER ROUTE (fallback / pre-processing)</text>
+
+                <!-- BOTTOM PATH: Java parser route -->
+                <rect x="10" y="148" width="148" height="56" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="84" y="168" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Raw Hex Bytes</text>
+                <text x="84" y="183" text-anchor="middle" fill="#71717a" font-size="9">0x01 0x23 0x4C ...</text>
+                <text x="84" y="196" text-anchor="middle" fill="#71717a" font-size="9">z/OS EBCDIC binary</text>
+
+                <line x1="158" y1="176" x2="192" y2="176" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#cb-arr3)"/>
+
+                <rect x="193" y="148" width="148" height="56" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="267" y="168" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Packed Decimal</text>
+                <text x="267" y="183" text-anchor="middle" fill="#71717a" font-size="9">Parser (Java 21)</text>
+                <text x="267" y="196" text-anchor="middle" fill="#71717a" font-size="9">nibble extraction + sign</text>
+
+                <line x1="341" y1="176" x2="375" y2="176" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#cb-arr3)"/>
+
+                <rect x="376" y="148" width="148" height="56" rx="6" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="450" y="168" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">BigDecimal</text>
+                <text x="450" y="183" text-anchor="middle" fill="#71717a" font-size="9">scale = PIC V digits</text>
+                <text x="450" y="196" text-anchor="middle" fill="#71717a" font-size="9">sign from C/D/F nibble</text>
+
+                <line x1="524" y1="176" x2="558" y2="176" stroke="#ef4444" stroke-width="1.5" marker-end="url(#cb-arr2)"/>
+
+                <rect x="559" y="148" width="148" height="56" rx="6" fill="#16161f" stroke="#fbbf24"/>
+                <text x="633" y="168" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">JSON / Avro</text>
+                <text x="633" y="183" text-anchor="middle" fill="#71717a" font-size="9">type: string</text>
+                <text x="633" y="196" text-anchor="middle" fill="#71717a" font-size="9">"12345.67"</text>
+
+                <text x="390" y="295" text-anchor="middle" fill="#71717a" font-size="9">DFDL route: schema-governed, maintainable &middot; Java route: flexible for pre-processing or non-ACE integrations</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Two routes from COBOL bytes to JSON: the DFDL route (recommended for ACE integrations) and the Java parser route (for non-ACE or pre-processing scenarios). Both must handle packed decimal as BigDecimal, never as float.</div>
+          </div>
+
+          <h2 id="java-approach">Java-Based Parsing</h2>
+          <p>Not every COBOL mapping runs inside ACE. Kafka Streams processors, Flink jobs, and standalone microservices that receive raw mainframe files need a Java-based parsing path. Three libraries are relevant in practice:</p>
+          <ul>
+            <li><strong>cb2xml.</strong> Parses a COBOL copybook file into an XML DOM that describes each field&rsquo;s PIC type, length, and position. Use it to generate DFDL schemas or as the input to a code generator. cb2xml does not parse data &mdash; it parses copybook definitions.</li>
+            <li><strong>net.sf.cb2java.</strong> A higher-level library that combines copybook parsing with record parsing. Given a copybook and a byte array, it returns a Java object tree with field values. Handles COMP-3 and EBCDIC natively. The library is mature but not actively maintained; pin a specific version and test against your copybooks.</li>
+            <li><strong>JRecord.</strong> Designed for fixed-format COBOL records (and CSV/delimited files). Supports COMP-3, COMP, display numeric, and EBCDIC. Better maintained than cb2java. Useful for file-based integration where records arrive as byte arrays from z/OS datasets.</li>
+          </ul>
+          <p>Whichever library you use, the integration test strategy is the same: capture a hex dump from a live mainframe test session, keep it as a test fixture, and run the parser against it in every build. This catches library updates that change EBCDIC or COMP-3 handling silently, and it catches copybook changes that the mainframe team forgot to communicate.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">REDEFINES shares storage &mdash; choose the right interpretation</div>
+            <p>A REDEFINES clause means that two (or more) field definitions occupy the same bytes. The classic pattern in core banking is a group item that represents either a domestic or international payment address &mdash; same 40 bytes, interpreted as a domestic sort-code structure or as a BIC/IBAN structure depending on a discriminator field elsewhere in the record. If you parse without reading the discriminator first, you will always get the first definition, which is correct for roughly half the records and wrong for the other half. The DFDL <code>dfdl:discriminator</code> element handles this; in hand-coded Java you must read the discriminator before dispatching to the right field group.</p>
+          </div>
+
+          <h2 id="testing">Testing COBOL Mappings</h2>
+          <p>COBOL mapping bugs are silent. A COMP-3 field that is 1 byte shorter than expected does not throw an exception &mdash; it shifts every subsequent field&rsquo;s offset by one byte, producing plausible but wrong values for the rest of the record. The only reliable test strategy is round-trip testing against real mainframe data.</p>
+          <p>Testing approach:</p>
+          <ul>
+            <li><strong>Hex dump capture.</strong> Have the mainframe team produce a fixed set of test records (covering positive amounts, negative amounts, zero, maximum value, all-space fields, and LOW-VALUE fields) and export them as hex dumps. These become your canonical test fixtures.</li>
+            <li><strong>ACE DFDL debug output.</strong> Enable DFDL trace in ACE (set <code>dfdlDebugMode: true</code> in server.conf.yaml for a test server). The trace log shows every field parsed, its byte offset, its value, and the DFDL schema element that matched it. Use this to validate the DFDL schema against the hex dump fixtures before connecting to a live source.</li>
+            <li><strong>Round-trip testing.</strong> Parse the byte record to a logical tree, then serialise the logical tree back to bytes using DFDL. Compare the output bytes to the input bytes. Any difference is a schema or parser bug. This catches FILLER fields that are silently dropped during parsing but cause a length mismatch on re-serialisation.</li>
+            <li><strong>Boundary cases.</strong> Test the maximum representable value for each COMP-3 field (all nines). Test negative zero (sign nibble D, all digits zero). Test SPACE vs LOW-VALUE for PIC X fields. These are the values that expose off-by-one errors in length calculations and null-handling decisions.</li>
+          </ul>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">COMP-3 display length vs storage length confusion</div>
+            <p>The most common COBOL mapping bug: a developer reads that a field is <code>PIC S9(11)</code> and allocates 11 bytes for it. COMP-3 storage is <code>ceil((11+1)/2) = 6</code> bytes. The remaining 5 bytes belong to the next field. Every field after that one is misaligned. The parser produces no error &mdash; it just reads the wrong bytes for everything that follows. Calculate COMP-3 byte lengths from the formula, not from the digit count.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">OCCURS DEPENDING ON creates variable-length records</div>
+            <p>Standard COBOL processing assumes fixed-length records. <code>OCCURS DEPENDING ON</code> creates records whose length depends on the value of another field in the same record &mdash; a count field that determines how many times a sub-group repeats. DFDL handles this with <code>dfdl:occursCount="{../COUNT-FIELD}"</code>. Hand-coded Java parsers must read the count before allocating the array. Either way, the record length is no longer a fixed constant &mdash; you cannot assume a record is N bytes long without reading it first.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Hybrid COBOL and UTF-8 fields corrupt Arabic characters</div>
+            <p>Some Saudi bank COBOL systems were extended to hold Arabic customer names by storing UTF-8 bytes in PIC X fields (declared in the copybook with a wider length to account for multi-byte characters). A PIC X(100) field in EBCDIC is 100 bytes; the same field holding a UTF-8 Arabic name may need up to 200 bytes for the same number of visible characters. If the EBCDIC-to-UTF-8 conversion is applied to a field that is already UTF-8, the result is double-converted garbage. Establish which fields are EBCDIC and which are already UTF-8 with the mainframe team before applying any conversion, and document it in the DFDL schema as a comment.</p>
+          </div>
+
+          <h2 id="checklist">Steps to Onboard a New COBOL Copybook</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Obtain the copybook and confirm the code page</h4>
+              <p>Get the .cpy or .cob copybook file from the mainframe team. Confirm the z/OS job CCSID (37 or 1047 are most common). If the mainframe team is uncertain, request a hex dump of a known test record and check the value of a known alphabetic field character (e.g. the letter A is <code>0xC1</code> in CP37 and CP1047, but the dollar sign is <code>0x5B</code> in CP37 and <code>0x4A</code> in CP1047).</p>
+            </li>
+            <li>
+              <h4>Calculate field byte lengths and build an offset table</h4>
+              <p>Work through every field in the copybook in order. Record the PIC type, the storage length (applying the COMP-3 formula where applicable), and the byte offset from the start of the record. Mark FILLER fields explicitly &mdash; they consume bytes even though they are not mapped. REDEFINES fields share the byte range of the item they redefine; document which discriminator field selects the active definition.</p>
+            </li>
+            <li>
+              <h4>Generate and validate a DFDL schema</h4>
+              <p>Run cb2xml against the copybook to produce an XML description. Use the ACE DFDL schema wizard or hand-edit the cb2xml output into a DFDL schema. Test the schema in the ACE DFDL test tool with the hex dump test fixtures. Verify that every field&rsquo;s parsed value matches the expected value from the mainframe team.</p>
+            </li>
+            <li>
+              <h4>Design the canonical JSON / Avro target schema</h4>
+              <p>Map each COBOL field to a JSON field with a semantically meaningful name. Convert types: COMP-3 &rarr; JSON string (decimal notation), PIC X &rarr; JSON string (UTF-8, trimmed), Julian dates &rarr; ISO 8601, status codes &rarr; enum strings. Document the mapping in a table that both the mainframe team and the consuming service teams can read.</p>
+            </li>
+            <li>
+              <h4>Build the ACE ESQL mapping and unit test it</h4>
+              <p>Write the ESQL compute module that transforms the DFDL-parsed tree to the JSON output. Unit test every field conversion: amount sign handling, LOW-VALUE null treatment, REDEFINES discriminator logic. Use DFDL debug mode in a development ACE server to validate the parsed tree before the ESQL runs.</p>
+            </li>
+            <li>
+              <h4>Run round-trip and boundary case tests</h4>
+              <p>Parse every test fixture record. Verify the JSON output against expected values. Serialise the parsed tree back to bytes and compare with the original hex dump. Test the maximum value, negative zero, all-space fields, and at least one REDEFINES alternative. All cases must pass before the mapping is considered production-ready.</p>
+            </li>
+            <li>
+              <h4>Register the copybook and DFDL schema in source control with a governance tag</h4>
+              <p>Store the copybook, DFDL schema, offset table, and mapping documentation in the integration platform repository under a path that mirrors the mainframe library name. Tag the version with the mainframe SYSMOD level or the date it was extracted. When the mainframe team applies a maintenance release that changes a field length, the regression test suite must run automatically and alert if any test fixture fails.</p>
+            </li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="cdc-legacy-db2-modern-services.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">CDC from Legacy DB2</div>
+            </a>
+            <a href="../legacy-integration.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Legacy Integration &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

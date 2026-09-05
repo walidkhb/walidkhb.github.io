@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Streaming: Stateful Stream Processing Patterns &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Stateful stream processing with Apache Flink 1.19 and Kafka Streams 3.7: window types, RocksDB state backends, exactly-once checkpointing, velocity checks, stream enrichment, and late data handling for regulated banking.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Data Streaming: Stateful Stream Processing Patterns &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Flink and Kafka Streams stateful processing: window types, RocksDB backends, exactly-once checkpoints, velocity checks, enrichment patterns, and late data handling for payment and fraud workloads.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/stateful-stream-processing.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Stateful Stream Processing Patterns &mdash; Data Streaming Lab">
+  <meta name="twitter:description" content="Flink and Kafka Streams: window types, RocksDB, exactly-once checkpointing, velocity checks, and late data for banking.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/stateful-stream-processing.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Data Streaming: Stateful Stream Processing Patterns",
+    "description": "Stateful stream processing with Apache Flink 1.19 and Kafka Streams 3.7: window types, RocksDB state backends, exactly-once checkpointing, velocity checks, stream enrichment, and late data handling for regulated banking.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/data-streaming/stateful-stream-processing.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Data Streaming &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/data-streaming.html"
+    },
+    "proficiencyLevel": "Expert",
+    "dependencies": "Apache Flink 1.19, Kafka Streams 3.7, RocksDB, Apache Kafka 3.7"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Stateful Stream Processing</div>
+          <span class="overline">Lab Article</span>
+          <h1>Data Streaming: Stateful Stream Processing Patterns</h1>
+          <p class="lead">Maintaining state across events &mdash; running totals, session detection, pattern matching &mdash; is what separates a stream processor from a message router. Apache Flink 1.19 and Kafka Streams 3.7 with RocksDB state backends, exactly-once checkpointing, velocity check implementations, broadcast state enrichment, and production-grade late data handling for payment and fraud workloads in regulated Saudi banking.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#window-types">Window types</a></li>
+            <li><a href="#flink-state">Flink state backends</a></li>
+            <li><a href="#kafka-streams-state">Kafka Streams state stores</a></li>
+            <li><a href="#checkpointing">Exactly-once &amp; checkpoints</a></li>
+            <li><a href="#fraud-velocity">Velocity check implementation</a></li>
+            <li><a href="#enrichment">Stream enrichment</a></li>
+            <li><a href="#late-data">Late data &amp; watermarks</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Apache Flink 1.19 &middot; Kafka Streams 3.7 &middot; RocksDB &middot; Kafka 3.7</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~18 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Stateless stream processing &mdash; filtering, transforming, routing &mdash; answers questions about a single event in isolation. It cannot answer questions that span multiple events over time: Has this customer made five transactions in the last ten minutes? Is this session of transactions consistent with the customer&rsquo;s historical behaviour profile? Has this account received three or more incoming transfers today that individually fall below the SAMA reporting threshold but collectively exceed it?</p>
+          <p>Answering those questions requires <strong>state</strong>: information accumulated from past events that is available when the current event is processed. The stream processor must maintain that state reliably, recover it correctly after a failure, and evict it when it is no longer needed to prevent unbounded memory growth. Stateful processing is therefore a more demanding operational commitment than stateless processing &mdash; it requires a state backend, a recovery mechanism, and an operational discipline around state growth and schema migration.</p>
+          <p>The two relevant engines in the Kafka ecosystem are <strong>Apache Flink</strong> (a dedicated stream processing cluster with rich stateful primitives and exactly-once via Chandy-Lamport checkpointing) and <strong>Kafka Streams</strong> (an embedded library that runs inside your JVM process with state managed via RocksDB and backed by Kafka changelog topics). The right choice depends on the complexity of the stateful computation, the size of the state, and the team&rsquo;s operational maturity with distributed systems.</p>
+
+          <div class="diagram" role="img" aria-label="Stateful stream processing: events keyed by customer_id flow through window operators with RocksDB state, producing alerts and aggregated output; timeline shows tumbling vs session windows">
+            <div class="diagram__inner">
+              <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="sp-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="sp-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="sp-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Input topic -->
+                <rect x="10" y="60" width="120" height="60" rx="5" fill="#16161f" stroke="#00d4aa"/>
+                <text x="70" y="84" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">payment-events</text>
+                <text x="70" y="99" text-anchor="middle" fill="#71717a" font-size="8">Kafka topic</text>
+                <text x="70" y="111" text-anchor="middle" fill="#71717a" font-size="8">keyed by customer_id</text>
+
+                <!-- Key-by operator -->
+                <rect x="180" y="60" width="120" height="60" rx="5" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="240" y="84" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">keyBy</text>
+                <text x="240" y="99" text-anchor="middle" fill="#71717a" font-size="8">(customer_id)</text>
+                <text x="240" y="111" text-anchor="middle" fill="#71717a" font-size="8">partition state</text>
+
+                <!-- Stateful operator box -->
+                <rect x="350" y="20" width="200" height="180" rx="6" fill="#0f0f16" stroke="#a78bfa" stroke-dasharray="4 2"/>
+                <text x="450" y="40" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">KeyedProcessFunction</text>
+
+                <rect x="362" y="52" width="176" height="38" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="450" y="70" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">ValueState / ListState</text>
+                <text x="450" y="82" text-anchor="middle" fill="#71717a" font-size="8">RocksDB state backend</text>
+
+                <rect x="362" y="98" width="176" height="38" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="450" y="116" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">State TTL</text>
+                <text x="450" y="128" text-anchor="middle" fill="#71717a" font-size="8">evict stale state on write/read</text>
+
+                <rect x="362" y="144" width="176" height="40" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="450" y="162" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">Timer Service</text>
+                <text x="450" y="175" text-anchor="middle" fill="#71717a" font-size="8">event-time cleanup timers</text>
+
+                <!-- Output: alert -->
+                <rect x="610" y="30" width="155" height="55" rx="5" fill="#16161f" stroke="#ef4444"/>
+                <text x="687" y="52" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">fraud-alerts</text>
+                <text x="687" y="67" text-anchor="middle" fill="#71717a" font-size="8">velocity threshold exceeded</text>
+
+                <!-- Output: aggregated -->
+                <rect x="610" y="110" width="155" height="55" rx="5" fill="#16161f" stroke="#00d4aa"/>
+                <text x="687" y="132" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">velocity-stats</text>
+                <text x="687" y="147" text-anchor="middle" fill="#71717a" font-size="8">aggregated output sink</text>
+
+                <!-- Arrows -->
+                <line x1="130" y1="90" x2="178" y2="90" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sp-arr)"/>
+                <line x1="300" y1="90" x2="348" y2="90" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sp-arr)"/>
+                <line x1="550" y1="60" x2="608" y2="57" stroke="#ef4444" stroke-width="1.5" marker-end="url(#sp-arr2)"/>
+                <line x1="550" y1="130" x2="608" y2="137" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sp-arr)"/>
+
+                <!-- Window timeline section -->
+                <line x1="10" y1="230" x2="770" y2="230" stroke="#71717a" stroke-width="0.5"/>
+                <text x="10" y="225" fill="#71717a" font-size="9">time axis &rarr;</text>
+
+                <!-- Tumbling windows -->
+                <text x="10" y="250" fill="#4a9eff" font-size="8" font-weight="600">TUMBLING</text>
+                <rect x="10" y="255" width="120" height="22" rx="2" fill="#4a9eff" opacity="0.25" stroke="#4a9eff"/>
+                <text x="70" y="270" text-anchor="middle" fill="#4a9eff" font-size="7">window 1</text>
+                <rect x="133" y="255" width="120" height="22" rx="2" fill="#4a9eff" opacity="0.25" stroke="#4a9eff"/>
+                <text x="193" y="270" text-anchor="middle" fill="#4a9eff" font-size="7">window 2</text>
+                <rect x="256" y="255" width="120" height="22" rx="2" fill="#4a9eff" opacity="0.25" stroke="#4a9eff"/>
+                <text x="316" y="270" text-anchor="middle" fill="#4a9eff" font-size="7">window 3</text>
+                <text x="390" y="270" fill="#71717a" font-size="8">&larr; non-overlapping, fixed-size, e.g. 1-hour daily aggregations</text>
+
+                <!-- Hopping windows -->
+                <text x="10" y="298" fill="#fbbf24" font-size="8" font-weight="600">HOPPING</text>
+                <rect x="10" y="303" width="100" height="22" rx="2" fill="#fbbf24" opacity="0.2" stroke="#fbbf24"/>
+                <rect x="60" y="303" width="100" height="22" rx="2" fill="#fbbf24" opacity="0.2" stroke="#fbbf24"/>
+                <rect x="110" y="303" width="100" height="22" rx="2" fill="#fbbf24" opacity="0.2" stroke="#fbbf24"/>
+                <rect x="160" y="303" width="100" height="22" rx="2" fill="#fbbf24" opacity="0.2" stroke="#fbbf24"/>
+                <text x="280" y="317" fill="#71717a" font-size="8">&larr; overlapping, fixed size, stride smaller than size</text>
+
+                <!-- Session windows -->
+                <text x="10" y="345" fill="#00d4aa" font-size="8" font-weight="600">SESSION</text>
+                <rect x="10" y="349" width="55" height="8" rx="2" fill="#00d4aa" opacity="0.3" stroke="#00d4aa"/>
+                <rect x="80" y="344" width="90" height="14" rx="2" fill="#00d4aa" opacity="0.3" stroke="#00d4aa"/>
+                <rect x="220" y="348" width="35" height="8" rx="2" fill="#00d4aa" opacity="0.3" stroke="#00d4aa"/>
+                <text x="270" y="356" fill="#71717a" font-size="8">&larr; gap-based, variable size &mdash; e.g. login session grouping</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Stateful processing: events keyed by customer_id flow through a KeyedProcessFunction backed by RocksDB state with TTL; output fans to a fraud-alerts sink for threshold breaches and a velocity-stats sink; bottom timeline illustrates tumbling, hopping, and session window semantics</div>
+          </div>
+
+          <h2 id="window-types">Window Types</h2>
+          <p>Windows are the mechanism by which a stream processor groups unbounded event streams into bounded computations. Picking the wrong window type for a use case is a silent mistake &mdash; the computation succeeds, but the result answers a different question than intended.</p>
+
+          <table>
+            <thead>
+              <tr><th>Window type</th><th>Time alignment</th><th>Memory per window</th><th>Primary banking use case</th><th>Late data handling</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Tumbling</strong></td><td>Fixed boundaries; non-overlapping</td><td>One window per key</td><td>Daily transaction totals, hourly SAMA reporting aggregates</td><td>Single window per period; missed events update next window</td></tr>
+              <tr><td><strong>Hopping</strong></td><td>Fixed size, fixed advance; overlapping</td><td>Multiple windows per key (size/advance ratio)</td><td>Rolling 5-minute velocity checks with 1-minute advance</td><td>Event contributes to all overlapping windows</td></tr>
+              <tr><td><strong>Session</strong></td><td>Gap-based; no fixed size</td><td>One window per active session per key</td><td>Login session fraud grouping, ATM usage session</td><td>Late events can merge or extend sessions</td></tr>
+              <tr><td><strong>Global</strong></td><td>No boundary &mdash; entire stream per key</td><td>Grows with all events for key (unbounded)</td><td>Lifetime totals &mdash; use with explicit state TTL only</td><td>Always included; no late data concept</td></tr>
+            </tbody>
+          </table>
+
+          <p>For SAMA velocity limit controls &mdash; maximum N transactions in a rolling window &mdash; <strong>hopping windows</strong> provide the most accurate real-time check because the window advances continuously. For daily reporting aggregations aligned to the business day boundary, <strong>tumbling windows</strong> are the correct and simplest choice. For fraud patterns based on transaction clustering in time (a burst of activity followed by silence), <strong>session windows</strong> model the behaviour naturally. For customer lifetime statistics that never expire, use a <strong>KeyedProcessFunction</strong> with explicit state &mdash; not a global window, which has no eviction mechanism.</p>
+
+          <h2 id="flink-state">Flink State Backends</h2>
+          <p>Flink&rsquo;s state backend determines where operator state is stored during job execution and how it is persisted to durable storage for fault tolerance.</p>
+          <p><strong>HashMapStateBackend</strong> (formerly HeapStateBackend) stores all state as Java objects on the JVM heap. Access is fast &mdash; in-process, no serialisation overhead &mdash; but state size is bounded by the TaskManager heap and state is lost on a process restart unless checkpointed. Suitable for small per-key state (counters, flags) where the total state across all active keys fits comfortably in 60&ndash;70% of the TaskManager heap. In a payment context with millions of active customer keys, this ceiling is reached quickly.</p>
+          <p><strong>EmbeddedRocksDBStateBackend</strong> stores all state in a RocksDB instance on local disk, serialised as byte arrays. State size is bounded only by available disk, not by JVM heap, enabling orders-of-magnitude larger state per TaskManager. The trade-off is serialisation overhead on every state read and write, and RocksDB&rsquo;s compaction behaviour under high write load (see pitfalls). For most banking stateful pipelines &mdash; velocity ring buffers, customer session state, running aggregations over tens of millions of customers &mdash; RocksDB is the correct backend.</p>
+          <p><strong>State TTL</strong> is configured per state descriptor and is independent of the state backend. It specifies how long state is retained after the last write or read (configurable). Expired state is not immediately removed &mdash; it is lazily evicted on access or during RocksDB background compaction. For payment velocity state, set TTL to 2&times; the longest velocity window (e.g. TTL=60 minutes for a 30-minute velocity window) to ensure state is available for late-arriving events within the allowed lateness budget.</p>
+
+          <h2 id="kafka-streams-state">Kafka Streams State Stores</h2>
+          <p>Kafka Streams manages state through <strong>state stores</strong> &mdash; key-value stores embedded in the Streams application process. Two implementations are available: an in-memory store (fast, lost on restart, bounded by heap) and a persistent RocksDB-backed store (durable across restarts, larger capacity). For production stateful applications, the RocksDB store with a Kafka changelog topic for fault tolerance is the standard choice.</p>
+          <p>A state store changelog is a compacted Kafka topic that records every state mutation. On recovery from a crash, the Streams application replays the changelog to restore state &mdash; the same Chandy-Lamport-style recovery that makes Kafka Streams stateful operations exactly-once compatible with the Kafka transactional API. Configure standby replicas (<code>num.standby.replicas=1</code>) to keep a warm copy of each state store on another instance; standby replicas reduce recovery time from the time to replay the changelog to the time to catch up on missed events since the last checkpoint.</p>
+          <p><strong>Interactive queries</strong> allow external systems to read from a state store over HTTP without going through Kafka. A Streams application exposes a <code>ReadOnlyKeyValueStore</code> via <code>KafkaStreams.store()</code>; a REST API layer wraps it for external access. This is the standard pattern for exposing running velocity totals or customer session data to an operational dashboard or a fraud investigation tool without creating a separate read path.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>VelocityQueryResource.java (Kafka Streams interactive queries)</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Path</span>(<span class="tok-s">"/velocity"</span>)
+<span class="tok-k">public class</span> <span class="tok-t">VelocityQueryResource</span> {
+
+  <span class="tok-k">private final</span> <span class="tok-t">KafkaStreams</span> streams;
+  <span class="tok-k">private static final</span> <span class="tok-t">String</span> STORE_NAME = <span class="tok-s">"velocity-store"</span>;
+
+  <span class="tok-k">@GET</span>
+  <span class="tok-k">@Path</span>(<span class="tok-s">"/{customerId}"</span>)
+  <span class="tok-k">@Produces</span>(<span class="tok-t">MediaType</span>.APPLICATION_JSON)
+  <span class="tok-k">public</span> <span class="tok-t">Response</span> getVelocity(<span class="tok-k">@PathParam</span>(<span class="tok-s">"customerId"</span>) <span class="tok-t">String</span> customerId) {
+
+    <span class="tok-c">// locate the host that owns the partition for this key</span>
+    <span class="tok-t">KeyQueryMetadata</span> metadata = streams.queryMetadataForKey(
+        STORE_NAME, customerId, <span class="tok-t">Serdes</span>.String().serializer());
+
+    <span class="tok-k">if</span> (metadata.activeHost().equals(thisHostInfo)) {
+      <span class="tok-c">// query local store directly</span>
+      <span class="tok-t">ReadOnlyKeyValueStore</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">VelocityRecord</span>&gt; store =
+          streams.store(<span class="tok-t">StoreQueryParameters</span>.fromNameAndType(
+              STORE_NAME, <span class="tok-t">QueryableStoreTypes</span>.keyValueStore()));
+      <span class="tok-t">VelocityRecord</span> record = store.get(customerId);
+      <span class="tok-k">return</span> record != <span class="tok-k">null</span>
+          ? <span class="tok-t">Response</span>.ok(record).build()
+          : <span class="tok-t">Response</span>.status(<span class="tok-n">404</span>).build();
+    } <span class="tok-k">else</span> {
+      <span class="tok-c">// forward to the instance that owns the partition</span>
+      <span class="tok-t">String</span> remoteUrl = <span class="tok-t">String</span>.format(<span class="tok-s">"http://%s:%d/velocity/%s"</span>,
+          metadata.activeHost().host(),
+          metadata.activeHost().port(),
+          customerId);
+      <span class="tok-k">return</span> forwardRequest(remoteUrl); <span class="tok-c">// delegate to HTTP client</span>
+    }
+  }
+}</code></pre>
+          </div>
+
+          <h2 id="checkpointing">Exactly-Once and Flink Checkpoints</h2>
+          <p>Flink&rsquo;s exactly-once processing guarantee is implemented via the <strong>Chandy-Lamport distributed snapshot algorithm</strong>. The JobManager periodically injects lightweight <strong>checkpoint barriers</strong> into every input partition. When an operator receives a barrier on all its input channels (aligned checkpointing) or immediately on the first barrier (unaligned checkpointing), it snapshots its state to the configured durable backend (S3/HDFS for RocksDB) and passes the barrier downstream. When all operators have checkpointed, the checkpoint is complete and the JobManager records the offset at which each Kafka source partition was positioned. On recovery from a failure, Flink resets all operators to their last checkpoint state, seeks each Kafka source back to the recorded offset, and replays events from there. The result: every event is processed exactly once in the operator state, and every output is written exactly once (with the Kafka transactional sink).</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>flink-checkpoint-config.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">execution</span>:
+  <span class="tok-k">checkpointing</span>:
+    <span class="tok-k">interval</span>: <span class="tok-n">60000</span>          <span class="tok-c"># 60 s — balance between recovery time and overhead</span>
+    <span class="tok-k">mode</span>: <span class="tok-s">EXACTLY_ONCE</span>
+    <span class="tok-k">min-pause-between-checkpoints</span>: <span class="tok-n">30000</span>  <span class="tok-c"># prevent checkpoint storms</span>
+    <span class="tok-k">timeout</span>: <span class="tok-n">120000</span>         <span class="tok-c"># abort checkpoint if not complete in 2 min</span>
+    <span class="tok-k">max-concurrent-checkpoints</span>: <span class="tok-n">1</span>
+    <span class="tok-k">externalized-checkpoint-retention</span>: <span class="tok-s">RETAIN_ON_CANCELLATION</span>
+    <span class="tok-k">unaligned</span>: <span class="tok-k">false</span>        <span class="tok-c"># aligned: required for EXACTLY_ONCE with Kafka sink</span>
+
+  <span class="tok-k">state-backend</span>: <span class="tok-s">rocksdb</span>
+  <span class="tok-k">state-backend-incremental</span>: <span class="tok-k">true</span>
+  <span class="tok-k">state-checkpoints-dir</span>: <span class="tok-s">s3://acmebank-flink/checkpoints/</span>
+  <span class="tok-k">state-savepoints-dir</span>: <span class="tok-s">s3://acmebank-flink/savepoints/</span>
+
+  <span class="tok-k">restart-strategy</span>:
+    <span class="tok-k">type</span>: <span class="tok-s">exponential-delay</span>
+    <span class="tok-k">initial-backoff</span>: <span class="tok-s">1 s</span>
+    <span class="tok-k">max-backoff</span>: <span class="tok-s">2 min</span>
+    <span class="tok-k">backoff-multiplier</span>: <span class="tok-n">2.0</span>
+    <span class="tok-k">reset-attempts-interval</span>: <span class="tok-s">10 min</span>
+
+<span class="tok-k">kafka-sink</span>:
+  <span class="tok-k">semantic</span>: <span class="tok-s">EXACTLY_ONCE</span>
+  <span class="tok-k">transaction-timeout-ms</span>: <span class="tok-n">180000</span>  <span class="tok-c"># must exceed checkpoint timeout</span></code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Exactly-once is a guarantee about state, not about side effects</div>
+            <p>Flink&rsquo;s exactly-once guarantee means each event updates operator state at most once. It does not mean that every write to an external system happens exactly once. An external database write, a REST call to a fraud alerting API, or a file write inside a <code>processElement</code> call is outside Flink&rsquo;s transaction scope &mdash; these will be re-executed on recovery from a checkpoint. All external writes must be idempotent (keyed on event ID) or transactional (wrapped in the external system&rsquo;s own transaction) to achieve end-to-end exactly-once semantics. The Kafka sink with <code>EXACTLY_ONCE</code> semantic handles Kafka outputs; everything else requires application-level idempotency.</p>
+          </div>
+
+          <h2 id="fraud-velocity">Velocity Check Implementation</h2>
+          <p>A SAMA-compliant velocity check &mdash; block a customer whose card generates more than N transactions within a rolling time window &mdash; requires per-key stateful aggregation with event-time semantics and state TTL. The implementation below uses a Flink <code>KeyedProcessFunction</code> with a <code>ListState</code> ring buffer and state TTL.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>VelocityCheckFunction.java (Flink KeyedProcessFunction)</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public class</span> <span class="tok-t">VelocityCheckFunction</span>
+    <span class="tok-k">extends</span> <span class="tok-t">KeyedProcessFunction</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">PaymentEvent</span>, <span class="tok-t">VelocityAlert</span>&gt; {
+
+  <span class="tok-k">private static final int</span>  THRESHOLD  = <span class="tok-n">5</span>;         <span class="tok-c">// 5 transactions</span>
+  <span class="tok-k">private static final long</span> WINDOW_MS  = <span class="tok-n">600_000L</span>;   <span class="tok-c">// in 10 minutes</span>
+  <span class="tok-k">private static final long</span> STATE_TTL_MS = <span class="tok-n">1_200_000L</span>; <span class="tok-c">// 20 min TTL (2× window)</span>
+
+  <span class="tok-k">private</span> <span class="tok-t">ListState</span>&lt;<span class="tok-t">TxnStamp</span>&gt; buffer; <span class="tok-c">// (eventTime, txnId) pairs</span>
+
+  @Override
+  <span class="tok-k">public void</span> open(<span class="tok-t">Configuration</span> cfg) {
+    <span class="tok-t">StateTtlConfig</span> ttl = <span class="tok-t">StateTtlConfig</span>
+        .newBuilder(<span class="tok-t">Time</span>.milliseconds(STATE_TTL_MS))
+        .setUpdateType(<span class="tok-t">StateTtlConfig</span>.<span class="tok-t">UpdateType</span>.OnCreateAndWrite)
+        .setStateVisibility(<span class="tok-t">StateTtlConfig</span>.<span class="tok-t">StateVisibility</span>.NeverReturnExpired)
+        .build();
+
+    <span class="tok-t">ListStateDescriptor</span>&lt;<span class="tok-t">TxnStamp</span>&gt; desc =
+        <span class="tok-k">new</span> <span class="tok-t">ListStateDescriptor</span>&lt;&gt;(<span class="tok-s">"velocity-buffer"</span>, <span class="tok-t">TxnStamp</span>.class);
+    desc.enableTimeToLive(ttl);
+    buffer = getRuntimeContext().getListState(desc);
+  }
+
+  @Override
+  <span class="tok-k">public void</span> processElement(<span class="tok-t">PaymentEvent</span> event,
+                              <span class="tok-t">Context</span> ctx,
+                              <span class="tok-t">Collector</span>&lt;<span class="tok-t">VelocityAlert</span>&gt; out) <span class="tok-k">throws</span> <span class="tok-t">Exception</span> {
+    <span class="tok-k">long</span> now = event.getEventTime();
+    <span class="tok-k">long</span> cutoff = now - WINDOW_MS;
+
+    <span class="tok-c">// evict entries outside the window</span>
+    <span class="tok-t">List</span>&lt;<span class="tok-t">TxnStamp</span>&gt; fresh = <span class="tok-t">StreamSupport</span>
+        .stream(buffer.get().spliterator(), <span class="tok-k">false</span>)
+        .filter(t -&gt; t.ts &gt;= cutoff)
+        .collect(<span class="tok-t">Collectors</span>.toList());
+
+    fresh.add(<span class="tok-k">new</span> <span class="tok-t">TxnStamp</span>(now, event.getTxnId()));
+    buffer.update(fresh);
+
+    <span class="tok-k">if</span> (fresh.size() >= THRESHOLD) {
+      out.collect(<span class="tok-t">VelocityAlert</span>.builder()
+          .customerId(ctx.getCurrentKey())
+          .txnId(event.getTxnId())
+          .windowCount(fresh.size())
+          .windowMs(WINDOW_MS)
+          .triggeringEvent(event)
+          .build());
+    }
+
+    <span class="tok-c">// schedule state cleanup timer to prevent leaks on inactive cards</span>
+    ctx.timerService().registerEventTimeTimer(now + STATE_TTL_MS);
+  }
+
+  @Override
+  <span class="tok-k">public void</span> onTimer(<span class="tok-k">long</span> ts, <span class="tok-t">OnTimerContext</span> ctx,
+                      <span class="tok-t">Collector</span>&lt;<span class="tok-t">VelocityAlert</span>&gt; out) <span class="tok-k">throws</span> <span class="tok-t">Exception</span> {
+    <span class="tok-c">// evict state for customers silent longer than STATE_TTL_MS</span>
+    <span class="tok-k">long</span> cutoff = ts - STATE_TTL_MS;
+    <span class="tok-t">List</span>&lt;<span class="tok-t">TxnStamp</span>&gt; fresh = <span class="tok-t">StreamSupport</span>
+        .stream(buffer.get().spliterator(), <span class="tok-k">false</span>)
+        .filter(t -&gt; t.ts &gt;= cutoff)
+        .collect(<span class="tok-t">Collectors</span>.toList());
+    <span class="tok-k">if</span> (fresh.isEmpty()) {
+      buffer.clear(); <span class="tok-c">// explicit clear for inactive key</span>
+    } <span class="tok-k">else</span> {
+      buffer.update(fresh);
+    }
+  }
+}</code></pre>
+          </div>
+
+          <ol class="step-list">
+            <li>
+              <h4>Define event time and Kafka source</h4>
+              <p>Configure the Kafka source with a <code>WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10))</code>. This tells Flink to use the <code>eventTime</code> field embedded in the payment event, not the Kafka broker timestamp, for time-based operations. Bounded out-of-order allows events that arrive up to 10 seconds late relative to the watermark to still fall within their correct window.</p>
+            </li>
+            <li>
+              <h4>Key the stream by customer ID</h4>
+              <p>Apply <code>keyBy(PaymentEvent::getCustomerId)</code> before the process function. Keying ensures that all events for a given customer are routed to the same Flink task slot and share the same state partition. Cross-key state access is not possible in Flink and not needed for per-customer velocity checks.</p>
+            </li>
+            <li>
+              <h4>Configure RocksDB state backend with incremental checkpoints</h4>
+              <p>Set <code>EmbeddedRocksDBStateBackend</code> with <code>enableIncrementalCheckpointing(true)</code>. For a velocity buffer with tens of millions of customer keys, the full checkpoint size without incremental mode can exceed 100 GB; incremental checkpoints typically reduce this to under 1 GB per checkpoint interval, which is sustainable within the 60-second checkpoint window.</p>
+            </li>
+            <li>
+              <h4>Set state TTL on the ListState descriptor</h4>
+              <p>Configure TTL at 2&times; the longest velocity window to ensure state is available for late events within the allowed lateness budget while still being evicted for inactive customers. Without TTL, a blocked or inactive card that never generates new events retains its velocity buffer in state indefinitely, causing unbounded RocksDB growth over months.</p>
+            </li>
+            <li>
+              <h4>Register cleanup timers</h4>
+              <p>The explicit <code>onTimer</code> handler is a belt-and-suspenders measure alongside TTL. TTL eviction is lazy (happens on next access or compaction); the timer forces active cleanup for truly inactive keys. Register the timer at <code>now + STATE_TTL_MS</code> on every event &mdash; the timer service deduplicates multiple registrations for the same timestamp automatically.</p>
+            </li>
+            <li>
+              <h4>Route late events to a side output</h4>
+              <p>Events that arrive after the watermark has advanced past their event time are considered late. Configure a <code>OutputTag&lt;PaymentEvent&gt;</code> as a late data side output on the process function. Late payment events should be logged and manually reviewed, not silently dropped &mdash; they may represent real transactions that the velocity check did not see in the main window.</p>
+            </li>
+            <li>
+              <h4>Validate with shadow mode before enforcing</h4>
+              <p>Run the velocity check in shadow mode (emit to a <code>velocity-alerts-shadow</code> topic, no enforcement action) for two weeks. Compare against the existing rule-engine output. Tune the threshold and window based on real false-positive rates before switching the authorisation gateway to act on Flink&rsquo;s output.</p>
+            </li>
+          </ol>
+
+          <h2 id="enrichment">Stream Enrichment</h2>
+          <p>Most fraud and risk computations require enriching payment events with reference data that does not arrive in the payment event itself: customer segment, account risk tier, merchant category code, counterparty bank risk rating. This reference data changes slowly (hours to days) but must be available in milliseconds at the moment of scoring.</p>
+          <p>Flink provides two enrichment patterns. <strong>Async I/O</strong> calls an external service (Redis, HTTP endpoint) for each event asynchronously, with configurable parallelism and timeout. Suitable for low-volume enrichment with acceptable 2&ndash;5 ms latency per lookup. <strong>Broadcast State</strong> loads a slow-changing reference dataset once per operator and makes it available in-process for every event, with zero lookup latency. Suitable for relatively small datasets (merchant categories, risk tiers, country codes) that fit in memory and are updated infrequently.</p>
+          <p>For a payment stream enriched with merchant category codes: broadcast the merchant reference stream (from a Kafka topic updated daily) to all task slots via <code>DataStream.broadcast()</code>. In the <code>KeyedBroadcastProcessFunction</code>, the <code>processBroadcastElement</code> method updates the broadcast state when a new merchant record arrives; <code>processElement</code> reads from broadcast state to enrich each payment. The enrichment is always in-process &mdash; no network hop, sub-millisecond, consistent across all task slots.</p>
+          <p>Temporal join (also called a <strong>time-enriched join</strong>) is the correct pattern for enriching a payment stream with a reference data snapshot that was valid at the payment event time, not the current reference data. Flink&rsquo;s SQL <code>FOR SYSTEM_TIME AS OF</code> syntax implements this: <code>SELECT p.*, r.riskTier FROM payments p JOIN riskProfile FOR SYSTEM_TIME AS OF p.eventTime AS r ON p.customerId = r.customerId</code>. This is essential for regulatory audit: the enrichment used at scoring time must be reconstructable from the data that was available at that moment, not from current reference data that may have changed.</p>
+
+          <h2 id="late-data">Late Data and Watermarks</h2>
+          <p>Event-time processing requires a mechanism to advance the notion of time in the stream and to decide when a window is &ldquo;complete enough&rdquo; to trigger computation. Watermarks are the mechanism: a watermark at time <em>t</em> asserts that no future events with event time less than <em>t</em> will arrive. Once the watermark passes a window&rsquo;s end boundary, Flink fires the window and emits the result.</p>
+          <p><strong>WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10))</strong> is the correct starting point for payment event streams. It generates a watermark that lags 10 seconds behind the highest observed event timestamp in the stream. This allows events that arrive up to 10 seconds out of order (due to network retransmissions, IPS gateway buffering, or micro-batch ingest delays) to still be included in their correct window.</p>
+          <p><strong>Allowed lateness</strong> extends this further: events that arrive after the watermark has passed the window end but within the allowed lateness period update the window result and retrigger it. Use <code>.allowedLateness(Duration.ofSeconds(30))</code> for IPS transfer events, which occasionally retransmit. After the allowed lateness period, truly late events are routed to a side output for manual review &mdash; never silently dropped on a payment topic.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">RocksDB compaction under high write load can cause checkpoint timeouts</div>
+            <p>RocksDB&rsquo;s background compaction consumes I/O and CPU at the same time Flink is trying to serialise state for a checkpoint. Under sustained high write throughput (millions of state updates per second), compaction and checkpointing compete for the same I/O bandwidth and the checkpoint timeout (configured at 2 minutes above) can be exceeded. Tune RocksDB compaction settings: set <code>state.backend.rocksdb.writebuffer.size</code> to 64 MB, <code>state.backend.rocksdb.writebuffer.count</code> to 4, and <code>state.backend.rocksdb.compaction.style</code> to <code>LEVEL</code>. Use dedicated SSDs for RocksDB working directories; shared network storage at the TaskManager host compounds the problem.</p>
+          </div>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never increase operator parallelism on a running job without a state migration plan</div>
+            <p>Flink partitions state by key hash modulo the operator parallelism. When you change parallelism (e.g. from 12 to 24 task slots for a velocity check operator), the key-to-partition mapping changes. If you restore from a savepoint taken at parallelism 12 and restart with parallelism 24, Flink redistributes the state &mdash; but this requires a planned savepoint restore with the explicit new parallelism set, not an in-place scale-up. An unplanned parallelism change on a running job without a savepoint may corrupt or lose state entirely. Always take a savepoint, verify it, change parallelism in the job configuration, and restore from the savepoint. Test the procedure in a staging environment before production.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Growing state without TTL causes OOM in weeks</div>
+            <p>A velocity buffer state without TTL grows monotonically. Every unique customer key that ever transacted retains its state indefinitely. A bank with 2 million active cardholders and a 30-minute velocity buffer holding 10 transactions each consumes roughly 1&ndash;2 GB of state &mdash; manageable. After 12 months the same state grows to include churned customers with zero recent transactions, adding hundreds of millions of stale keys to RocksDB. This pattern has caused production OOM kills and data loss on stateful Flink jobs that worked fine in development but were never stress-tested with real churn rates. Always set TTL. Always verify RocksDB size growth in the first 30 days of production operation.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Keyspace skew drives uneven state and checkpoint latency</div>
+            <p>If one customer key generates 80% of transaction volume (a high-frequency aggregator, a batch payment sender, or a test account left in production), the Flink task slot that owns that key will be the slowest to checkpoint, highest in memory, and most likely to cause backpressure. Monitor per-task subtask metrics for <code>numRecordsInPerSecond</code> and <code>currentOutputWatermark</code> lag; a skewed key will show as a hot subtask. Apply a salting strategy (append a random suffix to the key, aggregate at a higher level) or pre-aggregate at the source.</p>
+          </div>
+
+          <h2 id="checklist">Production Checklist</h2>
+          <ol>
+            <li>Flink job uses <code>EmbeddedRocksDBStateBackend</code> with incremental checkpoints enabled for all stateful operators.</li>
+            <li>Checkpoint interval 60 s; timeout 120 s; minimum pause between checkpoints 30 s; max concurrent checkpoints 1.</li>
+            <li>Kafka sink configured with <code>EXACTLY_ONCE</code> semantic; Kafka transaction timeout exceeds checkpoint timeout by at least 50%.</li>
+            <li>State TTL set on every state descriptor; TTL is at least 2&times; the longest aggregation window.</li>
+            <li>Explicit event-time timer registered in <code>processElement</code> for active state cleanup in <code>onTimer</code>.</li>
+            <li>WatermarkStrategy configured with bounded out-of-order tolerance matching the upstream source latency profile.</li>
+            <li>Late events routed to a side output topic, not silently dropped; side output monitored for unexpected volumes.</li>
+            <li>Parallelism change procedure documented and tested in staging: savepoint &rarr; update config &rarr; restore from savepoint.</li>
+            <li>Per-subtask backpressure and checkpoint duration dashboards in Grafana; alert on checkpoint duration &gt; 80% of timeout.</li>
+            <li>Keyspace skew analysis run before production launch; hot keys identified and salted or pre-aggregated.</li>
+            <li>RocksDB compaction settings tuned; dedicated SSD configured for TaskManager state directories.</li>
+            <li>Velocity check validated in shadow mode for a minimum of two weeks before enforcement actions are enabled.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="schema-registry-and-data-contracts.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Schema Registry &amp; Data Contracts</div>
+            </a>
+            <a href="../data-streaming.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Data Streaming &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Gateway: Rate Limiting &amp; Throttling at Scale &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Distributed rate limiting at API gateway scale: token bucket vs sliding window, Redis-backed counters, Kong rate-limiting-advanced, IBM API Connect rate plans, SAMA Open Banking quota compliance, and adaptive backpressure.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="API Gateway: Rate Limiting &amp; Throttling at Scale &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Kong, Redis, and IBM API Connect rate limiting for regulated financial services: algorithms, SAMA quotas, Redis Lua scripts, and bypass prevention.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/api-gateway/rate-limiting-and-throttling.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="API Gateway: Rate Limiting &amp; Throttling at Scale">
+  <meta name="twitter:description" content="Sliding window, token bucket, Redis Lua counters, SAMA quota compliance, and rate-limit bypass prevention at the Kong API gateway.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/api-gateway/rate-limiting-and-throttling.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "API Gateway: Rate Limiting & Throttling at Scale",
+    "description": "Distributed rate limiting at API gateway scale: token bucket vs sliding window, Redis-backed counters, Kong rate-limiting-advanced, IBM API Connect rate plans, SAMA Open Banking quota compliance, and adaptive backpressure.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/api-gateway/rate-limiting-and-throttling.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "API Gateway &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/api-gateway.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-gateway.html">API Gateway</a><span>/</span>Rate Limiting &amp; Throttling</div>
+          <span class="overline">Lab Article</span>
+          <h1>Rate Limiting &amp; Throttling at Scale</h1>
+          <p class="lead">Distributed rate limiting fails in production for predictable reasons &mdash; wrong algorithm, wrong identity, or wrong Redis topology. This article covers sliding window counters with Redis Lua scripts, Kong&rsquo;s rate-limiting-advanced plugin, IBM API Connect rate plans for SAMA Open Banking quotas, adaptive backpressure, and the bypass patterns that make IP-only rate limiting useless at a bank.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#algorithms">Algorithm comparison</a></li>
+            <li><a href="#redis-implementation">Redis implementation</a></li>
+            <li><a href="#kong-config">Kong configuration</a></li>
+            <li><a href="#apic-config">IBM API Connect plans</a></li>
+            <li><a href="#sama-context">SAMA context</a></li>
+            <li><a href="#adaptive">Adaptive limiting</a></li>
+            <li><a href="#bypass-prevention">Bypass prevention</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Kong Gateway 3.7 &middot; Redis 7.2 &middot; OpenShift 4.15 &middot; IBM API Connect 10.0.7</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Why Rate Limiting Fails in Production</h2>
+          <p>Rate limiting is one of those controls that is trivially implemented in a single-instance local environment and genuinely difficult to get right in production. The failure modes are consistent: engineers pick the cheapest algorithm without understanding its boundary burst behaviour, choose the wrong identity (IP address instead of authenticated principal), implement counting locally in each gateway node instead of in a shared store, and then discover the actual protection is a fraction of what the configuration claims.</p>
+          <p>The distributed problem is the root cause. A Kong cluster with 6 pods, each counting requests locally, provides each consumer with 6 times the configured limit &mdash; not the limit. This is not a Kong bug; it is the correct behaviour of the <code>local</code> policy. To provide a genuine cluster-wide limit, all gateway nodes must consult a shared counter store &mdash; Redis in production, with the associated operational overhead that implies.</p>
+          <p>The four canonical algorithms each make a different trade-off between accuracy, memory, and burst behaviour. Understanding the trade-off before choosing one is the difference between a rate limiter that protects the downstream service and one that provides a false sense of control.</p>
+
+          <div class="diagram" role="img" aria-label="Request flow from consumer through Kong rate limiter, Redis counter check, to allow or reject decision; inset showing token bucket fill and drain behaviour">
+            <div class="diagram__inner">
+              <svg width="780" height="290" viewBox="0 0 780 290" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="rl-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="rl-arr-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="rl-arr-grn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#22c55e"/>
+                  </marker>
+                </defs>
+
+                <!-- Consumer -->
+                <rect x="10" y="100" width="110" height="52" rx="6" fill="#1c1c28" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="65" y="122" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Consumer</text>
+                <text x="65" y="138" text-anchor="middle" fill="#71717a" font-size="9">PSP / TPAP / BFF</text>
+                <text x="65" y="148" text-anchor="middle" fill="#71717a" font-size="8">JWT sub = identity</text>
+                <line x1="120" y1="126" x2="168" y2="126" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#rl-arr)"/>
+                <text x="144" y="119" text-anchor="middle" fill="#00d4aa" font-size="8">request</text>
+
+                <!-- Kong Gateway -->
+                <rect x="170" y="80" width="155" height="92" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="2"/>
+                <text x="247" y="101" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Kong Gateway</text>
+                <text x="247" y="116" text-anchor="middle" fill="#71717a" font-size="8">rate-limiting-advanced</text>
+                <text x="247" y="129" text-anchor="middle" fill="#71717a" font-size="8">policy: redis (sliding window)</text>
+                <text x="247" y="142" text-anchor="middle" fill="#71717a" font-size="8">identity: JWT sub</text>
+                <text x="247" y="155" text-anchor="middle" fill="#71717a" font-size="8">headers: X-RateLimit-*</text>
+                <line x1="325" y1="126" x2="378" y2="126" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#rl-arr)"/>
+                <text x="351" y="119" text-anchor="middle" fill="#00d4aa" font-size="8">EVALSHA</text>
+
+                <!-- Redis Cluster -->
+                <rect x="380" y="80" width="155" height="92" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="2"/>
+                <text x="457" y="101" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Redis 7.2 Cluster</text>
+                <text x="457" y="116" text-anchor="middle" fill="#71717a" font-size="8">key: rl:{jwt_sub}:{window}</text>
+                <text x="457" y="129" text-anchor="middle" fill="#71717a" font-size="8">Lua script: atomic ZADD</text>
+                <text x="457" y="142" text-anchor="middle" fill="#71717a" font-size="8">ZREMRANGEBYSCORE</text>
+                <text x="457" y="155" text-anchor="middle" fill="#71717a" font-size="8">ZCARD &rarr; count &le; limit?</text>
+
+                <!-- Decision arrows -->
+                <line x1="535" y1="110" x2="598" y2="80" stroke="#22c55e" stroke-width="1.5" marker-end="url(#rl-arr-grn)"/>
+                <line x1="535" y1="148" x2="598" y2="178" stroke="#ef4444" stroke-width="1.5" marker-end="url(#rl-arr-red)"/>
+
+                <!-- Allow -->
+                <rect x="600" y="52" width="155" height="52" rx="6" fill="#1c1c28" stroke="#22c55e" stroke-width="1.5"/>
+                <text x="677" y="73" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="600">ALLOW</text>
+                <text x="677" y="88" text-anchor="middle" fill="#71717a" font-size="8">route to backend service</text>
+                <text x="677" y="98" text-anchor="middle" fill="#71717a" font-size="8">X-RateLimit-Remaining: N</text>
+
+                <!-- Reject -->
+                <rect x="600" y="155" width="155" height="52" rx="6" fill="#1c1c28" stroke="#ef4444" stroke-width="1.5"/>
+                <text x="677" y="176" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">REJECT 429</text>
+                <text x="677" y="191" text-anchor="middle" fill="#71717a" font-size="8">Retry-After: {reset_seconds}</text>
+                <text x="677" y="201" text-anchor="middle" fill="#71717a" font-size="8">X-RateLimit-Reset: {epoch}</text>
+
+                <!-- Token bucket inset -->
+                <rect x="10" y="195" width="340" height="82" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1"/>
+                <text x="180" y="213" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">Token Bucket (reference) &mdash; used for burst allowance</text>
+                <!-- bucket -->
+                <rect x="20" y="220" width="38" height="50" rx="3" fill="#1c1c28" stroke="#4a9eff"/>
+                <rect x="20" y="248" width="38" height="22" rx="2" fill="#4a9eff" opacity="0.5"/>
+                <text x="39" y="280" text-anchor="middle" fill="#71717a" font-size="7">full</text>
+                <rect x="72" y="235" width="38" height="35" rx="3" fill="#1c1c28" stroke="#4a9eff"/>
+                <rect x="72" y="252" width="38" height="18" rx="2" fill="#4a9eff" opacity="0.5"/>
+                <text x="91" y="280" text-anchor="middle" fill="#71717a" font-size="7">after 3 req</text>
+                <rect x="124" y="248" width="38" height="22" rx="3" fill="#1c1c28" stroke="#4a9eff"/>
+                <rect x="124" y="259" width="38" height="11" rx="2" fill="#4a9eff" opacity="0.5"/>
+                <text x="143" y="280" text-anchor="middle" fill="#71717a" font-size="7">after 6 req</text>
+                <rect x="176" y="258" width="38" height="12" rx="3" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="195" y="280" text-anchor="middle" fill="#71717a" font-size="7">empty &rarr; 429</text>
+                <text x="240" y="240" fill="#71717a" font-size="8">refill rate</text>
+                <text x="240" y="252" fill="#00d4aa" font-size="8">tokens/sec</text>
+                <text x="240" y="264" fill="#71717a" font-size="8">burst = bucket</text>
+                <text x="240" y="276" fill="#71717a" font-size="8">capacity</text>
+                <line x1="230" y1="247" x2="220" y2="247" stroke="#00d4aa" stroke-width="1" marker-end="url(#rl-arr)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Request flow through Kong rate limiter: Kong calls a Redis Lua script atomically to update the sliding window counter and receive the allow/reject decision; the token bucket inset illustrates burst behaviour when the bucket fills between requests</div>
+          </div>
+
+          <h2 id="algorithms">Algorithm Comparison</h2>
+          <p>Four algorithms cover the vast majority of production rate-limiting use cases. The choice is not primarily about accuracy &mdash; all four can be made accurate enough &mdash; but about burst behaviour and operational cost.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Accuracy</th>
+                <th>Burst handling</th>
+                <th>Redis cost</th>
+                <th>SAMA suitability</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Fixed window</strong></td>
+                <td>Low &mdash; up to 2&times; burst at window boundary</td>
+                <td>Allows 2&times; limit in burst at reset boundary (e.g. 200 req in 2 s when limit is 100/min)</td>
+                <td>Single INCR + EXPIRE per request; lowest cost</td>
+                <td>Unsuitable for payment initiation APIs &mdash; SAMA expects consistent throttling</td>
+              </tr>
+              <tr>
+                <td><strong>Sliding window</strong></td>
+                <td>High &mdash; consistent at all points in the window</td>
+                <td>No boundary burst; rate is smoothly enforced</td>
+                <td>ZADD + ZREMRANGEBYSCORE + ZCARD per request; moderate cost</td>
+                <td>Preferred for PIS and AIS APIs; consistent with SAMA quota audit expectations</td>
+              </tr>
+              <tr>
+                <td><strong>Token bucket</strong></td>
+                <td>High for steady state; allows burst up to bucket capacity</td>
+                <td>Intentional burst support: bucket fills during idle periods and drains under load</td>
+                <td>Two HSET operations + GET per request; moderate cost</td>
+                <td>Suitable for AIS read APIs where burst is expected; not for PIS without burst cap</td>
+              </tr>
+              <tr>
+                <td><strong>Leaky bucket</strong></td>
+                <td>High for egress smoothing; doesn&rsquo;t count inbound rate</td>
+                <td>Queues excess requests; smooths egress rate regardless of inbound spikes</td>
+                <td>Queue data structure in Redis; highest cost; requires timeout management</td>
+                <td>Useful for smoothing outbound calls to core banking; rarely correct for inbound API rate limiting</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>The practical recommendation for a regulated bank running SAMA Open Banking APIs: <strong>sliding window for payment initiation (PIS) and account information (AIS) APIs</strong>, <strong>token bucket for internal BFF-to-gateway APIs</strong> where developers expect burst tolerance, and <strong>fixed window only for non-regulated internal monitoring endpoints</strong> where accuracy does not matter.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Use sliding window for financial APIs</div>
+            <p>Fixed window rate limiting is cheap but has a well-known boundary burst vulnerability: a consumer can send 100 requests in the last second of window N and 100 requests in the first second of window N+1, effectively sending 200 requests in two seconds against a 100/minute limit. For PIS APIs where each request may initiate a payment, this doubles the maximum throughput to SARIE or SWIFT in a burst, potentially causing downstream queue saturation. Sliding window eliminates this by counting requests over a true rolling window: the consumer sees exactly 100 allowed requests per 60-second period, regardless of when in the period they fall.</p>
+          </div>
+
+          <h2 id="redis-implementation">Redis-Backed Distributed Counters</h2>
+          <p>A Redis-backed sliding window counter uses a sorted set where each member is a unique request ID (UUID or timestamp with nanosecond precision to avoid collisions) and the score is the Unix timestamp in milliseconds. To count requests in the current window, remove all members older than <code>now - window_ms</code> and count the remaining members. The entire sequence must be atomic to avoid race conditions between the ZREMRANGEBYSCORE (clean) and ZCARD (count) operations.</p>
+          <p>Atomicity is achieved through a Redis <strong>Lua script</strong> executed with <code>EVAL</code> or <code>EVALSHA</code>. Lua scripts execute as a single Redis command and cannot be interrupted. Kong&rsquo;s rate-limiting-advanced plugin implements this pattern natively when <code>strategy: redis</code> is configured; the script below is the equivalent for direct Redis clients or custom gateway integrations.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>sliding_window_ratelimit.lua</span><span class="code-block__lang">lua</span></div>
+<pre><code><span class="tok-c">-- KEYS[1]: rate limit key, e.g. "rl:pis:{jwt_sub}:60000"</span>
+<span class="tok-c">-- ARGV[1]: current timestamp in milliseconds</span>
+<span class="tok-c">-- ARGV[2]: window size in milliseconds (e.g. 60000 for 1 minute)</span>
+<span class="tok-c">-- ARGV[3]: request limit (e.g. 100)</span>
+<span class="tok-c">-- ARGV[4]: unique request ID (UUID)</span>
+<span class="tok-c">-- Returns: {allowed (0/1), current_count, ttl_ms}</span>
+
+<span class="tok-k">local</span> key        = KEYS[<span class="tok-n">1</span>]
+<span class="tok-k">local</span> now        = tonumber(ARGV[<span class="tok-n">1</span>])
+<span class="tok-k">local</span> window_ms  = tonumber(ARGV[<span class="tok-n">2</span>])
+<span class="tok-k">local</span> limit      = tonumber(ARGV[<span class="tok-n">3</span>])
+<span class="tok-k">local</span> req_id     = ARGV[<span class="tok-n">4</span>]
+<span class="tok-k">local</span> cutoff     = now - window_ms
+
+<span class="tok-c">-- Remove expired entries (older than the window)</span>
+redis.call(<span class="tok-s">'ZREMRANGEBYSCORE'</span>, key, <span class="tok-s">'-inf'</span>, cutoff)
+
+<span class="tok-c">-- Count remaining entries in the window</span>
+<span class="tok-k">local</span> count = redis.call(<span class="tok-s">'ZCARD'</span>, key)
+
+<span class="tok-k">if</span> count &lt; limit <span class="tok-k">then</span>
+  <span class="tok-c">-- Add this request to the window</span>
+  redis.call(<span class="tok-s">'ZADD'</span>, key, now, req_id)
+  <span class="tok-c">-- Set key TTL to window duration (auto-cleanup)</span>
+  redis.call(<span class="tok-s">'PEXPIRE'</span>, key, window_ms)
+  <span class="tok-k">return</span> {<span class="tok-n">1</span>, count + <span class="tok-n">1</span>, window_ms}   <span class="tok-c">-- allowed</span>
+<span class="tok-k">else</span>
+  <span class="tok-c">-- Get TTL to inform Retry-After header</span>
+  <span class="tok-k">local</span> oldest = redis.call(<span class="tok-s">'ZRANGE'</span>, key, <span class="tok-n">0</span>, <span class="tok-n">0</span>, <span class="tok-s">'WITHSCORES'</span>)
+  <span class="tok-k">local</span> reset_in = window_ms - (now - tonumber(oldest[<span class="tok-n">2</span>]))
+  <span class="tok-k">return</span> {<span class="tok-n">0</span>, count, reset_in}          <span class="tok-c">-- rejected, ms until oldest entry expires</span>
+<span class="tok-k">end</span>
+</code></pre>
+          </div>
+
+          <p>Redis Cluster key sharding for rate limiting requires careful key design. The default Redis Cluster shards by hash of the entire key, which means two rate limit keys for the same consumer (<code>rl:{sub}:pis</code> and <code>rl:{sub}:ais</code>) will land on different slots and cannot be accessed in the same Lua transaction. Use <strong>hash tags</strong> to force co-location: <code>rl:{sub}:pis</code> and <code>rl:{sub}:ais</code> both hash on <code>sub</code>, ensuring all rate limit keys for one consumer land on the same slot and can be atomically evaluated together if a multi-key script is needed.</p>
+
+          <h2 id="kong-config">Kong Rate Limiting Configuration</h2>
+          <p>Kong&rsquo;s <code>rate-limiting-advanced</code> plugin (Kong Enterprise) provides sliding window counting in Redis out of the box, eliminating the need to implement the Lua script above directly. The key configuration decisions are: which <code>limit_by</code> identity to use, which <code>window_type</code> (sliding vs fixed), which <code>strategy</code> (redis vs local vs cluster), and how to structure per-consumer and per-route policies.</p>
+          <p>Policy hierarchy in Kong: a plugin configured at the <strong>route</strong> level overrides one at the <strong>service</strong> level, which overrides one at the <strong>global</strong> level. A consumer-specific plugin configuration overrides route-level. This hierarchy allows you to set a base rate limit on the service, tighten it on specific high-sensitivity routes (payment initiation), and give premium consumer groups a higher quota.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kong-rate-limiting-plugin.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Base rate limit on the payment initiation route (PIS)</span>
+<span class="tok-k">name</span>: <span class="tok-s">rate-limiting-advanced</span>
+<span class="tok-k">route</span>: <span class="tok-s">pis-initiate-payment</span>
+<span class="tok-k">config</span>:
+  <span class="tok-k">limit</span>: [<span class="tok-n">100</span>]          <span class="tok-c"># 100 requests per window</span>
+  <span class="tok-k">window_size</span>: [<span class="tok-n">60</span>]     <span class="tok-c"># 60-second window (1 minute)</span>
+  <span class="tok-k">window_type</span>: <span class="tok-s">sliding</span>
+  <span class="tok-k">limit_by</span>: <span class="tok-s">consumer</span>   <span class="tok-c"># JWT sub resolved to Kong consumer via JWT plugin</span>
+  <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>       <span class="tok-c"># cluster-wide distributed counter</span>
+  <span class="tok-k">redis</span>:
+    <span class="tok-k">cluster_addresses</span>:
+      - <span class="tok-s">"redis-0.redis-headless.infra.svc:6379"</span>
+      - <span class="tok-s">"redis-1.redis-headless.infra.svc:6379"</span>
+      - <span class="tok-s">"redis-2.redis-headless.infra.svc:6379"</span>
+    <span class="tok-k">database</span>: <span class="tok-n">1</span>
+    <span class="tok-k">timeout</span>: <span class="tok-n">2000</span>        <span class="tok-c"># 2 s Redis timeout; fall back to local on timeout</span>
+    <span class="tok-k">ssl</span>: <span class="tok-n">true</span>
+    <span class="tok-k">ssl_verify</span>: <span class="tok-n">true</span>
+  <span class="tok-k">hide_client_headers</span>: <span class="tok-n">false</span>
+  <span class="tok-c"># Headers injected on every response:</span>
+  <span class="tok-c"># X-RateLimit-Limit-60: 100</span>
+  <span class="tok-c"># X-RateLimit-Remaining-60: N</span>
+  <span class="tok-c"># X-RateLimit-Reset-60: {epoch}</span>
+  <span class="tok-c"># Retry-After: {seconds} (on 429 only)</span>
+  <span class="tok-k">error_code</span>: <span class="tok-n">429</span>
+  <span class="tok-k">error_message</span>: <span class="tok-s">"Rate limit exceeded. See Retry-After header."</span>
+
+<span class="tok-c">---</span>
+
+<span class="tok-c"># Account information route (AIS) — separate quota class per SAMA</span>
+<span class="tok-k">name</span>: <span class="tok-s">rate-limiting-advanced</span>
+<span class="tok-k">route</span>: <span class="tok-s">ais-account-info</span>
+<span class="tok-k">config</span>:
+  <span class="tok-k">limit</span>: [<span class="tok-n">60</span>, <span class="tok-n">500</span>]      <span class="tok-c"># 60/min AND 500/hour — multi-window enforcement</span>
+  <span class="tok-k">window_size</span>: [<span class="tok-n">60</span>, <span class="tok-n">3600</span>]
+  <span class="tok-k">window_type</span>: <span class="tok-s">sliding</span>
+  <span class="tok-k">limit_by</span>: <span class="tok-s">consumer</span>
+  <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>
+
+<span class="tok-c">---</span>
+
+<span class="tok-c"># Premium PSP consumer group override — higher quota approved by SAMA sandbox</span>
+<span class="tok-k">name</span>: <span class="tok-s">rate-limiting-advanced</span>
+<span class="tok-k">route</span>: <span class="tok-s">pis-initiate-payment</span>
+<span class="tok-k">consumer_group</span>: <span class="tok-s">premium-psp</span>
+<span class="tok-k">config</span>:
+  <span class="tok-k">limit</span>: [<span class="tok-n">300</span>]
+  <span class="tok-k">window_size</span>: [<span class="tok-n">60</span>]
+  <span class="tok-k">window_type</span>: <span class="tok-s">sliding</span>
+  <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>
+</code></pre>
+          </div>
+
+          <h2 id="apic-config">IBM API Connect Rate Plans</h2>
+          <p>IBM API Connect enforces rate limiting through <strong>Rate Plans</strong> attached to Products. A Product groups one or more APIs and defines the terms of access (who can subscribe, at what quota). Rate plans set per-plan limits that apply to all consumers subscribed to that plan, with per-application and per-operation overrides possible at the plan level.</p>
+          <p>API Connect&rsquo;s rate plan model maps naturally to SAMA Open Banking&rsquo;s subscription tier model: a PSP subscribes to the &ldquo;Open Banking Standard&rdquo; plan, which enforces the SAMA-mandated quotas. Premium PSPs with a separate agreement can be subscribed to a &ldquo;Premium PSP&rdquo; plan with higher limits, without any code change to the API itself.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>open-banking-product.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">product</span>: <span class="tok-s">1.0.0</span>
+<span class="tok-k">info</span>:
+  <span class="tok-k">title</span>: <span class="tok-s">SAIB Open Banking APIs</span>
+  <span class="tok-k">name</span>: <span class="tok-s">saib-open-banking</span>
+  <span class="tok-k">version</span>: <span class="tok-s">1.3.0</span>
+
+<span class="tok-k">apis</span>:
+  <span class="tok-k">payment-initiation</span>:
+    <span class="tok-k">$ref</span>: <span class="tok-s">"./apis/pis-api.yaml"</span>
+  <span class="tok-k">account-information</span>:
+    <span class="tok-k">$ref</span>: <span class="tok-s">"./apis/ais-api.yaml"</span>
+
+<span class="tok-k">plans</span>:
+  <span class="tok-k">open-banking-standard</span>:
+    <span class="tok-k">title</span>: <span class="tok-s">Open Banking Standard</span>
+    <span class="tok-k">description</span>: <span class="tok-s">SAMA-mandated quotas for licensed PSPs and TPs</span>
+    <span class="tok-k">approval</span>: <span class="tok-n">true</span>    <span class="tok-c"># subscriptions require manual approval</span>
+    <span class="tok-k">rate-limits</span>:
+      <span class="tok-k">default</span>:
+        <span class="tok-k">value</span>: <span class="tok-n">100</span>
+        <span class="tok-k">unit</span>: <span class="tok-s">minute</span>
+        <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span>   <span class="tok-c"># reject at limit; no grace</span>
+    <span class="tok-k">burst-limits</span>:
+      <span class="tok-k">default</span>:
+        <span class="tok-k">value</span>: <span class="tok-n">20</span>
+        <span class="tok-k">unit</span>: <span class="tok-s">second</span>
+    <span class="tok-k">apis</span>:
+      <span class="tok-k">payment-initiation</span>:
+        <span class="tok-k">rate-limits</span>:
+          <span class="tok-k">pis-initiate</span>:
+            <span class="tok-k">value</span>: <span class="tok-n">100</span>
+            <span class="tok-k">unit</span>: <span class="tok-s">minute</span>    <span class="tok-c"># SAMA PIS quota: 100 req/min per PSP</span>
+            <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span>
+        <span class="tok-k">operations</span>:
+          <span class="tok-k">createPayment</span>:
+            <span class="tok-k">rate-limits</span>:
+              <span class="tok-k">per-operation</span>:
+                <span class="tok-k">value</span>: <span class="tok-n">50</span>
+                <span class="tok-k">unit</span>: <span class="tok-s">minute</span>   <span class="tok-c"># tighter limit on the mutation endpoint</span>
+      <span class="tok-k">account-information</span>:
+        <span class="tok-k">rate-limits</span>:
+          <span class="tok-k">ais-query</span>:
+            <span class="tok-k">value</span>: <span class="tok-n">60</span>
+            <span class="tok-k">unit</span>: <span class="tok-s">minute</span>    <span class="tok-c"># SAMA AIS quota: 60 req/min per app</span>
+            <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span>
+
+  <span class="tok-k">premium-psp</span>:
+    <span class="tok-k">title</span>: <span class="tok-s">Premium PSP</span>
+    <span class="tok-k">description</span>: <span class="tok-s">Higher quotas for PSPs with separate SAMA approval</span>
+    <span class="tok-k">approval</span>: <span class="tok-n">true</span>
+    <span class="tok-k">rate-limits</span>:
+      <span class="tok-k">default</span>:
+        <span class="tok-k">value</span>: <span class="tok-n">300</span>
+        <span class="tok-k">unit</span>: <span class="tok-s">minute</span>
+        <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span>
+</code></pre>
+          </div>
+
+          <h2 id="sama-context">SAMA Regulatory Context</h2>
+          <p>SAMA&rsquo;s Open Banking Framework defines quota classes per API type and per participant tier. These are not suggested defaults &mdash; they are regulatory limits that licensed PSPs and Third-Party Providers (TPPs) are bound by, and that the bank must enforce as the Account Servicing Payment Service Provider (ASPSP).</p>
+          <p>The applicable quotas as of the current SAMA Open Banking Technical Standards (v3.0.2):</p>
+          <ul>
+            <li><strong>Payment Initiation Service (PIS) APIs</strong> &mdash; 100 requests per minute per PSP. &ldquo;Per PSP&rdquo; means per PSP <em>organisation</em>, identified by the <code>x-fapi-financial-id</code> header resolved to a SAMA-registered PSP identifier &mdash; not per application or per end-user session. A PSP with 10 applications gets 100 req/min total, not 1 000.</li>
+            <li><strong>Account Information Service (AIS) APIs</strong> &mdash; 60 requests per minute per TPP-application combination. AIS quotas are per-application (identified by the <code>client_id</code> in the OAuth token) rather than per-organisation, because different AIS applications serve different customer consent contexts.</li>
+            <li><strong>Confirmation of Funds (CoF)</strong> &mdash; not separately quota-controlled in the current SAMA standard; treated as PIS quota class.</li>
+            <li><strong>SAMA sandbox environment</strong> &mdash; quotas are relaxed: 500 req/min for PIS, 300 req/min for AIS, with no hard-limit enforcement (soft-limit only; 429 responses are informational and requests are still processed). This is intentional to allow PSPs to load-test integrations without hitting production limits. <strong>Do not carry sandbox quota values into the production configuration.</strong></li>
+          </ul>
+          <p>Audit requirements: every 429 response on a SAMA Open Banking API must be logged with the PSP identifier, the API endpoint, the count at rejection time, and the window reset timestamp. SAMA examination teams have requested 90-day retention of throttle event logs in previous reviews. Configure Kong&rsquo;s file-log or http-log plugin to emit these events to the SIEM separately from the standard access log.</p>
+
+          <h2 id="adaptive">Adaptive Rate Limiting</h2>
+          <p>Static rate limits protect the gateway but not necessarily the backend. A backend service with a p99 latency of 800 ms and a rate limit of 100 req/min has a maximum concurrent request depth of approximately 1.3 &mdash; under any burst, the backend will accumulate queued requests that exceed its processing capacity. Rate limiting must be combined with concurrency limits and latency-based backpressure to protect the full request path.</p>
+          <ul>
+            <li><strong>Concurrency limits (semaphore).</strong> Kong&rsquo;s <code>response-ratelimiting</code> plugin can count concurrently active requests (requests initiated but not yet responded to) in addition to request rate. For synchronous payment execution backends, a concurrency limit of 50 is a practical ceiling that prevents the backend thread pool from exhausting while the rate limiter still allows traffic.</li>
+            <li><strong>Latency-based backpressure.</strong> When the upstream service&rsquo;s p99 response time exceeds a threshold (e.g. 2&times; the SLO target), the rate limiter should reduce the allowed rate by a factor. This is not native to Kong; implement it as a Lua plugin that reads the upstream latency metric from Prometheus (via an API call) and dynamically adjusts the rate limit key&rsquo;s effective ceiling.</li>
+            <li><strong>Priority lanes for RTGS vs SWIFT.</strong> Not all payment traffic has equal urgency. SARIE RTGS payments (same-day settlement) have a higher regulatory priority than SWIFT correspondent payments. Implement separate rate limit keys and Redis namespaces per payment rail; in a capacity constraint scenario, apply stricter limits to the lower-priority SWIFT lane first.</li>
+            <li><strong>Circuit breaker integration.</strong> When the circuit breaker opens on the payments backend (Kong&rsquo;s upstream health check detects consecutive failures), reduce the rate limit to near-zero immediately &mdash; not to let more traffic hammer a degraded backend. A half-open circuit that still allows 100 req/min will fail those 100 requests and potentially worsen the recovery time.</li>
+          </ul>
+
+          <h2 id="bypass-prevention">Rate Limit Bypass Prevention</h2>
+          <p>Rate limiting is only as strong as the identity it counts against. The most common bypass patterns in banking API contexts all exploit identity ambiguity &mdash; the rate limiter is counting against something other than the true consumer.</p>
+          <ul>
+            <li><strong>IP rotation.</strong> A consumer uses a pool of IP addresses (NAT gateway rotation, residential proxies) to spread requests across multiple IP-based rate limit keys. Mitigation: never rate-limit by source IP alone for authenticated APIs. Always rate-limit by authenticated principal (JWT <code>sub</code> or <code>client_id</code>). IP-based limits are a supplementary layer to prevent unauthenticated abuse, not the primary control.</li>
+            <li><strong>API key rotation.</strong> A consumer with multiple API keys rotates through them to multiply their effective quota. Mitigation: in APIC, rate plans apply at the subscription level, not the credential level. A PSP with 5 API key credentials on one subscription still hits the plan quota shared across all credentials.</li>
+            <li><strong>JWT <code>sub</code> as canonical identity.</strong> For OAuth 2.0 flows where the consumer can rotate <code>client_id</code> by registering multiple applications, rate-limit on <code>sub</code> (the end-user identity from the IdP) combined with <code>client_id</code>, not <code>client_id</code> alone. For PIS APIs, SAMA&rsquo;s PSP identifier (<code>x-fapi-financial-id</code> header) is the authoritative identity for quota enforcement; validate this header against the SAMA PSP registry on every request.</li>
+            <li><strong>Distributed shadow counters.</strong> For high-value API endpoints, implement a secondary rate counter in the application layer (not just the gateway) using the same Redis Lua pattern. This catches bypass attempts that route around the gateway through internal service-to-service paths &mdash; a known attack vector when internal APIs are not properly protected by NetworkPolicy.</li>
+          </ul>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never rate-limit by IP alone in bank APIs &mdash; shared NAT</div>
+            <p>Corporate banking clients and SAMA-licensed TPPs almost always connect through a NAT gateway or a shared enterprise internet egress. A single IP address may represent thousands of legitimate users from the same organisation. Rate-limiting by IP on a shared NAT will throttle an entire corporate client when any one of their sessions is busy, without reducing load from the actual problem consumer. Use the authenticated JWT <code>sub</code> or SAMA PSP identifier as the rate limit key for all authenticated endpoints; reserve IP-based limits for pre-authentication DDoS mitigation only.</p>
+          </div>
+
+          <h2 id="pitfalls">Common Pitfalls</h2>
+          <ul>
+            <li><strong>Sliding window cost at high cardinality.</strong> A sorted set per consumer per API class per window accumulates quickly. At 50 000 active consumers, each with 3 API classes and a 60-second window holding up to 100 entries, the Redis memory footprint is approximately 50 000 &times; 3 &times; 100 &times; ~80 bytes = 1.2 GB. This is manageable but must be planned; unexpected cardinality growth (e.g. per-session rather than per-consumer rate limit keys) can exhaust Redis memory quickly.</li>
+            <li><strong>Redis split-brain behaviour.</strong> In a Redis Cluster, a network partition can cause nodes to accept writes independently. Rate limit keys on both sides of the partition accumulate counts separately; when the partition heals, the merged count may be below the actual request count, temporarily allowing more traffic than configured. This is a known CAP trade-off of Redis Cluster in AP mode. For strictly regulated limits (PIS quotas), evaluate Redis Sentinel with a primary-only write policy to sacrifice availability for consistency during partitions.</li>
+            <li><strong>Retry storms amplifying load.</strong> When rate limiting returns 429, consumers retry. If retry is not governed by an exponential backoff with jitter, the retry burst hits at the rate limit reset boundary, exceeding the limit again immediately. The <code>Retry-After</code> header tells the consumer when to retry; the consumer must respect it. Include retry policy guidance in your API documentation and reject consumers at the gateway whose User-Agent identifies known misconfigured retry clients.</li>
+          </ul>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Redis key expiry gaps can allow over-quota traffic</div>
+            <p>Redis key expiry is not guaranteed to fire at exactly the configured TTL &mdash; it fires when the key is next accessed, or during the background expiry cycle. Under high load, expired rate limit keys may persist briefly past their expiry time, and the ZREMRANGEBYSCORE cleanup inside the Lua script may have a few milliseconds of lag. In practice this gap is under 50 ms and is not operationally significant. Where it does matter: if you set a rate limit of 100/min and the consumer hits exactly 100 requests in the last 10 ms of a window, the next window&rsquo;s first request may incorrectly see a count of 101 before cleanup runs. Accept this as a design trade-off of the sliding window approach; it under-protects by at most one request per window boundary.</p>
+          </div>
+
+          <h2 id="checklist">Production Checklist</h2>
+
+          <h3>Steps to roll out rate limiting without breaking existing consumers</h3>
+          <ol class="step-list">
+            <li><strong>Measure before you limit.</strong> Deploy Kong with logging-only mode first (set rate limit to an unrealistically high value like 100 000 req/min). Collect actual per-consumer request rates from Kong&rsquo;s access log for 2&ndash;4 weeks. The p99 actual rate per consumer across the collection period becomes your baseline for choosing the production limit.</li>
+            <li><strong>Set limits above the measured baseline.</strong> Start at 2&times; the p99 observed rate for non-SAMA APIs, and at the SAMA-mandated limit for regulated APIs. This ensures the limit does not break any currently working consumer while still providing protection against runaway or malicious traffic.</li>
+            <li><strong>Enable response headers.</strong> Set <code>hide_client_headers: false</code> and ensure consumers receive <code>X-RateLimit-Remaining</code> and <code>X-RateLimit-Reset</code> headers on every response. Give consumers at least 4 weeks to instrument their clients to read and respect these headers before enforcing hard limits.</li>
+            <li><strong>Alert on 429 rate before enforcing.</strong> Create a Grafana alert on Kong&rsquo;s 429 response rate per consumer. Notify affected consumer teams at 10% of their limit, then 50%, then enforce at 100%. This gives teams time to adapt their retry logic before they experience hard throttling.</li>
+            <li><strong>Switch to Redis sliding window.</strong> Migrate from <code>strategy: local</code> (or no rate limiting) to <code>strategy: redis</code> with <code>window_type: sliding</code> in a maintenance window, with Redis Cluster deployed and tested. Validate that the cluster-wide limit is equivalent to the per-node limit you measured during baseline collection.</li>
+            <li><strong>Enforce hard limits for SAMA APIs.</strong> Only after steps 1&ndash;5 are complete, set <code>hard-limit: true</code> for PIS and AIS routes. Inform all registered PSPs and TPPs via the SAMA Open Banking developer portal before the enforcement date.</li>
+            <li><strong>Establish a quota breach review process.</strong> After hard limits are in production, any PSP hitting their limit repeatedly should trigger a review &mdash; are they misconfigured, have they grown beyond their plan, or are they attempting bypass? Build a Grafana dashboard that shows per-PSP 429 frequency over time and route it to the API governance team for monthly review.</li>
+          </ol>
+
+          <h3>Production checklist</h3>
+          <ol>
+            <li>Sliding window algorithm configured for all SAMA PIS and AIS routes; fixed window only for non-regulated endpoints.</li>
+            <li>Redis Cluster deployed with at least 3 nodes; TLS enabled on all cluster connections from Kong.</li>
+            <li>Rate limit identity uses JWT <code>sub</code> or SAMA <code>x-fapi-financial-id</code>; IP-based limits applied as supplementary DDoS layer only.</li>
+            <li>Multi-window enforcement for AIS: 60/min AND 500/hour configured as separate window entries in the rate-limiting plugin.</li>
+            <li>APIC rate plans reflect SAMA quotas: 100/min for PIS, 60/min for AIS; <code>hard-limit: true</code> on both.</li>
+            <li>SAMA sandbox environment configured with soft limits only; hard limits never carried over to production config.</li>
+            <li><code>Retry-After</code> and <code>X-RateLimit-Reset</code> headers present on every 429 response.</li>
+            <li>Throttle event log (PSP ID, endpoint, count, timestamp) retained for 90 days in SIEM per SAMA audit requirement.</li>
+            <li>Concurrency limits set on payment execution backend; latency-based backpressure evaluated for high-volume routes.</li>
+            <li>Redis Cluster key design uses hash tags to co-locate all rate limit keys for a single consumer on one slot.</li>
+            <li>Retry storm mitigation documented in consumer API guide; per-consumer 429 rate alerting configured in Grafana.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="graphql-federation.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">GraphQL Federation</div>
+            </a>
+            <a href="../api-gateway.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">API Gateway &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

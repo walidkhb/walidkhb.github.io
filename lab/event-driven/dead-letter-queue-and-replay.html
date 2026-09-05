@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dead Letter Queue Design &amp; Event Replay Patterns &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Dead letter queue topology patterns for Kafka and IBM MQ, poison message classification, event replay with idempotency guarantees, and DLQ observability &mdash; production patterns for regulated financial messaging.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Dead Letter Queue Design &amp; Event Replay Patterns &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Kafka and IBM MQ DLQ topology, poison message classification, event replay patterns, and ISO 20022 payment failure handling.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/dead-letter-queue-and-replay.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dead Letter Queue Design &amp; Event Replay Patterns &mdash; Lab">
+  <meta name="twitter:description" content="Kafka and IBM MQ DLQ design, poison message classification, event replay with idempotency, and payment DLQ compliance.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/dead-letter-queue-and-replay.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Event-Driven: Dead Letter Queue Design & Event Replay Patterns",
+    "description": "Dead letter queue topology patterns for Kafka and IBM MQ, poison message classification, event replay with idempotency guarantees, and DLQ observability — production patterns for regulated financial messaging.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/event-driven/dead-letter-queue-and-replay.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Event-Driven Architecture &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/event-driven.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Dead Letter Queue &amp; Replay</div>
+          <span class="overline">Lab Article</span>
+          <h1>Dead Letter Queue Design &amp; Event Replay Patterns</h1>
+          <p class="lead">The poison message problem, DLQ topology for Kafka 3.7 and IBM MQ 9.3, message failure classification, replay with idempotency guarantees, and the ISO 20022 payment failure handling that regulators expect &mdash; grounded in production integration estates at a regulated KSA bank.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#dlq-patterns">DLQ topology patterns</a></li>
+            <li><a href="#kafka-dlq">Kafka DLQ implementation</a></li>
+            <li><a href="#mq-dlq">IBM MQ dead letter queue</a></li>
+            <li><a href="#classification">Poison message classification</a></li>
+            <li><a href="#replay">Event replay patterns</a></li>
+            <li><a href="#monitoring">DLQ observability</a></li>
+            <li><a href="#iso20022">ISO 20022 failure patterns</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Kafka 3.7 / IBM MQ 9.3 / Strimzi / Spring Boot 3.3</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>A message that a consumer cannot process is one of the most operationally dangerous states in a distributed system &mdash; not because the failure is catastrophic in itself, but because naive handling of it <em>makes</em> it catastrophic. The default behaviour for most messaging consumers without explicit failure handling is to retry. Retry again. Retry forever. The consumer stalls on the bad message; consumer lag grows; the downstream system that depended on this topic falls behind; eventually the lag exceeds the retention window and unconsumed messages are lost. One malformed payment message has blocked a queue that ordinarily clears 50,000 transactions per hour.</p>
+          <p>This is the poison message problem. The term comes from IBM MQ, where a message that causes a consumer to fail repeatedly is literally poisonous &mdash; it kills consumer throughput without any indication to the monitoring layer that a structural failure has occurred. The dead letter queue (DLQ) is the mechanism that removes the poison from the processing pipeline before it kills throughput, preserves the message for analysis and replay, and notifies the operations team that intervention is required.</p>
+          <p>The critical framing: <strong>the DLQ is a safety valve, not a solution</strong>. A message arriving in the DLQ is a symptom. The root cause is either a bug in the consumer, a schema mismatch between producer and consumer, or a permanent failure in a downstream dependency. The DLQ gives you time to diagnose and fix that root cause without losing the message or blocking the pipeline. It does not fix anything on its own.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">DLQ is a holding pen, not an inbox</div>
+            <p>Every message that lands in a DLQ must be actively claimed by a handler process &mdash; a DLQ consumer that classifies, alerts, and either replays or archives the message. A DLQ with no consumer is worse than no DLQ: you know messages are failing, but you are not acting on them, and the message retention clock is ticking. Wire the DLQ consumer before the first message arrives in it.</p>
+          </div>
+
+          <h2 id="dlq-patterns">DLQ Topology Patterns</h2>
+          <p>Two main DLQ topologies exist for Kafka deployments. Choosing between them is a trade-off between operational simplicity and observability granularity.</p>
+          <p><strong>Per-topic DLQ</strong>: each source topic has a corresponding dead letter topic, typically named with a <code>-dlt</code> suffix &mdash; so <code>payments.events.v1</code> has a dead letter topic <code>payments.events.v1-dlt</code>. This is the pattern Spring Kafka&rsquo;s <code>@RetryableTopic</code> implements by convention. Advantages: trivial to determine which source topic a dead-lettered message came from; per-topic DLQ depth is a direct proxy for the health of the corresponding consumer. Disadvantage: topic count grows proportionally with source topic count, which matters in large Kafka estates.</p>
+          <p><strong>Shared DLQ</strong>: all consumer groups route failed messages to a single <code>dead.letter.queue</code> topic, with metadata headers carrying the original topic, partition, offset, and consumer group. Advantages: centralised observability; one DLQ handler handles all failure types. Disadvantage: the DLQ handler must deserialise heterogeneous message types &mdash; which requires a schema registry and careful handling of schema version differences between message types.</p>
+          <p>For a regulated financial platform the recommendation is per-topic DLQ. The operational clarity of knowing that a growing <code>payments.pacs008.v1-dlt</code> depth means the pacs.008 consumer is in trouble &mdash; not some other consumer &mdash; outweighs the topic count overhead. In IBM MQ terminology, the DLQ corresponds to the queue manager&rsquo;s <code>DEADQ</code> attribute, which is a single shared dead letter queue by design; MQ does not support per-queue DLQs natively, so the classification burden falls on the DLQ handler.</p>
+
+          <table>
+            <thead>
+              <tr><th>Dimension</th><th>Kafka DLQ (<code>-dlt</code>)</th><th>MQ Dead Letter Queue (DEADQ)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Semantics</td><td>Dead letter is a regular Kafka topic; partitioned, replicated, log-retained</td><td>MQ local queue; single-depth FIFO; no partitioning</td></tr>
+              <tr><td>Config mechanism</td><td><code>@RetryableTopic</code> annotation or <code>DeadLetterPublishingRecoverer</code> bean</td><td>DEADQ attribute on the queue manager via <code>DEFINE QMGR</code> or <code>ALTER QMGR</code></td></tr>
+              <tr><td>Retention</td><td>Configurable log retention (hours or bytes) per DLT topic</td><td>Message expiry (<code>EXPIRY</code> attribute on the DLQ); default unlimited</td></tr>
+              <tr><td>Replay mechanism</td><td>DLQ consumer reads, fixes, republishes to source topic; or offset reset on source topic</td><td>AMQMDLQ handler republishes to original destination; or manual MQ Explorer move</td></tr>
+              <tr><td>Monitoring</td><td>Consumer lag on <code>-dlt</code> consumer group via Kafka consumer group offsets; Prometheus <code>kafka_consumer_group_lag</code></td><td>MQ queue depth via <code>ibmmq_queue_depth</code> Prometheus exporter; MQSC <code>DISPLAY QSTATUS</code></td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="kafka-dlq">Kafka DLQ Implementation</h2>
+          <p>Spring Kafka 3.x&rsquo;s <code>@RetryableTopic</code> annotation is the idiomatic way to configure Kafka DLQ behaviour in a Spring Boot application. It wires the retry topic chain, the backoff policy, and the dead letter topic creation automatically when the application starts.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentEventConsumer.java &mdash; @RetryableTopic with DLT</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">package</span> info.saib.payments.consumer;
+
+<span class="tok-k">import</span> org.springframework.kafka.annotation.KafkaListener;
+<span class="tok-k">import</span> org.springframework.kafka.annotation.RetryableTopic;
+<span class="tok-k">import</span> org.springframework.kafka.retrytopic.DltStrategy;
+<span class="tok-k">import</span> org.springframework.kafka.retrytopic.TopicSuffixingStrategy;
+<span class="tok-k">import</span> org.springframework.retry.annotation.Backoff;
+<span class="tok-k">import</span> org.apache.kafka.clients.consumer.ConsumerRecord;
+
+<span class="tok-k">@Component</span>
+<span class="tok-t">public class</span> <span class="tok-n">PaymentEventConsumer</span> {
+
+    <span class="tok-c">// Three attempts total: 1 original + 2 retries</span>
+    <span class="tok-c">// Retry topics: payments.events.v1-retry-0, payments.events.v1-retry-1</span>
+    <span class="tok-c">// Dead letter:  payments.events.v1-dlt</span>
+    <span class="tok-k">@RetryableTopic</span>(
+        attempts         = <span class="tok-s">"3"</span>,
+        backoff          = <span class="tok-k">@Backoff</span>(delay = <span class="tok-n">1000</span>, multiplier = <span class="tok-n">2.0</span>, random = <span class="tok-n">true</span>),
+        autoCreateTopics = <span class="tok-s">"false"</span>,                       <span class="tok-c">// pre-provision topics via Strimzi KafkaTopic CR</span>
+        dltStrategy      = DltStrategy.FAIL_ON_ERROR,     <span class="tok-c">// DLT publish failure is fatal, not silent</span>
+        topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE,
+        kafkaTemplate    = <span class="tok-s">"kafkaTemplate"</span>
+    )
+    <span class="tok-k">@KafkaListener</span>(topics = <span class="tok-s">"payments.events.v1"</span>, groupId = <span class="tok-s">"payments-processor"</span>)
+    <span class="tok-t">public void</span> <span class="tok-n">consume</span>(<span class="tok-n">ConsumerRecord</span>&lt;<span class="tok-n">String</span>, <span class="tok-n">PaymentEvent</span>&gt; record) {
+        paymentProcessingService.process(record.value(), record.headers());
+    }
+
+    <span class="tok-c">// DLT handler: receives messages after all retry attempts are exhausted</span>
+    <span class="tok-k">@DltHandler</span>
+    <span class="tok-t">public void</span> <span class="tok-n">handleDlt</span>(<span class="tok-n">ConsumerRecord</span>&lt;<span class="tok-n">String</span>, <span class="tok-n">PaymentEvent</span>&gt; record,
+                          <span class="tok-k">@Header</span>(<span class="tok-n">KafkaHeaders</span>.EXCEPTION_CAUSE_FQCN) <span class="tok-n">String</span> exceptionClass,
+                          <span class="tok-k">@Header</span>(<span class="tok-n">KafkaHeaders</span>.EXCEPTION_MESSAGE) <span class="tok-n">String</span> exceptionMsg) {
+        dlqHandlerService.classify(record, exceptionClass, exceptionMsg);
+        <span class="tok-c">// classification: schema failure → alert + archive</span>
+        <span class="tok-c">//                 transient downstream → alert + schedule replay</span>
+        <span class="tok-c">//                 business rule violation → alert + manual review queue</span>
+    }
+}</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>application.yaml &mdash; Spring Kafka retry topic configuration</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">spring</span>:
+  <span class="tok-k">kafka</span>:
+    <span class="tok-k">consumer</span>:
+      <span class="tok-k">group-id</span>: <span class="tok-s">payments-processor</span>
+      <span class="tok-k">auto-offset-reset</span>: <span class="tok-s">earliest</span>
+      <span class="tok-k">enable-auto-commit</span>: <span class="tok-n">false</span>   <span class="tok-c"># manual offset commit; commit only on success or DLT publish</span>
+      <span class="tok-k">properties</span>:
+        <span class="tok-k">isolation.level</span>: <span class="tok-s">read_committed</span>
+        <span class="tok-k">max.poll.records</span>: <span class="tok-n">50</span>
+        <span class="tok-k">max.poll.interval.ms</span>: <span class="tok-n">30000</span>   <span class="tok-c"># tight bound — prevents broker treating consumer as dead during slow processing</span>
+    <span class="tok-k">listener</span>:
+      <span class="tok-k">ack-mode</span>: <span class="tok-s">MANUAL_IMMEDIATE</span>
+      <span class="tok-k">missing-topics-fatal</span>: <span class="tok-n">true</span>     <span class="tok-c"># fail fast if DLT topic not pre-provisioned</span>
+
+<span class="tok-c"># Strimzi KafkaTopic CR for DLT (apply separately via GitOps)</span>
+<span class="tok-c"># metadata.name: payments.events.v1-dlt</span>
+<span class="tok-c"># spec.partitions: same as source topic (3)</span>
+<span class="tok-c"># spec.config:</span>
+<span class="tok-c">#   retention.ms: 604800000   # 7 days — must exceed your investigation SLA</span>
+<span class="tok-c">#   cleanup.policy: delete</span></code></pre>
+          </div>
+
+          <p>The DLT consumer group naming convention: use <code>payments-processor-dlt</code> for the DLT consumer, distinct from <code>payments-processor</code> for the source topic. This keeps consumer lag metrics separated and allows alerting on DLT consumer lag independently of source topic lag.</p>
+
+          <h2 id="mq-dlq">IBM MQ Dead Letter Queue</h2>
+          <p>IBM MQ&rsquo;s DLQ is a first-class concept in the queue manager. Every queue manager has a single dead letter queue configured via the <code>DEADQ</code> attribute. Messages are moved to the DLQ by the queue manager itself when they cannot be delivered &mdash; for example, when the destination queue is full, the message has expired, or the message exceeds the maximum message length. Consumer-driven failure (a message the application cannot process) requires the application to explicitly move the message to the DLQ after exceeding its retry threshold.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>AMQMDLQ.conf &mdash; MQ DLQ handler configuration</span><span class="code-block__lang">properties</span></div>
+<pre><code><span class="tok-c"># IBM MQ Dead Letter Queue Handler (AMQMDLQ) configuration</span>
+<span class="tok-c"># Run as: runmqdlq SAIB.DEAD.LETTER.QUEUE SAIBQM1 < AMQMDLQ.conf</span>
+
+<span class="tok-c"># --- Global parameters ---</span>
+<span class="tok-k">INPUTQ</span>(<span class="tok-s">SAIB.DEAD.LETTER.QUEUE</span>)          <span class="tok-c"># DLQ name, must match ALTER QMGR DEADQ()</span>
+<span class="tok-k">INPUTQM</span>(<span class="tok-s">SAIBQM1</span>)                         <span class="tok-c"># queue manager name</span>
+<span class="tok-k">WAIT</span>(<span class="tok-s">YES</span>)                                <span class="tok-c"># wait for new messages; don't exit when queue empty</span>
+<span class="tok-k">RETRYINT</span>(<span class="tok-s">60</span>)                             <span class="tok-c"># retry interval in seconds for action(retry)</span>
+
+<span class="tok-c"># --- Rules (evaluated in order; first match wins) ---</span>
+
+<span class="tok-c"># Rule 1: ISO 20022 payment messages → regulatory hold queue, never auto-delete</span>
+<span class="tok-k">REASON</span>(<span class="tok-s">MQRC_NOT_AUTHORIZED</span>)
+<span class="tok-k">FORMAT</span>(<span class="tok-s">MQSTR</span>)
+<span class="tok-k">APPLNAME</span>(<span class="tok-s">IPS*</span>)
+<span class="tok-k">ACTION</span>(<span class="tok-s">FWD</span>)                              <span class="tok-c"># forward — do not discard</span>
+<span class="tok-k">FWDQ</span>(<span class="tok-s">SAIB.PAYMENT.REGULATORY.HOLD</span>)
+<span class="tok-k">FWDQM</span>(<span class="tok-s">SAIBQM1</span>)
+
+<span class="tok-c"># Rule 2: Queue-full condition — retry up to 5 times before forwarding to ops queue</span>
+<span class="tok-k">REASON</span>(<span class="tok-s">MQRC_Q_FULL</span>)
+<span class="tok-k">RETRY</span>(<span class="tok-s">5</span>)
+<span class="tok-k">ACTION</span>(<span class="tok-s">RETRY</span>)
+
+<span class="tok-c"># Rule 3: Expired messages — log reason code and discard (expiry is by design)</span>
+<span class="tok-k">REASON</span>(<span class="tok-s">MQRC_EXPIRY_ERROR</span>)
+<span class="tok-k">ACTION</span>(<span class="tok-s">DISCARD</span>)
+
+<span class="tok-c"># Rule 4: All other reasons → forward to ops monitoring queue</span>
+<span class="tok-k">REASON</span>(<span class="tok-s">*</span>)
+<span class="tok-k">ACTION</span>(<span class="tok-s">FWD</span>)
+<span class="tok-k">FWDQ</span>(<span class="tok-s">SAIB.OPS.DEAD.MESSAGES</span>)
+<span class="tok-k">FWDQM</span>(<span class="tok-s">SAIBQM1</span>)</code></pre>
+          </div>
+
+          <p>MQ DLQ reason codes to monitor explicitly: <code>MQRC_Q_FULL</code> (2053) indicates a backed-up destination; <code>MQRC_NOT_AUTHORIZED</code> (2035) indicates an ACL misconfiguration; <code>MQRC_MSG_TOO_BIG_FOR_Q</code> (2030) indicates a message size limit violation that requires a schema or application change. Each reason code has a different remediation path and should trigger a different alert severity.</p>
+          <p>Configure the DLQ itself with an explicit <code>MAXMSGL</code> larger than the largest legitimate message expected on any queue in the manager &mdash; a DLQ that rejects an oversized dead letter because its own <code>MAXMSGL</code> is too small silently discards the message. Set <code>MAXMSGL(104857600)</code> (100 MB) on the DLQ queue definition.</p>
+
+          <h2 id="classification">Poison Message Classification</h2>
+          <p>Not all dead-lettered messages are equally dangerous or equally urgent. A DLQ handler that treats all failures identically &mdash; alert operations, wait for manual review &mdash; will generate alert fatigue and slow down response to the failures that actually matter. Classification at the DLQ handler separates the response.</p>
+
+          <div class="diagram" role="img" aria-label="Kafka topic consumer retry loop leading to DLQ, then DLQ handler classifying messages for repair or replay">
+            <div class="diagram__inner">
+              <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="dlq-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="dlq-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="dlq-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                  <marker id="dlq-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Source topic -->
+                <rect x="10" y="120" width="130" height="55" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="75" y="143" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">payments.events.v1</text>
+                <text x="75" y="158" text-anchor="middle" fill="#71717a" font-size="9">Kafka topic</text>
+                <text x="75" y="170" text-anchor="middle" fill="#71717a" font-size="8">3 partitions</text>
+
+                <!-- Consumer with retry -->
+                <rect x="180" y="105" width="145" height="85" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="252" y="128" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Consumer</text>
+                <text x="252" y="143" text-anchor="middle" fill="#71717a" font-size="9">attempt 1 &rarr; fail</text>
+                <text x="252" y="156" text-anchor="middle" fill="#71717a" font-size="9">attempt 2 &rarr; fail</text>
+                <text x="252" y="169" text-anchor="middle" fill="#71717a" font-size="9">attempt 3 &rarr; fail</text>
+                <text x="252" y="182" text-anchor="middle" fill="#ef4444" font-size="8">(exponential backoff)</text>
+
+                <!-- DLQ topic -->
+                <rect x="375" y="120" width="140" height="55" rx="6" fill="#1a0808" stroke="#ef4444"/>
+                <text x="445" y="143" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">payments.events.v1-dlt</text>
+                <text x="445" y="158" text-anchor="middle" fill="#71717a" font-size="9">Dead Letter Topic</text>
+                <text x="445" y="170" text-anchor="middle" fill="#71717a" font-size="8">7-day retention</text>
+
+                <!-- DLQ Handler -->
+                <rect x="555" y="60" width="200" height="200" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="655" y="82" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">DLQ Handler</text>
+
+                <rect x="570" y="95" width="170" height="35" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="655" y="112" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Classify</text>
+                <text x="655" y="123" text-anchor="middle" fill="#71717a" font-size="8">schema | transient | business</text>
+
+                <rect x="570" y="145" width="170" height="30" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="655" y="162" text-anchor="middle" fill="#00d4aa" font-size="9">Replay &rarr; source topic</text>
+                <text x="655" y="173" text-anchor="middle" fill="#71717a" font-size="8">(after fix: transient failures)</text>
+
+                <rect x="570" y="190" width="170" height="30" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="655" y="207" text-anchor="middle" fill="#fbbf24" font-size="9">Alert &rarr; ops queue</text>
+                <text x="655" y="218" text-anchor="middle" fill="#71717a" font-size="8">(schema / business violations)</text>
+
+                <rect x="570" y="235" width="170" height="30" rx="4" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="655" y="252" text-anchor="middle" fill="#ef4444" font-size="9">Archive &rarr; cold storage</text>
+                <text x="655" y="263" text-anchor="middle" fill="#71717a" font-size="8">(compliance / regulatory hold)</text>
+
+                <!-- Arrows -->
+                <line x1="140" y1="147" x2="178" y2="147" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dlq-arr)"/>
+                <line x1="325" y1="147" x2="373" y2="147" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#dlq-arr2)"/>
+                <text x="349" y="140" text-anchor="middle" fill="#ef4444" font-size="8">DLT publish</text>
+                <line x1="515" y1="147" x2="553" y2="147" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dlq-arr)"/>
+
+                <!-- Retry loop arrow (curved label) -->
+                <path d="M 252 190 Q 252 220 180 220 Q 140 220 140 180 Q 140 147 178 147" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4 2"/>
+                <text x="165" y="218" fill="#fbbf24" font-size="7.5">retry</text>
+
+                <!-- Replay arrow back -->
+                <path d="M 655 145 Q 655 28 445 28 Q 295 28 295 103" fill="none" stroke="#00d4aa" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#dlq-arr)"/>
+                <text x="455" y="22" fill="#00d4aa" font-size="8">replay path (post-fix)</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Kafka consumer exhausts retry attempts with exponential backoff, publishes to DLT; DLQ handler classifies and routes to replay, ops alert, or compliance archive</div>
+          </div>
+
+          <p>Three classification categories cover the vast majority of production DLQ messages:</p>
+          <ul>
+            <li><strong>Schema validation failure.</strong> The message does not conform to the expected Avro/Protobuf/JSON schema &mdash; wrong schema version, missing required field, unexpected field type. Root cause: producer schema version ahead of consumer schema version, or a producer deploying a breaking schema change without a migration strategy. Resolution: fix the consumer schema or repair the message and replay.</li>
+            <li><strong>Business rule violation.</strong> The message is structurally valid but contains a value that violates a business constraint &mdash; a payment amount that exceeds the customer&rsquo;s limit, a creditor IBAN in a sanctioned country, a transaction timestamp in the future. Root cause: missing validation in the producer, or a change in business rules that the producer has not adopted yet. Resolution: fix the source system; replay only after confirming the same message would now be accepted.</li>
+            <li><strong>Downstream unavailability (transient vs permanent).</strong> The consumer attempted to call a downstream service &mdash; a core banking REST endpoint, an IBAN registry &mdash; that returned a transient error (503, timeout). If the downstream recovers before retry exhaustion, the message processes normally. If retry exhaustion happens while the downstream is still unavailable, the message lands in the DLQ. Root cause: downstream outage or consumer retry budget misconfigured too short for the expected outage duration. Resolution: once downstream recovers, replay the DLQ messages.</li>
+          </ul>
+
+          <h2 id="replay">Event Replay Patterns</h2>
+          <p>Replay is not a single operation &mdash; it is a family of patterns with different use cases, cost profiles, and risk levels. Choosing the right replay pattern for the situation avoids creating new problems while solving the original one.</p>
+          <p><strong>DLQ consumer republish.</strong> The standard replay path: a DLQ consumer reads messages from the DLT topic, optionally transforms or repairs them, and publishes them back to the original source topic. The consumer must set Kafka headers on republished messages to track replay provenance. Spring Kafka&rsquo;s <code>DeadLetterPublishingRecoverer</code> sets <code>kafka_original_offset</code>, <code>kafka_original_partition</code>, and <code>kafka_original_topic</code> automatically; add custom headers for <code>X-Retry-Count</code>, <code>X-Original-Topic</code>, and <code>X-DLQ-Reason</code> to enable idempotency checks in the downstream consumer.</p>
+          <p><strong>Offset reset (full topic replay).</strong> When a consumer group has a systematic processing bug &mdash; the bug has been fixed and all messages processed in the affected window must be reprocessed &mdash; offset reset to the earliest offset or to a specific timestamp is faster than replaying from the DLT topic. This is a high-risk operation: it reprocesses <em>all</em> messages in the range, including ones that were processed successfully. Idempotency in the consumer is not optional for this approach; it is mandatory.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>DlqReplayService.java &mdash; DLT consumer republishing to source topic</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">package</span> info.saib.integration.dlq;
+
+<span class="tok-k">import</span> org.apache.kafka.clients.consumer.ConsumerRecord;
+<span class="tok-k">import</span> org.apache.kafka.common.header.Headers;
+<span class="tok-k">import</span> org.springframework.kafka.annotation.KafkaListener;
+<span class="tok-k">import</span> org.springframework.kafka.core.KafkaTemplate;
+<span class="tok-k">import</span> org.springframework.kafka.support.KafkaHeaders;
+
+<span class="tok-k">@Service</span>
+<span class="tok-t">public class</span> <span class="tok-n">DlqReplayService</span> {
+
+    <span class="tok-t">private final</span> <span class="tok-n">KafkaTemplate</span>&lt;<span class="tok-n">String</span>, <span class="tok-n">byte</span>[]&gt; kafkaTemplate;
+    <span class="tok-t">private final</span> <span class="tok-n">DlqClassifier</span> classifier;
+    <span class="tok-t">private final</span> <span class="tok-n">ReplayIdempotencyStore</span> idempotencyStore;
+
+    <span class="tok-c">// Consumes from DLT; only active when replay gate is open (circuit breaker pattern)</span>
+    <span class="tok-k">@KafkaListener</span>(topics = <span class="tok-s">"payments.events.v1-dlt"</span>, groupId = <span class="tok-s">"payments-processor-dlt"</span>,
+                    containerFactory = <span class="tok-s">"dltListenerContainerFactory"</span>)
+    <span class="tok-t">public void</span> <span class="tok-n">handleDlt</span>(<span class="tok-n">ConsumerRecord</span>&lt;<span class="tok-n">String</span>, <span class="tok-n">byte</span>[]&gt; record) {
+        <span class="tok-n">DlqClassification</span> cls = classifier.classify(record);
+
+        <span class="tok-t">switch</span> (cls.getCategory()) {
+            <span class="tok-t">case</span> TRANSIENT_DOWNSTREAM:
+                <span class="tok-t">if</span> (cls.isDownstreamHealthy()) {
+                    replay(record, cls);
+                } <span class="tok-t">else</span> {
+                    <span class="tok-c">// downstream still unhealthy: leave in DLT, alert ops</span>
+                    alertOps(record, cls);
+                }
+                <span class="tok-t">break</span>;
+            <span class="tok-t">case</span> SCHEMA_FAILURE:
+            <span class="tok-t">case</span> BUSINESS_RULE_VIOLATION:
+                <span class="tok-c">// must not auto-replay; route to manual review</span>
+                routeToManualReview(record, cls);
+                <span class="tok-t">break</span>;
+            <span class="tok-t">case</span> REGULATORY_HOLD:
+                <span class="tok-c">// ISO 20022 payment: never auto-delete; forward to compliance queue</span>
+                routeToComplianceHold(record, cls);
+                <span class="tok-t">break</span>;
+        }
+    }
+
+    <span class="tok-t">private void</span> <span class="tok-n">replay</span>(<span class="tok-n">ConsumerRecord</span>&lt;<span class="tok-n">String</span>, <span class="tok-n">byte</span>[]&gt; record, <span class="tok-n">DlqClassification</span> cls) {
+        <span class="tok-n">String</span> idempotencyKey = record.key() + <span class="tok-s">":"</span> + record.offset();
+        <span class="tok-t">if</span> (idempotencyStore.alreadyReplayed(idempotencyKey)) {
+            log.warn(<span class="tok-s">"Skipping duplicate replay for key={} offset={}"</span>, record.key(), record.offset());
+            <span class="tok-t">return</span>;
+        }
+
+        <span class="tok-n">ProducerRecord</span>&lt;<span class="tok-n">String</span>, <span class="tok-n">byte</span>[]&gt; replay = <span class="tok-t">new</span> <span class="tok-n">ProducerRecord</span>&lt;&gt;(
+            cls.getOriginalTopic(), record.partition(), record.key(), record.value()
+        );
+        <span class="tok-c">// Propagate original headers and add replay tracking headers</span>
+        record.headers().forEach(h -&gt; replay.headers().add(h));
+        replay.headers().add(<span class="tok-s">"X-Retry-Count"</span>, incrementRetryCount(record.headers()));
+        replay.headers().add(<span class="tok-s">"X-Original-Topic"</span>, cls.getOriginalTopic().getBytes());
+        replay.headers().add(<span class="tok-s">"X-DLQ-Reason"</span>, cls.getReasonCode().getBytes());
+        replay.headers().add(<span class="tok-s">"X-Replayed-At"</span>, Instant.now().toString().getBytes());
+
+        kafkaTemplate.send(replay);
+        idempotencyStore.markReplayed(idempotencyKey);
+    }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Replay without idempotency check causes double-processing</div>
+            <p>A message replayed from the DLT to the source topic may land in a consumer that already processed it successfully on an earlier attempt &mdash; if the consumer processed it but the DLT publish happened before the offset was committed. Without an idempotency check (keyed on the message&rsquo;s business key, not the Kafka offset), the consumer applies the business operation twice. For payment debits, double-processing is a customer-visible incident. Implement idempotency at the consumer using a <code>processed_events</code> table keyed on the message&rsquo;s business identifier before enabling any replay path.</p>
+          </div>
+
+          <h2 id="monitoring">DLQ Observability</h2>
+          <p>A DLQ that is not monitored is not a safety valve &mdash; it is a silent message graveyard. Three alert conditions on the DLQ are mandatory; everything else is dashboard-level visibility.</p>
+          <ul>
+            <li><strong>DLT consumer lag growing.</strong> If the DLT consumer group is falling behind &mdash; consumer lag on <code>payments.events.v1-dlt</code> is increasing &mdash; the DLQ handler itself is failing to process dead letters. Alert immediately; this means the safety valve is blocked. Use <code>kafka_consumer_group_lag{group="payments-processor-dlt"} &gt; 50</code> with a 1-minute evaluation window.</li>
+            <li><strong>DLT write rate spike.</strong> A sudden increase in the rate of messages being published to the DLT indicates a consumer has started failing rapidly. Alert on <code>rate(kafka_topic_messages_in_total{topic="payments.events.v1-dlt"}[5m]) &gt; 5</code>. More than 5 messages per second arriving in the DLT warrants an immediate investigation of the source topic consumer.</li>
+            <li><strong>MQ DLQ depth growing.</strong> For IBM MQ, alert when <code>ibmmq_queue_depth{queue="SAIB.DEAD.LETTER.QUEUE"} &gt; 100</code> sustained for 5 minutes. A depth spike followed by a plateau indicates a batch of failures that the AMQMDLQ handler is not clearing.</li>
+          </ul>
+          <p>The Grafana dashboard should show, per topic or per queue: DLT message rate (messages/min), DLT consumer lag, time-since-last-DLT-consumer-commit, and a table of the last 20 DLT messages with their reason codes. This is the first screen the on-call engineer opens when a DLQ alert fires.</p>
+
+          <h2 id="iso20022">ISO 20022 Message Failure Patterns</h2>
+          <p>ISO 20022 payment messages &mdash; pacs.008 credit transfers, pain.001 customer initiations &mdash; have failure patterns that are qualitatively different from general event failures because the consequence of mishandling them is regulatory, not just operational.</p>
+          <p><strong>pacs.008 schema validation failure.</strong> A pacs.008 that fails XSD validation before reaching SAMA IPS must be quarantined, not retried. The fix requires identifying whether the schema version is wrong (a producer version mismatch) or the data is malformed (a source system data quality issue). Both require human review before the message can be repaired and resubmitted.</p>
+          <p><strong>Mandatory field absent.</strong> SAMA IPS rejects pacs.008 messages missing <code>SttlmMtd</code>, <code>ClrSys</code>, or a <code>Purp/Cd</code> from the approved purpose code list. These are not schema validation failures &mdash; the message is XSD-valid but fails SAMA&rsquo;s business rule layer. They arrive as pacs.002 reject messages with specific reason codes and must be routed back through the integration layer to the originating channel as a payment failure notification.</p>
+          <p><strong>Routing DLQ with regulatory hold requirement.</strong> A payment message that fails after IPS acceptance &mdash; for example, an OFAC or UN sanctions hit that was not caught before submission &mdash; is not simply a failed message. It may be subject to a regulatory hold that requires preservation for compliance purposes. The DLQ handler for payment messages must never auto-delete or auto-expire messages that carry a sanctions or AML hold flag.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Payment DLQ messages may be regulatory holds &mdash; never auto-delete without compliance sign-off</div>
+            <p>A pacs.008 that fails SAMA IPS processing and lands in the DLQ with a reason code indicating a suspected sanctions or AML match must be preserved in accordance with SAMA&rsquo;s Technology Risk Management framework and the Saudi Anti-Money Laundering Law. Configure DLT retention for payment topics at a minimum of 90 days; for any message flagged with a compliance hold, archive to immutable cold storage before the DLT retention window expires. Never configure a Kafka <code>cleanup.policy=compact</code> or <code>cleanup.policy=delete</code> on a payment DLT without explicit compliance team sign-off.</p>
+          </div>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Replaying without fixing the bug first creates double DLQ</div>
+            <p>If a consumer bug sends messages to the DLT and you replay from the DLT before deploying the fix, the replayed messages hit the same consumer, fail again, and go back to the DLT. You now have a duplicate of every failed message in the DLT, and the next replay doubles the problem again. The replay gate &mdash; the mechanism that enables DLT consumer replay &mdash; must be disabled by default and enabled only after the consuming service is confirmed healthy at the new version in the target environment.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">DLQ retention shorter than investigation SLA loses messages permanently</div>
+            <p>If your DLT topic has a 24-hour retention policy and your on-call SLA allows up to 48 hours before a DLQ alert must be investigated, every dead-lettered message will be expired before it can be examined. Align DLT retention with your P2 incident investigation SLA, not with the source topic retention. A minimum of 7 days is reasonable for most integration workloads; payment messages warrant 90 days.</p>
+          </div>
+
+          <ul>
+            <li><strong>No DLQ on the DLQ handler.</strong> The DLQ handler is itself a Kafka consumer. If it fails processing a DLT message, and it has no error handling of its own, it will block on that message indefinitely. The DLQ handler needs its own retry policy &mdash; typically a simple in-memory retry with backoff, then an alert and skip, since a DLQ handler must never itself dead-letter to another topic (infinite poison).</li>
+            <li><strong>Replay order inversion breaking idempotency.</strong> When replaying multiple messages from the DLT, Kafka does not guarantee that messages are replayed in the same order they were originally produced. If your consumer is idempotent by message key but order-dependent within a key &mdash; for example, a payment status update that must follow the original payment event &mdash; replay order inversion can cause incorrect state transitions. Use per-partition ordering in the DLT and replay partition-by-partition.</li>
+            <li><strong>Treating the DLQ as a permanent archive.</strong> Engineers who find the DLQ a convenient place to leave messages &ldquo;for later&rdquo; create technical debt that compounds. Every message in the DLQ represents an unresolved failure. Measure DLQ age (time between message dead-lettering and message resolution) as an operational metric; set a P3 SLA for DLQ message resolution (e.g. within 5 business days), not just a P1 SLA for the initial alert.</li>
+          </ul>
+
+          <h2 id="checklist">Production Checklist</h2>
+
+          <ol class="step-list">
+            <li>Introduce DLQ by configuring <code>@RetryableTopic</code> with <code>autoCreateTopics=false</code> and pre-provisioning the DLT topics via Strimzi <code>KafkaTopic</code> CRs in Git before deployment.</li>
+            <li>Set DLT retention at least equal to your P2 incident investigation SLA; use a minimum of 7 days for non-payment topics, 90 days for payment topics.</li>
+            <li>Wire the DLQ handler service before enabling retry exhaustion on the source consumer &mdash; the DLT must have a consumer before the first message arrives in it.</li>
+            <li>Implement idempotency in all consumers using a business-key-based <code>processed_events</code> table before enabling any replay path from the DLT.</li>
+            <li>Enable the replay gate only after the consuming service is confirmed healthy at the fixed version; disable it again after replay completes.</li>
+            <li>Add <code>X-Retry-Count</code>, <code>X-Original-Topic</code>, <code>X-DLQ-Reason</code>, and <code>X-Replayed-At</code> headers to all replayed messages to enable downstream idempotency checks and audit tracing.</li>
+            <li>Alert on DLT consumer lag growing, DLT write rate spike, and MQ DLQ depth growing; link each alert to a runbook with the classification and replay procedure.</li>
+            <li>Configure a Grafana dashboard showing per-topic DLT depth, DLT write rate, DLT consumer lag, and a table of recent DLT messages with reason codes.</li>
+            <li>For IBM MQ, configure AMQMDLQ with payment-specific rules that route to a regulatory hold queue and never auto-discard; verify the rule set covers all expected <code>MQRC_</code> reason codes.</li>
+            <li>Never configure <code>cleanup.policy=compact</code> on a payment DLT topic; immutably archive any DLT message with a compliance or regulatory hold flag before DLT retention expiry.</li>
+            <li>Measure DLQ message age (time-to-resolution) as an operational SLI; set a P3 SLA for resolution, not just a P1 SLA for the alert.</li>
+            <li>Test the DLQ handler with failure injection: schema validation failure, transient downstream 503, business rule violation, and regulatory hold scenarios in a lower environment before production rollout.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="saga-patterns-distributed-transactions.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Saga Patterns</div>
+            </a>
+            <a href="../event-driven.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Event-Driven &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

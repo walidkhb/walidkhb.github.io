@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Composition: The Architecture Decision That Determines Whether Your Channels Own Their Experience &mdash; Waleed Albadawi</title>
+  <meta name="description" content="One generic API for all channels versus a dedicated Backend-for-Frontend per channel — it is a decision about team autonomy, channel experience quality, and whether your FAPI 2.0 compliance posture holds under examination.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/api-composition-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="API Composition: The Architecture Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="API Composition: The Architecture Decision That Determines Whether Your Channels Own Their Experience &mdash; Waleed Albadawi">
+  <meta property="og:description" content="BFF vs generic API is a team autonomy and compliance question, not a technical preference. The decision determines whether your channels can move at their own pace and whether FAPI 2.0 scope enforcement survives SAMA examination.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/api-composition-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="API Composition: The Architecture Decision That Determines Whether Your Channels Own Their Experience">
+  <meta name="twitter:description" content="BFF vs generic API is a team autonomy and compliance question. The BFF decision is not about technology — it is about who owns the channel experience and what that means for regulatory scope enforcement.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "API Composition: The Architecture Decision That Determines Whether Your Channels Own Their Experience",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/api-composition-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>API Composition Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; September 5, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">API Composition: The Architecture Decision That Determines Whether Your Channels Own Their Experience</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Most banks with a microservices architecture reach the same inflection point: the mobile team needs a dashboard screen that requires data from three services, assembled into a shape the domain service teams have no interest in maintaining. The initial solution is to let the mobile app call all three services directly and assemble the response on the device. This works until one of the services responds slowly and the screen load time becomes unacceptable. Then the mobile team asks for a dedicated endpoint that returns everything the screen needs, pre-assembled. The domain service team declines, citing their service charter. The API team proposes a generic aggregation endpoint that also serves the web portal. The open banking team raises a concern about what data a TPP should be allowed to see through that same endpoint. The discussion runs for two quarters and the mobile team&rsquo;s screen still loads in 3.2 seconds.</p>
+
+        <p>The Backend-for-Frontend (BFF) pattern exists to end this discussion before it starts. Each channel &mdash; mobile, web, open banking &mdash; has a dedicated aggregation layer that it owns, that it deploys independently, and that it designs for its own consumers without coordinating with the owners of other channels. The domain services remain stable and channel-agnostic. The aggregation is the channel team&rsquo;s problem and the channel team&rsquo;s opportunity.</p>
+
+        <p class="article-section">What the decision actually is</p>
+
+        <p>The surface-level framing of this decision is technical: one generic API versus dedicated BFFs. The correct framing is organisational: who owns the shape of the API that a channel consumes?</p>
+
+        <p>If the answer is &ldquo;the domain service team,&rdquo; the channel is a consumer of an API designed for the general case. When the mobile team needs a field renamed, an optional field added, or a response assembled from two services in a single call, they submit a request to the domain service team&rsquo;s backlog. The domain team weighs the request against their other priorities and the needs of all other consumers. Changes happen at the domain team&rsquo;s pace, not the channel team&rsquo;s pace. The channel team&rsquo;s ability to improve the customer experience is bounded by the slowest team in the dependency chain.</p>
+
+        <p>If the answer is &ldquo;the channel team,&rdquo; the BFF is that team&rsquo;s property. They design it, deploy it, change it, and operate it. When they need the dashboard response to include a field from a new service, they add the call to their BFF. The domain service teams are unaffected. The channel team ships the feature in the next sprint. The BFF is the technical expression of team autonomy.</p>
+
+        <blockquote>
+          <p>The choice between a generic API and a BFF is not a choice between simplicity and complexity. It is a choice between whose complexity is visible and whose is hidden. With a generic API, the channel team's aggregation logic lives in the client. With a BFF, it lives in a server-side service they own. The server-side version is easier to observe, easier to cache, easier to circuit-break, and easier to change without a mobile app release cycle.</p>
+        </blockquote>
+
+        <p class="article-section">What the regulator cares about</p>
+
+        <p>SAMA&rsquo;s Open Banking framework and the FAPI 2.0 security profile it mandates create a compliance dimension to the BFF decision that is not present in a purely internal channel context. When a third-party provider (TPP) accesses a customer&rsquo;s account data through an open banking API, the data returned must be scoped to what the customer has explicitly consented to share. An AIS (Account Information Service) token authorises access to account balances and transaction history. It does not authorise access to pending payment status, scheduled transfers, or credit limit information unless the customer has specifically consented to those fields being shared with that TPP.</p>
+
+        <p>The BFF is the correct place to enforce this consent-scope filtering. The underlying domain services &mdash; the Accounts API, the Payments API &mdash; have no concept of per-TPP consent. They return all data for an authenticated customer. If the open banking channel calls these services directly and applies consent filtering in the client or at the gateway, the filtering is applied after the data has been fetched, at a layer that is not controlled by the bank. Any misconfiguration exposes data the customer did not consent to share.</p>
+
+        <p>An Open Banking BFF that reads the customer&rsquo;s consent record, calls only the domain services the consent authorises, and returns only the fields within the consented scope is a control that can be demonstrated to a SAMA examiner with a single service. The consent filtering logic is in one place, versioned in one repository, audited in one deployment pipeline, and logged in one service&rsquo;s audit trail. The examination question &ldquo;how do you ensure a TPP only receives data the customer consented to share?&rdquo; has a clean, demonstrable answer: the Open Banking BFF, which enforces consent at the response-assembly layer before any data leaves the bank&rsquo;s controlled infrastructure.</p>
+
+        <p>Per-channel audit logs are a related compliance requirement. The mobile channel&rsquo;s BFF logs every dashboard request, with the customer ID, the fields returned, and the timestamp. The open banking BFF logs every TPP request with the TPP identity, the consent reference, the scopes applied, and the fields returned. These logs are separate, channel-specific, and directly correlate to the channel&rsquo;s API contract. A shared generic API produces a single audit log where mobile, web, and open banking requests are interleaved &mdash; extracting a TPP-specific access history for a SAMA audit requires filtering a mixed log by client ID, which is operationally fragile.</p>
+
+        <p class="article-section">The business trade-off</p>
+
+        <p>The argument against BFFs is surface area: three channels mean three BFF services to deploy, monitor, and upgrade. When a downstream domain service changes its API, three BFFs may need updating instead of one. When a security vulnerability is discovered in the BFF framework, three services need patching. The operational overhead is real.</p>
+
+        <p>The counter-argument is the cost of the alternative. A single generic API for all channels is a lowest-common-denominator API. It must serve the most demanding consumer (the web portal, which needs full data across multiple services) while not over-exposing data to the least privileged consumer (the open banking TPP, which should see only consented fields). The result is an API that is too heavy for mobile, too light for desktop, and too permissive for open banking &mdash; and which must satisfy all three simultaneously. Every change to the API requires coordination across all three channel teams to validate that nothing breaks. The release cadence is the slowest of all three.</p>
+
+        <p>The BFF model accepts higher surface area in exchange for lower coupling. Each BFF can be deployed, scaled, and changed independently of the others. A mobile BFF can be rewritten from IBM ACE to Spring Boot without affecting the web portal. The open banking BFF can implement a breaking API change for TPPs without requiring the mobile app to release a new version. The surface area is real; the coupling reduction is real too, and in a bank where mobile, web, and open banking are owned by teams with different release cadences, the coupling cost of a shared API is typically higher than the surface area cost of three BFFs.</p>
+
+        <p class="article-section">What leadership must own</p>
+
+        <p>The BFF decision has three organisational implications that leadership must resolve explicitly. Engineering can implement whatever architecture leadership decides on; it cannot resolve the organisational questions that determine whether the BFF model succeeds or degrades into the same shared-API problems it was meant to solve.</p>
+
+        <p><strong>Channel team ownership model.</strong> The mobile BFF must be owned by the mobile channel team &mdash; not by a shared integration team that also owns the web BFF and the open banking BFF. A shared team owning all BFFs recreates the same coordination overhead that the BFF model was intended to eliminate. The integration team&rsquo;s role is to own the domain services and the infrastructure the BFFs run on, not the BFFs themselves. This requires the channel teams to have engineers capable of owning a server-side service, not just a mobile client or a browser application. If the mobile team does not currently have that capability, that is a hiring or training decision that precedes the BFF decision.</p>
+
+        <p><strong>BFF SLA budget and circuit breaking policy.</strong> Each BFF has a response time SLA that is agreed with the channel team and encoded in the service&rsquo;s alerting configuration. When a downstream domain service degrades, the BFF&rsquo;s circuit breaker must determine how to respond &mdash; fail-fast if the degraded service provides mandatory data, or return a partial result if the data is optional. The definition of which fields are mandatory and which are optional for each channel is a business decision, not a technical one. It determines the customer experience during a downstream outage. Leadership must approve this definition before it is encoded in circuit breaker configuration, because a circuit breaker policy that fails-fast on an optional service takes a channel entirely offline unnecessarily, while one that degrades-silently on a mandatory service returns a misleading partial result.</p>
+
+        <p><strong>Governance of cross-cutting concerns.</strong> When the bank needs to add a new cross-cutting capability &mdash; a new consent scope mandated by a SAMA Open Banking update, a new field required by a regulatory reporting obligation &mdash; it must be propagated across all BFFs consistently. Without a governance process, the open banking BFF gets the update but the mobile BFF does not, and the mobile channel inadvertently exposes data that should be gated by the new consent scope. The governance process for cross-cutting updates is lightweight &mdash; an architecture decision record published to all channel teams, with a compliance deadline &mdash; but it must exist and it must be enforced. The alternative is discovered inconsistency during a SAMA examination, which is the wrong time to discover it.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind these decisions &mdash; IBM ACE Fan-Out/Fan-In configuration, Spring Boot CompletableFuture composition with Resilience4j circuit breakers, timeout budget allocation, FAPI 2.0 scope filtering implementation, and the production checklist &mdash; see the companion Lab article: <a href="../lab/integration-patterns/api-composition-and-bff.html" style="color:var(--color-accent);">Integration Patterns: API Composition &amp; Backend-for-Frontend</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

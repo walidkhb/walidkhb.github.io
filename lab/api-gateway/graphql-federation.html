@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Gateway: GraphQL Federation at Scale &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Apollo Federation 2 on OpenShift: supergraph design, subgraph SDL, Apollo Router configuration, GraphQL-aware rate limiting, JWT auth, and production observability for regulated financial services.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="API Gateway: GraphQL Federation at Scale &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Apollo Federation 2, Apollo Router on OpenShift, subgraph design by domain, JWT auth, GraphQL-aware rate limiting, and federation observability.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/api-gateway/graphql-federation.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="API Gateway: GraphQL Federation at Scale">
+  <meta name="twitter:description" content="Supergraph design, subgraph SDL, Apollo Router on OpenShift, and GraphQL-aware rate limiting for regulated financial services.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/api-gateway/graphql-federation.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "API Gateway: GraphQL Federation at Scale",
+    "description": "Apollo Federation 2 on OpenShift: supergraph design, subgraph SDL, Apollo Router configuration, GraphQL-aware rate limiting, JWT auth, and production observability for regulated financial services.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/api-gateway/graphql-federation.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "API Gateway &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/api-gateway.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-gateway.html">API Gateway</a><span>/</span>GraphQL Federation</div>
+          <span class="overline">Lab Article</span>
+          <h1>GraphQL Federation at Scale</h1>
+          <p class="lead">Apollo Federation 2 with Apollo Router on OpenShift &mdash; supergraph composition, per-domain subgraph ownership, JWT authentication, GraphQL-aware rate limiting with Kong, and end-to-end observability: the architecture that lets domain teams own their schemas without fragmenting the API surface visible to consumers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#federation-model">Federation model</a></li>
+            <li><a href="#subgraph-design">Subgraph design</a></li>
+            <li><a href="#router-config">Router configuration</a></li>
+            <li><a href="#rate-limiting">Rate limiting</a></li>
+            <li><a href="#security">Security</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#caching">Response caching</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Apollo Federation 2 &middot; Apollo Router 1.50 &middot; Kong Gateway 3.7 &middot; OpenShift 4.15</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>GraphQL has won the developer-experience argument for internal API platforms &mdash; strong typing, self-documenting schemas, and client-driven query shaping are genuine productivity improvements over REST for frontend and mobile teams. The hard question is not whether to adopt GraphQL. It is whether to adopt it as a monolith or as a federated supergraph, and that decision is fundamentally about how domain ownership is structured across your engineering teams.</p>
+          <p>A monolithic GraphQL schema is owned by whoever last touched it. Every team that needs to expose a new entity or field must either wait for a central team to merge their change or accept co-ownership of a schema that spans domains they do not understand. This works at low team count; it breaks at scale. When your accounts domain team, your payments domain team, and your notifications team each have independent release cycles, independent deployment pipelines, and independent on-call rotations, they cannot all be blocked by a shared schema gateway that only one team owns.</p>
+          <p>Apollo Federation 2 resolves this by splitting the schema. Each domain publishes a <strong>subgraph</strong> &mdash; a GraphQL schema covering only the types that domain owns &mdash; and the <strong>Apollo Router</strong> composes those subgraphs into a unified <strong>supergraph</strong> at runtime. Consumers query the supergraph and receive a single response; the Router plans and executes the query across however many subgraphs are involved, transparently.</p>
+          <p>REST still serves edge traffic. GraphQL is not a replacement for REST for SAMA Open Banking APIs, ISO 20022 payment initiation, or machine-to-machine integrations where the consumer is a third-party fintech with a fixed contract. Federation sits inside the perimeter &mdash; between Kong at the edge and the domain microservices behind it. Kong handles authentication, rate limiting, and WAF for all traffic; the Apollo Router handles GraphQL routing for the subset of that traffic that arrives as GraphQL operations.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Federation is an API contract, not just a routing problem</div>
+            <p>Apollo Federation requires domain teams to publish schema SDL as a deployment artifact, register it with a schema registry, and coordinate on cross-domain types using directives. This is a governance and contract model, not a technical routing optimisation. Teams that adopt federation without the governance framework &mdash; no breaking-change policy, no schema registry, no ownership mapping &mdash; will find it harder to operate than a monolith. The technical architecture only holds if the organisational architecture supports it.</p>
+          </div>
+
+          <h2 id="federation-model">Apollo Federation 2 Architecture</h2>
+          <p>Federation 2 is built on four concepts: the <strong>subgraph schema</strong>, the <strong>supergraph schema</strong>, the <strong>schema registry</strong>, and the <strong>Router</strong>.</p>
+          <p>Each domain team publishes a subgraph schema &mdash; a standard SDL file annotated with federation directives &mdash; to a schema registry (Apollo GraphOS Managed Federation, or a self-hosted Rover CLI pipeline feeding a custom registry). The registry runs <strong>composition</strong>: it validates that all subgraph schemas are compatible, resolves cross-subgraph type references, and emits a compiled <strong>supergraph schema</strong>. The Apollo Router reads this supergraph schema and uses it to build a <strong>query plan</strong> for every incoming operation at request time.</p>
+          <p>The key federation 2 directives that make this work:</p>
+          <ul>
+            <li><code>@key(fields: "id")</code> &mdash; marks the primary key of an entity type. Any subgraph that defines a type with <code>@key</code> can resolve that entity by its key. The Router uses this to stitch cross-subgraph references.</li>
+            <li><code>@external</code> &mdash; marks a field as owned by another subgraph. A subgraph that references an external field declares it with <code>@external</code> so the Router knows to fetch it from the owning subgraph.</li>
+            <li><code>@provides(fields: "...")</code> &mdash; tells the Router that a subgraph can locally satisfy a specific set of external fields for a type, avoiding an extra fetch to the owning subgraph when those fields are in scope.</li>
+            <li><code>@requires(fields: "...")</code> &mdash; the inverse: declares that a resolver for a given field requires specific fields from the entity (potentially owned by another subgraph) to be fetched first.</li>
+            <li><code>@shareable</code> &mdash; marks a non-entity type as resolvable by multiple subgraphs. Useful for value types shared between domain teams (e.g. a <code>Money</code> scalar or a <code>Currency</code> enum used by both payments and accounts).</li>
+          </ul>
+          <p>Query planning is deterministic given the same supergraph schema and operation. The Router computes a plan, executes fetch operations against subgraphs in parallel where there are no dependencies, and sequences them where <code>@requires</code> chains create a dependency order. At SAIB scale &mdash; &lt;500 rps on the internal GraphQL surface &mdash; plan computation adds under 2 ms of overhead per request; this becomes relevant at 5&ndash;10K rps if plan caching is not enabled.</p>
+
+          <div class="diagram" role="img" aria-label="Client sends GraphQL operation to Apollo Router; Router plans and fans out to three subgraphs: Accounts, Payments, Notifications; each subgraph resolves its own types and returns data to the Router, which stitches and returns a unified response">
+            <div class="diagram__inner">
+              <svg width="780" height="300" viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="gf-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="gf-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                  <marker id="gf-arr-back" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Client -->
+                <rect x="10" y="110" width="130" height="60" rx="6" fill="#1c1c28" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="75" y="136" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Client</text>
+                <text x="75" y="152" text-anchor="middle" fill="#71717a" font-size="9">Mobile / BFF / Portal</text>
+                <text x="75" y="164" text-anchor="middle" fill="#71717a" font-size="8">GraphQL operation</text>
+
+                <!-- Arrow client -> router -->
+                <line x1="140" y1="140" x2="198" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#gf-arr)"/>
+                <text x="169" y="133" text-anchor="middle" fill="#00d4aa" font-size="8">query</text>
+
+                <!-- Kong at edge label -->
+                <rect x="148" y="106" width="46" height="16" rx="3" fill="#16161f" stroke="#4a9eff" stroke-width="1"/>
+                <text x="171" y="118" text-anchor="middle" fill="#4a9eff" font-size="7">Kong edge</text>
+
+                <!-- Apollo Router -->
+                <rect x="200" y="90" width="200" height="100" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="2"/>
+                <text x="300" y="115" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Apollo Router</text>
+                <text x="300" y="132" text-anchor="middle" fill="#71717a" font-size="9">supergraph schema</text>
+                <text x="300" y="147" text-anchor="middle" fill="#71717a" font-size="8">query planner &middot; JWT plugin</text>
+                <text x="300" y="160" text-anchor="middle" fill="#71717a" font-size="8">OTel trace propagation</text>
+                <text x="300" y="175" text-anchor="middle" fill="#71717a" font-size="8">persisted queries</text>
+
+                <!-- Arrows router -> subgraphs -->
+                <line x1="400" y1="118" x2="490" y2="70" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#gf-arr2)"/>
+                <line x1="400" y1="140" x2="490" y2="140" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#gf-arr2)"/>
+                <line x1="400" y1="162" x2="490" y2="210" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#gf-arr2)"/>
+
+                <!-- Subgraph: Accounts -->
+                <rect x="492" y="30" width="190" height="68" rx="6" fill="#1c1c28" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="587" y="54" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Accounts Subgraph</text>
+                <text x="587" y="69" text-anchor="middle" fill="#71717a" font-size="9">Account &middot; Balance &middot; Statement</text>
+                <text x="587" y="83" text-anchor="middle" fill="#71717a" font-size="8">@key(fields: &ldquo;iban&rdquo;)</text>
+
+                <!-- Subgraph: Payments -->
+                <rect x="492" y="112" width="190" height="68" rx="6" fill="#1c1c28" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="587" y="136" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Payments Subgraph</text>
+                <text x="587" y="151" text-anchor="middle" fill="#71717a" font-size="9">Transaction &middot; Limit &middot; ISO 20022</text>
+                <text x="587" y="165" text-anchor="middle" fill="#71717a" font-size="8">@key(fields: &ldquo;transactionId&rdquo;)</text>
+
+                <!-- Subgraph: Notifications -->
+                <rect x="492" y="194" width="190" height="68" rx="6" fill="#1c1c28" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="587" y="218" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Notifications Subgraph</text>
+                <text x="587" y="233" text-anchor="middle" fill="#71717a" font-size="9">Alert &middot; Preference &middot; Channel</text>
+                <text x="587" y="247" text-anchor="middle" fill="#71717a" font-size="8">@key(fields: &ldquo;userId&rdquo;)</text>
+
+                <!-- Return arrows (lighter) -->
+                <line x1="492" y1="72" x2="402" y2="122" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#gf-arr-back)"/>
+                <line x1="492" y1="146" x2="402" y2="146" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#gf-arr-back)"/>
+                <line x1="492" y1="220" x2="402" y2="168" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#gf-arr-back)"/>
+
+                <!-- Schema registry -->
+                <rect x="200" y="218" width="200" height="48" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1"/>
+                <text x="300" y="238" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">Schema Registry</text>
+                <text x="300" y="253" text-anchor="middle" fill="#71717a" font-size="8">composition &middot; supergraph SDL</text>
+                <text x="300" y="263" text-anchor="middle" fill="#71717a" font-size="8">breaking-change checks on push</text>
+                <line x1="300" y1="218" x2="300" y2="192" stroke="#4a9eff" stroke-width="1" stroke-dasharray="3 3"/>
+
+                <!-- Legend -->
+                <line x1="10" y1="270" x2="40" y2="270" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="45" y="274" fill="#71717a" font-size="8">fetch plan</text>
+                <line x1="110" y1="270" x2="140" y2="270" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4 3"/>
+                <text x="145" y="274" fill="#71717a" font-size="8">subgraph response</text>
+                <line x1="240" y1="270" x2="270" y2="270" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="275" y="274" fill="#71717a" font-size="8">client &harr; router</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Client sends a GraphQL operation to the Apollo Router (sitting behind Kong at the edge); the Router plans the query against the supergraph schema and fans out to Accounts, Payments, and Notifications subgraphs in parallel where possible, stitching the unified response</div>
+          </div>
+
+          <h2 id="subgraph-design">Domain Subgraph Design</h2>
+          <p>The cardinal rule of subgraph design: one domain team owns one subgraph. The payments team owns the payments subgraph. They define its schema, they deploy it on their pipeline, and they are on-call when it fails. The Apollo Router does not care which namespace the subgraph runs in or which team deployed it &mdash; it only needs a reachable HTTPS endpoint and a registered SDL.</p>
+          <p>For a banking integration platform, three subgraphs cover the primary internal API surface:</p>
+          <ul>
+            <li><strong>Accounts subgraph</strong> &mdash; owns <code>Account</code>, <code>Balance</code>, and <code>Statement</code>. The entity key is <code>iban</code> (the IBAN string, validated against Saudi IBAN format). Downstream: core banking balance enquiry service via synchronous REST. Latency SLO: p99 &lt;250 ms.</li>
+            <li><strong>Payments subgraph</strong> &mdash; owns <code>Transaction</code>, <code>PaymentLimit</code>, and the ISO 20022 pain.001/camt.053 wrapper types. Entity key: <code>transactionId</code> (UUID). Cross-reference to <code>Account</code> via <code>@external</code> + <code>@requires</code>: a transaction resolver needs the source account&rsquo;s IBAN, which the accounts subgraph owns, before calling the payment execution engine. The <code>@provides</code> directive on <code>Transaction.sourceAccount</code> tells the Router it can skip a round-trip to Accounts if the account&rsquo;s IBAN is already in the fetch result.</li>
+            <li><strong>Notifications subgraph</strong> &mdash; owns <code>Alert</code>, <code>NotificationPreference</code>, and <code>Channel</code>. Entity key: <code>userId</code>. Mutations here are fire-and-forget; the subgraph publishes to an internal Kafka topic rather than waiting for delivery confirmation. The Router treats the mutation as resolved once the subgraph returns the Kafka publish acknowledgement.</li>
+          </ul>
+          <p>The <code>@shareable</code> directive applies to value types that multiple subgraphs need to embed inline without a cross-subgraph fetch. A <code>Money</code> type (amount + currency + ISO 4217 code) is used by both Accounts and Payments; declaring it <code>@shareable</code> means both subgraphs can define and resolve it independently without violating the &ldquo;one owner&rdquo; principle.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payments-subgraph.graphql</span><span class="code-block__lang">graphql</span></div>
+<pre><code><span class="tok-k">extend schema</span>
+  @link(url: <span class="tok-s">"https://specs.apollo.dev/federation/v2.3"</span>,
+        import: [<span class="tok-s">"@key"</span>, <span class="tok-s">"@external"</span>, <span class="tok-s">"@requires"</span>, <span class="tok-s">"@provides"</span>, <span class="tok-s">"@shareable"</span>])
+
+<span class="tok-c"># Entity owned by this subgraph — resolvable by transactionId</span>
+<span class="tok-k">type</span> <span class="tok-n">Transaction</span> @key(fields: <span class="tok-s">"transactionId"</span>) {
+  transactionId:  <span class="tok-n">ID!</span>
+  amount:         <span class="tok-n">Money!</span>
+  status:         <span class="tok-n">TransactionStatus!</span>
+  initiatedAt:    <span class="tok-n">DateTime!</span>
+  <span class="tok-c"># Cross-domain reference: Account is owned by the Accounts subgraph</span>
+  sourceAccount:  <span class="tok-n">Account!</span> @provides(fields: <span class="tok-s">"iban"</span>)
+}
+
+<span class="tok-c"># Reference type — key defined here, fields resolved by Accounts subgraph</span>
+<span class="tok-k">type</span> <span class="tok-n">Account</span> @key(fields: <span class="tok-s">"iban"</span>, resolvable: false) {
+  iban: <span class="tok-n">String!</span> @external
+}
+
+<span class="tok-c"># Value type shared across subgraphs — no cross-subgraph fetch needed</span>
+<span class="tok-k">type</span> <span class="tok-n">Money</span> @shareable {
+  amount:   <span class="tok-n">Decimal!</span>
+  currency: <span class="tok-n">String!</span>   <span class="tok-c"># ISO 4217, e.g. "SAR"</span>
+}
+
+<span class="tok-k">type</span> <span class="tok-n">PaymentLimit</span> @key(fields: <span class="tok-s">"limitId"</span>) {
+  limitId:   <span class="tok-n">ID!</span>
+  channel:   <span class="tok-n">String!</span>   <span class="tok-c"># SARIE, SWIFT, IPS</span>
+  daily:     <span class="tok-n">Money!</span>
+  perTx:     <span class="tok-n">Money!</span>
+}
+
+<span class="tok-k">enum</span> <span class="tok-n">TransactionStatus</span> {
+  PENDING
+  CLEARED
+  REJECTED
+  REVERSED
+}
+
+<span class="tok-k">type</span> <span class="tok-n">Query</span> {
+  transaction(transactionId: <span class="tok-n">ID!</span>):       <span class="tok-n">Transaction</span>
+  transactionHistory(iban: <span class="tok-n">String!</span>, first: <span class="tok-n">Int</span>): [<span class="tok-n">Transaction!</span>]!
+  paymentLimits(channel: <span class="tok-n">String!</span>):        <span class="tok-n">PaymentLimit</span>
+}
+
+<span class="tok-k">type</span> <span class="tok-n">Mutation</span> {
+  initiatePayment(input: <span class="tok-n">PaymentInput!</span>): <span class="tok-n">Transaction!</span>
+}
+</code></pre>
+          </div>
+
+          <h2 id="router-config">Apollo Router Configuration on OpenShift</h2>
+          <p>The Apollo Router runs as a Kubernetes <code>Deployment</code> on OpenShift. Unlike the Apollo Gateway (the Node.js predecessor), the Router is a compiled Rust binary with significantly lower latency and memory overhead. A single Router pod handles approximately 2 000 rps at p99 &lt;10 ms plan + execution overhead; run at least 3 replicas with a <code>PodDisruptionBudget</code> of max-unavailable 1.</p>
+          <p>The Router reads its configuration from a <code>router.yaml</code> mounted as a ConfigMap. The supergraph schema comes from one of two sources: <strong>Managed Federation</strong> (Router polls GraphOS for schema updates &mdash; requires outbound connectivity to Apollo&rsquo;s cloud, which may conflict with SAMA data-residency requirements) or <strong>schema file mount</strong> (the supergraph SDL is compiled by Rover CLI in the CI pipeline and mounted as a ConfigMap, updated on every subgraph push). The self-hosted path is preferred in a regulated environment where external SaaS dependencies at the data plane are controlled.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>router.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">supergraph</span>:
+  <span class="tok-k">listen</span>: <span class="tok-s">"0.0.0.0:4000"</span>
+  <span class="tok-k">path</span>: <span class="tok-s">"/graphql"</span>
+  <span class="tok-k">introspection</span>: <span class="tok-n">false</span>   <span class="tok-c"># never expose introspection without auth in production</span>
+
+<span class="tok-k">health_check</span>:
+  <span class="tok-k">listen</span>: <span class="tok-s">"0.0.0.0:8088"</span>
+
+<span class="tok-k">sandbox</span>:
+  <span class="tok-k">enabled</span>: <span class="tok-n">false</span>         <span class="tok-c"># disable GraphQL sandbox in non-dev environments</span>
+
+<span class="tok-k">authentication</span>:
+  <span class="tok-k">router</span>:
+    <span class="tok-k">jwt</span>:
+      <span class="tok-k">jwks</span>:
+        - <span class="tok-k">url</span>: <span class="tok-s">"https://idp.internal.saib.com.sa/.well-known/jwks.json"</span>
+          <span class="tok-k">issuer</span>: <span class="tok-s">"https://idp.internal.saib.com.sa"</span>
+      <span class="tok-k">header_name</span>: <span class="tok-s">"Authorization"</span>
+      <span class="tok-k">header_value_prefix</span>: <span class="tok-s">"Bearer "</span>
+
+<span class="tok-k">authorization</span>:
+  <span class="tok-k">require_authentication</span>: <span class="tok-n">true</span>  <span class="tok-c"># reject unauthenticated requests at the router</span>
+  <span class="tok-k">preview_directives</span>:
+    <span class="tok-k">enabled</span>: <span class="tok-n">true</span>             <span class="tok-c"># enable @authenticated / @requiresScopes directives</span>
+
+<span class="tok-k">headers</span>:
+  <span class="tok-k">all</span>:
+    <span class="tok-k">request</span>:
+      <span class="tok-c"># Propagate correlation headers from client into subgraph requests</span>
+      - <span class="tok-k">propagate</span>: { <span class="tok-k">named</span>: <span class="tok-s">"x-correlation-id"</span> }
+      - <span class="tok-k">propagate</span>: { <span class="tok-k">named</span>: <span class="tok-s">"x-request-id"</span> }
+      - <span class="tok-k">propagate</span>: { <span class="tok-k">named</span>: <span class="tok-s">"x-channel"</span> }   <span class="tok-c"># mobile / web / branch</span>
+      <span class="tok-c"># Inject resolved JWT claims into subgraph requests</span>
+      - <span class="tok-k">insert</span>:
+          <span class="tok-k">name</span>: <span class="tok-s">"x-user-id"</span>
+          <span class="tok-k">value</span>: <span class="tok-s">"{{ $claims.sub }}"</span>
+      - <span class="tok-k">insert</span>:
+          <span class="tok-k">name</span>: <span class="tok-s">"x-user-roles"</span>
+          <span class="tok-k">value</span>: <span class="tok-s">"{{ $claims.roles | join(\",\") }}"</span>
+
+<span class="tok-k">limits</span>:
+  <span class="tok-k">max_depth</span>: <span class="tok-n">10</span>             <span class="tok-c"># reject queries deeper than 10 levels</span>
+  <span class="tok-k">max_aliases</span>: <span class="tok-n">15</span>
+  <span class="tok-k">max_root_fields</span>: <span class="tok-n">5</span>        <span class="tok-c"># max root-level selections per operation</span>
+  <span class="tok-k">max_height</span>: <span class="tok-n">50</span>             <span class="tok-c"># total field count across all selections</span>
+
+<span class="tok-k">persisted_queries</span>:
+  <span class="tok-k">enabled</span>: <span class="tok-n">true</span>
+  <span class="tok-k">safelist</span>:
+    <span class="tok-k">enabled</span>: <span class="tok-n">true</span>
+    <span class="tok-k">require_id</span>: <span class="tok-n">true</span>          <span class="tok-c"># in production: only registered operations accepted</span>
+
+<span class="tok-k">telemetry</span>:
+  <span class="tok-k">tracing</span>:
+    <span class="tok-k">propagation</span>:
+      <span class="tok-k">trace_context</span>: <span class="tok-n">true</span>    <span class="tok-c"># W3C TraceContext into subgraph requests</span>
+    <span class="tok-k">exporters</span>:
+      <span class="tok-k">otlp</span>:
+        - <span class="tok-k">endpoint</span>: <span class="tok-s">"http://otel-collector.monitoring.svc:4317"</span>
+          <span class="tok-k">protocol</span>: <span class="tok-s">grpc</span>
+  <span class="tok-k">metrics</span>:
+    <span class="tok-k">exporters</span>:
+      <span class="tok-k">prometheus</span>:
+        - <span class="tok-k">listen</span>: <span class="tok-s">"0.0.0.0:9090"</span>
+          <span class="tok-k">path</span>: <span class="tok-s">"/metrics"</span>
+
+<span class="tok-k">traffic_shaping</span>:
+  <span class="tok-k">all</span>:
+    <span class="tok-k">timeout</span>: <span class="tok-s">30s</span>
+    <span class="tok-k">compression</span>: <span class="tok-n">true</span>
+  <span class="tok-k">subgraphs</span>:
+    <span class="tok-k">payments</span>:
+      <span class="tok-k">timeout</span>: <span class="tok-s">15s</span>   <span class="tok-c"># tighter SLO for payment subgraph</span>
+    <span class="tok-k">accounts</span>:
+      <span class="tok-k">timeout</span>: <span class="tok-s">10s</span>
+</code></pre>
+          </div>
+
+          <h2 id="rate-limiting">GraphQL-Aware Rate Limiting</h2>
+          <p>Standard rate limiting counts requests. GraphQL rate limiting must count <em>cost</em>. A single GraphQL operation can be trivial (fetch one scalar field) or catastrophic (recursive fragments fetching thousands of nested objects). Treating both the same at the IP or token level misses the actual load profile.</p>
+          <p>The Kong <code>graphql-proxy-cache-advanced</code> plugin and the upstream <code>graphql-rate-limiting-advanced</code> plugin (Kong Enterprise) implement <strong>field-level complexity scoring</strong>: each field in the schema is assigned a cost weight. The plugin computes the total cost of an incoming operation before execution and rejects it if the cost exceeds the per-client budget.</p>
+          <p>Cost configuration principles for a banking API:</p>
+          <ul>
+            <li>Scalar fields: cost 1. A query for a single account balance costs roughly as much as the number of scalar fields selected.</li>
+            <li>List fields: cost = multiplier &times; child cost. <code>transactionHistory(first: 100)</code> with 5 scalar fields costs 500 points. Set a default multiplier of 10 for unspecified list fields; require clients to pass explicit <code>first</code>/<code>limit</code> arguments and reject operations that omit them.</li>
+            <li>Mutation fields: minimum cost 10 regardless of field count. Mutations have side effects and should not be treated as cheap read operations.</li>
+            <li>Per-client budget: internal BFF clients 5 000 points/minute; third-party portal clients 1 000 points/minute; machine-to-machine service accounts 10 000 points/minute with a dedicated tier.</li>
+          </ul>
+          <p>Depth and alias limits in the Router (<code>limits.max_depth</code>, <code>limits.max_aliases</code>) complement complexity scoring. Depth limits prevent deeply nested query attacks; alias limits prevent clients from requesting the same expensive field 50 times under different names to multiply their effective cost.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kong-graphql-rate-limit-plugin.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">name</span>: <span class="tok-s">graphql-rate-limiting-advanced</span>
+<span class="tok-k">service</span>: <span class="tok-s">apollo-router-svc</span>
+<span class="tok-k">config</span>:
+  <span class="tok-k">limit_by</span>: <span class="tok-s">consumer</span>         <span class="tok-c"># rate-limit per authenticated consumer (JWT sub)</span>
+  <span class="tok-k">window_size</span>: <span class="tok-n">60</span>            <span class="tok-c"># sliding window in seconds</span>
+  <span class="tok-k">window_type</span>: <span class="tok-s">sliding</span>
+  <span class="tok-k">cost_strategy</span>: <span class="tok-s">default</span>     <span class="tok-c"># use schema-introspected field complexity</span>
+  <span class="tok-k">max_cost</span>: <span class="tok-n">5000</span>             <span class="tok-c"># internal BFF tier: 5 000 points/min</span>
+  <span class="tok-k">score_factor</span>: <span class="tok-n">1.0</span>
+  <span class="tok-k">sync_rate</span>: <span class="tok-n">-1</span>              <span class="tok-c"># use Redis for distributed counting (cluster mode)</span>
+  <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>
+  <span class="tok-k">redis</span>:
+    <span class="tok-k">cluster_addresses</span>:
+      - <span class="tok-s">"redis-0.redis-headless.infra.svc:6379"</span>
+      - <span class="tok-s">"redis-1.redis-headless.infra.svc:6379"</span>
+      - <span class="tok-s">"redis-2.redis-headless.infra.svc:6379"</span>
+    <span class="tok-k">ssl</span>: <span class="tok-n">true</span>
+    <span class="tok-k">ssl_verify</span>: <span class="tok-n">true</span>
+    <span class="tok-k">ssl_server_name</span>: <span class="tok-s">"redis.infra.svc"</span>
+  <span class="tok-k">hide_client_headers</span>: <span class="tok-n">false</span>  <span class="tok-c"># expose X-RateLimit-* headers to clients</span>
+  <span class="tok-k">error_message</span>: <span class="tok-s">"Query cost budget exceeded. Reduce field count or request frequency."</span>
+
+<span class="tok-c">---</span>
+
+<span class="tok-c"># Separate tier for third-party portal consumers</span>
+<span class="tok-k">name</span>: <span class="tok-s">graphql-rate-limiting-advanced</span>
+<span class="tok-k">service</span>: <span class="tok-s">apollo-router-svc</span>
+<span class="tok-k">consumer_group</span>: <span class="tok-s">third-party-portal</span>
+<span class="tok-k">config</span>:
+  <span class="tok-k">max_cost</span>: <span class="tok-n">1000</span>             <span class="tok-c"># 1 000 points/min for external portal clients</span>
+  <span class="tok-k">window_type</span>: <span class="tok-s">sliding</span>
+  <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>
+</code></pre>
+          </div>
+
+          <h2 id="security">Security at the Federation Layer</h2>
+          <p>The security surface of a federated GraphQL API is wider than REST because a single operation can reach multiple subgraphs. A JWT validated at the Router does not automatically constrain what each subgraph will return for that token&rsquo;s claims. Security must be enforced at both the Router and the subgraph level, with the Router handling authentication and coarse-grained authorisation, and subgraphs handling data-level access control for their own types.</p>
+          <p>Key controls at each layer:</p>
+          <ul>
+            <li><strong>Router JWT validation.</strong> The Router validates the JWT signature against the IdP&rsquo;s JWKS endpoint on every request. Claims (<code>sub</code>, <code>roles</code>) are extracted and injected as HTTP headers into every subgraph request (see <code>router.yaml</code> above). Subgraphs trust these headers &mdash; they do not re-validate the JWT; they rely on the Router&rsquo;s assertion. This only works if subgraph endpoints are not publicly reachable; enforce this with Kubernetes NetworkPolicy restricting subgraph pod ingress to the Router&rsquo;s service account only.</li>
+            <li><strong>Schema-level authorisation with <code>@requiresScopes</code> and <code>@authenticated</code>.</strong> Federation 2.4+ supports these directives natively in the Router. Annotate sensitive fields with <code>@requiresScopes(scopes: [["payments:write"]])</code> and the Router rejects any operation that selects that field if the JWT does not carry the required scope &mdash; before the query reaches a subgraph.</li>
+            <li><strong>Subgraph-to-subgraph mTLS.</strong> The Router connects to subgraphs over HTTPS. On OpenShift with Istio, inject the Router pod into the mesh and configure <code>PeerAuthentication</code> to enforce STRICT mTLS on all subgraph namespaces. This prevents any pod other than the Router from reaching subgraph endpoints, regardless of NetworkPolicy gaps.</li>
+            <li><strong>Persisted queries.</strong> In production, enable <code>persisted_queries.safelist.require_id: true</code> in <code>router.yaml</code>. Only operations pre-registered in the persisted query list (by ID) are executed. Arbitrary query strings from the wire are rejected. This eliminates query injection as an attack vector and makes schema introspection useless to an attacker who cannot submit arbitrary operations.</li>
+            <li><strong>Operation allow-listing.</strong> In regulated contexts, persisted queries serve as an allow-list. Combine with Kong&rsquo;s request-validator plugin to reject any request that does not carry a valid <code>extensions.persistedQuery.sha256Hash</code> header.</li>
+          </ul>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never expose supergraph introspection in production without authentication</div>
+            <p>GraphQL introspection returns the complete supergraph schema &mdash; every type, every field, every argument, every directive, across all subgraphs. In a banking API this is a detailed map of your data model, your domain structure, and your regulatory data classifications. Set <code>supergraph.introspection: false</code> in <code>router.yaml</code> for all non-development environments. If developer tooling (Apollo Studio, Insomnia) requires introspection, expose a separate authenticated introspection endpoint behind a VPN or bastion that is not reachable from the internet or from production workloads.</p>
+          </div>
+
+          <h2 id="observability">Federation Observability</h2>
+          <p>Federated GraphQL observability differs from microservice observability in two ways. First, a single client request generates multiple subgraph fetches &mdash; you need traces that span the Router and all subgraphs. Second, errors can be partial: a GraphQL response can include both data and errors, meaning a 200 HTTP status can still represent a degraded query. Your error-rate metrics must count <code>response.errors</code>, not HTTP 5xx, as the primary error signal.</p>
+          <p>Trace propagation: the Router injects W3C TraceContext headers (<code>traceparent</code>, <code>tracestate</code>) into every subgraph fetch. Subgraphs instrumented with OTel automatically pick up these headers and create child spans under the Router&rsquo;s root span. The result is an end-to-end trace that shows plan time, fetch time per subgraph, and merge time in the Router as a unified waterfall view in Grafana Tempo.</p>
+          <p>Key metrics to track for federation health:</p>
+          <ul>
+            <li><strong>Operation cost distribution.</strong> The Kong rate-limiting plugin exposes per-operation cost as a log field. Route these to Loki and build a Grafana histogram of cost per consumer tier &mdash; a sudden shift in the cost distribution (operations becoming more expensive) predicts a rate-limit incident before it happens.</li>
+            <li><strong>Subgraph fetch duration by subgraph name.</strong> The Router emits <code>apollo_router_http_requests_duration_seconds</code> labelled by <code>subgraph</code>. Track p99 per subgraph; a payments subgraph p99 rising above 2 s while accounts is normal identifies the degraded service without looking at application logs.</li>
+            <li><strong>Field-level error rates.</strong> Parse the Router&rsquo;s structured access log (JSON) for <code>graphql.errors[].extensions.code</code> grouped by <code>path</code>. This gives per-field error rates &mdash; the Grafana panel equivalent of per-endpoint HTTP error rates for REST APIs.</li>
+            <li><strong>Slow operation detection.</strong> Set a Router span attribute filter: operations with total duration &gt;5 s emit a <code>slow_operation: true</code> attribute. Alert when this attribute appears more than 5 times in a 5-minute window on a production consumer.</li>
+          </ul>
+
+          <h2 id="caching">Response Caching</h2>
+          <p>GraphQL caching is more nuanced than REST caching because a response may contain data from multiple subgraphs with different freshness requirements. The Apollo Federation approach is <strong>per-type cache hints</strong> via the <code>@cacheControl</code> directive, which annotates each type and field with a maximum age and scope.</p>
+          <p>The Router collects <code>@cacheControl</code> hints from all subgraph responses, computes the minimum <code>maxAge</code> across the merged result, and emits a <code>Cache-Control</code> response header. Upstream CDN (Kong proxy cache or Nginx) then caches the response for that duration.</p>
+          <ul>
+            <li><strong>Reference data (currency list, bank codes):</strong> <code>maxAge: 3600, scope: PUBLIC</code>. Safe to cache at the CDN layer.</li>
+            <li><strong>Account balances:</strong> <code>maxAge: 30, scope: PRIVATE</code>. The 30-second TTL is the minimum that prevents hammering the core banking system; the PRIVATE scope prevents CDN caching and restricts to client-side or Kong per-consumer cache.</li>
+            <li><strong>Transaction history:</strong> <code>maxAge: 60, scope: PRIVATE</code>. Slightly stale history is acceptable for the account statement view; real-time transaction status uses a separate query without caching.</li>
+            <li><strong>Mutations:</strong> no cache headers. The Router does not cache mutation responses.</li>
+          </ul>
+          <p>For <strong>stale-while-revalidate</strong>, configure Kong&rsquo;s <code>proxy-cache-advanced</code> plugin with <code>cache_control: true</code> and <code>storage_ttl</code> set to <code>maxAge + revalidate_window</code>. The Kong cache serves the stale response immediately while it revalidates in the background, eliminating the latency spike at TTL expiry for high-traffic reference data queries.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Circular subgraph dependencies break query planning</div>
+            <p>If Subgraph A <code>@requires</code> a field from Subgraph B, and Subgraph B <code>@requires</code> a field from Subgraph A, the Router&rsquo;s query planner cannot resolve the dependency order and fails to compose. This is not a runtime error &mdash; it is a composition error that prevents the supergraph from being built at all. Circular dependencies almost always indicate a domain boundary design problem: two subgraphs are co-owning a type that should belong to one of them exclusively. Resolve ownership before wiring the dependency, not after.</p>
+          </div>
+
+          <h2 id="pitfalls">Common Pitfalls</h2>
+          <p>Federation is more operationally complex than a monolithic GraphQL server. Most failures in production federated APIs trace back to one of three root causes: N+1 query patterns across subgraph boundaries, schema changes that break the supergraph without warning, or deployment sequencing errors between the supergraph and a subgraph.</p>
+          <ul>
+            <li><strong>N+1 across subgraph boundaries.</strong> A query that returns a list of 50 <code>Transaction</code> objects, each resolving the associated <code>Account</code> from the Accounts subgraph, will generate 50 separate fetch requests to the Accounts subgraph unless the DataLoader pattern is implemented. The Router batches entity fetches by default (the <code>_entities</code> query), but only if the subgraph resolver correctly handles a batch of keys and returns results in the same order. Failing to handle <code>_entities</code> batches efficiently is the single most common performance problem in federated deployments.</li>
+            <li><strong>Schema breaking changes without coordination.</strong> Removing a field from a subgraph SDL is a breaking change if any registered persisted query references that field &mdash; even if no consumer appears to use it. The schema registry must run breaking-change checks on every subgraph push and block the push if any registered operations become invalid. Do not rely on manual coordination between subgraph teams.</li>
+            <li><strong>Supergraph deployed before subgraph.</strong> If a new supergraph schema references a field that a subgraph has not yet deployed, the Router will attempt to fetch that field and receive a resolver-not-found error. The correct deployment sequence is always subgraph first, then supergraph registration. Automate this in the CI pipeline: publish the subgraph, wait for readiness probe, then trigger supergraph recomposition.</li>
+            <li><strong>Mutation without idempotency key.</strong> Network retries in the Router (<code>traffic_shaping.retries</code>) apply to all requests including mutations unless explicitly excluded. Enabling retries on mutation subgraphs without idempotency key handling doubles the risk of duplicate payment initiations. Disable retries for the payments subgraph; implement idempotency at the application layer using a client-supplied <code>x-idempotency-key</code> header validated by the payments subgraph before execution.</li>
+          </ul>
+
+          <h2 id="checklist">Production Checklist</h2>
+
+          <h3>Steps to introduce federation incrementally</h3>
+          <ol class="step-list">
+            <li><strong>Start with the monolith.</strong> If you have an existing monolithic GraphQL server, run it as a single subgraph behind the Apollo Router without splitting anything. This validates the Router deployment, the JWT plugin configuration, and the persisted query pipeline before you have multi-subgraph complexity.</li>
+            <li><strong>Extract the highest-ownership domain first.</strong> Identify the domain team with the clearest schema ownership (typically payments or accounts) and extract their types into a separate subgraph. Keep all other types in the monolith subgraph. Validate cross-domain references using <code>@external</code> and <code>@requires</code> directives.</li>
+            <li><strong>Wire the schema registry.</strong> Before extracting a third subgraph, configure automated schema registration in CI and enable breaking-change checks. This step must happen before the subgraph count makes manual coordination impossible.</li>
+            <li><strong>Enforce NetworkPolicy and mTLS.</strong> Once the Router is handling real traffic, lock down subgraph pod ingress to Router-only. Enable Istio STRICT mode on all subgraph namespaces. Verify with a penetration test from a pod outside the Router&rsquo;s namespace before the next subgraph is added.</li>
+            <li><strong>Enable persisted queries.</strong> Register all existing operations in the persisted query list. Set <code>require_id: false</code> initially (allow both registered and ad-hoc queries) during a transition window. After all clients have migrated to sending operation IDs, flip <code>require_id: true</code> to enforce the allow-list.</li>
+            <li><strong>Implement DataLoader in every subgraph entity resolver.</strong> Before any list-returning query goes to production, verify that the subgraph&rsquo;s <code>_entities</code> resolver batches key lookups. Load-test with 50 and 200 entity references; check subgraph fetch count in Tempo traces &mdash; it must be 1, not N.</li>
+            <li><strong>Establish schema governance.</strong> Document the breaking-change policy (deprecation window, consumer notification process), assign a schema owner per subgraph, and schedule a quarterly schema review to remove deprecated fields that have zero usage in the persisted query registry.</li>
+          </ol>
+
+          <h3>Approach comparison</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Approach</th>
+                <th>Ownership</th>
+                <th>Schema coordination</th>
+                <th>Breaking change impact</th>
+                <th>Runtime complexity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Apollo Federation 2</strong></td>
+                <td>Per-domain subgraph team</td>
+                <td>Automated via schema registry &amp; composition checks</td>
+                <td>Isolated to subgraph boundary; registry blocks invalid pushes</td>
+                <td>High &mdash; Router + per-subgraph services + registry</td>
+              </tr>
+              <tr>
+                <td><strong>Schema stitching</strong></td>
+                <td>Gateway team owns all merge config</td>
+                <td>Manual gateway config changes per schema update</td>
+                <td>Gateway config must be updated in sync; no automated checks</td>
+                <td>Medium &mdash; single gateway but complex merge rules</td>
+              </tr>
+              <tr>
+                <td><strong>Monolithic GraphQL</strong></td>
+                <td>Single shared codebase</td>
+                <td>Merge conflicts; all teams touch the same schema file</td>
+                <td>Any field removal breaks all consumers immediately</td>
+                <td>Low &mdash; one process, one schema, one deployment</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Production checklist</h3>
+          <ol>
+            <li>Apollo Router deployed as a 3-replica Deployment with <code>PodDisruptionBudget</code> max-unavailable 1.</li>
+            <li>Supergraph schema compiled by Rover CLI in CI, mounted as ConfigMap &mdash; no runtime dependency on Apollo GraphOS cloud.</li>
+            <li><code>supergraph.introspection: false</code> and <code>sandbox.enabled: false</code> in router.yaml for all non-development environments.</li>
+            <li>JWT plugin configured with JWKS URL pointing to internal IdP; <code>authorization.require_authentication: true</code> set.</li>
+            <li>Correlation and channel headers propagated to all subgraphs; JWT <code>sub</code> and <code>roles</code> injected as subgraph request headers.</li>
+            <li>Depth limit (10), alias limit (15), and root field limit (5) configured in <code>limits</code> block.</li>
+            <li>Persisted queries enabled; <code>require_id: true</code> enforced in production.</li>
+            <li>Subgraph pod ingress locked to Router service account via Kubernetes NetworkPolicy; Istio STRICT mTLS on all subgraph namespaces.</li>
+            <li>Kong <code>graphql-rate-limiting-advanced</code> plugin configured with per-consumer-tier cost budgets backed by Redis Cluster.</li>
+            <li>DataLoader pattern implemented and verified in every subgraph entity resolver; batch fetch count confirmed as 1 in Tempo traces.</li>
+            <li>Breaking-change checks run on every subgraph SDL push; CI blocks registration if any persisted query becomes invalid.</li>
+            <li>Deployment pipeline enforces subgraph-first sequencing: subgraph readiness confirmed before supergraph recomposition triggers.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="aws-api-gateway.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">AWS API Gateway</div>
+            </a>
+            <a href="../api-gateway.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">API Gateway &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

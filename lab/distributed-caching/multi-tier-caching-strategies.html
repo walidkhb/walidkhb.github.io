@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distributed Caching: Multi-Tier Caching Strategies &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="L1 Caffeine in-process cache + L2 Redis distributed cache + L3 database: write policies, L1-L2 coherence via Redis keyspace notifications, eviction strategies, cache warming, and banking-specific data tiering patterns for financial services on OpenShift.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Distributed Caching: Multi-Tier Caching Strategies &mdash; Lab">
+  <meta property="og:description" content="Caffeine L1 + Redis L2 with keyspace notification coherence: production multi-tier caching for regulated financial services.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/distributed-caching/multi-tier-caching-strategies.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Multi-Tier Caching Strategies &mdash; Lab">
+  <meta name="twitter:description" content="L1 Caffeine + L2 Redis with coherence: production multi-tier caching for financial APIs.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/distributed-caching/multi-tier-caching-strategies.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Multi-Tier Caching Strategies",
+    "description": "L1 Caffeine + L2 Redis with Redis keyspace notification coherence: production multi-tier caching strategies for regulated financial services on OpenShift.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/distributed-caching/multi-tier-caching-strategies.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Distributed Caching &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/distributed-caching.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "Distributed Caching"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Multi-Tier Caching Strategies</div>
+          <span class="overline">Lab Article</span>
+          <h1>Distributed Caching: Multi-Tier Caching Strategies</h1>
+          <p class="lead">L1 (Caffeine, in-JVM, nanosecond) absorbs the spike. L2 (Redis, distributed, microsecond) provides cross-pod consistency. L3 (database, millisecond) is the source of truth. The tier you miss on under peak load determines your p99 latency &mdash; and the coherence mechanism between L1 and L2 determines whether your pods serve stale data.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#cache-policies">Write policies</a></li>
+            <li><a href="#l1-caffeine">L1: Caffeine</a></li>
+            <li><a href="#l2-redis">L2: Redis</a></li>
+            <li><a href="#l1-l2-coherence">L1&ndash;L2 coherence</a></li>
+            <li><a href="#eviction">Eviction policies</a></li>
+            <li><a href="#warming">Cache warming</a></li>
+            <li><a href="#banking-patterns">Banking-specific patterns</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Caffeine 3.1 / Redis 7.2 / Hazelcast 5.4 / Spring Cache / OpenShift 4.15</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>A single-tier cache forces an architectural choice: pay the network round trip to Redis on every read (microseconds per request, tens of milliseconds aggregate overhead per second at 100k RPS), or pay the JVM heap and GC cost of an in-process store. The multi-tier answer refuses the choice. L1 in the JVM absorbs hot reads at nanosecond latency, no network. L2 in Redis provides cross-pod consistency at microsecond latency, one network hop. L3 in the database is the source of truth, accessed only on a full cache miss.</p>
+          <p>The cost of multi-tier caching is coherence: when a value in Redis (L2) changes, every pod&rsquo;s in-process L1 cache may hold a stale copy. Without a coherence mechanism, pods serve stale data for up to the L1 TTL &mdash; which is fine for exchange rates (60-second staleness acceptable) and wrong for account balances (any staleness unacceptable). The coherence mechanism adds complexity; understanding when it is necessary and when it is not is the core judgment call in multi-tier cache design.</p>
+          <p>This article assumes a Spring Boot application running on OpenShift with 3+ replicas. L1 is Caffeine (in-JVM, per-pod). L2 is a Redis Cluster. The coherence signal is Redis keyspace notifications. The three-tier pattern applies equally to Hazelcast Near Cache (where Hazelcast provides the coherence protocol internally) &mdash; the principles are the same; the wiring differs.</p>
+
+          <div class="diagram" role="img" aria-label="Multi-tier cache read path and L1 invalidation via Redis keyspace notifications">
+            <div class="diagram__inner">
+              <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="mt-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="mt-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="mt-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="mt-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Request -->
+                <rect x="10" y="130" width="80" height="40" rx="6" fill="#1c1c28" stroke="#71717a"/>
+                <text x="50" y="155" text-anchor="middle" fill="#e4e4e7" font-size="9">Request</text>
+
+                <!-- L1 Caffeine -->
+                <rect x="120" y="80" width="160" height="140" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="200" y="104" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">L1: Caffeine</text>
+                <text x="200" y="120" text-anchor="middle" fill="#71717a" font-size="8">In-JVM, per-pod</text>
+
+                <rect x="135" y="130" width="130" height="38" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="200" y="147" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">HIT &lt; 1 &micro;s</text>
+                <text x="200" y="160" text-anchor="middle" fill="#71717a" font-size="8">heap read, no network</text>
+
+                <rect x="135" y="178" width="130" height="30" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="200" y="196" text-anchor="middle" fill="#71717a" font-size="8">MISS &rarr; check L2</text>
+
+                <line x1="90" y1="150" x2="118" y2="150" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#mt-arr)"/>
+
+                <!-- L2 Redis -->
+                <rect x="320" y="80" width="160" height="140" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="400" y="104" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">L2: Redis 7.2</text>
+                <text x="400" y="120" text-anchor="middle" fill="#71717a" font-size="8">Distributed, all pods</text>
+
+                <rect x="335" y="130" width="130" height="38" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="400" y="147" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">HIT &lt; 1 ms</text>
+                <text x="400" y="160" text-anchor="middle" fill="#71717a" font-size="8">populate L1, return</text>
+
+                <rect x="335" y="178" width="130" height="30" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="400" y="196" text-anchor="middle" fill="#71717a" font-size="8">MISS &rarr; check DB</text>
+
+                <line x1="280" y1="193" x2="318" y2="193" stroke="#71717a" stroke-width="1.5" marker-end="url(#mt-arr)"/>
+
+                <!-- L3 Database -->
+                <rect x="520" y="80" width="160" height="140" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="600" y="104" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">L3: Database</text>
+                <text x="600" y="120" text-anchor="middle" fill="#71717a" font-size="8">Source of truth</text>
+
+                <rect x="535" y="130" width="130" height="38" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="600" y="147" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">READ 10&ndash;50 ms</text>
+                <text x="600" y="160" text-anchor="middle" fill="#71717a" font-size="8">populate L2 + L1</text>
+
+                <line x1="480" y1="193" x2="518" y2="193" stroke="#71717a" stroke-width="1.5" marker-end="url(#mt-arr)"/>
+
+                <!-- Write path label -->
+                <text x="400" y="250" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Write path: cache-aside + CDC invalidation</text>
+                <text x="400" y="267" text-anchor="middle" fill="#71717a" font-size="8">App writes to DB &rarr; Debezium &rarr; Kafka &rarr; consumer deletes L2 key &rarr; L2 keyspace notification evicts L1</text>
+
+                <!-- L1 invalidation signal across pods -->
+                <rect x="10" y="285" width="760" height="48" rx="6" fill="#16161f" stroke="#ef4444"/>
+                <text x="390" y="307" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">L1 coherence: Redis keyspace notifications (CONFIG SET notify-keyspace-events KEA)</text>
+                <text x="390" y="323" text-anchor="middle" fill="#71717a" font-size="8">On L2 key DEL/SET &rarr; Redis publishes to __keyevent@0__:del channel &rarr; all pods subscribed via MessageListener &rarr; each pod evicts from its L1 Caffeine cache</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Multi-tier read path (L1 Caffeine &rarr; L2 Redis &rarr; L3 DB); L1 coherence via Redis keyspace notifications ensures all pods evict their local Caffeine copy when L2 is invalidated</div>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">L1 is not optional for high-throughput services</div>
+            <p>A Redis round trip at p50 is 0.5&ndash;1 ms. At 100,000 requests per second, that is 50&ndash;100 seconds of cumulative Redis RTT per second of wall-clock time &mdash; absorbed by connection pooling and pipelining, but never eliminated. An L1 cache with a 95% hit rate reduces Redis load by 20x and eliminates the RTT for 95% of reads. At high-throughput banking APIs (mobile dashboard loads, balance pre-checks for payment initiation), the L1 hit rate directly determines whether Redis is a performance multiplier or a bottleneck.</p>
+          </div>
+
+          <h2 id="cache-policies">Write Policies</h2>
+          <p>The write policy determines when the cache is updated relative to the database. Choosing the wrong policy for financial data is not a performance issue; it is a correctness issue.</p>
+
+          <table>
+            <thead>
+              <tr><th>Policy</th><th>Write path</th><th>Read path</th><th>Safe for banking</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Cache-aside</strong></td><td>Application writes to DB only; cache populated on read miss</td><td>Miss &rarr; DB &rarr; populate cache</td><td>Yes &mdash; default choice</td><td>Cache is always consistent with DB on miss; may serve stale until TTL/invalidation</td></tr>
+              <tr><td><strong>Read-through</strong></td><td>Same as cache-aside</td><td>Cache fetches from DB on miss (behind cache abstraction)</td><td>Yes</td><td>Application code simpler; cache library handles miss logic</td></tr>
+              <tr><td><strong>Write-through</strong></td><td>Application writes to cache AND DB together</td><td>Cache always populated after every write</td><td>Yes &mdash; good for read-heavy entities</td><td>Two writes per update; transactionality is complex (Lua + DB transaction)</td></tr>
+              <tr><td><strong>Write-behind</strong></td><td>Application writes to cache; cache asynchronously writes to DB</td><td>Cache always has latest value</td><td><strong>No</strong> &mdash; pod crash before async write = data loss</td><td>Acceptable for non-financial data (analytics counters); never for account state</td></tr>
+            </tbody>
+          </table>
+
+          <p>Cache-aside is the correct default for financial workloads. It makes the application code responsible for fetching data on a miss &mdash; which means the DB is the system of record, always. Write-through adds value for reference data that must be in the cache immediately after an update (e.g. a limit matrix change that must be reflected in the next transaction). Write-behind must never be used for account balances, limit structures, or any state that a SAMA examination would treat as authoritative.</p>
+
+          <h2 id="l1-caffeine">L1 with Caffeine</h2>
+          <p>Caffeine is the successor to Guava Cache and the default in-process cache for Spring Boot 3. Its <code>W-TinyLFU</code> eviction algorithm (Window Tiny Least Frequently Used) provides near-optimal hit rates for most access patterns by combining a frequency-biased main cache with a small recency window. For banking reference data (product configurations, exchange rates, limit matrices), W-TinyLFU outperforms simple LRU because access is frequency-biased: the exchange rate for SAR/USD is read far more often than the exchange rate for SAR/PKR, and W-TinyLFU learns this and protects the hot entry from eviction.</p>
+          <p>Size L1 conservatively. Every entry in the Caffeine cache is on the JVM heap, competing with application working set, thread stacks, and code cache. A Caffeine cache of 10,000 entries where each entry is 500 bytes of serialised object consumes approximately 5 MB per pod. At 10 pods, that is 50 MB of aggregate in-JVM cache data. At 10,000 entries averaging 50 KB (large objects), it is 500 MB per pod &mdash; which will trigger GC pressure in a 2 GB container. Set <code>maximumSize</code> based on the average entry size, not the entry count.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>MultiTierCacheConfig.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Configuration</span>
+<span class="tok-k">@EnableCaching</span>
+<span class="tok-k">public class</span> <span class="tok-t">MultiTierCacheConfig</span> {
+
+    <span class="tok-c">// L1: Caffeine in-JVM cache with per-cache TTL and size limits.</span>
+    <span class="tok-c">// Sizes and TTLs tuned for KSA retail banking access patterns.</span>
+    <span class="tok-k">@Bean</span>
+    <span class="tok-k">public</span> <span class="tok-t">CaffeineSpec</span> exchangeRateCaffeineSpec() {
+        <span class="tok-k">return</span> CaffeineSpec.parse(<span class="tok-s">"maximumSize=200,expireAfterWrite=60s,recordStats"</span>);
+    }
+
+    <span class="tok-k">@Bean</span>
+    <span class="tok-k">public</span> <span class="tok-t">CaffeineSpec</span> limitMatrixCaffeineSpec() {
+        <span class="tok-k">return</span> CaffeineSpec.parse(<span class="tok-s">"maximumSize=5000,expireAfterWrite=30s,recordStats"</span>);
+    }
+
+    <span class="tok-c">// L2: Redis cache with RedisCacheManager and per-cache TTL.</span>
+    <span class="tok-c">// Keys serialized as Strings; values serialized as JSON (forward-compatible).</span>
+    <span class="tok-k">@Bean</span>
+    <span class="tok-k">public</span> <span class="tok-t">RedisCacheManager</span> redisCacheManager(<span class="tok-t">RedisConnectionFactory</span> factory) {
+        <span class="tok-t">RedisCacheConfiguration</span> defaults = RedisCacheConfiguration.defaultCacheConfig()
+            .serializeKeysWith(<span class="tok-t">RedisSerializationContext</span>.SerializationPair.fromSerializer(
+                <span class="tok-k">new</span> StringRedisSerializer()))
+            .serializeValuesWith(<span class="tok-t">RedisSerializationContext</span>.SerializationPair.fromSerializer(
+                <span class="tok-k">new</span> GenericJackson2JsonRedisSerializer()))
+            .disableCachingNullValues();
+
+        <span class="tok-k">return</span> RedisCacheManager.builder(factory)
+            .cacheDefaults(defaults)
+            .withCacheConfiguration(<span class="tok-s">"exchange-rates"</span>,
+                defaults.entryTtl(<span class="tok-t">Duration</span>.ofMinutes(<span class="tok-n">5</span>)))
+            .withCacheConfiguration(<span class="tok-s">"limit-matrix"</span>,
+                defaults.entryTtl(<span class="tok-t">Duration</span>.ofMinutes(<span class="tok-n">10</span>)))
+            .withCacheConfiguration(<span class="tok-s">"bic-routing"</span>,
+                defaults.entryTtl(<span class="tok-t">Duration</span>.ofHours(<span class="tok-n">24</span>)))
+            .build();
+    }
+
+    <span class="tok-c">// CompositeCacheManager: tries L1 Caffeine first, falls through to L2 Redis.</span>
+    <span class="tok-c">// Spring @Cacheable uses the first CacheManager that returns a non-null cache.</span>
+    <span class="tok-k">@Bean</span>
+    <span class="tok-k">@Primary</span>
+    <span class="tok-k">public</span> <span class="tok-t">CacheManager</span> cacheManager(<span class="tok-t">CaffeineCacheManager</span> l1, <span class="tok-t">RedisCacheManager</span> l2) {
+        <span class="tok-t">CompositeCacheManager</span> composite = <span class="tok-k">new</span> CompositeCacheManager(l1, l2);
+        composite.setFallbackToNoOpCache(<span class="tok-s">false</span>); <span class="tok-c">// error if no cache found</span>
+        <span class="tok-k">return</span> composite;
+    }
+}</code></pre>
+          </div>
+
+          <h2 id="l2-redis">L2 with Redis</h2>
+          <p>Redis serves as the shared distributed L2 cache, visible to all pods simultaneously. Its role in a multi-tier architecture is narrower than in a single-tier setup: it is the authoritative cache tier that L1 populates from on a miss. When a pod&rsquo;s L1 entry expires or is evicted, it fetches from L2 &mdash; only falling through to the database if L2 also misses.</p>
+          <p>Redis keyspace notifications are the coherence signal. When a Redis key is deleted or updated (by the application, by a CDC invalidation consumer, or by TTL expiry), Redis can publish a notification to a channel. Applications subscribed to that channel receive the notification and evict the corresponding key from their L1 Caffeine cache. This is the <em>pull</em> coherence model: L1 invalidation is triggered by L2 events, not by the application write path.</p>
+          <p>Enable keyspace notifications with the minimal necessary event types. <code>KEA</code> (keyevent + expired + all) publishes on every key operation and produces significant Redis CPU overhead for high-write workloads. For cache coherence, you need only deletion events (<code>KEg$lz</code> &mdash; keyevent + generic + string + list + set commands that delete keys, plus expired). Benchmark notification overhead in your load test environment before enabling on the production cache Redis.</p>
+
+          <h2 id="l1-l2-coherence">L1&ndash;L2 Coherence</h2>
+          <p>Without coherence, each pod&rsquo;s L1 Caffeine cache is an independent island of potentially stale data. Pod A updates a value in Redis (L2); Pod B&rsquo;s L1 still holds the old value for up to the L1 TTL. If your L1 TTL is 60 seconds and you have 10 pods, at any point in time you may have 10 different values for the same key spread across your fleet. For exchange rates (60-second staleness budget), this is acceptable. For limit matrices (30-second staleness budget), it is borderline. For anything with a zero-staleness requirement, L1 must not be used at all.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>L1InvalidationListener.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-c">// Subscribes to Redis keyspace notifications for cache key deletions.</span>
+<span class="tok-c">// On notification: evicts the corresponding key from L1 Caffeine.</span>
+<span class="tok-k">@Component</span>
+<span class="tok-k">public class</span> <span class="tok-t">L1InvalidationListener</span> <span class="tok-k">implements</span> <span class="tok-t">MessageListener</span> {
+
+    <span class="tok-k">private static final</span> <span class="tok-t">Logger</span> log = LoggerFactory.getLogger(L1InvalidationListener.<span class="tok-k">class</span>);
+
+    <span class="tok-k">private final</span> <span class="tok-t">Cache</span> l1ExchangeRates;
+    <span class="tok-k">private final</span> <span class="tok-t">Cache</span> l1LimitMatrix;
+
+    <span class="tok-k">public</span> L1InvalidationListener(<span class="tok-t">CaffeineCacheManager</span> caffeine) {
+        <span class="tok-k">this</span>.l1ExchangeRates = caffeine.getCache(<span class="tok-s">"exchange-rates"</span>);
+        <span class="tok-k">this</span>.l1LimitMatrix = caffeine.getCache(<span class="tok-s">"limit-matrix"</span>);
+    }
+
+    <span class="tok-c">// Called by RedisMessageListenerContainer on every keyspace notification.</span>
+    <span class="tok-c">// message.getBody() = the Redis key that was deleted/expired.</span>
+    @Override
+    <span class="tok-k">public void</span> onMessage(<span class="tok-t">Message</span> message, <span class="tok-k">byte</span>[] pattern) {
+        <span class="tok-t">String</span> key = <span class="tok-k">new</span> <span class="tok-t">String</span>(message.getBody());
+        log.debug(<span class="tok-s">"L2 keyspace event: key='{}'"</span>, key);
+
+        <span class="tok-c">// Route to the correct L1 cache based on key prefix.</span>
+        <span class="tok-k">if</span> (key.startsWith(<span class="tok-s">"exchange-rates::"</span>)) {
+            l1ExchangeRates.evict(key.substring(<span class="tok-s">"exchange-rates::"</span>.length()));
+        } <span class="tok-k">else if</span> (key.startsWith(<span class="tok-s">"limit-matrix::"</span>)) {
+            l1LimitMatrix.evict(key.substring(<span class="tok-s">"limit-matrix::"</span>.length()));
+        }
+        <span class="tok-c">// Unknown keys are ignored — no-op; avoids coupling to every cache name.</span>
+    }
+
+    <span class="tok-c">// Register the listener on application startup.</span>
+    <span class="tok-k">@Bean</span>
+    <span class="tok-k">public</span> <span class="tok-t">RedisMessageListenerContainer</span> keyspaceNotificationContainer(
+            <span class="tok-t">RedisConnectionFactory</span> factory, <span class="tok-t">L1InvalidationListener</span> listener) {
+        <span class="tok-t">RedisMessageListenerContainer</span> container = <span class="tok-k">new</span> RedisMessageListenerContainer();
+        container.setConnectionFactory(factory);
+        <span class="tok-c">// Subscribe to key-event notifications for the cache database (db 0).</span>
+        <span class="tok-c">// Adjust pattern for your Redis keyspace notification configuration.</span>
+        container.addMessageListener(listener,
+            <span class="tok-k">new</span> PatternTopic(<span class="tok-s">"__keyevent@0__:del"</span>));
+        container.addMessageListener(listener,
+            <span class="tok-k">new</span> PatternTopic(<span class="tok-s">"__keyevent@0__:expired"</span>));
+        <span class="tok-k">return</span> container;
+    }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">L1 without a coherence mechanism means pods serving stale data</div>
+            <p>If you deploy L1 Caffeine without Redis keyspace notifications (because enabling notifications seems complex or adds Redis CPU overhead), you have deployed a stale-data machine. Each pod&rsquo;s L1 cache expires on its own schedule. Pod A&rsquo;s Caffeine entry for the exchange rate was written at 14:00:00 and expires at 14:01:00. Pod B&rsquo;s entry was written at 14:00:30 and expires at 14:01:30. The exchange rate changes at 14:00:45. Between 14:00:45 and 14:01:00, Pod A serves the old rate; between 14:00:45 and 14:01:30, Pod B serves the old rate. For exchange rates, the 45-second divergence is typically acceptable. For limit matrices, it is not. Know your staleness budget per data type before deciding whether coherence is required.</p>
+          </div>
+
+          <h2 id="eviction">Eviction Policies</h2>
+          <p>Caffeine&rsquo;s default eviction algorithm, W-TinyLFU (Window Tiny LFU), is superior to LRU for most financial workloads. It divides the cache into three segments: a small window for recently accessed entries (protecting against burst access), a protected segment for frequently accessed entries (the hot set), and a probationary segment for newly admitted entries. Entries graduate from probationary to protected when accessed again; they are evicted when a new entry needs space and both the candidate and the victim&rsquo;s frequency are compared.</p>
+
+          <table>
+            <thead>
+              <tr><th>Algorithm</th><th>Behaviour</th><th>Best for</th><th>Worst for</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>LRU</strong></td><td>Evicts least recently used entry</td><td>Recency-biased access (session data, user contexts)</td><td>Frequency-biased access with occasional scans (scan evicts the hot set)</td></tr>
+              <tr><td><strong>LFU</strong></td><td>Evicts least frequently used entry</td><td>Frequency-biased access (exchange rates, product configs)</td><td>Bursty access (new entries never get high frequency before eviction)</td></tr>
+              <tr><td><strong>W-TinyLFU</strong></td><td>Frequency + recency hybrid; Caffeine default</td><td>General purpose; best hit rate across mixed access patterns</td><td>Workloads so skewed that the admission filter causes freshness issues (rare)</td></tr>
+              <tr><td><strong>Size-based</strong></td><td>Evicts by weight (byte count) rather than entry count</td><td>Caches with highly variable entry sizes</td><td>Adds complexity; only needed when entry size variance is &gt;10&times;</td></tr>
+            </tbody>
+          </table>
+
+          <p>For Redis L2 eviction, use <code>volatile-lru</code> &mdash; evict only keys that have a TTL set, using LRU ordering. All cache entries should have TTLs (even if long); session data must not be evicted. <code>volatile-lru</code> gives you the separation you need without risking eviction of keys that must survive memory pressure.</p>
+
+          <h2 id="warming">Cache Warming</h2>
+          <p>A cold cache on pod startup causes a thundering herd: all pods start simultaneously (during a rolling deploy or after a cluster restart), all have empty L1 caches, all send concurrent requests to Redis for the same reference data, and if Redis also misses (after a Redis restart), all concurrent requests go to the database simultaneously. At 10 pods each making 100 concurrent requests, that is 1,000 simultaneous DB queries for the same reference data that a single DB read per cache key could have handled.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>CacheWarmingService.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-c">// Warms reference data caches on application startup.</span>
+<span class="tok-c">// Loads from Redis (L2) first; falls back to DB only if L2 is also cold.</span>
+<span class="tok-c">// Staggers DB reads across pods using a randomized delay to prevent stampede.</span>
+<span class="tok-k">@Component</span>
+<span class="tok-k">public class</span> <span class="tok-t">CacheWarmingService</span> <span class="tok-k">implements</span> <span class="tok-t">ApplicationListener</span>&lt;<span class="tok-t">ApplicationReadyEvent</span>&gt; {
+
+    <span class="tok-k">private final</span> <span class="tok-t">ExchangeRateRepository</span> exchangeRateRepo;
+    <span class="tok-k">private final</span> <span class="tok-t">LimitMatrixRepository</span> limitMatrixRepo;
+    <span class="tok-k">private final</span> <span class="tok-t">CacheManager</span> cacheManager;
+
+    @Override
+    <span class="tok-k">public void</span> onApplicationEvent(<span class="tok-t">ApplicationReadyEvent</span> event) {
+        <span class="tok-c">// Stagger pod startup warming: random delay 0-10 seconds.</span>
+        <span class="tok-c">// Reduces simultaneous DB reads from N pods to ~N/10 concurrent reads.</span>
+        <span class="tok-k">long</span> delay = (<span class="tok-k">long</span>)(Math.random() * <span class="tok-n">10_000</span>);
+        <span class="tok-k">try</span> { Thread.sleep(delay); } <span class="tok-k">catch</span> (<span class="tok-t">InterruptedException</span> e) { Thread.currentThread().interrupt(); <span class="tok-k">return</span>; }
+
+        <span class="tok-c">// warmCache() calls @Cacheable methods which check L2 before DB.</span>
+        <span class="tok-c">// If L2 is warm from another pod, DB is not reached at all.</span>
+        warmExchangeRates();
+        warmLimitMatrix();
+
+        log.info(<span class="tok-s">"Cache warming complete. Exchange rates: {}, Limit matrix: {}"</span>,
+            exchangeRateCount, limitMatrixCount);
+    }
+
+    <span class="tok-k">private void</span> warmExchangeRates() {
+        <span class="tok-c">// Load all active exchange rate pairs; @Cacheable populates L2 on DB read.</span>
+        exchangeRateRepo.findAllActive().forEach(rate -&gt; {
+            <span class="tok-t">Cache</span> l1 = cacheManager.getCache(<span class="tok-s">"exchange-rates"</span>);
+            <span class="tok-k">if</span> (l1 != <span class="tok-k">null</span>) l1.put(rate.getPair(), rate);
+        });
+    }
+
+    <span class="tok-k">private void</span> warmLimitMatrix() {
+        <span class="tok-c">// Limit matrix: load all product/segment combinations.</span>
+        <span class="tok-c">// TTL-aware: only warm L1 if L2 TTL still has &gt; 60% of its lifetime remaining.</span>
+        limitMatrixRepo.findAllWithValidCache().forEach(entry -&gt; {
+            <span class="tok-t">Cache</span> l1 = cacheManager.getCache(<span class="tok-s">"limit-matrix"</span>);
+            <span class="tok-k">if</span> (l1 != <span class="tok-k">null</span>) l1.put(entry.getKey(), entry.getValue());
+        });
+    }
+}</code></pre>
+          </div>
+
+          <h2 id="banking-patterns">Banking-Specific Patterns</h2>
+          <p>Different financial data types have fundamentally different staleness budgets, update frequencies, and consistency requirements. Assigning every entity to the same tier with the same TTL is the most common caching design error in banking systems. The correct approach is to assign each data type to the appropriate tier explicitly, with a documented rationale.</p>
+
+          <table>
+            <thead>
+              <tr><th>Data type</th><th>L1 (Caffeine)</th><th>L2 (Redis)</th><th>Invalidation</th><th>Rationale</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Account balance</strong></td><td>No L1 &mdash; too risky</td><td>30 s safety-net TTL</td><td>CDC on every debit/credit</td><td>Zero staleness requirement; any L1 staleness unacceptable under SAMA</td></tr>
+              <tr><td><strong>Exchange rates</strong></td><td>60 s TTL, 200 entries</td><td>5 min TTL</td><td>Scheduled refresh at SAMA window</td><td>60-second staleness acceptable; high read frequency makes L1 essential</td></tr>
+              <tr><td><strong>BIC/IBAN routing table</strong></td><td>1 h TTL, 10,000 entries</td><td>24 h TTL</td><td>CDC on SWIFT table update</td><td>Changes only during settlement windows; very high read-to-write ratio</td></tr>
+              <tr><td><strong>Limit matrix</strong></td><td>30 s TTL, 5,000 entries</td><td>10 min TTL</td><td>Application-level on config change</td><td>Updated by ops, not by transactions; L1 coherence required across pods</td></tr>
+              <tr><td><strong>Product catalogue</strong></td><td>5 min TTL, 1,000 entries</td><td>1 h TTL</td><td>Application-level on publish</td><td>Low update frequency; L1 reduces Redis load from product listing APIs</td></tr>
+            </tbody>
+          </table>
+
+          <p>Account balance is the canonical exception to multi-tier caching. The SAMA balance display requirement eliminates L1 as an option: any pod-local L1 entry for a balance will diverge from the DB state within milliseconds of a transaction. Store balances only in L2 (Redis) with a short safety-net TTL and CDC-driven invalidation. The Redis RTT for a balance read is typically 0.5&ndash;1 ms &mdash; acceptable for a once-per-page-load dashboard read.</p>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Write-behind caching for financial data means the DB may be behind the cache</div>
+            <p>Write-behind (or write-back) caching writes to the cache synchronously but writes to the database asynchronously. If the pod crashes before the async write completes, the data in the cache is lost and the database never received the update. For a payment limit counter or an account balance, this means real money or authorised payments may be lost. Write-behind is appropriate only for non-financial data where eventual persistence is acceptable (analytics counters, recommendation history). It must never be used for account state, limit structures, or any data that is an authoritative financial record.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Thundering herd on cache expiry</div>
+            <p>When a popular cache entry expires simultaneously across multiple pods, all pods see a cache miss and all send concurrent requests to the database for the same key. At 10 pods with 100 concurrent users per pod, a single cache expiry can produce 1,000 simultaneous DB queries in the space of a few milliseconds. Mitigation: probabilistic early expiration (Caffeine&rsquo;s <code>refreshAfterWrite</code> triggers a background refresh before expiry); per-key mutex (one pod fetches and repopulates while others wait on a Redis lock); or jitter on TTL (add &plusmn;10% random variation to TTLs so entries across pods expire at different times).</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Cache stampede on startup</div>
+            <p>All pods in a rolling deployment start within a narrow time window. All have cold L1 caches. All send warming requests to Redis simultaneously. If Redis is also cold (after a Redis restart or a cluster failover), all warming requests go to the database simultaneously. At 10 pods warming 5,000 limit matrix entries each, that is 50,000 DB queries in the first 30 seconds after startup. Add a randomised delay to the warming service (0&ndash;10 seconds), warm from L2 before going to L3, and set the readiness probe to only pass after warming completes &mdash; so traffic is not routed to a pod with a cold cache.</p>
+          </div>
+
+          <h2 id="checklist">Steps to Implement a Production Multi-Tier Cache with L1 Coherence</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Classify all cached entities by staleness budget</h4>
+              <p>Produce a data classification table: entity name, update frequency, acceptable staleness window, L1 eligible (yes/no), L1 TTL, L2 TTL, invalidation mechanism. This table drives every subsequent decision. Get sign-off from the business owner on the staleness window before implementing &mdash; discovering disagreement during a SAMA examination is expensive.</p>
+            </li>
+            <li>
+              <h4>Deploy Caffeine L1 for eligible entities</h4>
+              <p>Add <code>spring-boot-starter-cache</code> and <code>caffeine</code> dependencies. Configure <code>CaffeineCacheManager</code> with per-cache specs (maximumSize, expireAfterWrite). Annotate service methods with <code>@Cacheable(cacheManager="caffeineCacheManager")</code>. Expose Caffeine stats via Micrometer to measure hit rate immediately.</p>
+            </li>
+            <li>
+              <h4>Add Redis L2 with JSON serialization</h4>
+              <p>Configure <code>RedisCacheManager</code> with <code>GenericJackson2JsonRedisSerializer</code> and per-cache TTLs. Set up a <code>CompositeCacheManager</code> (L1 first, L2 fallback) so <code>@Cacheable</code> checks both tiers transparently. Verify that an L1 miss populates L1 from L2 correctly.</p>
+            </li>
+            <li>
+              <h4>Enable Redis keyspace notifications</h4>
+              <p>Run <code>CONFIG SET notify-keyspace-events KEA</code> on the cache Redis instance (or add it to the Redis configuration). Implement <code>RedisMessageListenerContainer</code> subscribed to <code>__keyevent@0__:del</code> and <code>__keyevent@0__:expired</code> channels. Test: write a key to Redis, delete it, verify that the corresponding L1 entry is evicted in the same pod and in a separate pod instance.</p>
+            </li>
+            <li>
+              <h4>Implement cache warming with startup jitter</h4>
+              <p>Implement <code>ApplicationListener&lt;ApplicationReadyEvent&gt;</code> that pre-populates L1 from L2 (or L3 if L2 is cold) on startup. Add a random 0&ndash;10 second jitter to prevent stampede. Gate the readiness probe behind a warming-complete flag so traffic is not routed before the cache is warm.</p>
+            </li>
+            <li>
+              <h4>Add hit-rate and staleness metrics</h4>
+              <p>Expose Caffeine stats via Micrometer (<code>cache.gets</code>, <code>cache.evictions</code>, <code>cache.size</code>). Add a custom metric for L2 keyspace notification latency (time between a Redis key deletion and the L1 eviction). Alert: L1 hit rate below 80% for exchange-rates is a tuning problem; L1 hit rate below 50% means L1 adds cost without benefit.</p>
+            </li>
+            <li>
+              <h4>Load-test and tune before production</h4>
+              <p>Run a load test at 1.5x expected peak RPS with all pods at steady state. Measure: L1 hit rate, L2 hit rate, DB query rate, Redis CPU, JVM heap usage, p99 latency. Tune maximumSize, TTLs, and warming scope based on observed hit rates. A L1 hit rate below 90% on exchange rates indicates the TTL is too short or maximumSize too small.</p>
+            </li>
+          </ol>
+
+          <table>
+            <thead>
+              <tr><th>Tier</th><th>Latency</th><th>Scope</th><th>TTL range</th><th>Consistency</th><th>Eviction control</th><th>Cost per lookup</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>L1 Caffeine</strong></td><td>&lt;1 &micro;s (heap)</td><td>Pod-local</td><td>10 s &ndash; 10 min</td><td>Eventual (TTL + keyspace notification)</td><td>W-TinyLFU, size-bounded</td><td>Heap memory allocation</td></tr>
+              <tr><td><strong>L2 Redis</strong></td><td>0.5&ndash;2 ms (network)</td><td>All pods</td><td>30 s &ndash; 24 h</td><td>Eventual (TTL + explicit invalidation)</td><td>volatile-lru (recommended)</td><td>Network RTT + Redis CPU</td></tr>
+              <tr><td><strong>L3 Database</strong></td><td>10&ndash;100 ms (network + disk)</td><td>Global</td><td>N/A (source of truth)</td><td>Strong (ACID)</td><td>N/A</td><td>DB connection, query plan, I/O</td></tr>
+            </tbody>
+          </table>
+
+          <nav class="article-nav">
+            <a href="distributed-session-management.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Distributed Session Management</div>
+            </a>
+            <a href="../distributed-caching.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Distributed Caching &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

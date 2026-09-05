@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Streaming: Schema Registry &amp; Data Contracts &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Confluent Schema Registry, Avro, Protobuf, and JSON Schema for Kafka-based payment event streams: compatibility modes, ISO 20022 mapping, CI integration, and SAMA regulatory schema governance.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Data Streaming: Schema Registry &amp; Data Contracts &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Schema Registry as the API contract layer for event streams: Avro vs Protobuf, compatibility modes, ISO 20022 Avro mapping, and CI enforcement for regulated banking.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/schema-registry-and-data-contracts.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Schema Registry &amp; Data Contracts &mdash; Data Streaming Lab">
+  <meta name="twitter:description" content="Confluent Schema Registry, Avro, Protobuf, compatibility modes, and ISO 20022 mapping for regulated payment event streams.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/schema-registry-and-data-contracts.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Data Streaming: Schema Registry & Data Contracts",
+    "description": "Confluent Schema Registry, Avro, Protobuf, and JSON Schema for Kafka-based payment event streams: compatibility modes, ISO 20022 mapping, CI integration, and SAMA regulatory schema governance.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/data-streaming/schema-registry-and-data-contracts.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Data Streaming &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/data-streaming.html"
+    },
+    "proficiencyLevel": "Expert",
+    "dependencies": "Confluent Schema Registry 7.7, Apache Avro, Protobuf, Apache Kafka 3.7, Strimzi"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Schema Registry &amp; Data Contracts</div>
+          <span class="overline">Lab Article</span>
+          <h1>Data Streaming: Schema Registry &amp; Data Contracts</h1>
+          <p class="lead">Confluent Schema Registry as the API contract layer for Kafka event streams &mdash; Avro vs Protobuf format selection, compatibility enforcement in CI, ISO 20022 Avro mapping for payment events, and the schema governance practices that keep SAMA regulatory audit trails intact when producer and consumer teams evolve independently.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#format-comparison">Format comparison</a></li>
+            <li><a href="#schema-registry">Schema Registry architecture</a></li>
+            <li><a href="#compatibility">Compatibility modes</a></li>
+            <li><a href="#iso20022-schemas">ISO 20022 in Avro</a></li>
+            <li><a href="#evolution">Schema evolution patterns</a></li>
+            <li><a href="#ci-integration">CI/CD integration</a></li>
+            <li><a href="#sama-reporting">SAMA regulatory schemas</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Confluent Schema Registry 7.7 &middot; Avro &middot; Protobuf &middot; Kafka 3.7 &middot; Strimzi</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~16 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Schema-less Kafka topics are a silent failure mode. The producer publishes JSON with a renamed field, the consumer silently deserialises a null into a field it expected to be mandatory, the downstream process writes a zero amount to the general ledger, and the first person to notice is the reconciliation team two days later. There are no exceptions, no error logs, no alerts. The schema mismatch is absorbed by the consumer&rsquo;s null-tolerance and manifests as corrupted business data.</p>
+          <p>The contract problem between producer and consumer teams is fundamentally an organisational problem dressed as a technical one. In a microservices architecture, the payments team owns the producer and the fraud team owns the consumer. When the payments team adds a field, the fraud team&rsquo;s consumer should continue working. When they rename a field, it should not. Without an enforced schema contract, the only mechanism that prevents breakage is inter-team communication &mdash; which does not scale, is not auditable, and fails silently when it fails at all.</p>
+          <p><strong>Confluent Schema Registry</strong> is the API contract layer for event streams. It stores versioned schemas, enforces compatibility rules before a new schema version is registered, embeds a schema ID in every message on the wire, and provides a REST API that serialisers and deserialisers call automatically. The producer cannot publish an incompatible schema without the registry refusing the registration. The consumer cannot silently absorb a field change &mdash; it fetches the exact schema the producer used and deserialises deterministically.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Schema ID 0 in the wire format means no schema &mdash; this is a footgun</div>
+            <p>Confluent&rsquo;s wire format for schema-registered messages begins with a magic byte (<code>0x00</code>) followed by a 4-byte big-endian schema ID. A raw JSON or Avro message that was not serialised with <code>KafkaAvroSerializer</code> will not start with this magic byte. If your consumer uses <code>KafkaAvroDeserializer</code>, it will throw a <code>SerializationException</code> on the first byte. Always validate that every producer on a registered topic uses the schema-registry serialiser &mdash; a single legacy producer publishing raw bytes will break all schema-aware consumers on that topic immediately.</p>
+          </div>
+
+          <h2 id="format-comparison">Avro vs Protobuf vs JSON Schema</h2>
+          <p>Schema Registry 7.x supports three serialisation formats. The right choice depends on your team&rsquo;s constraints, not on benchmarks in isolation. For payment event streams in a regulated environment the differences are operationally significant.</p>
+
+          <table>
+            <thead>
+              <tr><th>Criterion</th><th>Avro</th><th>Protobuf</th><th>JSON Schema</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Wire size</td><td>Smallest &mdash; binary, no field names on wire</td><td>Small &mdash; binary, field numbers only</td><td>Largest &mdash; text, full field names</td></tr>
+              <tr><td>Compatibility enforcement</td><td>Strong &mdash; full forward/backward via registry</td><td>Strong &mdash; field number stability required</td><td>Partial &mdash; harder to enforce additive-only</td></tr>
+              <tr><td>Code generation</td><td>Good (Java/Python/C#)</td><td>Excellent &mdash; first-class tooling across 12 languages</td><td>Poor &mdash; inconsistent across generators</td></tr>
+              <tr><td>ISO 20022 mapping ease</td><td>Good &mdash; unions handle nullable fields</td><td>Moderate &mdash; <code>optional</code> maps well, nesting verbose</td><td>Natural &mdash; JSON Schema mirrors MX XML structure</td></tr>
+              <tr><td>Schema registry support</td><td>Native &mdash; original format</td><td>Native from SR 6.0+</td><td>Native from SR 6.1+</td></tr>
+            </tbody>
+          </table>
+
+          <p><strong>Recommendation for payment event streams:</strong> Avro for internal Kafka topics where throughput and schema governance are priorities; Protobuf for cross-team or cross-organisation event buses where polyglot consumers matter; JSON Schema only for topics that must remain human-readable for audit without tooling. For ISO 20022 message envelopes, Avro with decimal <code>logicalType</code> is the strongest choice &mdash; the binary compactness reduces Kafka storage costs on high-volume IPS and SARIE feeds, and the registry enforces the field-level contract that regulated message formats demand.</p>
+
+          <h2 id="schema-registry">Schema Registry Architecture</h2>
+          <p>Confluent Schema Registry is a separate JVM process (or set of replicated processes) that sits alongside your Kafka cluster. It stores schemas in an internal Kafka topic (<code>_schemas</code>), exposes a REST API on port 8081, and is addressed by serialisers and deserialisers through a <code>schema.registry.url</code> configuration property.</p>
+          <p>Three concepts govern how schemas are stored: <strong>subjects</strong>, <strong>schema IDs</strong>, and <strong>versions</strong>. A subject is a named scope for schema evolution, typically following a <em>TopicNameStrategy</em> convention: a topic called <code>payments.pacs008</code> has subjects <code>payments.pacs008-key</code> and <code>payments.pacs008-value</code>. An alternative, <em>RecordNameStrategy</em>, scopes schemas by their fully-qualified record name rather than by topic &mdash; useful when the same schema type is published to multiple topics and you want a single evolution history. A schema ID is a globally unique integer assigned at registration time; it is embedded in every message wire format and used by the consumer to fetch the exact schema for deserialisation. A version is the sequence number within a subject &mdash; each new compatible schema registration increments the version.</p>
+
+          <div class="diagram" role="img" aria-label="Schema Registry wire format flow: producer registers schema, publishes message with magic byte and schema ID, consumer fetches schema and deserialises">
+            <div class="diagram__inner">
+              <svg width="780" height="300" viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="sr-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="sr-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="sr-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                </defs>
+
+                <!-- Producer -->
+                <rect x="10" y="100" width="140" height="80" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="80" y="132" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Producer</text>
+                <text x="80" y="148" text-anchor="middle" fill="#71717a" font-size="9">KafkaAvroSerializer</text>
+                <text x="80" y="162" text-anchor="middle" fill="#71717a" font-size="9">payments service</text>
+
+                <!-- Schema Registry -->
+                <rect x="285" y="20" width="210" height="110" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="390" y="44" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">Schema Registry 7.7</text>
+                <rect x="300" y="55" width="180" height="30" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="390" y="72" text-anchor="middle" fill="#e4e4e7" font-size="9">REST API :8081</text>
+                <rect x="300" y="93" width="180" height="28" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="390" y="110" text-anchor="middle" fill="#71717a" font-size="9">_schemas topic (internal Kafka)</text>
+
+                <!-- Kafka Topic -->
+                <rect x="285" y="165" width="210" height="95" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="390" y="188" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Kafka Topic</text>
+                <text x="390" y="203" text-anchor="middle" fill="#71717a" font-size="9">payments.pacs008-value</text>
+                <!-- wire format bytes representation -->
+                <rect x="300" y="210" width="40" height="28" rx="3" fill="#ef4444" opacity="0.8"/>
+                <text x="320" y="228" text-anchor="middle" fill="#e4e4e7" font-size="8" font-weight="600">0x00</text>
+                <rect x="344" y="210" width="60" height="28" rx="3" fill="#fbbf24" opacity="0.8"/>
+                <text x="374" y="228" text-anchor="middle" fill="#16161f" font-size="8" font-weight="600">schema_id</text>
+                <rect x="408" y="210" width="72" height="28" rx="3" fill="#1c1c28" stroke="#e4e4e7" opacity="0.8"/>
+                <text x="444" y="228" text-anchor="middle" fill="#e4e4e7" font-size="8">Avro bytes</text>
+                <text x="390" y="256" text-anchor="middle" fill="#71717a" font-size="8">magic byte &middot; 4-byte schema ID &middot; Avro payload</text>
+
+                <!-- Consumer -->
+                <rect x="630" y="100" width="140" height="80" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="700" y="132" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">Consumer</text>
+                <text x="700" y="148" text-anchor="middle" fill="#71717a" font-size="9">KafkaAvroDeserializer</text>
+                <text x="700" y="162" text-anchor="middle" fill="#71717a" font-size="9">fraud / risk service</text>
+
+                <!-- Register schema: Producer → Registry (up) -->
+                <line x1="150" y1="115" x2="283" y2="75" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sr-arr)"/>
+                <text x="196" y="83" fill="#00d4aa" font-size="8" text-anchor="middle">register / check</text>
+                <text x="196" y="94" fill="#00d4aa" font-size="8" text-anchor="middle">compatibility</text>
+
+                <!-- Registry returns schema ID: Registry → Producer (down) -->
+                <line x1="285" y1="95" x2="152" y2="135" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#sr-arr)"/>
+                <text x="226" y="128" fill="#fbbf24" font-size="8" text-anchor="middle">schema_id</text>
+
+                <!-- Producer publishes to topic -->
+                <line x1="150" y1="155" x2="283" y2="210" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sr-arr)"/>
+                <text x="196" y="205" fill="#00d4aa" font-size="8" text-anchor="middle">publish</text>
+
+                <!-- Topic to Consumer (consume) -->
+                <line x1="497" y1="210" x2="628" y2="155" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#sr-arr2)"/>
+                <text x="578" y="200" fill="#a78bfa" font-size="8" text-anchor="middle">consume</text>
+
+                <!-- Consumer → Registry (fetch schema) -->
+                <line x1="700" y1="100" x2="497" y2="75" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#sr-arr3)"/>
+                <text x="600" y="72" fill="#4a9eff" font-size="8" text-anchor="middle">fetch schema by ID</text>
+                <text x="600" y="83" fill="#4a9eff" font-size="8" text-anchor="middle">(cached after first call)</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Schema Registry wire format flow: producer registers schema and receives a schema ID; every message carries magic byte + schema ID + Avro payload; consumer fetches the schema by ID (once, then caches) and deserialises deterministically</div>
+          </div>
+
+          <h2 id="compatibility">Compatibility Modes</h2>
+          <p>The compatibility mode on a subject controls what schema changes are allowed when a new version is registered. This is the core governance lever &mdash; set it too loosely and the registry provides no meaningful protection; set it too strictly and schema evolution becomes a negotiation that slows delivery.</p>
+
+          <table>
+            <thead>
+              <tr><th>Mode</th><th>What it allows</th><th>What it forbids</th><th>Consumer must upgrade?</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>BACKWARD</strong></td><td>Add optional fields (with defaults), remove optional fields</td><td>Rename fields, add required fields, change types</td><td>No &mdash; old consumer reads new messages</td></tr>
+              <tr><td><strong>FORWARD</strong></td><td>Add required fields, remove optional fields</td><td>Rename fields, remove required fields</td><td>Yes &mdash; new consumer reads old messages</td></tr>
+              <tr><td><strong>FULL</strong></td><td>Add optional fields with defaults only</td><td>Remove any field, rename, change types</td><td>No in either direction</td></tr>
+              <tr><td><strong>BACKWARD_TRANSITIVE</strong></td><td>Same as BACKWARD but checked against all prior versions</td><td>Anything not BACKWARD-compatible with every prior version</td><td>No &mdash; even very old consumers work</td></tr>
+              <tr><td><strong>NONE</strong></td><td>Any change</td><td>Nothing &mdash; no compatibility check performed</td><td>Unknown &mdash; undefined</td></tr>
+            </tbody>
+          </table>
+
+          <p><strong>Production guidance for payment event streams:</strong> default to <strong>FULL</strong>. This is the most conservative useful mode &mdash; both old consumers reading new messages and new consumers reading old messages work correctly. FULL requires that every new schema version adds only optional fields with default values, which is a discipline that forces explicit migration planning for breaking changes. Use <strong>BACKWARD_TRANSITIVE</strong> for topics where consumers may be several schema versions behind &mdash; common on regulated replay or audit topics where consumers may be recovering from a long outage. Reserve <strong>NONE</strong> only for development subjects where schema iteration is rapid and no consumer SLA exists.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">FULL compatibility is the required default for payment event schemas</div>
+            <p>Do not relax compatibility to FORWARD or BACKWARD on topics that carry payment instructions or transaction events without a documented migration plan reviewed by both the producing and consuming team leads. A FORWARD-only schema allows the producer to add required fields that break old consumers silently if those consumers are not upgraded first &mdash; exactly the failure mode Schema Registry exists to prevent. The governance board should review and approve any compatibility relaxation request as a change with a migration plan attached.</p>
+          </div>
+
+          <p>Compatibility is enforced in the CI pipeline using the <code>schema-registry-maven-plugin</code> or by calling the registry&rsquo;s <code>/compatibility</code> endpoint directly. Register schemas in lower environments (dev, test) before merging to main; fail the pipeline if compatibility is rejected. See the <a href="#ci-integration">CI/CD integration</a> section for configuration details.</p>
+
+          <h2 id="iso20022-schemas">ISO 20022 in Avro</h2>
+          <p>ISO 20022 messages &mdash; pacs.008, pacs.002, camt.053, pain.001 &mdash; are XML-first in the standard, but transporting them as raw MX XML on Kafka topics wastes considerable bandwidth, lacks schema enforcement, and provides no type safety. Mapping ISO 20022 message elements to Avro records gives you binary compactness, registry-enforced compatibility, and generated Java classes that type-check at compile time.</p>
+          <p>The key mapping rules: ISO 20022&rsquo;s XML element hierarchy maps to Avro nested records; XML attributes become Avro fields; optional XML elements (<code>minOccurs=&quot;0&quot;</code>) become Avro union types (<code>["null", actualType]</code>) with a <code>null</code> default; ISO 20022&rsquo;s <code>ActiveOrHistoricCurrencyAndAmount</code> becomes an Avro record with two fields &mdash; an amount and a currency code.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>pacs008-payment-event.avsc</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-k">"type"</span>: <span class="tok-s">"record"</span>,
+  <span class="tok-k">"name"</span>: <span class="tok-s">"PaymentEvent"</span>,
+  <span class="tok-k">"namespace"</span>: <span class="tok-s">"info.wbadawi.payments.avro"</span>,
+  <span class="tok-k">"doc"</span>: <span class="tok-s">"pacs.008.001.09 FIToFICustomerCreditTransfer envelope — internal event schema"</span>,
+  <span class="tok-k">"fields"</span>: [
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"msgId"</span>,
+      <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"GrpHdr/MsgId — ISO 20022 Max35Text"</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"creDtTm"</span>,
+      <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"long"</span>, <span class="tok-k">"logicalType"</span>: <span class="tok-s">"timestamp-millis"</span> },
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"GrpHdr/CreDtTm — creation timestamp, epoch millis UTC"</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"nbOfTxs"</span>,
+      <span class="tok-k">"type"</span>: <span class="tok-s">"int"</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"GrpHdr/NbOfTxs"</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"instrAmt"</span>,
+      <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"bytes"</span>, <span class="tok-k">"logicalType"</span>: <span class="tok-s">"decimal"</span>, <span class="tok-k">"precision"</span>: <span class="tok-n">18</span>, <span class="tok-k">"scale"</span>: <span class="tok-n">5</span> },
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"CdtTrfTxInf/IntrBkSttlmAmt — settlement amount, decimal, scale=5"</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"instrAmtCcy"</span>,
+      <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"IntrBkSttlmAmt Ccy attribute — ISO 4217 code e.g. SAR"</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"endToEndId"</span>,
+      <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"CdtTrfTxInf/PmtId/EndToEndId"</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"cdtrIBAN"</span>,
+      <span class="tok-k">"type"</span>: [<span class="tok-s">"null"</span>, <span class="tok-s">"string"</span>],
+      <span class="tok-k">"default"</span>: <span class="tok-k">null</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"Cdtr/Acct/Id/IBAN — nullable; not all IPS transfers have IBAN"</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"dbtrIBAN"</span>,
+      <span class="tok-k">"type"</span>: [<span class="tok-s">"null"</span>, <span class="tok-s">"string"</span>],
+      <span class="tok-k">"default"</span>: <span class="tok-k">null</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"Dbtr/Acct/Id/IBAN — nullable"</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"pdplClassification"</span>,
+      <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>,
+      <span class="tok-k">"default"</span>: <span class="tok-s">"CONFIDENTIAL"</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"PDPL data classification: PUBLIC | INTERNAL | CONFIDENTIAL | RESTRICTED"</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"schemaVersion"</span>,
+      <span class="tok-k">"type"</span>: <span class="tok-s">"int"</span>,
+      <span class="tok-k">"default"</span>: <span class="tok-n">1</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"Internal schema version for migration tracking"</span>
+    }
+  ]
+}</code></pre>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never use float or double for monetary amounts in Avro</div>
+            <p>IEEE 754 floating-point cannot represent most decimal fractions exactly. A SAR 100.10 amount stored as a <code>double</code> may round-trip as <code>100.09999999999999</code>. In a payment system this is a reconciliation defect and potentially a regulatory finding. Always use Avro&rsquo;s <code>bytes</code> with <code>logicalType: decimal</code> and explicit precision/scale, or store amounts as <code>string</code> if the consuming team cannot handle decimal <code>logicalType</code>. Set scale to 5 to accommodate SAR sub-halala precision for IPS.</p>
+          </div>
+
+          <h2 id="evolution">Schema Evolution Patterns</h2>
+          <p>Schema evolution is inevitable. Fields get added as the business adds reporting requirements; the naming conventions established in year one look wrong in year three; regulatory changes require new mandatory fields. The question is not whether schemas evolve but whether they evolve safely.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Adding optional fields</h4>
+              <p>This is the safe operation. Add a field with a default value and type <code>["null", T]</code> or <code>T</code> with a defined default. Old consumers that do not know the field receive its default on deserialisation. New producers that write the field are readable by old consumers. This is the only change allowed under FULL compatibility.</p>
+            </li>
+            <li>
+              <h4>Renaming fields (never rename &mdash; use aliases)</h4>
+              <p>Renaming a field is a breaking change: old consumers using the old name cannot find the value. The correct approach is to use Avro&rsquo;s <code>aliases</code> mechanism: add the new name as a field and mark the old name as an alias. Old consumers reading the old name continue to work; new consumers use the new name. Remove the alias only after all consumers are on the new name &mdash; typically after two schema versions.</p>
+            </li>
+            <li>
+              <h4>Deprecating fields</h4>
+              <p>Mark the field in the <code>doc</code> property: <code>"doc": "DEPRECATED: use fooNewField instead. Remove after schema version 12."</code>. Keep the deprecated field in the schema for at least two versions. Do not remove it until all consumers have been updated and verified not to read it.</p>
+            </li>
+            <li>
+              <h4>Removing fields</h4>
+              <p>Remove the consumer that reads the field before removing the field from the schema. Removing a field that a consumer depends on is a silent data loss &mdash; the field deserialises to its default value, which for most types is zero or null. Follow the sequence: deprecate &rarr; update consumers &rarr; remove field from schema.</p>
+            </li>
+            <li>
+              <h4>Changing field types</h4>
+              <p>Avro supports promotions (e.g., <code>int</code> to <code>long</code>, <code>float</code> to <code>double</code>) as BACKWARD-compatible changes. Any other type change is incompatible and must be handled as a new field plus a migration period. In practice, type changes on payment fields are a governance event requiring a migration plan, not a schema version bump.</p>
+            </li>
+          </ol>
+
+          <h2 id="ci-integration">CI/CD Integration</h2>
+          <p>Schema compatibility enforcement belongs in the CI pipeline, not in a production deployment. A failed compatibility check in CI is a build failure that prevents the code from reaching a deployment; a failed compatibility check in production is an outage. The investment in CI integration pays back on the first incompatible change a developer makes to a shared schema.</p>
+          <p>Two integration points: a <strong>pre-commit hook</strong> that runs compatibility against the development Schema Registry before the developer pushes; and a <strong>CI pipeline step</strong> that registers the schema and blocks merge if registration fails. The Maven plugin approach integrates with both:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>pom.xml (schema-registry-maven-plugin)</span><span class="code-block__lang">xml</span></div>
+<pre><code><span class="tok-c">&lt;!-- Confluent Schema Registry Maven Plugin --&gt;</span>
+<span class="tok-k">&lt;plugin&gt;</span>
+  <span class="tok-k">&lt;groupId&gt;</span>io.confluent<span class="tok-k">&lt;/groupId&gt;</span>
+  <span class="tok-k">&lt;artifactId&gt;</span>kafka-schema-registry-maven-plugin<span class="tok-k">&lt;/artifactId&gt;</span>
+  <span class="tok-k">&lt;version&gt;</span>7.7.0<span class="tok-k">&lt;/version&gt;</span>
+  <span class="tok-k">&lt;configuration&gt;</span>
+    <span class="tok-k">&lt;schemaRegistryUrls&gt;</span>
+      <span class="tok-k">&lt;param&gt;</span>${schema.registry.url}<span class="tok-k">&lt;/param&gt;</span>
+    <span class="tok-k">&lt;/schemaRegistryUrls&gt;</span>
+    <span class="tok-k">&lt;subjects&gt;</span>
+      <span class="tok-c">&lt;!-- subject name maps to schema file --&gt;</span>
+      <span class="tok-k">&lt;payments.pacs008-value&gt;</span>
+        src/main/avro/pacs008-payment-event.avsc
+      <span class="tok-k">&lt;/payments.pacs008-value&gt;</span>
+    <span class="tok-k">&lt;/subjects&gt;</span>
+    <span class="tok-k">&lt;compatibilityLevels&gt;</span>
+      <span class="tok-c">&lt;!-- enforce FULL on payment topics --&gt;</span>
+      <span class="tok-k">&lt;payments.pacs008-value&gt;</span>FULL<span class="tok-k">&lt;/payments.pacs008-value&gt;</span>
+    <span class="tok-k">&lt;/compatibilityLevels&gt;</span>
+  <span class="tok-k">&lt;/configuration&gt;</span>
+  <span class="tok-k">&lt;executions&gt;</span>
+    <span class="tok-c">&lt;!-- test-compatibility: check but don't register (for PR validation) --&gt;</span>
+    <span class="tok-k">&lt;execution&gt;</span>
+      <span class="tok-k">&lt;id&gt;</span>test-compatibility<span class="tok-k">&lt;/id&gt;</span>
+      <span class="tok-k">&lt;phase&gt;</span>validate<span class="tok-k">&lt;/phase&gt;</span>
+      <span class="tok-k">&lt;goals&gt;&lt;goal&gt;</span>test-compatibility<span class="tok-k">&lt;/goal&gt;&lt;/goals&gt;</span>
+    <span class="tok-k">&lt;/execution&gt;</span>
+    <span class="tok-c">&lt;!-- register: register on merge to main --&gt;</span>
+    <span class="tok-k">&lt;execution&gt;</span>
+      <span class="tok-k">&lt;id&gt;</span>register<span class="tok-k">&lt;/id&gt;</span>
+      <span class="tok-k">&lt;phase&gt;</span>deploy<span class="tok-k">&lt;/phase&gt;</span>
+      <span class="tok-k">&lt;goals&gt;&lt;goal&gt;</span>register<span class="tok-k">&lt;/goal&gt;&lt;/goals&gt;</span>
+    <span class="tok-k">&lt;/execution&gt;</span>
+  <span class="tok-k">&lt;/executions&gt;</span>
+<span class="tok-k">&lt;/plugin&gt;</span></code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>CI compatibility check (curl)</span><span class="code-block__lang">bash</span></div>
+<pre><code><span class="tok-c">#!/usr/bin/env bash</span>
+<span class="tok-c"># Fail the CI build if the new schema is incompatible with the latest registered version.</span>
+<span class="tok-c"># Run this in the PR validation stage against the dev registry.</span>
+
+SCHEMA_FILE=<span class="tok-s">"src/main/avro/pacs008-payment-event.avsc"</span>
+SUBJECT=<span class="tok-s">"payments.pacs008-value"</span>
+REGISTRY=<span class="tok-s">"https://schema-registry.dev.internal:8081"</span>
+
+<span class="tok-c"># Escape schema JSON for embedding in request body</span>
+SCHEMA_JSON=$(cat <span class="tok-s">"${SCHEMA_FILE}"</span> | python3 -c <span class="tok-s">"import sys,json; print(json.dumps(sys.stdin.read()))"</span>)
+
+RESPONSE=$(curl -s -o /dev/null -w <span class="tok-s">"%{http_code}"</span> \
+  -X POST \
+  -H <span class="tok-s">"Content-Type: application/vnd.schemaregistry.v1+json"</span> \
+  --data <span class="tok-s">"{\"schema\": ${SCHEMA_JSON}}"</span> \
+  <span class="tok-s">"${REGISTRY}/compatibility/subjects/${SUBJECT}/versions/latest"</span>)
+
+<span class="tok-k">if</span> [ <span class="tok-s">"${RESPONSE}"</span> != <span class="tok-s">"200"</span> ]; then
+  echo <span class="tok-s">"ERROR: Schema compatibility check failed (HTTP ${RESPONSE}) for subject ${SUBJECT}"</span>
+  echo <span class="tok-s">"Review compatibility rules before merging. Compatibility mode: FULL"</span>
+  exit <span class="tok-n">1</span>
+fi
+
+COMPAT=$(curl -s \
+  -H <span class="tok-s">"Content-Type: application/vnd.schemaregistry.v1+json"</span> \
+  --data <span class="tok-s">"{\"schema\": ${SCHEMA_JSON}}"</span> \
+  <span class="tok-s">"${REGISTRY}/compatibility/subjects/${SUBJECT}/versions/latest"</span> \
+  | python3 -c <span class="tok-s">"import sys,json; d=json.load(sys.stdin); print(d.get('is_compatible','false'))"</span>)
+
+<span class="tok-k">if</span> [ <span class="tok-s">"${COMPAT}"</span> != <span class="tok-s">"true"</span> ]; then
+  echo <span class="tok-s">"ERROR: Schema is not FULL-compatible with latest version of ${SUBJECT}"</span>
+  exit <span class="tok-n">1</span>
+fi
+
+echo <span class="tok-s">"Schema compatibility check passed for ${SUBJECT}"</span></code></pre>
+          </div>
+
+          <p>Promote schemas through environments using separate subject namespaces: <code>dev.payments.pacs008-value</code>, <code>test.payments.pacs008-value</code>, <code>prod.payments.pacs008-value</code> &mdash; or separate Schema Registry instances per environment with the same subject names. The latter is cleaner for access control (production registry access restricted to CI/CD pipelines only; no developer can register directly in prod) but requires an additional registry instance.</p>
+
+          <h2 id="sama-reporting">SAMA Regulatory Reporting Schemas</h2>
+          <p>SAMA&rsquo;s Technology Risk Management framework and the PDPL impose specific requirements on event schemas used for regulatory reporting and audit trails. Three requirements shape schema design for regulatory topics: immutability, classification, and archival.</p>
+          <p><strong>Immutable event schemas for audit trails.</strong> A SAMA-reportable event &mdash; a transaction that was blocked, a customer data access event, a system security alert &mdash; must be queryable with exactly the schema it was written with. Schema Registry&rsquo;s versioned schema archive is the mechanism: each schema version is immutable once registered; the schema ID embedded in each message points permanently to the schema that was used. Even if the subject is deleted from the registry, a schema archive backed by the <code>_schemas</code> topic (with compaction disabled and infinite retention) preserves all versions.</p>
+          <p><strong>PDPL data classification embedded as schema metadata.</strong> Add a <code>pdplClassification</code> field to every schema that carries personal data. The field should be a required <code>string</code> enum with values <code>PUBLIC</code>, <code>INTERNAL</code>, <code>CONFIDENTIAL</code>, or <code>RESTRICTED</code>. This makes data classification machine-readable at the event level, enabling downstream consumers (data governance pipelines, DLP scanners) to enforce access control without out-of-band configuration. The example Avro schema in the <a href="#iso20022-schemas">ISO 20022</a> section demonstrates this pattern.</p>
+          <p><strong>Schema tamper evidence via registry audit log.</strong> Enable Schema Registry&rsquo;s audit log integration with your SIEM. Every schema registration, compatibility mode change, and subject deletion is an auditable event. A compatibility mode change on a regulated subject from FULL to NONE should trigger an alert &mdash; it means someone has bypassed the compatibility enforcement and a breaking change may follow. Configure the registry&rsquo;s REST API behind an API gateway that enforces mutual TLS and logs all requests to the SIEM.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Versioned schema archive for regulatory replay</div>
+            <p>For topics subject to SAMA replay obligations, configure the <code>_schemas</code> topic with <code>retention.ms=-1</code> (infinite retention) and <code>cleanup.policy=compact</code> disabled or set to <code>delete</code>. This preserves every schema version permanently. When a regulatory examination requires replaying events from 18 months ago, the schema ID embedded in each message resolves to the exact schema in use at that time &mdash; there is no ambiguity about field types or nullability that existed in that version.</p>
+          </div>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Registering schemas in NONE mode to bypass validation</div>
+            <p>The most destructive anti-pattern: a developer temporarily sets the subject compatibility to NONE, registers a breaking schema change to unblock a deployment, and either forgets to restore the original compatibility mode or leaves it &ldquo;for now.&rdquo; NONE mode means the registry performs no validation; any schema passes. If this happens in production, every consumer on the subject is now unprotected from future breaking changes. Set up an alert (Prometheus or SIEM) that fires whenever a subject compatibility mode is changed to NONE in production. Treat it as a P1 incident until the mode is restored.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Producer caching a stale schema ID after registry restart</div>
+            <p><code>KafkaAvroSerializer</code> caches the schema ID it receives from the registry after the first registration call. If the Schema Registry is restarted or fails over and the subject is recreated with a different schema history (e.g., after a disaster recovery restore), the cached schema ID in the producer may refer to a schema that no longer exists or now maps to a different schema version. Producers that embed a stale schema ID will produce messages that consumers cannot deserialise. Configure producers with <code>schema.registry.cache.capacity=0</code> only in disaster recovery scenarios; in normal operation the cache is correct. Monitor registry restart events and verify producer serialisation on all payment topics immediately after a registry failover.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Schema ID collision between environments sharing a registry</div>
+            <p>Schema IDs are globally unique within a single registry instance. If dev and prod share the same registry (a common cost-saving decision), a developer registering a schema in dev may produce a schema ID that is higher than the latest prod ID &mdash; but the schema contents differ between environments. A message produced in dev accidentally published to a prod topic carries a schema ID that resolves to the wrong schema in the prod registry. The deserialised result is silently wrong. Always run separate Schema Registry instances per environment tier, or use strict namespace prefixes per environment with access control that prevents cross-environment schema reads.</p>
+          </div>
+
+          <h2 id="checklist">Production Checklist</h2>
+          <ol>
+            <li>Schema Registry deployed with at least 3 replicas; <code>_schemas</code> topic replication factor 3, min.insync.replicas 2.</li>
+            <li>Separate Schema Registry instances (or strict namespace isolation) for dev, test, and prod environments.</li>
+            <li>All payment topics configured with <code>FULL</code> or <code>FULL_TRANSITIVE</code> compatibility; NONE mode alerting enabled.</li>
+            <li>All producers using <code>KafkaAvroSerializer</code> with <code>auto.register.schemas=false</code> in production.</li>
+            <li>All consumers using <code>KafkaAvroDeserializer</code> with <code>specific.avro.reader=true</code> where generated classes are available.</li>
+            <li>CI pipeline runs schema compatibility check on every pull request against the test registry; merge blocked on failure.</li>
+            <li>Schema registration to production gated behind CI/CD pipeline only &mdash; no direct developer access to production registry REST API.</li>
+            <li>Avro schemas for monetary amounts using <code>bytes</code> + <code>logicalType: decimal</code>; no <code>float</code> or <code>double</code> on any amount field.</li>
+            <li>ISO 20022-mapped schemas include <code>pdplClassification</code> field with PDPL classification metadata.</li>
+            <li><code>_schemas</code> topic configured with infinite retention for regulated subjects; schema archive verified quarterly.</li>
+            <li>Registry audit log shipped to SIEM; alert on compatibility mode changes to NONE in non-dev registries.</li>
+            <li>Schema evolution runbook documented: add field &rarr; deprecate &rarr; remove consumer &rarr; remove field; minimum 2 schema version gap enforced.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="real-time-fraud-detection.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Real-Time Fraud Detection</div>
+            </a>
+            <a href="../data-streaming.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Data Streaming &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Synchronisation &mdash; Conflict Resolution in Multi-Master Replication &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Conflict resolution strategies for multi-master replication in a SAMA-regulated bank: LWW, CRDTs, vector clocks, CockroachDB geo-partitioning, and active-active BCP design for Tier 1 payment systems.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Data Synchronisation &mdash; Conflict Resolution in Multi-Master Replication">
+  <meta property="og:description" content="LWW, CRDTs, vector clocks, CockroachDB/YugabyteDB conflict handling, and SAMA BCP-compliant active-active design for financial systems.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-sync/conflict-resolution-multi-master.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Conflict Resolution in Multi-Master Replication">
+  <meta name="twitter:description" content="SAMA BCP active-active design, LWW risks, CRDTs for banking, and why account balances need distributed transactions, not eventual consistency.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/conflict-resolution-multi-master.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Data Synchronisation: Conflict Resolution in Multi-Master Replication",
+    "description": "Conflict resolution strategies for multi-master replication in a SAMA-regulated bank: LWW, CRDTs, vector clocks, CockroachDB geo-partitioning, and active-active BCP design for Tier 1 payment systems.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/data-sync/conflict-resolution-multi-master.html",
+    "isPartOf": {
+      "@type": "TechArticleSeries",
+      "name": "Data Synchronisation &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/data-sync.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Conflict Resolution in Multi-Master Replication</div>
+          <span class="overline">Lab Article</span>
+          <h1>Data Synchronisation: Conflict Resolution in Multi-Master Replication</h1>
+          <p class="lead">Active-active deployments for SAMA BCP compliance, the four types of write conflicts that arise when two data centers both accept writes, and the resolution strategies that are safe for financial data versus those that only look safe until a network partition proves otherwise.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#conflict-types">Types of conflicts</a></li>
+            <li><a href="#lww">Last Write Wins (LWW)</a></li>
+            <li><a href="#crdts">CRDTs</a></li>
+            <li><a href="#vector-clocks">Vector clocks</a></li>
+            <li><a href="#cockroach-yugabyte">CockroachDB &amp; YugabyteDB</a></li>
+            <li><a href="#application-resolution">Application-level resolution</a></li>
+            <li><a href="#sama-bcp">SAMA BCP requirements</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> CockroachDB 23.2 / YugabyteDB 2.20 / Redis 7.2 / PostgreSQL 16 / Kafka 3.7</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~16 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Multi-master replication &mdash; also called active-active replication &mdash; means two or more database nodes each accept writes simultaneously. When the network is healthy, writes replicate between nodes and the state converges. When a network partition occurs, both nodes continue accepting writes independently. When the partition heals, the nodes have diverged and must reconcile. The reconciliation step, and the question of which write wins when two writes conflict, is what this article addresses.</p>
+          <p>SAMA&rsquo;s Business Continuity Planning framework requires Tier 1 systems &mdash; systems that process payments or hold customer balances &mdash; to meet an RTO of less than 4 hours and an RPO of less than 1 hour. Active-active is the architecture that achieves an RPO of zero for synchronous replication: both data centers are always current, so a failover is instantaneous for the data layer. The alternative &mdash; single-master with a standby replica &mdash; is often the safer choice for financial data, precisely because it avoids the conflict problem entirely. The question is whether the operational simplicity of single-master is worth the RPO and RTO cost, given SAMA&rsquo;s requirements.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Serializable isolation in CockroachDB and YugabyteDB resolves most conflicts automatically</div>
+            <p>CockroachDB and YugabyteDB implement serializable isolation via MVCC and Raft consensus. For most operations, the database resolves conflicts transparently: concurrent writes are detected, one is serialized before the other, and the application retries the aborted transaction. Only complex business logic that cannot be expressed as a database transaction &mdash; such as saga-style multi-entity operations &mdash; requires application-level conflict resolution. If you are using a NewSQL database with serializable isolation, the conflict resolution problem is significantly smaller than it is with asynchronous multi-master replication.</p>
+          </div>
+
+          <div class="diagram" role="img" aria-label="Multi-master conflict diagram: two data centers each with a DB master, bidirectional replication, network partition visualization, conflict resolution on heal">
+            <div class="diagram__inner">
+              <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="mm-arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="mm-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="mm-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                  <marker id="mm-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- DC1 -->
+                <rect x="10" y="30" width="310" height="130" rx="8" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="165" y="52" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">Data Centre 1 &mdash; Riyadh</text>
+
+                <rect x="30" y="62" width="125" height="80" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="92" y="82" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">DB Master 1</text>
+                <text x="92" y="98" text-anchor="middle" fill="#71717a" font-size="9">CockroachDB / PG</text>
+                <text x="92" y="114" text-anchor="middle" fill="#71717a" font-size="9">Balance: 10,000 SAR</text>
+                <text x="92" y="130" text-anchor="middle" fill="#00d4aa" font-size="9">Write: &minus;3,000 SAR</text>
+
+                <rect x="170" y="62" width="135" height="80" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="237" y="82" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Application 1</text>
+                <text x="237" y="98" text-anchor="middle" fill="#71717a" font-size="9">reads balance = 10k</text>
+                <text x="237" y="114" text-anchor="middle" fill="#71717a" font-size="9">debit 3,000 SAR</text>
+                <text x="237" y="130" text-anchor="middle" fill="#00d4aa" font-size="9">T=1ms</text>
+
+                <!-- DC2 -->
+                <rect x="460" y="30" width="310" height="130" rx="8" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="615" y="52" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Data Centre 2 &mdash; Jeddah</text>
+
+                <rect x="480" y="62" width="125" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="542" y="82" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">DB Master 2</text>
+                <text x="542" y="98" text-anchor="middle" fill="#71717a" font-size="9">CockroachDB / PG</text>
+                <text x="542" y="114" text-anchor="middle" fill="#71717a" font-size="9">Balance: 10,000 SAR</text>
+                <text x="542" y="130" text-anchor="middle" fill="#ef4444" font-size="9">Write: &minus;8,000 SAR</text>
+
+                <rect x="620" y="62" width="135" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="687" y="82" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Application 2</text>
+                <text x="687" y="98" text-anchor="middle" fill="#71717a" font-size="9">reads balance = 10k</text>
+                <text x="687" y="114" text-anchor="middle" fill="#71717a" font-size="9">debit 8,000 SAR</text>
+                <text x="687" y="130" text-anchor="middle" fill="#a78bfa" font-size="9">T=2ms</text>
+
+                <!-- Network partition -->
+                <line x1="320" y1="95" x2="370" y2="95" stroke="#71717a" stroke-width="1" stroke-dasharray="4 2"/>
+                <line x1="410" y1="95" x2="460" y2="95" stroke="#71717a" stroke-width="1" stroke-dasharray="4 2"/>
+                <rect x="365" y="75" width="55" height="40" rx="4" fill="#16161f" stroke="#ef4444" stroke-width="1.5"/>
+                <text x="392" y="92" text-anchor="middle" fill="#ef4444" font-size="8" font-weight="600">NETWORK</text>
+                <text x="392" y="106" text-anchor="middle" fill="#ef4444" font-size="8" font-weight="600">PARTITION</text>
+
+                <!-- Heal and resolution -->
+                <line x1="390" y1="175" x2="390" y2="205" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+                <text x="390" y="198" text-anchor="middle" fill="#fbbf24" font-size="9">partition heals</text>
+
+                <rect x="10" y="215" width="760" height="110" rx="6" fill="#0f0f16" stroke="#fbbf24" stroke-width="1"/>
+                <text x="390" y="235" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Conflict Detection &amp; Resolution on Heal</text>
+
+                <!-- LWW box -->
+                <rect x="25" y="245" width="175" height="68" rx="5" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="112" y="262" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Last Write Wins (LWW)</text>
+                <text x="112" y="276" text-anchor="middle" fill="#71717a" font-size="8">T=2ms (DC2) wins over T=1ms</text>
+                <text x="112" y="289" text-anchor="middle" fill="#71717a" font-size="8">Result: balance = 2,000 SAR</text>
+                <text x="112" y="302" text-anchor="middle" fill="#ef4444" font-size="8">DC1 debit SILENTLY LOST</text>
+
+                <!-- Vector clock box -->
+                <rect x="218" y="245" width="175" height="68" rx="5" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="305" y="262" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">Vector Clocks</text>
+                <text x="305" y="276" text-anchor="middle" fill="#71717a" font-size="8">Siblings detected (incomparable)</text>
+                <text x="305" y="289" text-anchor="middle" fill="#71717a" font-size="8">Both writes kept, app resolves</text>
+                <text x="305" y="302" text-anchor="middle" fill="#00d4aa" font-size="8">Explicit conflict surfaced</text>
+
+                <!-- Distributed TX box -->
+                <rect x="411" y="245" width="175" height="68" rx="5" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="498" y="262" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Distributed Transaction</text>
+                <text x="498" y="276" text-anchor="middle" fill="#71717a" font-size="8">Serializable 2PC across DCs</text>
+                <text x="498" y="289" text-anchor="middle" fill="#71717a" font-size="8">One commit, one abort</text>
+                <text x="498" y="302" text-anchor="middle" fill="#00d4aa" font-size="8">No conflict; correct result</text>
+
+                <!-- App-level box -->
+                <rect x="604" y="245" width="152" height="68" rx="5" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="680" y="262" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">Application Resolution</text>
+                <text x="680" y="276" text-anchor="middle" fill="#71717a" font-size="8">Saga compensating TX</text>
+                <text x="680" y="289" text-anchor="middle" fill="#71717a" font-size="8">Replay in causal order</text>
+                <text x="680" y="302" text-anchor="middle" fill="#71717a" font-size="8">Business rule enforcement</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Two data centers each accept writes during a network partition; on heal, four resolution strategies apply with different correctness guarantees; for financial account balances only distributed transactions or application-level resolution with causal ordering produce correct results</div>
+          </div>
+
+          <h2 id="conflict-types">Types of Conflicts</h2>
+          <p>Four categories of conflict arise when two masters accept writes concurrently:</p>
+          <ul>
+            <li><strong>Write-write conflict.</strong> Two masters update the same row concurrently. The row exists on both nodes after the partition heals with different values. This is the primary case most conflict resolution strategies address.</li>
+            <li><strong>Read-write conflict.</strong> A read on one master returns a stale value (because a write from the other master has not yet replicated), and the application uses that stale value to compute an update. The update is logically incorrect even if no write-write conflict occurs. This is harder to detect because neither node records the causal dependency between the read and the write.</li>
+            <li><strong>Delete-update conflict.</strong> One master deletes a row while the other master updates it. The delete-update conflict has no obviously correct resolution: was the row deleted first and the update is stale, or was the update applied to valid data and the delete is invalid? Domain semantics determine the answer.</li>
+            <li><strong>Ordering conflict.</strong> Writes are applied in different orders on different masters due to replication lag, violating a causal dependency. A payment settlement that must follow a payment initiation arrives at Master 2 in reverse order &mdash; settlement before initiation. If the settlement is processed first, it may reference state that does not yet exist at Master 2.</li>
+          </ul>
+
+          <h2 id="lww">Last Write Wins (LWW)</h2>
+          <p>Last Write Wins resolves write-write conflicts by comparing timestamps: the write with the latest timestamp is the winner, and the other write is discarded. It is the simplest conflict resolution strategy to implement and the most dangerous for financial data.</p>
+          <p>The problem is clock skew. Servers in different data centers run on different hardware clocks. Even with NTP synchronisation, wall-clock timestamps on different nodes can differ by tens of milliseconds. If a write on DC1 at T=100ms is logically later than a write on DC2 at T=102ms (because the DC2 write was initiated first but arrived second due to network latency), LWW selects the DC2 write as the winner based on timestamp. The DC1 write &mdash; which was the logical successor &mdash; is silently discarded.</p>
+          <p>Hybrid Logical Clocks (HLC) address clock skew by combining physical time with a logical counter. The HLC on each node advances both when the physical clock advances and when a message is received that carries a higher logical timestamp. This creates a partial order that is consistent with causality even when physical clocks diverge. CockroachDB uses HLC internally for its MVCC timestamps.</p>
+
+          <table>
+            <thead>
+              <tr><th>Strategy</th><th>Impl. complexity</th><th>Clock dependency</th><th>Banking applicability</th><th>SAMA BCP suitability</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>LWW (wall clock)</td><td>Low</td><td>High &mdash; clock skew silently loses writes</td><td>Reference data only (idempotent)</td><td>Not acceptable for financial state</td></tr>
+              <tr><td>CRDT</td><td>Medium</td><td>None &mdash; merge-based</td><td>Counters, flags, permission sets</td><td>Acceptable for non-balance state</td></tr>
+              <tr><td>Vector Clocks</td><td>High</td><td>None &mdash; logical clocks</td><td>Sibling detection; needs app resolution</td><td>Acceptable with app resolution layer</td></tr>
+              <tr><td>App-level resolution</td><td>High</td><td>Causal ordering required</td><td>Balance merge, saga compensation</td><td>Acceptable; requires saga design</td></tr>
+              <tr><td>DB-level serializable</td><td>Low (app) / High (infra)</td><td>HLC (CockroachDB) &mdash; bounded skew</td><td>All financial operations</td><td>Preferred for Tier 1 systems</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="crdts">CRDTs (Conflict-free Replicated Data Types)</h2>
+          <p>CRDTs are data structures designed to merge without conflict. The merge operation is commutative, associative, and idempotent &mdash; the same set of updates applied in any order produces the same result. This means CRDTs eliminate the conflict resolution problem for the data types they model.</p>
+          <p>Four CRDT types are relevant in a banking context:</p>
+          <ul>
+            <li><strong>G-Counter (grow-only counter).</strong> Each node maintains its own counter. The global value is the sum of all node counters. Increments never conflict because each node only increments its own counter. Applicable for: login attempt counts, API call counters, event occurrence counts. Not applicable for anything that decrements.</li>
+            <li><strong>PN-Counter (positive-negative counter).</strong> A pair of G-Counters: one for additions, one for subtractions. The global value is the sum of all P-counters minus the sum of all N-counters. Applicable for: inventory counts, not for account balances (because a PN-Counter cannot enforce a lower bound constraint &mdash; the balance cannot go negative).</li>
+            <li><strong>OR-Set (observed-remove set).</strong> An add-wins set: if two nodes concurrently add and remove the same element, the add wins. Applicable for: permission lists, feature flag assignments, approved consumer lists. The add-wins semantics must match the business rule (it does for permissions; it may not for revocations).</li>
+            <li><strong>LWW-Register (per-field LWW register).</strong> Each field has its own LWW timestamp. Concurrent updates to different fields on the same record do not conflict; concurrent updates to the same field resolve by timestamp. Applicable for: user profile data (notification preferences, display settings). Subject to the same clock skew risk as LWW.</li>
+          </ul>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">LWW with wall clock timestamps is dangerous when clock skew exceeds your conflict window</div>
+            <p>A conflict window of 10 milliseconds and an NTP synchronisation accuracy of 50 milliseconds means LWW with wall clock timestamps will silently discard the logically correct write on every conflict where the two writes occurred within 50ms of each other. Use Hybrid Logical Clocks, or design the data type to avoid LWW entirely for any state where silent data loss is unacceptable. For financial systems, silent data loss is always unacceptable.</p>
+          </div>
+
+          <h2 id="vector-clocks">Vector Clocks</h2>
+          <p>A vector clock is a data structure attached to every write that records the logical time at which each replica last acknowledged a write from every other replica. Each node maintains a counter that it increments on every local write. When a write is replicated, the receiving node updates its vector to include the sender&rsquo;s counter.</p>
+          <p>The power of vector clocks is sibling detection: two writes are causally concurrent (siblings) if neither write&rsquo;s vector clock is greater-than-or-equal-to the other&rsquo;s on every dimension. When siblings are detected, the database keeps both values rather than silently discarding one, and presents both to the application for resolution. The application sees the conflict explicitly and can apply domain-specific logic to resolve it.</p>
+          <p>For a payment balance, the sibling resolution logic is: if both siblings represent debits from the same starting balance, and the combined debit exceeds the balance, reject one and compensate. If the combined debit does not exceed the balance, sum the debits and apply both. This logic is domain-specific and must be implemented by the application, but it produces a correct result rather than silently losing a write.</p>
+
+          <h2 id="cockroach-yugabyte">CockroachDB and YugabyteDB Conflict Handling</h2>
+          <p>CockroachDB and YugabyteDB implement serializable isolation using MVCC with Raft consensus. Every write is a distributed transaction that requires a quorum of replicas to commit. In a multi-region deployment, this means a write on DC1 does not commit until a majority of the Raft group (which may include replicas in DC2) acknowledges it. This is synchronous replication by design &mdash; the write does not return to the application until it is durable across the quorum.</p>
+          <p>This design eliminates write-write conflicts for operations that can be expressed as database transactions. The serializable isolation level means that two concurrent transactions that conflict are serialized by the database: one commits, one aborts with a serialization error, and the application retries. The application does not see two conflicting values &mdash; it sees one committed value and a transaction error.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>cockroachdb-geo-partition.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- CockroachDB geo-partition configuration for SAMA data residency</span>
+<span class="tok-c">-- All customer financial data must reside within Saudi Arabia</span>
+
+<span class="tok-c">-- Step 1: Create multi-region database with Saudi regions</span>
+<span class="tok-k">ALTER DATABASE</span> bank_core
+  <span class="tok-k">SET PRIMARY REGION</span> = <span class="tok-s">'sa-riyadh'</span>;
+
+<span class="tok-k">ALTER DATABASE</span> bank_core
+  <span class="tok-k">ADD REGION</span> <span class="tok-s">'sa-jeddah'</span>;
+
+<span class="tok-c">-- Step 2: Geo-partition payments table by account_region</span>
+<span class="tok-c">-- Rows for Saudi accounts are pinned to Saudi regions</span>
+<span class="tok-k">ALTER TABLE</span> payments
+  <span class="tok-k">SET LOCALITY REGIONAL BY ROW AS</span> account_region;
+
+<span class="tok-c">-- Step 3: Verify leaseholder placement stays within Saudi Arabia</span>
+<span class="tok-k">SHOW</span> ranges <span class="tok-k">FROM TABLE</span> payments <span class="tok-k">WITH</span> details;
+
+<span class="tok-c">-- Step 4: Configure max_offset for clock uncertainty interval</span>
+<span class="tok-c">-- CockroachDB uses HLC; max_offset bounds the uncertainty window</span>
+<span class="tok-c">-- Lower = tighter; requires better NTP; default 500ms is conservative</span>
+<span class="tok-k">SET CLUSTER SETTING</span> kv.clock.max_offset = <span class="tok-s">'250ms'</span>;
+
+<span class="tok-c">-- Step 5: Enable survival goal for zone failure (not region failure)</span>
+<span class="tok-c">-- REGION FAILURE survival requires 3+ regions; for 2 Saudi DCs use ZONE</span>
+<span class="tok-k">ALTER DATABASE</span> bank_core
+  <span class="tok-k">SURVIVE</span> <span class="tok-s">ZONE FAILURE</span>;
+
+<span class="tok-c">-- Step 6: Create a serializable read-modify-write pattern</span>
+<span class="tok-c">-- Application retries on serialization error (SQLSTATE 40001)</span>
+<span class="tok-k">BEGIN</span>;
+  <span class="tok-k">SET TRANSACTION ISOLATION LEVEL SERIALIZABLE</span>;
+  <span class="tok-k">SELECT</span> balance <span class="tok-k">FROM</span> accounts <span class="tok-k">WHERE</span> account_id = $1 <span class="tok-k">FOR UPDATE</span>;
+  <span class="tok-c">-- business rule check: balance >= debit amount</span>
+  <span class="tok-k">UPDATE</span> accounts <span class="tok-k">SET</span> balance = balance - $2 <span class="tok-k">WHERE</span> account_id = $1;
+<span class="tok-k">COMMIT</span>;
+<span class="tok-c">-- On SQLSTATE 40001: retry the entire transaction</span></code></pre>
+          </div>
+
+          <h2 id="application-resolution">Application-Level Conflict Resolution</h2>
+          <p>For cases that CRDT and database-level serialization do not cover &mdash; complex saga-style operations that span multiple entities, or legacy databases that do not support distributed transactions &mdash; application-level conflict resolution is the fallback. It is more expensive to implement and more likely to contain logic errors, but it is the correct tool when the alternatives are not available.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>conflict-resolution-trigger.sql (PostgreSQL)</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- Application-level conflict resolution trigger for multi-master PostgreSQL</span>
+<span class="tok-c">-- Assumes logical replication with conflict detection plugin (pg_logical)</span>
+
+<span class="tok-k">CREATE OR REPLACE FUNCTION</span> resolve_balance_conflict()
+<span class="tok-k">RETURNS TRIGGER AS</span> $$
+<span class="tok-k">DECLARE</span>
+  v_local_balance     <span class="tok-t">numeric</span>;
+  v_incoming_balance  <span class="tok-t">numeric</span>;
+  v_local_version     <span class="tok-t">bigint</span>;
+  v_incoming_version  <span class="tok-t">bigint</span>;
+  v_resolved_balance  <span class="tok-t">numeric</span>;
+<span class="tok-k">BEGIN</span>
+  <span class="tok-c">-- NEW: the incoming row from the remote master</span>
+  <span class="tok-c">-- OLD: the current local row</span>
+  v_local_balance    := OLD.balance;
+  v_incoming_balance := NEW.balance;
+  v_local_version    := OLD.version;
+  v_incoming_version := NEW.version;
+
+  <span class="tok-c">-- If the incoming row is a pure increment/decrement relative to a common ancestor,</span>
+  <span class="tok-c">-- sum the deltas and apply both. Causal order requires version vectors.</span>
+  <span class="tok-k">IF</span> v_incoming_version > v_local_version <span class="tok-k">THEN</span>
+    <span class="tok-c">-- Remote write is strictly newer; apply it</span>
+    <span class="tok-k">RETURN</span> NEW;
+  <span class="tok-k">ELSIF</span> v_incoming_version = v_local_version <span class="tok-k">THEN</span>
+    <span class="tok-c">-- Concurrent write (conflict): compute resolved balance</span>
+    <span class="tok-c">-- Strategy: sum partial updates, then apply business rule (no negative balance)</span>
+    v_resolved_balance := v_local_balance + (v_incoming_balance - v_local_balance);
+    <span class="tok-k">IF</span> v_resolved_balance < <span class="tok-n">0</span> <span class="tok-k">THEN</span>
+      <span class="tok-c">-- Business rule violation: cannot go negative; reject incoming debit</span>
+      <span class="tok-c">-- Log for manual investigation</span>
+      <span class="tok-k">INSERT INTO</span> conflict_log (account_id, local_balance, incoming_balance,
+                                 local_version, incoming_version, resolution,
+                                 logged_at)
+      <span class="tok-k">VALUES</span> (OLD.account_id, v_local_balance, v_incoming_balance,
+              v_local_version, v_incoming_version, <span class="tok-s">'REJECTED_NEGATIVE'</span>, now());
+      <span class="tok-k">RETURN</span> OLD; <span class="tok-c">-- keep local value</span>
+    <span class="tok-k">END IF</span>;
+    NEW.balance := v_resolved_balance;
+    NEW.version := v_local_version + <span class="tok-n">1</span>;
+    <span class="tok-k">RETURN</span> NEW;
+  <span class="tok-k">ELSE</span>
+    <span class="tok-c">-- Local write is newer; discard incoming</span>
+    <span class="tok-k">RETURN</span> OLD;
+  <span class="tok-k">END IF</span>;
+<span class="tok-k">END</span>;
+$$ <span class="tok-k">LANGUAGE</span> plpgsql;
+
+<span class="tok-k">CREATE TRIGGER</span> balance_conflict_resolver
+  <span class="tok-k">BEFORE UPDATE ON</span> accounts
+  <span class="tok-k">FOR EACH ROW</span>
+  <span class="tok-k">WHEN</span> (pg_trigger_depth() = <span class="tok-n">0</span>)   <span class="tok-c">-- prevent recursive trigger on self-update</span>
+  <span class="tok-k">EXECUTE FUNCTION</span> resolve_balance_conflict();</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>pn-counter.lua (Redis 7 CRDT-style)</span><span class="code-block__lang">lua</span></div>
+<pre><code><span class="tok-c">-- Redis Lua script: PN-Counter for per-node increment/decrement</span>
+<span class="tok-c">-- Key pattern: counter:{entity_id}:p:{node_id} (positive increments)</span>
+<span class="tok-c">--              counter:{entity_id}:n:{node_id} (negative decrements)</span>
+<span class="tok-c">-- Global value = sum(p:*) - sum(n:*)</span>
+
+<span class="tok-k">local</span> key     = KEYS[1]          <span class="tok-c">-- e.g. "counter:account:SA123"</span>
+<span class="tok-k">local</span> node_id = ARGV[1]          <span class="tok-c">-- e.g. "dc1"</span>
+<span class="tok-k">local</span> delta   = tonumber(ARGV[2]) <span class="tok-c">-- positive for credit, negative for debit</span>
+
+<span class="tok-k">if</span> delta > <span class="tok-n">0</span> <span class="tok-k">then</span>
+  <span class="tok-c">-- Credit: increment this node's P counter</span>
+  redis.call(<span class="tok-s">'HINCRBYFLOAT'</span>, key, <span class="tok-s">'p:'</span> .. node_id, delta)
+<span class="tok-k">else</span>
+  <span class="tok-c">-- Debit: increment this node's N counter (store as positive value)</span>
+  redis.call(<span class="tok-s">'HINCRBYFLOAT'</span>, key, <span class="tok-s">'n:'</span> .. node_id, -delta)
+<span class="tok-k">end</span>
+
+<span class="tok-c">-- Compute global value: sum all p: fields minus sum all n: fields</span>
+<span class="tok-k">local</span> fields = redis.call(<span class="tok-s">'HGETALL'</span>, key)
+<span class="tok-k">local</span> total_p = <span class="tok-n">0</span>
+<span class="tok-k">local</span> total_n = <span class="tok-n">0</span>
+
+<span class="tok-k">for</span> i = <span class="tok-n">1</span>, #fields, <span class="tok-n">2</span> <span class="tok-k">do</span>
+  <span class="tok-k">local</span> field = fields[i]
+  <span class="tok-k">local</span> val   = tonumber(fields[i + <span class="tok-n">1</span>]) <span class="tok-k">or</span> <span class="tok-n">0</span>
+  <span class="tok-k">if</span> field:sub(<span class="tok-n">1</span>, <span class="tok-n">2</span>) == <span class="tok-s">'p:'</span> <span class="tok-k">then</span>
+    total_p = total_p + val
+  <span class="tok-k">else</span>
+    total_n = total_n + val
+  <span class="tok-k">end</span>
+<span class="tok-k">end</span>
+
+<span class="tok-c">-- Return global value as string (Lua returns number via redis.status_reply)</span>
+<span class="tok-k">return</span> tostring(total_p - total_n)</code></pre>
+          </div>
+
+          <h2 id="sama-bcp">SAMA BCP Requirements</h2>
+          <p>SAMA&rsquo;s Business Continuity Planning framework classifies systems by criticality tier. Tier 1 systems &mdash; those that process IPS payments, hold customer deposits, or support core banking operations &mdash; must meet the strictest requirements:</p>
+          <ul>
+            <li><strong>RTO &lt; 4 hours.</strong> The system must resume full operational capacity within 4 hours of a failure event. For a payment processing system, this means both data center failover and application stack recovery within that window.</li>
+            <li><strong>RPO &lt; 1 hour for most systems; RPO = 0 for financial data.</strong> SAMA&rsquo;s guidance on financial data specifically requires synchronous replication: no committed transaction should be lost in a failover. An RPO of 1 hour for a payment system means up to 1 hour of payment records could be lost &mdash; which is not acceptable under any interpretation of prudent banking practice.</li>
+            <li><strong>Data centre separation of &ge; 30 km.</strong> The two data centers must be geographically separated to withstand a localised disaster (power grid failure, flooding, fire). This separation also means the synchronous replication round-trip adds latency proportional to the distance &mdash; approximately 0.1ms per km of fibre at the speed of light, plus switching overhead.</li>
+            <li><strong>Synchronous replication for financial data; asynchronous acceptable for analytics.</strong> SAMA distinguishes between data that, if lost, constitutes a financial loss (payment records, account balances) and data that supports operational decisions (reporting data, audit logs that are captured separately). Synchronous replication is required for the former; asynchronous replication with a documented RPO is acceptable for the latter.</li>
+            <li><strong>Annual BCP test with documented results.</strong> The examination team does not accept a DR plan document as evidence. They require test results showing that the failover was executed, the RTO was met, and the data integrity of the recovery was verified. Untested BCP plans are treated as equivalent to no BCP plan.</li>
+          </ul>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Active-active for account balances without synchronous replication is not SAMA-acceptable</div>
+            <p>An active-active deployment where both masters accept balance debits without a synchronous cross-datacenter commit is a configuration that allows the &ldquo;pay twice&rdquo; scenario: a customer with a 10,000 SAR balance debits 8,000 SAR on DC1 and 7,000 SAR on DC2 simultaneously during a network partition. Both checks pass locally (10,000 &gt; 8,000; 10,000 &gt; 7,000); both debits commit locally. The result is a negative balance of &minus;5,000 SAR when the partition heals. This is not a data inconsistency that can be reconciled &mdash; it is a financial loss. SAMA will treat it as a regulatory breach, not a technical incident. The only safe design for account balance writes is synchronous replication with distributed transactions.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Split-brain without quorum leaves both masters accepting writes with no path to resolution</div>
+            <p>A two-node active-active deployment without a quorum mechanism (a witness node, an arbitrator, or a fencing agent) enters split-brain during a network partition: both masters believe they are the authoritative node and accept writes independently. When the partition heals, both masters have conflicting writes with no ordering information. Vector clocks require at least partial ordering to detect siblings; LWW requires clock agreement; application resolution requires a causal history. Without a quorum mechanism, none of these can be applied reliably. Always deploy an odd number of nodes with a quorum mechanism, or use a database (CockroachDB, YugabyteDB) that has Raft-based quorum built in.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Clock skew causing LWW to silently discard the correct write</div>
+            <p>This is not a theoretical failure mode. In a 2024 production incident at a multi-master deployment, a 40ms NTP drift between two data center nodes caused LWW to discard a debit transaction that arrived at the logically-later node 35ms after the conflicting credit. The credit committed; the debit was silently lost. The balance was incorrect for 14 hours before the daily reconciliation caught the discrepancy. The remediation was a full account balance audit for the affected customer pool. Use Hybrid Logical Clocks or eliminate LWW for any state where silent discard is unacceptable.</p>
+          </div>
+
+          <h2 id="checklist">Production Checklist: Conflict-Free Active-Active Payment Service</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Classify every data entity by conflict sensitivity</h4>
+              <p>Before designing the replication topology, categorise every table: Can this entity tolerate LWW? (Reference data, idempotent configuration.) Does it need CRDT semantics? (Counters, flags.) Does it require distributed transactions? (Account balances, payment records, ledger entries.) The classification drives every subsequent design decision.</p>
+            </li>
+            <li>
+              <h4>Choose synchronous replication for Tier 1 financial entities</h4>
+              <p>Account balances and payment records must replicate synchronously. Use CockroachDB or YugabyteDB with Raft-based consensus, or configure PostgreSQL streaming replication with <code>synchronous_commit = on</code> and <code>synchronous_standby_names</code> pointing to the DR replica. Measure the added write latency (typically 1&ndash;3ms for a 30km fibre link) and size your application timeouts accordingly.</p>
+            </li>
+            <li>
+              <h4>Design the partition detection and quorum mechanism</h4>
+              <p>Implement a fencing mechanism that prevents both masters from accepting writes during a partition without a quorum. For CockroachDB/YugabyteDB, Raft provides this. For PostgreSQL multi-master, use Patroni with etcd or Consul as the distributed coordinator. Test the fencing under partition conditions in a staging environment before going to production.</p>
+            </li>
+            <li>
+              <h4>Implement the conflict detection and logging layer</h4>
+              <p>Even with synchronous replication and distributed transactions, application-layer conflicts can occur (concurrent saga steps, compensating transactions that race). Implement a conflict log table with every detected conflict, the resolution applied, and the entities involved. This table is a SAMA audit artefact.</p>
+            </li>
+            <li>
+              <h4>Test the partition and heal scenario end-to-end</h4>
+              <p>Use network emulation (tc netem on Linux or similar) to introduce a network partition between the two data center network segments in a staging environment. Run concurrent writes against both masters during the partition. Verify that the conflict resolution logic produces the correct result when the partition heals. Document the test and its results as a BCP test artefact.</p>
+            </li>
+            <li>
+              <h4>Wire reconciliation to the conflict store</h4>
+              <p>The daily reconciliation pipeline described in the companion article should include a check against the conflict log: every resolved conflict must have a corresponding reconciliation verification pass confirming that the resolved state matches the correct business state. Conflicts that cannot be automatically verified must generate an OPEN_BREAK in the break investigation table.</p>
+            </li>
+            <li>
+              <h4>Document and test the SAMA BCP scenario</h4>
+              <p>Produce the BCP test plan that SAMA will examine: which data center fails, which traffic is failed over, what the application failover procedure is, what the data integrity verification step is, and what the expected RTO and RPO are. Execute the test annually, record the actual RTO and RPO achieved, and file the results as a governance artefact. The test is not complete until data integrity has been verified by running the reconciliation pipeline over the failover window.</p>
+            </li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="event-driven-data-mesh.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Event-Driven Data Mesh</div>
+            </a>
+            <a href="../data-sync.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Data Synchronisation &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

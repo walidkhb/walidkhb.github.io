@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Security: FAPI 2.0 &amp; Open Banking Security &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="FAPI 2.0 security profile implementation for SAMA Open Banking Phase 2: PAR, DPoP, mTLS-bound tokens, RAR, JARM &mdash; Keycloak 24, Kong 3.7, Spring Security 6.3, IBM API Connect 10.0.7, and production patterns for regulated Saudi banks.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="API Security: FAPI 2.0 &amp; Open Banking Security &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="FAPI 2.0 for SAMA Open Banking Phase 2: PAR, DPoP, mTLS-bound tokens, RAR, JARM &mdash; Keycloak 24, Kong 3.7, IBM API Connect.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/api-security/fapi-2-open-banking.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="API Security: FAPI 2.0 &amp; Open Banking Security">
+  <meta name="twitter:description" content="FAPI 2.0 implementation for SAMA Open Banking Phase 2 &mdash; PAR, DPoP, mTLS-bound tokens, RAR, JARM in production.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/api-security/fapi-2-open-banking.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "API Security: FAPI 2.0 & Open Banking Security",
+    "description": "FAPI 2.0 security profile implementation for SAMA Open Banking Phase 2: PAR, DPoP, mTLS-bound tokens, RAR, JARM, and production patterns for regulated Saudi banks.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/api-security/fapi-2-open-banking.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "API Security &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/api-security.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>FAPI 2.0 &amp; Open Banking</div>
+          <span class="overline">Lab Article</span>
+          <h1>API Security: FAPI 2.0 &amp; Open Banking Security</h1>
+          <p class="lead">Financial-grade API Security Profile 2.0 for SAMA Open Banking Phase 2 &mdash; Pushed Authorization Requests, DPoP sender-constrained tokens, mTLS binding, Rich Authorization Requests, and JARM, implemented on Keycloak 24, Kong 3.7, Spring Security 6.3, and IBM API Connect 10.0.7 in a KSA regulated bank.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#fapi2-requirements">FAPI 2.0 requirements</a></li>
+            <li><a href="#par">Pushed Authorization (PAR)</a></li>
+            <li><a href="#dpop">DPoP proof-of-possession</a></li>
+            <li><a href="#mtls-binding">mTLS-bound tokens</a></li>
+            <li><a href="#rar">Rich Authorization Requests</a></li>
+            <li><a href="#keycloak-config">Keycloak 24 configuration</a></li>
+            <li><a href="#kong-apic">Kong &amp; IBM APIC enforcement</a></li>
+            <li><a href="#sama-alignment">SAMA Phase 2 alignment</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Keycloak 24 / Kong 3.7 / Spring Security 6.3 / IBM API Connect 10.0.7 / SAMA Open Banking Phase 2</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~16 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>OAuth 2.0 was designed as a delegated authorization framework for consumer web applications. A user grants a third-party app access to their Google calendar &mdash; the threat model assumes the access token is short-lived, the damage from theft is bounded, and replay attacks are mitigated by HTTPS. That threat model is wrong for payment initiation. A stolen payment authorization token replayed once drains an account. A tampered redirect parameter redirects the authorization code to an attacker. An insufficient proof-of-possession model means a token stolen from one client can be used by any bearer.</p>
+          <p>FAPI 2.0 (Financial-grade API Security Profile 2.0) is an OpenID Foundation specification that profiles OAuth 2.1 specifically for high-value financial API use cases. It mandates the controls that fill the gaps OAuth 2.0 leaves open: Pushed Authorization Requests to prevent parameter tampering, DPoP or mTLS to bind tokens to the client that requested them, Pushed Authorization Requests for request integrity, Rich Authorization Requests for fine-grained consent, and JARM for signed authorization responses. SAMA Open Banking Phase 2 mandates FAPI 2.0 as the security baseline for all Third Party Provider (TPP) access &mdash; AIS, PIS, and Confirmation of Funds.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">FAPI 2.0 is a profile of OAuth 2.1 &mdash; not a replacement</div>
+            <p>FAPI 2.0 does not re-invent OAuth. It is a profile that selects specific OAuth 2.1 extensions, makes optional features mandatory, and bans unsafe options (implicit grant, resource owner password credentials, plain PKCE). You still need a solid OAuth 2.1 foundation &mdash; scopes, token lifecycle, refresh token rotation, introspection &mdash; before layering the FAPI-specific controls on top. A team that does not understand OAuth 2.1 cannot implement FAPI 2.0 correctly.</p>
+          </div>
+
+          <h2 id="fapi2-requirements">FAPI 2.0 Requirements</h2>
+          <p>FAPI 2.0 is defined in two parts: the Security Profile (FAPI2SP) and the Message Signing profile (FAPI2MS). For SAMA Open Banking, both apply. The normative requirements that distinguish FAPI 2.0 from a standard OAuth 2.1 deployment:</p>
+
+          <table>
+            <thead>
+              <tr><th>Requirement</th><th>RFC / Spec</th><th>What it prevents</th><th>SAMA mandate</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>PKCE &mdash; S256 only</td><td>RFC 7636</td><td>Authorization code interception</td><td>Mandatory</td></tr>
+              <tr><td>PAR (Pushed Authorization Requests)</td><td>RFC 9126</td><td>Request parameter tampering in redirect</td><td>Mandatory</td></tr>
+              <tr><td>DPoP sender-constrained tokens</td><td>RFC 9449</td><td>Bearer token theft &amp; replay</td><td>Mandatory (or mTLS)</td></tr>
+              <tr><td>mTLS-bound access tokens</td><td>RFC 8705</td><td>Bearer token theft &amp; replay</td><td>Mandatory (or DPoP)</td></tr>
+              <tr><td>RAR (Rich Authorization Requests)</td><td>RFC 9396</td><td>Overly broad consent grants</td><td>Mandatory</td></tr>
+              <tr><td>JARM (JWT Secured Authorization Response)</td><td>OIDF spec</td><td>Authorization response tampering</td><td>Mandatory</td></tr>
+              <tr><td>No implicit grant</td><td>OAuth 2.1</td><td>Token exposure in redirect URI</td><td>Banned</td></tr>
+              <tr><td>No ROPC grant</td><td>OAuth 2.1</td><td>Credential phishing via TPP</td><td>Banned</td></tr>
+            </tbody>
+          </table>
+
+          <p>PKCE S256 (SHA-256 code challenge) is mandatory &mdash; plain PKCE is banned because the plain method provides no security benefit. The <code>state</code> parameter is still recommended for CSRF protection at the redirect level, but it is no longer the primary authorization request integrity mechanism &mdash; that role moves to PAR.</p>
+
+          <h2 id="par">Pushed Authorization Requests (PAR)</h2>
+          <p>The fundamental problem with the OAuth 2.0 authorization endpoint is that the authorization request parameters are sent as query parameters in a browser redirect URL. The URL is visible in the browser history, referer headers, and server access logs. An attacker who can modify the redirect URL &mdash; through an open redirect vulnerability, a misconfigured redirect_uri, or a browser extension &mdash; can tamper with the scope, redirect_uri, or state parameters before the authorization server sees them.</p>
+          <p>PAR (RFC 9126) solves this by moving the authorization request out of the browser. The client POSTs all authorization parameters directly to the server&rsquo;s <code>/par</code> endpoint, authenticated with its client credentials. The server validates the parameters and returns a <code>request_uri</code> (valid for 90 seconds by default). The client then redirects the user to the authorization endpoint using only <code>client_id</code> and the <code>request_uri</code> &mdash; no sensitive parameters in the URL.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">PAR <code>request_uri</code> is single-use and expires in 90 seconds</div>
+            <p>The <code>request_uri</code> returned by the PAR endpoint is designed to be used exactly once. If a user abandons the flow and the TPP retries, it must POST to <code>/par</code> again and obtain a fresh <code>request_uri</code>. A reused <code>request_uri</code> indicates either a replay attack or a buggy client implementation &mdash; the authorization server must reject it and the event must be logged as a security alert with the TPP identity, IP address, and timestamp. Under SAMA&rsquo;s TPRM requirements, this log is evidence for TPP security incident reporting.</p>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>par-pis-request.http</span><span class="code-block__lang">http</span></div>
+<pre><code><span class="tok-c"># Step 1: POST authorization_details to PAR endpoint</span>
+POST /par HTTP/1.1
+Host: auth.openbanking.saib.sa
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic dHBwLWNsaWVudC1pZDpjbGllbnQtc2VjcmV0
+
+<span class="tok-k">response_type</span>=code
+&amp;<span class="tok-k">client_id</span>=tpp-client-id
+&amp;<span class="tok-k">redirect_uri</span>=https%3A%2F%2Ftpp.example.sa%2Fcallback
+&amp;<span class="tok-k">scope</span>=openid+payments
+&amp;<span class="tok-k">code_challenge</span>=s256-challenge-value
+&amp;<span class="tok-k">code_challenge_method</span>=S256
+&amp;<span class="tok-k">authorization_details</span>=%5B%7B
+  <span class="tok-s">"type"</span>%3A<span class="tok-s">"sama_payment_initiation"</span>%2C
+  <span class="tok-s">"actions"</span>%3A%5B<span class="tok-s">"initiate"</span>%5D%2C
+  <span class="tok-s">"locations"</span>%3A%5B<span class="tok-s">"https%3A%2F%2Fapi.openbanking.saib.sa%2Fpis"</span>%5D%2C
+  <span class="tok-s">"instructedAmount"</span>%3A%7B
+    <span class="tok-s">"amount"</span>%3A<span class="tok-s">"500.00"</span>%2C
+    <span class="tok-s">"currency"</span>%3A<span class="tok-s">"SAR"</span>
+  %7D%2C
+  <span class="tok-s">"creditorAccount"</span>%3A%7B
+    <span class="tok-s">"iban"</span>%3A<span class="tok-s">"SA44 2000 0001 2345 6789 1234"</span>
+  %7D%2C
+  <span class="tok-s">"debtorAccount"</span>%3A%7B
+    <span class="tok-s">"iban"</span>%3A<span class="tok-s">"SA03 8000 0000 6080 1016 7519"</span>
+  %7D
+%7D%5D
+
+<span class="tok-c"># Server response</span>
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  <span class="tok-s">"request_uri"</span>: <span class="tok-s">"urn:ietf:params:oauth:request_uri:bwc4JQ-ESc0w8wM7M9K7w5sNe3vh"</span>,
+  <span class="tok-s">"expires_in"</span>: <span class="tok-n">90</span>
+}
+
+<span class="tok-c"># Step 2: redirect user with ONLY client_id + request_uri</span>
+GET /authorize?client_id=tpp-client-id
+  &amp;request_uri=urn%3Aietf%3Aparams%3Aoauth%3Arequest_uri%3Abwc4JQ-ESc0w8wM7M9K7w5sNe3vh
+  HTTP/1.1
+Host: auth.openbanking.saib.sa</code></pre>
+          </div>
+
+          <div class="diagram" role="img" aria-label="FAPI 2.0 authorization flow: PAR, consent, JARM, DPoP token, resource access">
+            <div class="diagram__inner">
+              <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="fa-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="fa-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="fa-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                  <marker id="fa-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                  <marker id="fa-arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                </defs>
+
+                <!-- Actor boxes -->
+                <rect x="10" y="18" width="130" height="52" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="75" y="39" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">TPP</text>
+                <text x="75" y="53" text-anchor="middle" fill="#71717a" font-size="8">Third-Party Provider</text>
+                <text x="75" y="64" text-anchor="middle" fill="#71717a" font-size="8">Open Banking Client</text>
+
+                <rect x="230" y="18" width="310" height="52" rx="6" fill="#16161f" stroke="#a78bfa"/>
+                <text x="385" y="37" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Authorization Server (Keycloak 24)</text>
+                <text x="290" y="53" text-anchor="middle" fill="#71717a" font-size="8">PAR Endpoint</text>
+                <text x="385" y="53" text-anchor="middle" fill="#71717a" font-size="8">&middot; Auth Endpoint</text>
+                <text x="480" y="53" text-anchor="middle" fill="#71717a" font-size="8">&middot; Token Endpoint</text>
+                <text x="385" y="64" text-anchor="middle" fill="#71717a" font-size="8">FAPI 2.0 Security Profile &middot; JARM signing &middot; DPoP validation</text>
+
+                <rect x="630" y="18" width="140" height="52" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="700" y="39" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Resource Server</text>
+                <text x="700" y="53" text-anchor="middle" fill="#71717a" font-size="8">AIS / PIS API</text>
+                <text x="700" y="64" text-anchor="middle" fill="#71717a" font-size="8">Kong 3.7 &middot; IBM APIC</text>
+
+                <!-- Lifelines -->
+                <line x1="75" y1="70" x2="75" y2="340" stroke="#00d4aa" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.4"/>
+                <line x1="385" y1="70" x2="385" y2="340" stroke="#a78bfa" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.4"/>
+                <line x1="700" y1="70" x2="700" y2="340" stroke="#4a9eff" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.4"/>
+
+                <!-- Step 1: POST /par -->
+                <line x1="75" y1="100" x2="375" y2="100" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fa-arr)"/>
+                <text x="215" y="95" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">&#x2460; POST /par + authorization_details</text>
+
+                <!-- Step 2: request_uri response -->
+                <line x1="375" y1="116" x2="75" y2="116" stroke="#71717a" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#fa-arr)"/>
+                <text x="215" y="130" text-anchor="middle" fill="#71717a" font-size="9">&#x2461; request_uri (expires 90 s, single-use)</text>
+
+                <!-- Step 3: redirect user -->
+                <line x1="75" y1="155" x2="375" y2="155" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fa-arr)"/>
+                <text x="215" y="149" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">&#x2462; redirect: client_id + request_uri only</text>
+                <text x="215" y="169" text-anchor="middle" fill="#71717a" font-size="8">(user browser &mdash; no sensitive params in URL)</text>
+
+                <!-- PSU consent box inside AS -->
+                <rect x="300" y="178" width="170" height="36" rx="4" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="385" y="194" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">&#x2463; PSU authenticates &amp; consents</text>
+                <text x="385" y="208" text-anchor="middle" fill="#71717a" font-size="8">AS fetches PAR params, shows consent screen</text>
+
+                <!-- Step 4: code + JARM -->
+                <line x1="375" y1="218" x2="75" y2="218" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#fa-arr2)"/>
+                <text x="215" y="213" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">&#x2464; redirect: code wrapped in JARM JWT</text>
+                <text x="215" y="232" text-anchor="middle" fill="#71717a" font-size="8">(signed JWT response &mdash; prevents response tampering)</text>
+
+                <!-- Step 5: POST /token + DPoP -->
+                <line x1="75" y1="255" x2="375" y2="255" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fa-arr)"/>
+                <text x="215" y="249" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">&#x2465; POST /token + code + DPoP proof JWT</text>
+
+                <!-- Step 6: access_token DPoP-bound -->
+                <line x1="375" y1="272" x2="75" y2="272" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#fa-arr3)"/>
+                <text x="215" y="288" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">&#x2466; access_token (DPoP-bound, cnf claim)</text>
+
+                <!-- Step 7: API call + DPoP proof to RS -->
+                <line x1="75" y1="312" x2="690" y2="312" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#fa-arr4)"/>
+                <text x="380" y="306" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">&#x2467; GET /resource + Bearer access_token + DPoP proof</text>
+
+                <!-- Step 8: response -->
+                <line x1="690" y1="328" x2="75" y2="328" stroke="#71717a" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#fa-arr)"/>
+                <text x="380" y="344" text-anchor="middle" fill="#71717a" font-size="9">&#x2468; 200 OK &mdash; resource data (RS validated DPoP proof &amp; cnf thumbprint)</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; FAPI 2.0 authorization flow: PAR keeps authorization params off the browser URL; JARM signs the code response; DPoP binds the access token to the client&rsquo;s ephemeral key pair; the resource server validates the DPoP proof on every request</div>
+          </div>
+
+          <h2 id="dpop">DPoP &mdash; Demonstrating Proof of Possession</h2>
+          <p>DPoP (RFC 9449) is the primary mechanism for sender-constraining access tokens in FAPI 2.0 when client certificate infrastructure is not available for every TPP. The core idea: the client generates an ephemeral EC key pair (P-256 or P-384) at request time, signs a DPoP proof JWT that binds the request to that key, and sends the proof alongside the access token. The resource server verifies that the proof is valid for this specific HTTP method, URL, and timestamp &mdash; and that the token&rsquo;s <code>cnf</code> claim matches the public key in the proof.</p>
+          <p>The DPoP proof JWT header carries <code>typ: "dpop+jwt"</code> and the client&rsquo;s ephemeral public key (<code>jwk</code>). The payload carries: <code>htm</code> (HTTP method), <code>htu</code> (HTTP URL without query), <code>iat</code> (issued-at), and <code>jti</code> (unique nonce to prevent replay). The proof is valid only for the specific request it is attached to.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">DPoP <code>jti</code> replay prevention requires a distributed cache</div>
+            <p>The <code>jti</code> in the DPoP proof is a random nonce that the resource server must record and reject if seen again within the proof&rsquo;s validity window (typically 60&ndash;300 seconds, matching the <code>iat</code> skew tolerance). A single in-memory set does not work behind a load-balanced API gateway &mdash; a DPoP proof submitted to instance A can be replayed against instance B, which has no record of it. Use a distributed cache (Redis Cluster or Redis Sentinel) with a TTL matching the DPoP token lifetime, and store each seen <code>jti</code> as the key. On a cache miss, the proof is valid; on a hit, reject with <code>401 invalid_dpop_proof</code>.</p>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>dpop-proof-structure.json + spring-security-config.java</span><span class="code-block__lang">json</span></div>
+<pre><code><span class="tok-c">// DPoP Proof JWT &mdash; Header</span>
+{
+  <span class="tok-s">"typ"</span>: <span class="tok-s">"dpop+jwt"</span>,
+  <span class="tok-s">"alg"</span>: <span class="tok-s">"ES256"</span>,
+  <span class="tok-s">"jwk"</span>: {
+    <span class="tok-s">"kty"</span>: <span class="tok-s">"EC"</span>,
+    <span class="tok-s">"crv"</span>: <span class="tok-s">"P-256"</span>,
+    <span class="tok-s">"x"</span>:   <span class="tok-s">"base64url-encoded-x-coordinate"</span>,
+    <span class="tok-s">"y"</span>:   <span class="tok-s">"base64url-encoded-y-coordinate"</span>
+  }
+}
+
+<span class="tok-c">// DPoP Proof JWT &mdash; Payload</span>
+{
+  <span class="tok-s">"jti"</span>: <span class="tok-s">"e1e24b80-7d1d-4f6a-9cb0-2a5b3c1d4e5f"</span>,  <span class="tok-c">// unique nonce; must be cached + rejected if replayed</span>
+  <span class="tok-s">"htm"</span>: <span class="tok-s">"GET"</span>,                                   <span class="tok-c">// must match actual HTTP method</span>
+  <span class="tok-s">"htu"</span>: <span class="tok-s">"https://api.openbanking.saib.sa/pis/v1/payment-consents"</span>,  <span class="tok-c">// no query string</span>
+  <span class="tok-s">"iat"</span>: <span class="tok-n">1725494400</span>,                              <span class="tok-c">// issued-at; server rejects if skew > 60s</span>
+  <span class="tok-s">"ath"</span>: <span class="tok-s">"base64url(sha256(access_token_bytes))"</span>   <span class="tok-c">// RFC 9449 §4.3: bind proof to specific token</span>
+}
+
+<span class="tok-c">// Spring Security 6.3 &mdash; DPoP validation configuration (resource server side)</span>
+<span class="tok-c">// In SecurityFilterChain bean:</span>
+http
+  .oauth2ResourceServer(rs -&gt; rs
+    .jwt(jwt -&gt; jwt
+      .decoder(NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build())
+    )
+    .opaqueToken(opaque -&gt; opaque
+      .introspectionUri(<span class="tok-s">"https://auth.openbanking.saib.sa/realms/openbanking/protocol/openid-connect/token/introspect"</span>)
+      .introspectionClientCredentials(clientId, clientSecret)
+    )
+  )
+  .addFilterBefore(new DPoPProofValidationFilter(dpoPProofValidator, jtiCache), BearerTokenAuthenticationFilter.class);
+
+<span class="tok-c">// DPoPProofValidationFilter validates:</span>
+<span class="tok-c">// 1. typ = "dpop+jwt"</span>
+<span class="tok-c">// 2. alg in allowlist (ES256, RS256 &mdash; no none/HS256)</span>
+<span class="tok-c">// 3. htm matches request method</span>
+<span class="tok-c">// 4. htu matches request URL (scheme + host + path, no query)</span>
+<span class="tok-c">// 5. iat within 60s clock skew window</span>
+<span class="tok-c">// 6. jti not seen in Redis cache (insert + TTL on first sight)</span>
+<span class="tok-c">// 7. token cnf.jkt thumbprint matches JWK in DPoP header</span></code></pre>
+          </div>
+
+          <h2 id="mtls-binding">mTLS-Bound Tokens</h2>
+          <p>mTLS sender-constraining (RFC 8705) is an alternative to DPoP &mdash; stronger in some respects, more operationally demanding in others. Instead of a per-request DPoP proof, the TPP presents its TLS client certificate during the token request. The authorization server computes a thumbprint of the certificate (<code>x5t#S256</code>: SHA-256 of the DER-encoded certificate) and embeds it in the access token&rsquo;s <code>cnf</code> claim. The resource server extracts the certificate from the TLS session (via the <code>X-Client-Cert</code> header at Kong, injected by the TLS terminator) and verifies the thumbprint matches the token&rsquo;s <code>cnf.x5t#S256</code>.</p>
+          <p>The security model is stronger than DPoP in that the binding is established at the TLS layer before the HTTP request reaches the application &mdash; a stolen access token is useless without the private key of the client certificate. The operational cost is higher: every TPP must have a client certificate provisioned, renewed, and revoked through a certificate management process, and the certificate infrastructure must integrate with SAMA&rsquo;s TPRM TPP registration process.</p>
+
+          <table>
+            <thead>
+              <tr><th>Feature</th><th>What it prevents</th><th>Client complexity</th><th>Server complexity</th><th>SAMA mandate</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>PAR</td><td>Request parameter tampering in browser redirect</td><td>Low &mdash; extra POST before redirect</td><td>Medium &mdash; PAR endpoint, request_uri storage</td><td>Mandatory</td></tr>
+              <tr><td>DPoP</td><td>Bearer token theft &amp; replay across clients</td><td>Medium &mdash; ephemeral key pair per request, proof JWT</td><td>High &mdash; proof validation, distributed jti cache</td><td>Mandatory (or mTLS)</td></tr>
+              <tr><td>mTLS-bound</td><td>Bearer token theft (stronger than DPoP)</td><td>High &mdash; client cert provisioning &amp; rotation</td><td>Medium &mdash; thumbprint validation at TLS terminator</td><td>Mandatory (or DPoP)</td></tr>
+              <tr><td>RAR</td><td>Overly broad consent grants; scope creep</td><td>Medium &mdash; structured authorization_details object</td><td>High &mdash; consent store, query endpoint, token introspection</td><td>Mandatory</td></tr>
+              <tr><td>JARM</td><td>Authorization response parameter tampering</td><td>Low &mdash; parse JWT response mode</td><td>Medium &mdash; JARM signing key, response_mode=jwt</td><td>Mandatory</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="rar">Rich Authorization Requests (RAR)</h2>
+          <p>Standard OAuth 2.0 scopes are coarse-grained: <code>openid payments accounts</code> grants blanket access to all of the TPP&rsquo;s payment and account operations. SAMA Open Banking Phase 2 requires granular consent that specifies the exact accounts, amounts, and operations covered by each authorization. RAR (RFC 9396) adds the <code>authorization_details</code> parameter to carry a structured JSON array of consent objects with rich, resource-specific semantics.</p>
+          <p>Each <code>authorization_details</code> object carries: <code>type</code> (the resource type identifier, e.g. <code>sama_account_information</code> or <code>sama_payment_initiation</code>), <code>actions</code> (what operations are permitted), <code>locations</code> (the resource server URLs that may receive the token), and resource-specific fields (amount, currency, account identifiers for PIS; account list for AIS). The authorization server embeds the consented <code>authorization_details</code> into the access token, and the resource server validates on every call that the requested operation is within the consented scope.</p>
+          <p>SAMA&rsquo;s consent model defines three consent states: <code>pending</code> (created, awaiting PSU authorization), <code>authorised</code> (PSU approved), <code>rejected</code> (PSU declined or expired), and <code>revoked</code> (PSU or TPP explicitly cancelled). The resource server must check the consent status on every API call, not just at token issuance &mdash; a consent can be revoked mid-session.</p>
+
+          <h2 id="keycloak-config">Keycloak 24 FAPI 2.0 Configuration</h2>
+          <p>Keycloak 24 ships a built-in FAPI 2.0 Security Profile realm policy that can be enabled via Admin Console or the REST API. It configures the realm to enforce PKCE S256, require PAR, enable JARM, and validate DPoP proofs. The client policy engine applies these checks to all clients in the realm that are tagged as FAPI 2.0 clients.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>keycloak-fapi2-realm.json</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-s">"realm"</span>: <span class="tok-s">"openbanking"</span>,
+  <span class="tok-s">"enabled"</span>: <span class="tok-n">true</span>,
+  <span class="tok-s">"sslRequired"</span>: <span class="tok-s">"all"</span>,
+  <span class="tok-s">"accessTokenLifespan"</span>: <span class="tok-n">300</span>,
+  <span class="tok-s">"ssoSessionMaxLifespan"</span>: <span class="tok-n">7776000</span>,    <span class="tok-c">// 90 days for AIS per SAMA</span>
+
+  <span class="tok-s">"clientPolicies"</span>: {
+    <span class="tok-s">"policies"</span>: [
+      {
+        <span class="tok-s">"name"</span>: <span class="tok-s">"sama-fapi2-policy"</span>,
+        <span class="tok-s">"enabled"</span>: <span class="tok-n">true</span>,
+        <span class="tok-s">"conditions"</span>: [
+          { <span class="tok-s">"condition"</span>: <span class="tok-s">"client-roles"</span>,
+            <span class="tok-s">"configuration"</span>: { <span class="tok-s">"roles"</span>: [<span class="tok-s">"fapi2-client"</span>] } }
+        ],
+        <span class="tok-s">"profiles"</span>: [<span class="tok-s">"fapi-2-security-profile"</span>, <span class="tok-s">"fapi-2-message-signing"</span>]
+      }
+    ],
+    <span class="tok-s">"profiles"</span>: [
+      {
+        <span class="tok-s">"name"</span>: <span class="tok-s">"fapi-2-security-profile"</span>,
+        <span class="tok-s">"executors"</span>: [
+          { <span class="tok-s">"executor"</span>: <span class="tok-s">"pkce-enforcer"</span>,
+            <span class="tok-s">"configuration"</span>: { <span class="tok-s">"allow-plain-method"</span>: <span class="tok-n">false</span> } },
+          { <span class="tok-s">"executor"</span>: <span class="tok-s">"par-enforcer"</span>,
+            <span class="tok-s">"configuration"</span>: {
+              <span class="tok-s">"par-required"</span>: <span class="tok-n">true</span>,
+              <span class="tok-s">"request-uri-lifespan"</span>: <span class="tok-n">90</span>
+            }
+          },
+          { <span class="tok-s">"executor"</span>: <span class="tok-s">"dpop-bind-enforcer"</span>,
+            <span class="tok-s">"configuration"</span>: {
+              <span class="tok-s">"dpop-required"</span>: <span class="tok-n">true</span>,
+              <span class="tok-s">"allowed-algorithms"</span>: [<span class="tok-s">"ES256"</span>, <span class="tok-s">"PS256"</span>]
+            }
+          },
+          { <span class="tok-s">"executor"</span>: <span class="tok-s">"holder-of-key-enforcer"</span>,
+            <span class="tok-s">"configuration"</span>: { <span class="tok-s">"autoConfigure"</span>: <span class="tok-n">true</span> } },
+          { <span class="tok-s">"executor"</span>: <span class="tok-s">"jarm-enforcer"</span>,
+            <span class="tok-s">"configuration"</span>: {
+              <span class="tok-s">"signing-key-id"</span>: <span class="tok-s">"jarm-signing-rsa-key"</span>,
+              <span class="tok-s">"response-mode"</span>: <span class="tok-s">"jwt"</span>
+            }
+          },
+          { <span class="tok-s">"executor"</span>: <span class="tok-s">"secure-response-type-enforcer"</span>,
+            <span class="tok-s">"configuration"</span>: {
+              <span class="tok-s">"allow-token-response-type"</span>: <span class="tok-n">false</span>  <span class="tok-c">// no implicit flow</span>
+            }
+          }
+        ]
+      }
+    ]
+  },
+
+  <span class="tok-s">"attributes"</span>: {
+    <span class="tok-s">"par.request.uri.lifespan"</span>: <span class="tok-s">"90"</span>,
+    <span class="tok-s">"oauth2.device.code.lifespan"</span>: <span class="tok-s">"0"</span>,
+    <span class="tok-s">"cibaBackchannelAuthRequestedExpiry"</span>: <span class="tok-s">"120"</span>
+  }
+}</code></pre>
+          </div>
+
+          <h2 id="kong-apic">Kong &amp; IBM API Connect Enforcement</h2>
+          <p>The authorization server (Keycloak) issues FAPI 2.0-compliant tokens. The API gateway (Kong 3.7 or IBM API Connect 10.0.7) enforces token validity, DPoP binding, consent scope, and rate plans on every API call from TPPs. The gateway sits between the internet and the resource server &mdash; no API call reaches the resource server without passing through Kong&rsquo;s plugin chain.</p>
+          <p>Kong&rsquo;s OIDC plugin performs token introspection against Keycloak on every request. The response includes the <code>cnf</code> claim (DPoP or mTLS binding), the <code>authorization_details</code> (RAR consent), and the <code>sub</code> (TPP identity). A custom Lua plugin validates that the DPoP proof in the <code>DPoP</code> header matches the <code>cnf.jkt</code> thumbprint in the introspected token. IBM API Connect accomplishes the same via a GatewayScript assembly policy that reads the introspection response and validates the cnf claim.</p>
+          <p>Rate plans in IBM API Connect are tied to the SAMA consent type: an AIS (Account Information Service) plan allows high-frequency reads (up to 4 calls per second per TPP per account), while a PIS (Payment Initiation Service) plan is throttled more aggressively (10 payment initiations per minute per TPP) and requires the payment amount to be within the consented limit from the <code>authorization_details</code>.</p>
+
+          <h2 id="sama-alignment">SAMA Open Banking Phase 2 Alignment</h2>
+          <p>SAMA Open Banking Phase 2 defines three API classes and distinct security requirements for each. AIS (Account Information Service) allows TPPs to read account data &mdash; balances, transactions, statements &mdash; with consent lasting up to 90 days and access tokens valid for up to 5 minutes per call. PIS (Payment Initiation Service) is single-consent, single-use: the authorization covers exactly one payment, the access token is single-use and expires after it has been used to submit the payment instruction, and the consent expires as soon as the payment reaches a terminal state. CoF (Confirmation of Funds) confirms whether a specified amount is available in an account without initiating any transaction &mdash; consent is typically longer-lived for merchant use cases.</p>
+
+          <table>
+            <thead>
+              <tr><th>API Class</th><th>Consent lifetime</th><th>Token lifetime</th><th>Single-use token</th><th>DPoP / mTLS</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>AIS (Account Information)</td><td>Up to 90 days</td><td>300 s per call</td><td>No &mdash; refresh token</td><td>Mandatory</td></tr>
+              <tr><td>PIS (Payment Initiation)</td><td>Single payment</td><td>300 s, single-use</td><td>Yes</td><td>Mandatory</td></tr>
+              <tr><td>CoF (Confirmation of Funds)</td><td>Variable per merchant</td><td>300 s per call</td><td>No &mdash; refresh token</td><td>Mandatory</td></tr>
+            </tbody>
+          </table>
+
+          <p>SAMA&rsquo;s TPRM (Third-Party Risk Management) requirements mandate that TPPs are registered through the SAMA Open Banking Directory before they can onboard to any ASPSP (Account Servicing Payment Service Provider). TPP registration produces a client ID, a software statement assertion (SSA) signed by the SAMA directory, and optionally a client certificate for mTLS binding. The ASPSP&rsquo;s Dynamic Client Registration (DCR) endpoint accepts the SSA and creates the OAuth 2.0 client in Keycloak automatically &mdash; no manual client provisioning.</p>
+
+          <h2 id="checklist">Production Checklist</h2>
+
+          <ol class="step-list">
+            <li><strong>Audit your OAuth 2.0 foundation first.</strong> Ensure token introspection works, refresh token rotation is enabled, and all existing scopes map to a resource server. FAPI 2.0 controls layer on top &mdash; a weak OAuth foundation magnifies vulnerabilities rather than containing them.</li>
+            <li><strong>Enable PAR in Keycloak.</strong> Set <code>par.request.uri.lifespan</code> to 90 seconds. Instrument the PAR endpoint to log every request with TPP identity, IP, and request_uri jti. Alert on reuse of any request_uri.</li>
+            <li><strong>Choose DPoP or mTLS binding (or both).</strong> DPoP is lower-friction for TPP onboarding; mTLS is stronger and easier to enforce at the TLS layer. If your TPP onboarding process can provision client certificates, prefer mTLS; otherwise DPoP with a robust jti cache is SAMA-compliant.</li>
+            <li><strong>Deploy the jti replay prevention cache.</strong> Redis Cluster with TTL equal to the DPoP proof validity window (60&ndash;300 seconds). Instrument cache hit rate &mdash; a hit on a jti that is not from a known legitimate retry is a security event.</li>
+            <li><strong>Implement RAR consent model.</strong> Define <code>authorization_details</code> types for AIS, PIS, and CoF matching SAMA Open Banking schema. Build a consent store (persistent, queryable by TPP + PSU + status). Expose a consent query endpoint. Embed approved <code>authorization_details</code> in the token introspection response.</li>
+            <li><strong>Configure JARM in Keycloak.</strong> Generate a dedicated RSA-4096 JARM signing key. Set <code>response_mode=jwt</code> as the required response mode for all FAPI 2.0 clients. Verify that TPP clients correctly parse and validate the JARM JWT before extracting the authorization code.</li>
+            <li><strong>Configure Kong DPoP validation plugin.</strong> Validate DPoP proof on every resource server request (not just at token issuance). Forward the client certificate header (<code>X-Client-Cert</code>) from the TLS terminator for mTLS binding validation.</li>
+          </ol>
+
+          <ol>
+            <li>PAR endpoint active; <code>request_uri</code> single-use enforced; reuse logged as security event.</li>
+            <li>PKCE S256 mandatory; plain challenge method rejected at authorization endpoint.</li>
+            <li>DPoP or mTLS binding active on all TPP-facing token and resource endpoints.</li>
+            <li>jti replay prevention cache (Redis Cluster) deployed with TTL matching DPoP validity window.</li>
+            <li>JARM active; <code>response_mode=jwt</code> enforced; JARM signing key rotated annually.</li>
+            <li>RAR <code>authorization_details</code> schema validated at PAR endpoint; consent store persists approved details.</li>
+            <li>Consent status checked on every API call, not just at token issuance.</li>
+            <li>AIS access token lifetime: 300 s; PIS token single-use enforced at resource server.</li>
+            <li>Keycloak client policies applying FAPI 2.0 profile to all TPP clients; manual client creation blocked.</li>
+            <li>Dynamic Client Registration active; SAMA directory SSA validated before client creation.</li>
+            <li>TPP identity (client_id, SSA subject) logged in every audit event (PAR, auth, token, resource access).</li>
+            <li>Implicit grant, ROPC, and plain PKCE blocked at realm policy level.</li>
+            <li>Kong rate plans differentiated by consent type (AIS vs PIS); PIS rate plan aligned with SAMA API class limits.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="service-mesh-mtls-at-scale.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Service Mesh mTLS at Scale</div>
+            </a>
+            <a href="../api-security.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">API Security &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

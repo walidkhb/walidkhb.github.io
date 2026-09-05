@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Cluster GitOps: The Platform Decision That Determines Whether Your Deployment Governance Scales &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Running ArgoCD ApplicationSets across multiple OpenShift clusters is not a CI/CD optimisation. It is a leadership decision about deployment governance, cluster promotion policies, and whether your platform team can manage regulatory separation between environments without manual intervention.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/multi-cluster-gitops-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Multi-Cluster GitOps &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Multi-Cluster GitOps: The Platform Decision That Determines Whether Your Deployment Governance Scales &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Multi-cluster GitOps is a leadership decision about deployment governance, cluster promotion policies, and managing regulatory separation between environments at scale.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/multi-cluster-gitops-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Multi-Cluster GitOps: The Platform Decision That Determines Whether Your Deployment Governance Scales">
+  <meta name="twitter:description" content="Multi-cluster GitOps is a leadership decision about deployment governance and whether your platform team can manage regulatory separation without manual intervention.">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Multi-Cluster GitOps: The Platform Decision That Determines Whether Your Deployment Governance Scales",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": { "@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/" },
+    "publisher": { "@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/" },
+    "url": "https://www.wbadawi.info/blog/multi-cluster-gitops-decision.html",
+    "isPartOf": { "@type": "Blog", "name": "Insights &mdash; Waleed Albadawi", "url": "https://www.wbadawi.info/blog.html" }
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>Multi-Cluster GitOps</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; September 5, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">Multi-Cluster GitOps: The Platform Decision That Determines Whether Your Deployment Governance Scales</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>A single ArgoCD instance managing a single OpenShift cluster is a reasonable starting point for a new integration platform. It stops being reasonable at the point where the integration estate spans separate clusters for development, staging, and production &mdash; with production split across a primary data centre in Riyadh and a DR site in Jeddah &mdash; and where each cluster has different network policies, different Vault backends, different resource quotas, and different approval gates before a deployment can proceed. At that point, the question is not whether to use GitOps, but how to structure multi-cluster GitOps so that the platform team can manage five clusters without five times the operational burden, and so that the governance rules for each environment are enforced by the system rather than by discipline.</p>
+
+        <p>ArgoCD ApplicationSets are the mechanism that makes multi-cluster GitOps tractable. A single ApplicationSet generator can template deployment configurations across all registered clusters, applying environment-specific overrides through Helm values or Kustomize patches, enforcing different sync policies per environment tier, and ensuring that a change merged to the main branch is automatically applied to development while requiring a manual approval gate before reaching production. The deployment governance &mdash; who can approve a production release, what tests must pass before promotion, what the rollback procedure is &mdash; is encoded in the ApplicationSet configuration, not in a runbook that someone might forget to follow.</p>
+
+        <p class="article-section">What the regulator expects from deployment governance</p>
+
+        <p>SAMA&rsquo;s Technology Risk Management framework and the Cyber Security Framework both treat change management for production systems as a Tier 1 control. The examination question is: can you demonstrate that no change reaches your production payment processing environment without passing through a defined approval workflow, that the change was tested in an equivalent pre-production environment, and that you can produce an audit trail of who approved the deployment and when? A GitOps deployment model &mdash; where every production change is a pull request with a merge approval, where ArgoCD applies only what is in the Git repository, and where the ArgoCD audit log records every sync event with the Git commit hash and timestamp &mdash; answers that question completely and automatically.</p>
+
+        <p>A multi-cluster ArgoCD deployment also answers the DR examination question: can you demonstrate that your DR environment runs the same version of every production service and would accept live traffic within your declared RTO? A cluster pair where ArgoCD is synchronising both production and DR from the same Git source, with the same Helm chart versions, provides a continuous answer: DR is always at the same version as production because ArgoCD keeps them aligned. Without GitOps, the honest answer to the DR version question at most banks is: &ldquo;we believe they are aligned, but we last verified three months ago.&rdquo;</p>
+
+        <blockquote>
+          <p>The value of GitOps for a multi-cluster environment is not faster deployments. It is making the actual state of every cluster visible, diffable, and auditable against the declared state in Git at any moment.</p>
+        </blockquote>
+
+        <p class="article-section">The decisions that determine whether multi-cluster GitOps succeeds</p>
+
+        <p>Three decisions require leadership input before the platform team can design a multi-cluster ArgoCD deployment that will satisfy SAMA and remain operational under pressure. First: <strong>the cluster registration model.</strong> ArgoCD can manage clusters as an administrator (with a service account that has cluster-admin privileges) or as a namespace-scoped user (with privileges restricted to specific namespaces). The cluster-admin model is simpler to configure and supports cross-namespace resources; the namespace-scoped model is more secure and enforces a tighter separation between what ArgoCD can modify and what it cannot. For a regulated bank, namespace-scoped operation with explicit RBAC grants is the correct starting point &mdash; but it requires the platform team to understand what ArgoCD needs access to, which requires a design review before the first cluster is registered.</p>
+
+        <p>Second: <strong>the production approval gate.</strong> ArgoCD supports automated sync for all environments, or manual sync gates for specific environments. For production, the correct choice is a manual sync gate with a defined approval process: a named approver, an approval recorded in the Git pull request, and ArgoCD configured to sync only after the merge is approved by a designated reviewer. Implementing this in a way that SAMA will accept requires the approval process to be auditable &mdash; the pull request approval, the merge timestamp, and the ArgoCD sync event must all be traceable to the same change. Without that traceability, the governance exists in spirit but not in the audit log that the examination team will review.</p>
+
+        <p>Third: <strong>the ApplicationSet ownership model.</strong> ApplicationSets are powerful enough to deploy to every cluster simultaneously if misconfigured. A single typo in a generator template can create a sync wave that targets production when it was intended for development. The platform team must establish a review process for ApplicationSet changes that is at least as rigorous as the review process for application code changes &mdash; ideally more rigorous, because an ApplicationSet change can affect multiple clusters simultaneously. That review process requires a designated approver with expertise in the ArgoCD data model, not just a generic code reviewer.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind this decision &mdash; ArgoCD ApplicationSet generators, cluster registration patterns, sync waves and hooks, Argo Rollouts for progressive delivery, multi-cluster Vault integration, and the production checklist &mdash; see the companion Lab article: <a href="../lab/devops/multi-cluster-gitops.html" style="color:var(--color-accent);">DevOps &amp; Platform: Multi-Cluster GitOps</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

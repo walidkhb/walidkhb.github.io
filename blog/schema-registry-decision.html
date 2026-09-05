@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schema Registry: The Data Contract Decision That Prevents Breaking Every Consumer When a Team Changes a Field &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Schema governance is a team coordination decision, not just a technical one. Why the compatibility policy you set on your event schemas determines whether your Kafka-based architecture holds together at scale &mdash; and what the regulator will ask about it.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/schema-registry-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Schema Registry: The Data Contract Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Schema Registry: The Data Contract Decision That Prevents Breaking Every Consumer When a Team Changes a Field &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Schema governance is a team coordination decision. The compatibility policy on your event schemas determines whether your Kafka architecture holds together at scale &mdash; and what SAMA will ask about it.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/schema-registry-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Schema Registry: The Data Contract Decision That Prevents Breaking Every Consumer">
+  <meta name="twitter:description" content="Why schema governance is a team coordination decision, what SAMA cares about, and what leadership must own before Kafka scales.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Schema Registry: The Data Contract Decision That Prevents Breaking Every Consumer When a Team Changes a Field",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/schema-registry-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="data-streaming.html">Data Streaming</a><span>/</span>Schema Registry Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Data Streaming &middot; September 5, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">Schema Registry: The Data Contract Decision That Prevents Breaking Every Consumer When a Team Changes a Field</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Every Kafka adoption at scale eventually encounters the same crisis. A payments team renames a field in their event schema to align with a new internal naming convention. The change looks minor &mdash; a field called <code>amount</code> becomes <code>instrAmt</code> to match ISO 20022 terminology. The CI pipeline is green. The deployment succeeds. And then, silently, every consumer of that topic starts returning null for the amount field. The fraud scoring model receives a zero-value feature. The reconciliation job writes a zero to the ledger. The regulatory reporting job produces totals that are wrong by the entire day&rsquo;s transaction volume. None of these consumers threw an exception; they all handled the null gracefully and continued. The failure mode is invisible until the business notices.</p>
+
+        <p>This is not a Kafka problem and it is not a technical problem. It is a team coordination problem that looks like a technical problem because teams that should be coordinating are instead operating independently on a shared interface &mdash; the event schema &mdash; without an enforced contract. Schema Registry is the technical mechanism that enforces that contract. But before the technology can help, leadership has to decide that the contract matters and that enforcement has teeth.</p>
+
+        <p class="article-section">What this decision actually is</p>
+
+        <p>Schema governance is a decision about who owns the contract between producer and consumer teams, and what the consequence is when the contract is broken. In a traditional API world, this is resolved by the API owner publishing a versioned contract and consuming teams subscribing to the version they depend on. In an event-driven architecture, the same discipline is required but the enforcement mechanism is different: the schema registry is the versioned contract store, and the compatibility mode configured on each subject is the policy that determines what changes are and are not allowed.</p>
+
+        <p>The decision a VP or CIO needs to make is not &ldquo;should we use Confluent Schema Registry?&rdquo; &mdash; that is an implementation choice the platform team can evaluate. The decision is: <strong>what is the schema governance model for event streams in this organisation, and who enforces it?</strong> This means designating a schema governance board or function (which teams or roles review and approve compatibility mode changes and breaking schema changes), establishing a compatibility policy per topic class (payment event topics use FULL compatibility; internal monitoring topics may use BACKWARD; experimental topics use NONE), and allocating a migration budget when breaking changes are necessary (because sometimes they are, and the cost of a planned migration is always lower than the cost of a production incident).</p>
+
+        <blockquote>
+          <p>The compatibility mode on a Kafka subject is an organisational decision disguised as a configuration flag. Setting it without a governance process is as meaningful as publishing an API versioning policy that no one is authorised to enforce.</p>
+        </blockquote>
+
+        <p class="article-section">What the regulator cares about</p>
+
+        <p>SAMA&rsquo;s Technology Risk Management framework, and Saudi Arabia&rsquo;s Personal Data Protection Law, impose specific requirements on event-driven architectures that go beyond what most platform teams consider when they deploy a schema registry. The regulator cares about three things in this space.</p>
+
+        <p><strong>Immutable audit schemas.</strong> A transaction event published to a Kafka topic must be replayable with the exact schema that was in use at the time it was produced. Schema Registry&rsquo;s versioned schema archive is the mechanism that makes this possible: each message on the wire carries a schema ID, and that schema ID resolves permanently to the schema used at production time. But this only holds if the registry is configured to retain all schema versions indefinitely for regulated topics &mdash; not to compact or delete them. The platform team must configure the <code>_schemas</code> internal topic with infinite retention for regulatory subjects, and must verify that schema deletion is disabled or gated behind a governance approval process.</p>
+
+        <p><strong>PDPL data classification embedded in events.</strong> Events that carry personal data &mdash; customer IBANs, national IDs, transaction counterparty names &mdash; must be identifiable as such at the event level, not only at the database level. The correct pattern is to embed a <code>pdplClassification</code> field in every Avro schema that carries personal data, with a controlled vocabulary: <code>PUBLIC</code>, <code>INTERNAL</code>, <code>CONFIDENTIAL</code>, or <code>RESTRICTED</code>. This makes data classification machine-readable: downstream consumers, data governance pipelines, and DLP scanning tools can act on the classification without out-of-band configuration. A schema that lacks this field on a topic carrying customer payment data is a PDPL compliance gap.</p>
+
+        <p><strong>Schema archive for regulatory replay.</strong> When SAMA requests a replay of transactions from a specific time window &mdash; for examination, investigation, or reconciliation &mdash; the replay must produce exactly the data that existed at that time, using the schema that was in use at that time. This is only possible if the schema registry has retained every historical schema version. An organisation that compacted or deleted old schema versions has made regulatory replay materially harder and potentially impossible for events produced before the deletion. Treat schema version retention as a data retention policy subject to the same governance controls as the event data itself.</p>
+
+        <p class="article-section">The business trade-off</p>
+
+        <p>Strict compatibility enforcement slows delivery. This is not a theoretical concern &mdash; it is what product teams report when they encounter FULL compatibility for the first time. A developer who wants to add a new required field to a payment event schema discovers that FULL compatibility forbids it (adding a required field without a default breaks backward compatibility). They must instead add the field as optional with a default, negotiate a migration plan with all consumer teams, and follow a multi-phase rollout. What feels like a one-day schema change becomes a two-sprint migration. That is the correct outcome &mdash; but it requires the team to understand why and to have a governance process that helps them navigate it efficiently, not just a registry that rejects their change with a cryptic error.</p>
+
+        <p>The alternative &mdash; no schema governance &mdash; has a different and worse cost structure. Breaking schema changes are free to make and free to deploy right up until the moment they reach production, at which point the cost is a production incident, potentially data corruption in downstream systems, and a reconciliation effort that can take days. In a regulated environment, a payment amount incorrectly calculated because a field was renamed is not an operational incident that can be silently resolved. It is a material data integrity event that must be reported, investigated, and remediated under SAMA&rsquo;s incident management framework.</p>
+
+        <p>The business trade-off is between the predictable friction of planned migrations under a governance regime and the unpredictable cost of unmanaged schema drift at production scale. For a bank with dozens of Kafka topics, multiple producer teams, and consuming systems that include real-time fraud engines, regulatory reporting pipelines, and core banking integrations, the calculus is unambiguous: the governance regime wins on expected value, even before the regulatory dimension is considered.</p>
+
+        <p class="article-section">What leadership must own</p>
+
+        <p>Platform teams cannot own schema governance. They can operate the Schema Registry, enforce technical compatibility checks in CI, and advise on migration patterns. But the governance decisions &mdash; who can relax a compatibility mode, what constitutes an approved breaking change, how long schema versions are retained &mdash; require cross-team authority that platform engineers do not have and should not be asked to exercise.</p>
+
+        <p>The VP of Integration or the Chief Architect needs to own three specific commitments. First: a compatibility policy per topic class, published and communicated to all producer and consumer teams before they onboard to the event platform. Payment topics: FULL. Internal infrastructure topics: BACKWARD. Experimental topics: NONE, with a mandatory promotion to BACKWARD or FULL before any consumer outside the producing team onboards. Second: a governance process for compatibility exceptions. When a team genuinely needs to make a breaking schema change, there must be a defined path: a migration plan reviewed by all affected consumer teams, a migration budget allocated, and an approval that names the person who accepted the risk. Without this path, teams will route around the registry &mdash; setting subjects to NONE mode to bypass validation &mdash; and the governance regime will fail silently. Third: schema retention aligned with data retention policy. Every regulated event topic&rsquo;s schema history must be retained for the same period as the event data. If payments data is retained for seven years for regulatory purposes, schema versions for payment topics must be retained for seven years. This is a data governance policy, not a platform configuration detail.</p>
+
+        <p>A Schema Registry that is deployed, that runs CI compatibility checks, and that is backed by a cross-team governance process is a genuine data contract enforcement mechanism. It makes the event-driven architecture more reliable, more auditable, and more defensible in a regulatory examination. It is worth the delivery friction it introduces. The leadership decision is to commit to the governance model that makes it work, not just to deploy the technology.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind these decisions &mdash; Avro vs Protobuf format selection, compatibility mode semantics, ISO 20022 Avro mapping, CI integration patterns, and the production checklist &mdash; see the companion Lab article: <a href="../lab/data-streaming/schema-registry-and-data-contracts.html" style="color:var(--color-accent);">Data Streaming: Schema Registry &amp; Data Contracts</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

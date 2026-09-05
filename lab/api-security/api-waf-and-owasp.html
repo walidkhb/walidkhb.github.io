@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Security: API WAF &amp; OWASP API Top 10 &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="API WAF and OWASP API Security Top 10 (2023) mitigation: Kong 3.7 OAS validation, AWS WAF v2, OWASP CRS 4.0 with ModSecurity 3, IBM API Connect 10.0.7 &mdash; production patterns for regulated Saudi banks.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="API Security: API WAF &amp; OWASP API Top 10 &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="OWASP API Top 10 (2023) mitigation: Kong OAS validation, ModSecurity CRS 4.0, bot detection, WAF incident response for KSA regulated APIs.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/api-security/api-waf-and-owasp.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="API Security: API WAF &amp; OWASP API Top 10">
+  <meta name="twitter:description" content="OWASP API Top 10 (2023) mitigation layers on Kong 3.7, ModSecurity CRS 4.0, and IBM API Connect for regulated Saudi financial APIs.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/api-security/api-waf-and-owasp.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "API Security: API WAF & OWASP API Top 10",
+    "description": "API WAF and OWASP API Security Top 10 (2023) mitigation: Kong 3.7 OAS validation, AWS WAF v2, OWASP CRS 4.0 with ModSecurity 3, IBM API Connect 10.0.7 — production patterns for regulated Saudi banks.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/api-security/api-waf-and-owasp.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "API Security &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/api-security.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>API WAF &amp; OWASP API Top 10</div>
+          <span class="overline">Lab Article</span>
+          <h1>API Security: API WAF &amp; OWASP API Top 10</h1>
+          <p class="lead">OWASP API Security Top 10 (2023) threat model and mitigation layers for regulated financial APIs &mdash; Kong 3.7 OAS validation, OWASP ModSecurity CRS 4.0, AWS WAF v2, IBM API Connect 10.0.7, bot detection, and WAF incident response aligned to SAMA Cyber Security Framework requirements.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#api1-bola">API1: BOLA</a></li>
+            <li><a href="#api2-auth">API2: Broken Authentication</a></li>
+            <li><a href="#api3-excess">API3: BOPLA</a></li>
+            <li><a href="#api6-injection">API6 &amp; API8: Injection &amp; misconfiguration</a></li>
+            <li><a href="#waf-config">Kong WAF plugin configuration</a></li>
+            <li><a href="#crs-rules">OWASP CRS 4.0 rules</a></li>
+            <li><a href="#bot-detection">Bot detection</a></li>
+            <li><a href="#incident">WAF incident response</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Kong 3.7 / AWS WAF v2 / OWASP CRS 4.0 / IBM API Connect 10.0.7 / ModSecurity 3</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>API attacks are structurally different from web application attacks. A web application has a rendered HTML interface that constrains what a user can submit; a browser form with five fields is hard to extend beyond those five fields without developer tools. An API has no such constraint &mdash; a TPP, a mobile SDK, or an attacker all interact with the same JSON over HTTPS, and the only constraint is the application&rsquo;s own input validation. This makes API attacks more frequently exploiting business logic flaws than memory corruption or injection &mdash; an attacker iterates account IDs until they find one that belongs to another customer, they POST a payment with an amount field they were not supposed to be able to set, they call an admin endpoint that the documentation did not mention but the server answers anyway.</p>
+          <p>The OWASP API Security Top 10 (2023 edition) is not a list of injection payloads to block with a regex. It is a threat model &mdash; a catalogue of the design and implementation failures that produce real API breaches at financial institutions. Each item requires a different mitigation layer: some are addressable at the gateway, some require application-layer fixes, and one (BOLA) cannot be prevented by a WAF at all.</p>
+          <p>The defence-in-depth model for a SAMA-regulated API estate has three layers: the perimeter WAF (Kong + CRS rules blocking known attack patterns), the API gateway authorization layer (scope validation, DPoP, rate limits, OAS schema validation), and the application layer (ownership checks, consent verification, data access controls). A perimeter WAF that blocks 100% of traffic is not security &mdash; it is downtime. The goal is to reduce the attack surface to what the application must own, and ensure the application actually owns it.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">OWASP API Top 10 is a threat model, not a WAF rule list</div>
+            <p>Each item in the OWASP API Top 10 represents a class of vulnerability with a root cause and a mitigation pattern. A WAF rule that blocks SQLi payloads helps with API8 (Security Misconfiguration) but does nothing for API1 (BOLA) or API3 (BOPLA). Do not treat the Top 10 as a checklist of things to block at the gateway &mdash; treat it as a risk inventory that maps to your specific API estate, then assign a mitigation layer to each risk. Items that cannot be mitigated at the gateway must have an application-layer control or they remain open.</p>
+          </div>
+
+          <div class="diagram" role="img" aria-label="API WAF architecture: Internet through Kong Gateway WAF rules to API services, with BOLA detection and SIEM logging">
+            <div class="diagram__inner">
+              <svg width="780" height="300" viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="waf-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="waf-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="waf-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                  <marker id="waf-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Internet -->
+                <rect x="10" y="100" width="90" height="60" rx="6" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="55" y="125" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Internet</text>
+                <text x="55" y="140" text-anchor="middle" fill="#71717a" font-size="8">TPPs &middot; mobile apps</text>
+                <text x="55" y="153" text-anchor="middle" fill="#71717a" font-size="8">bots &middot; attackers</text>
+
+                <!-- Kong Gateway outer -->
+                <rect x="120" y="50" width="430" height="170" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="335" y="72" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Kong 3.7 Gateway &mdash; WAF Enforcement Layer</text>
+
+                <!-- Sub-boxes inside Kong -->
+                <rect x="135" y="84" width="120" height="120" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="195" y="103" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">Rate Limiting</text>
+                <text x="195" y="118" text-anchor="middle" fill="#71717a" font-size="8">per consumer</text>
+                <text x="195" y="130" text-anchor="middle" fill="#71717a" font-size="8">per route</text>
+                <text x="195" y="142" text-anchor="middle" fill="#71717a" font-size="8">sliding window</text>
+                <text x="195" y="155" text-anchor="middle" fill="#71717a" font-size="8">bot-detection</text>
+                <text x="195" y="167" text-anchor="middle" fill="#71717a" font-size="8">IP reputation</text>
+                <text x="195" y="179" text-anchor="middle" fill="#71717a" font-size="8">request-size limit</text>
+                <text x="195" y="194" text-anchor="middle" fill="#71717a" font-size="8">Tor exit node block</text>
+
+                <rect x="275" y="84" width="130" height="120" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="340" y="103" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">OAS Validation</text>
+                <text x="340" y="118" text-anchor="middle" fill="#71717a" font-size="8">request schema</text>
+                <text x="340" y="130" text-anchor="middle" fill="#71717a" font-size="8">response schema</text>
+                <text x="340" y="142" text-anchor="middle" fill="#71717a" font-size="8">param types</text>
+                <text x="340" y="155" text-anchor="middle" fill="#71717a" font-size="8">required fields</text>
+                <text x="340" y="167" text-anchor="middle" fill="#71717a" font-size="8">reject unknown</text>
+                <text x="340" y="179" text-anchor="middle" fill="#71717a" font-size="8">endpoints (API9)</text>
+                <text x="340" y="194" text-anchor="middle" fill="#71717a" font-size="8">strip extra fields</text>
+
+                <rect x="425" y="84" width="110" height="120" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="480" y="103" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">CRS 4.0 Rules</text>
+                <text x="480" y="118" text-anchor="middle" fill="#71717a" font-size="8">ModSecurity 3</text>
+                <text x="480" y="130" text-anchor="middle" fill="#71717a" font-size="8">PL1 for APIs</text>
+                <text x="480" y="142" text-anchor="middle" fill="#71717a" font-size="8">SQLi / XSS</text>
+                <text x="480" y="155" text-anchor="middle" fill="#71717a" font-size="8">header injection</text>
+                <text x="480" y="167" text-anchor="middle" fill="#71717a" font-size="8">SSRF detection</text>
+                <text x="480" y="179" text-anchor="middle" fill="#71717a" font-size="8">scanner UA rules</text>
+                <text x="480" y="194" text-anchor="middle" fill="#71717a" font-size="8">score threshold</text>
+
+                <!-- API Services -->
+                <rect x="575" y="80" width="140" height="80" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="645" y="105" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">API Services</text>
+                <text x="645" y="120" text-anchor="middle" fill="#71717a" font-size="8">AIS / PIS / CoF</text>
+                <text x="645" y="133" text-anchor="middle" fill="#71717a" font-size="8">application-layer</text>
+                <text x="645" y="147" text-anchor="middle" fill="#71717a" font-size="8">BOLA checks here</text>
+
+                <!-- SIEM -->
+                <rect x="575" y="185" width="140" height="60" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="645" y="210" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">SIEM</text>
+                <text x="645" y="225" text-anchor="middle" fill="#71717a" font-size="8">CRS score alerts</text>
+                <text x="645" y="238" text-anchor="middle" fill="#71717a" font-size="8">BOLA anomalies &middot; TPP identity</text>
+
+                <!-- Arrows -->
+                <line x1="102" y1="130" x2="118" y2="130" stroke="#ef4444" stroke-width="1.5" marker-end="url(#waf-arr)"/>
+                <line x1="255" y1="144" x2="273" y2="144" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#waf-arr)"/>
+                <line x1="407" y1="144" x2="423" y2="144" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#waf-arr)"/>
+                <line x1="537" y1="130" x2="573" y2="120" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#waf-arr)"/>
+
+                <!-- BOLA detection path -->
+                <line x1="645" y1="162" x2="645" y2="183" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#waf-arr2)"/>
+                <text x="655" y="176" fill="#ef4444" font-size="8">BOLA anomaly</text>
+
+                <!-- WAF logs to SIEM -->
+                <line x1="335" y1="222" x2="573" y2="210" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#waf-arr3)"/>
+                <text x="430" y="245" text-anchor="middle" fill="#fbbf24" font-size="8">WAF security events &middot; CRS rule blocks &middot; TPP identity</text>
+
+                <!-- Block path -->
+                <rect x="10" y="200" width="90" height="40" rx="4" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="55" y="218" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">BLOCK</text>
+                <text x="55" y="232" text-anchor="middle" fill="#71717a" font-size="8">403 / 429</text>
+                <line x1="180" y1="206" x2="100" y2="218" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#waf-arr2)"/>
+                <text x="100" y="198" fill="#ef4444" font-size="8">blocked requests</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Kong 3.7 enforces three WAF layers in sequence: rate limiting and bot detection, OAS schema validation, and OWASP CRS 4.0 rule scoring. BOLA detection happens via anomaly detection on the response path and is forwarded to the SIEM with TPP identity for SAMA security event reporting.</div>
+          </div>
+
+          <h2 id="api1-bola">API1: Broken Object Level Authorization (BOLA)</h2>
+          <p>BOLA is the most prevalent and the most misunderstood API vulnerability. The attack is simple: the client accesses a resource by supplying an ID in the URL (<code>GET /accounts/123456789/transactions</code>), and the server returns data for account <code>123456789</code> without verifying that the authenticated caller is the owner of that account. An attacker with a valid access token for their own account iterates the account ID and reads other customers&rsquo; transaction data.</p>
+          <p>This is horizontal privilege escalation. The attacker is not escalating to admin &mdash; they are accessing data at the same privilege level but for a different subject. Because the attacker presents a valid token with valid credentials, no authentication check catches this. Because the ID is a valid account number (just not theirs), no input validation catches this. Only an ownership check catches this: does the authenticated principal own, or have explicit consent to access, the resource identified by this ID?</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">BOLA cannot be prevented by a WAF</div>
+            <p>A WAF operates on request syntax and patterns. It cannot know that account <code>123456789</code> belongs to customer A and that customer B is accessing it. BOLA prevention requires application-layer authorization checks on every data access: extract the authenticated principal from the token, look up which account IDs that principal owns or has consent to access, and reject any request for an ID not in that set. At the gateway, the only tool is anomaly detection on the response: a single access token accessing a high volume of distinct account IDs in a short window is a BOLA signal, not a WAF block. Alert on it and send to SIEM with TPP identity.</p>
+          </div>
+
+          <p>Kong&rsquo;s response transformer plugin can strip sensitive fields from API responses if the ownership check passed but the response still contains data beyond the consented scope (related to API3/BOPLA). For BOLA anomaly detection, use Kong&rsquo;s plugin SDK to count distinct resource IDs accessed per access token per 60-second window and emit a log event when the count exceeds a threshold (e.g. &gt;20 distinct account IDs for a single AIS token in 60 seconds &mdash; typical legitimate use is 1&ndash;5).</p>
+
+          <h2 id="api2-auth">API2: Broken Authentication</h2>
+          <p>Broken authentication covers a wide range of failures: missing OAuth2 scope validation (the token says <code>scope: openid</code> but the resource server accepts it for a payment endpoint), long-lived tokens without refresh rotation, JWT algorithm confusion attacks (<code>alg: none</code> bypasses signature validation if the library is misconfigured), and JWT secret brute force (symmetric HS256 JWTs with weak secrets are offline-crackable).</p>
+          <p>Kong&rsquo;s OIDC plugin mitigates most of these at the gateway: it rejects unsigned or algorithm-none JWTs, validates token signature against the JWKS endpoint, checks expiry, and performs scope validation per route. For payment endpoints, configure the OIDC plugin to require <code>scope: payments</code> and check that the <code>authorization_details</code> claim covers the requested operation. Introspect every token on every request rather than relying on local JWT validation alone &mdash; a revoked token that has not expired yet is only caught by introspection.</p>
+
+          <h2 id="api3-excess">API3: Broken Object Property Level Authorization (BOPLA)</h2>
+          <p>BOPLA has two failure modes. Mass assignment: the API accepts a POST or PATCH body and the application binds it directly to an object without filtering, allowing a client to set fields they were not supposed to set (e.g. <code>{"status": "approved", "amount": 1}</code> in a loan application). Excessive data exposure: the API returns the full database object and relies on the client to filter out sensitive fields &mdash; a change to the business logic that adds a field (e.g. <code>creditScore</code>) is automatically exposed to every API consumer without review.</p>
+          <p>Kong&rsquo;s OAS Validation plugin (configured for both request and response validation) addresses both failure modes: it validates incoming request bodies against the OpenAPI spec schema, rejecting any field not defined as a writable property, and it validates response bodies against the spec schema, alerting (or blocking in strict mode) on fields not in the spec. The response transformer plugin can strip fields from responses that should not be returned to external callers, enforced at the gateway layer regardless of what the application returns.</p>
+
+          <h2 id="api6-injection">API6 &amp; API8: Sensitive Business Flows, Injection &amp; Misconfiguration</h2>
+          <p>API6 (Unrestricted Access to Sensitive Business Flows) covers automation abuse: a bot submitting payment initiations at machine speed, scraping account data faster than any human could, or probing for valid account numbers by iterating IDs. The WAF layer addresses this via rate limiting per consumer and bot detection &mdash; but the business flow rate limit must align with the API class. PIS payment initiation has a legitimate rate of &lt;1 per second per PSU; a token initiating 100 payments per minute is anomalous regardless of whether it passes all authentication checks.</p>
+          <p>API8 (Security Misconfiguration) includes injection vulnerabilities reachable via API parameters. Query parameter injection, HTTP header injection (<code>X-Forwarded-For</code> spoofing, CRLF injection in custom headers), and SSRF via webhook URL parameters are all injection vectors. ModSecurity OWASP CRS 4.0 rules address these at Paranoia Level 1 (PL1) &mdash; the default level that prioritizes low false positives for API traffic &mdash; including rules for SQL injection (SQLi), cross-site scripting (XSS), remote code execution (RCE), SSRF detection, and scanner user-agent detection. PL2&ndash;PL4 add increasingly aggressive rules with higher false-positive rates, not recommended for production API traffic without extensive tuning.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never rely on obscurity for API endpoint protection</div>
+            <p>Security through obscurity is not a SAMA-acceptable control. An API endpoint that requires authentication cannot substitute &ldquo;undocumented&rdquo; for &ldquo;authenticated&rdquo; &mdash; automated scanners discover undocumented endpoints within minutes of exposure. Every endpoint that the API gateway routes &mdash; including internal health endpoints, debug endpoints, and admin endpoints &mdash; must either require authentication or be blocked at the gateway before they are reachable from outside the internal network. Use Kong&rsquo;s OAS Validation plugin to reject requests to paths not defined in the OpenAPI spec (API9: Improper Inventory Management) and block all requests to paths matching <code>/actuator/*</code>, <code>/debug/*</code>, and <code>/admin/*</code> at the route level.</p>
+          </div>
+
+          <h2 id="waf-config">Kong WAF Plugin Configuration</h2>
+          <p>Kong 3.7&rsquo;s WAF enforcement stack for a SAMA Open Banking API route is a chain of plugins applied in order: rate-limiting-advanced (token bucket per consumer), bot-detection (user-agent and fingerprint checks), request-size-limiting (maximum body size per endpoint class), OAS Validation (request + response schema), and the custom ModSecurity CRS plugin. The order matters &mdash; rate limiting and bot detection run first to eliminate noise before the more expensive schema validation and CRS rule evaluation.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kong-waf-plugins.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Kong OAS Validation plugin &mdash; request + response validation</span>
+- <span class="tok-k">name</span>: <span class="tok-s">oas-validation</span>
+  <span class="tok-k">config</span>:
+    <span class="tok-k">api_spec_encoded</span>: <span class="tok-n">false</span>
+    <span class="tok-k">api_spec</span>: <span class="tok-s">"https://spec.openbanking.saib.sa/pis/v1/openapi.yaml"</span>
+    <span class="tok-k">validate_request_body</span>: <span class="tok-n">true</span>
+    <span class="tok-k">validate_request_header_params</span>: <span class="tok-n">true</span>
+    <span class="tok-k">validate_request_query_params</span>: <span class="tok-n">true</span>
+    <span class="tok-k">validate_request_uri_params</span>: <span class="tok-n">true</span>
+    <span class="tok-k">validate_response_body</span>: <span class="tok-n">true</span>      <span class="tok-c"># blocks BOPLA (excess data exposure)</span>
+    <span class="tok-k">notify_only_request_body_validation_failure</span>: <span class="tok-n">false</span>
+    <span class="tok-k">notify_only_response_body_validation_failure</span>: <span class="tok-n">true</span>   <span class="tok-c"># log but don't block on response (perf)</span>
+    <span class="tok-k">include_base_path</span>: <span class="tok-n">false</span>
+    <span class="tok-k">query_param_checks</span>:
+      <span class="tok-k">allowed_params_in_spec_only</span>: <span class="tok-n">true</span>   <span class="tok-c"># reject undocumented query params</span>
+
+<span class="tok-c"># Rate-limiting-advanced &mdash; sliding window per TPP consumer</span>
+- <span class="tok-k">name</span>: <span class="tok-s">rate-limiting-advanced</span>
+  <span class="tok-k">config</span>:
+    <span class="tok-k">limit</span>: [<span class="tok-n">10</span>, <span class="tok-n">100</span>, <span class="tok-n">2000</span>]             <span class="tok-c"># per minute, per hour, per day</span>
+    <span class="tok-k">window_size</span>: [<span class="tok-n">60</span>, <span class="tok-n">3600</span>, <span class="tok-n">86400</span>]
+    <span class="tok-k">identifier</span>: <span class="tok-s">consumer</span>
+    <span class="tok-k">sync_rate</span>: <span class="tok-n">10</span>                        <span class="tok-c"># sync to Redis every 10 s</span>
+    <span class="tok-k">namespace</span>: <span class="tok-s">pis-rate</span>
+    <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>
+    <span class="tok-k">redis</span>:
+      <span class="tok-k">host</span>: <span class="tok-s">redis-cluster.infra.svc</span>
+      <span class="tok-k">port</span>: <span class="tok-n">6379</span>
+      <span class="tok-k">ssl</span>: <span class="tok-n">true</span>
+    <span class="tok-k">hide_client_headers</span>: <span class="tok-n">false</span>           <span class="tok-c"># TPPs need X-RateLimit-* headers for compliance</span>
+
+<span class="tok-c"># Bot detection &mdash; user-agent and fingerprint checks</span>
+- <span class="tok-k">name</span>: <span class="tok-s">bot-detection</span>
+  <span class="tok-k">config</span>:
+    <span class="tok-k">deny</span>:
+      - <span class="tok-s">"*(curl|wget|python-requests|go-http-client|libwww-perl)*"</span>    <span class="tok-c"># scanner UAs</span>
+      - <span class="tok-s">"*(masscan|nikto|nmap|sqlmap|dirb|dirbuster)*"</span>
+    <span class="tok-k">allow</span>:
+      - <span class="tok-s">"*(kong-.*|internal-monitor)*"</span>
+
+<span class="tok-c"># Request-size-limiting</span>
+- <span class="tok-k">name</span>: <span class="tok-s">request-size-limiting</span>
+  <span class="tok-k">config</span>:
+    <span class="tok-k">allowed_payload_size</span>: <span class="tok-n">128</span>            <span class="tok-c"># kilobytes; PIS payload is small</span>
+    <span class="tok-k">size_unit</span>: <span class="tok-s">kilobytes</span>
+    <span class="tok-k">require_content_length</span>: <span class="tok-n">true</span>
+
+<span class="tok-c"># IP restriction &mdash; block Tor exit nodes (updated daily via threat intel feed)</span>
+- <span class="tok-k">name</span>: <span class="tok-s">ip-restriction</span>
+  <span class="tok-k">config</span>:
+    <span class="tok-k">deny</span>:
+      - <span class="tok-s">"0.0.0.0/0"</span>                        <span class="tok-c"># default deny-all (override with allow list for TPP IP ranges)</span>
+    <span class="tok-k">allow</span>:
+      - <span class="tok-s">"10.0.0.0/8"</span>                       <span class="tok-c"># internal services</span>
+      - <span class="tok-s">"203.0.113.0/24"</span>                   <span class="tok-c"># example: SAMA-registered TPP IP range</span></code></pre>
+          </div>
+
+          <h2 id="crs-rules">OWASP CRS 4.0 Rules</h2>
+          <p>OWASP Core Rule Set 4.0 with ModSecurity 3 runs inside the Kong gateway as a Lua plugin (or as an Nginx module in front of Kong, depending on deployment topology). The CRS evaluates incoming requests against hundreds of rules and computes an anomaly score; when the score exceeds a threshold, the request is blocked (in blocking mode) or logged (in detection-only mode). PL1 activates the core rules with the lowest false-positive rate &mdash; appropriate for production API traffic. PL2&ndash;PL4 add progressively more rules that flag more patterns, at the cost of blocking more legitimate requests.</p>
+          <p>For SAMA Open Banking APIs, the key CRS tuning decisions are: PL1 for the default rule set, with specific exclusions for SAMA-mandated header formats (the <code>x-fapi-interaction-id</code> header, the <code>x-jws-signature</code> header, and Arabic-character values in name fields that PL2 might flag). The anomaly score threshold should be 5 (PL1 default) for detection mode and 10 for blocking mode during the initial 30-day tuning phase, then narrowed to 5 for blocking after false positives are catalogued and excluded.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>crs-config.conf</span><span class="code-block__lang">apache</span></div>
+<pre><code><span class="tok-c"># ModSecurity CRS 4.0 configuration for SAMA Open Banking API</span>
+SecRuleEngine On                          <span class="tok-c"># blocking mode; use DetectionOnly during tuning</span>
+SecAuditEngine RelevantOnly               <span class="tok-c"># log only blocked/anomalous requests</span>
+SecAuditLog /var/log/modsecurity/audit.log
+SecAuditLogParts ABCEFHIJKZ
+
+<span class="tok-c"># Paranoia Level 1 &mdash; low false positives for API traffic</span>
+SecAction \
+  "id:900000,phase:1,nolog,pass,setvar:tx.paranoia_level=1"
+
+<span class="tok-c"># Detection anomaly threshold (score above this triggers alert/block)</span>
+SecAction \
+  "id:900110,phase:1,nolog,pass,\
+   setvar:tx.inbound_anomaly_score_threshold=5,\
+   setvar:tx.outbound_anomaly_score_threshold=4"
+
+<span class="tok-c"># API-specific: allow SAMA FAPI headers without triggering header injection rules</span>
+SecRuleUpdateTargetByTag "attack-injection-http" \
+  "!REQUEST_HEADERS:x-fapi-interaction-id"
+SecRuleUpdateTargetByTag "attack-injection-http" \
+  "!REQUEST_HEADERS:x-jws-signature"
+SecRuleUpdateTargetByTag "attack-injection-http" \
+  "!REQUEST_HEADERS:x-idempotency-key"
+
+<span class="tok-c"># Exclusion for Arabic name fields (SAMA KYC data) that may trigger PL2 rules</span>
+SecRuleUpdateTargetById 942100 \
+  "!REQUEST_BODY:creditor.name"
+SecRuleUpdateTargetById 942100 \
+  "!REQUEST_BODY:debtor.name"
+
+<span class="tok-c"># Enable SSRF detection rules (PL1 includes 931100, 931110, 931120)</span>
+<span class="tok-c"># Covers webhook URL parameters that could trigger internal SSRF</span>
+SecRuleEngine On
+
+<span class="tok-c"># Content-Type enforcement for JSON APIs</span>
+SecRule REQUEST_METHOD "!@streq GET" \
+  "id:990001,phase:1,deny,status:415,log,\
+   msg:'Expected Content-Type application/json',\
+   chain"
+  SecRule REQUEST_HEADERS:Content-Type "!@beginsWith application/json" \
+    "t:lowercase"</code></pre>
+          </div>
+
+          <h2 id="bot-detection">Bot Detection and Rate Limit Bypass Prevention</h2>
+          <p>In a SAMA Open Banking context, the primary bot threat is not generic web scraping &mdash; it is TPP automation misuse: a TPP that registered legitimately through the SAMA Open Banking Directory but is querying account data at machine speed, initiating test payments in production, or probing for valid account numbers. The TPP identity (client_id from the SAMA directory) is the anchor for all rate limiting and anomaly detection.</p>
+          <p>Effective bot detection for Open Banking APIs uses a dual-signal model. The primary signal is the OAuth 2.0 client_id (the TPP identifier from the SAMA directory) &mdash; rate limits and anomaly thresholds are enforced per client_id, not per IP. The secondary signal is the source IP &mdash; a client_id appearing from many different IPs simultaneously may indicate credential theft or a distributed TPP deployment that should have been registered separately. Alert when a single client_id originates from more than five distinct IP subnets in a 10-minute window.</p>
+          <p>The <code>X-Device-ID</code> custom header (sent by TPP mobile SDKs) provides a third signal: device fingerprint. A single device ID associated with multiple PSU accounts in rapid succession is a BOLA pattern. Correlate device ID with PSU identity in the access log and alert when one device ID accesses more than three distinct PSU accounts within five minutes.</p>
+
+          <h2 id="incident">WAF Incident Response</h2>
+          <p>A WAF in blocking mode that fires incorrectly blocks legitimate TPP traffic. A blocked payment initiation from a legitimate TPP is a service outage, not a security event. WAF incident response must treat false positives with the same urgency as application outages &mdash; not as an acceptable consequence of security controls.</p>
+          <p>The incident response process: WAF logs ship to the SIEM (Splunk or IBM QRadar) in real time via the Kong logging plugin, tagged with the CRS rule ID that triggered, the anomaly score, the request URI, and the TPP client_id. Alert on any CRS rule score above threshold for a TPP that has had no prior WAF events (first-time block for a known-good TPP is almost certainly a false positive). Alert on any block that correlates with a drop in successful API calls from the same TPP (indicates a real production impact, not a test probe being blocked). The SLA for investigating a WAF false positive affecting a SAMA-registered TPP is 30 minutes during business hours; escalation to the API security team is immediate.</p>
+          <p>SAMA&rsquo;s Cyber Security Framework requires that internet-facing API security events be logged with the TPP identity, incident type, timestamps, and disposition (blocked / allowed / alerted). The WAF log record must include the <code>client_id</code> from the OAuth token (extracted by Kong before the WAF plugin) so that every security event is attributable to a specific SAMA-registered TPP. Generic IP-based logging is insufficient for SAMA examination purposes.</p>
+
+          <table>
+            <thead>
+              <tr><th>API#</th><th>Name</th><th>WAF addressable?</th><th>Application layer fix</th><th>Kong plugin</th><th>Detection signal</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>API1</td><td>Broken Object Level Authorization</td><td>No &mdash; business logic</td><td>Ownership check on every data access</td><td>Response logging &mdash; anomaly alert</td><td>One token accessing many distinct resource IDs</td></tr>
+              <tr><td>API2</td><td>Broken Authentication</td><td>Partially</td><td>Scope validation per endpoint; token introspection</td><td>OIDC + introspection</td><td>alg:none tokens; expired tokens; invalid scopes</td></tr>
+              <tr><td>API3</td><td>Broken Object Property Level Authorization</td><td>Partially</td><td>Allowlist writable fields; filter response fields</td><td>OAS Validation + Response Transformer</td><td>Extra fields in request body; unexpected fields in response</td></tr>
+              <tr><td>API4</td><td>Unrestricted Resource Consumption</td><td>Yes</td><td>Resource-type rate limits</td><td>rate-limiting-advanced</td><td>Volumetric spike above consent-class limit</td></tr>
+              <tr><td>API5</td><td>Broken Function Level Authorization</td><td>Partially</td><td>Role-based function access; admin endpoint auth</td><td>ACL + OAS Validation</td><td>Non-admin token on admin-path</td></tr>
+              <tr><td>API6</td><td>Unrestricted Access to Sensitive Business Flows</td><td>Partially</td><td>Business-flow rate limits; step validation</td><td>rate-limiting-advanced + bot-detection</td><td>Automation velocity pattern</td></tr>
+              <tr><td>API7</td><td>Server-Side Request Forgery</td><td>Yes</td><td>Validate webhook URLs against allowlist</td><td>CRS 4.0 rule 931100</td><td>Internal IP or metadata endpoint in URL param</td></tr>
+              <tr><td>API8</td><td>Security Misconfiguration</td><td>Partially</td><td>Harden config; disable debug; enforce TLS</td><td>OAS Validation + CRS</td><td>Debug params; non-HTTPS; unlisted endpoint access</td></tr>
+              <tr><td>API9</td><td>Improper Inventory Management</td><td>Partially</td><td>API inventory; deprecation policy</td><td>OAS Validation (reject unknown paths)</td><td>Requests to undocumented paths</td></tr>
+              <tr><td>API10</td><td>Unsafe Consumption of APIs</td><td>No</td><td>Validate &amp; sanitise third-party API responses</td><td>Response Transformer (content-type check)</td><td>Unexpected content-type from upstream</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="checklist">Production Checklist</h2>
+
+          <ol class="step-list">
+            <li><strong>Map OWASP API Top 10 to your API estate.</strong> For each item, identify which APIs are exposed to the relevant threat, what the current mitigation is, and what the gap is. BOLA and API10 gaps are application-layer responsibilities &mdash; assign owners in the API team, not the security team alone.</li>
+            <li><strong>Enable OAS Validation on all external routes.</strong> Request body, query parameters, and URI parameters. Response body validation in notification-only mode initially. Move to blocking mode for response validation after a 30-day baseline period confirms no false positives.</li>
+            <li><strong>Deploy CRS 4.0 in detection-only mode first.</strong> Run for 30 days, catalogue false positives by rule ID, write exclusions for SAMA-specific header formats and Arabic character fields. Switch to blocking mode only after FP rate is below 0.01% of legitimate traffic.</li>
+            <li><strong>Set rate limits per consent class.</strong> PIS: 10 initiations per TPP per minute. AIS: 4 calls per second per TPP per account. CoF: 30 calls per minute per merchant. Rate limits must be enforced in a distributed counter (Redis) &mdash; a per-Kong-node counter is trivially bypassed by sending traffic to multiple nodes.</li>
+            <li><strong>Configure SIEM integration.</strong> All WAF block events, CRS score-threshold events, and BOLA anomaly events must reach the SIEM with TPP client_id, source IP, rule ID, request URI, and timestamp. SAMA examination requires a complete security event log attributable to specific SAMA-registered TPPs.</li>
+            <li><strong>Establish a false-positive SLA.</strong> 30 minutes from detection to WAF rule exclusion for a confirmed FP affecting a SAMA-registered TPP. False positive triage must be part of the on-call runbook, not an ad-hoc process. Document every exclusion with rule ID, justification, approver, and date.</li>
+            <li><strong>Block all undocumented paths.</strong> Configure Kong to reject requests to paths not defined in the OpenAPI spec. Log every such request &mdash; they are either API9 (deprecated endpoint still in use) or an active probe. Alert if any undocumented path receives more than 5 requests in 60 seconds.</li>
+          </ol>
+
+          <ol>
+            <li>OWASP API Top 10 risk inventory mapped to API estate; owners assigned per item.</li>
+            <li>OAS Validation active on all external-facing routes; request blocking enabled; response logging enabled.</li>
+            <li>CRS 4.0 at PL1 active in blocking mode; anomaly score threshold 5; FP exclusions documented.</li>
+            <li>Rate-limiting-advanced on Redis Cluster; per-client_id limits by consent class.</li>
+            <li>Bot-detection plugin active; scanner UA patterns deny-listed; legitimate TPP SDKs in allow list.</li>
+            <li>Request-size-limiting per endpoint class (PIS: 128 KB, AIS: 64 KB, document upload: 10 MB).</li>
+            <li>IP restriction blocking Tor exit nodes (updated daily via threat intel feed).</li>
+            <li>WAF logs to SIEM; TPP client_id in every security event record.</li>
+            <li>BOLA anomaly detection: alert when one token accesses &gt;20 distinct resource IDs per 60 s.</li>
+            <li>False-positive SLA: 30 minutes to WAF rule exclusion during business hours; on-call for critical TPPs.</li>
+            <li>All WAF exclusions documented with rule ID, justification, approver, date; reviewed quarterly.</li>
+            <li>Undocumented path access logged and alerted; &gt;5 requests / 60 s triggers SIEM alert.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="fapi-2-open-banking.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">FAPI 2.0 &amp; Open Banking Security</div>
+            </a>
+            <a href="../api-security.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">API Security &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

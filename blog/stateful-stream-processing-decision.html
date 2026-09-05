@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stateful Stream Processing: The Infrastructure Decision Your Fraud and Risk Teams Cannot Afford to Get Wrong &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Exactly-once stream processing is an architecture commitment, not a configuration flag. Why the latency, consistency, and state management decisions your teams make on Flink and Kafka Streams determine whether your real-time fraud controls are defensible to SAMA.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/stateful-stream-processing-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Stateful Stream Processing: The Infrastructure Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Stateful Stream Processing: The Infrastructure Decision Your Fraud and Risk Teams Cannot Afford to Get Wrong &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Exactly-once processing is an architecture commitment. The latency and consistency decisions your teams make on Flink and Kafka Streams determine whether your fraud controls are defensible to SAMA.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/stateful-stream-processing-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Stateful Stream Processing: The Infrastructure Decision Your Fraud and Risk Teams Cannot Afford to Get Wrong">
+  <meta name="twitter:description" content="Exactly-once is an architecture commitment. What the fraud infrastructure decision means for SAMA compliance, latency, and double-processing risk.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Stateful Stream Processing: The Infrastructure Decision Your Fraud and Risk Teams Cannot Afford to Get Wrong",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/stateful-stream-processing-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="data-streaming.html">Data Streaming</a><span>/</span>Stateful Stream Processing Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Data Streaming &middot; September 5, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">Stateful Stream Processing: The Infrastructure Decision Your Fraud and Risk Teams Cannot Afford to Get Wrong</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Real-time fraud detection sounds like a technology project. Deploy Apache Flink, wire it to your Kafka topics, configure a velocity check, and ship it. In practice, the technology is the easy part. The hard part is answering a set of architectural questions whose answers are not reversible once you are in production with live payment traffic running through them: How many milliseconds of latency is acceptable between a transaction arriving and a fraud decision being made? What does it mean, at the business layer rather than the Kafka layer, for processing to happen &ldquo;exactly once&rdquo;? Who owns the audit trail when a declined transaction is later found to have been a false positive? What happens to the fraud engine&rsquo;s state during a recovery after a system failure?</p>
+
+        <p>These are leadership decisions. Engineers can implement the answer once the answer is given, but they cannot set the answer alone, because the answer involves trade-offs between latency, cost, regulatory obligation, and acceptable business risk that only the business can authorise.</p>
+
+        <p class="article-section">What this decision actually is</p>
+
+        <p>The fundamental decision in stateful stream processing is not which framework to use. It is the <strong>consistency model</strong> the fraud infrastructure operates under, and what the consequences of that model are when things go wrong.</p>
+
+        <p>A stream processing job that uses at-least-once delivery semantics will process every payment event at least once, and potentially more than once during recovery from a failure. For most streaming use cases, this is acceptable &mdash; count the extra processing, absorb the duplicate, move on. For a fraud velocity check on a payment system, it is not. If the velocity check counts a transaction twice because the Flink job recovered from a checkpoint and re-processed the last batch of events, the customer&rsquo;s transaction count for the window is wrong. The fraud signal is wrong. The decision &mdash; approve, flag, or block &mdash; is made on incorrect state. In the worst case, a legitimate transaction is blocked because a double-counted window exceeded the threshold.</p>
+
+        <p>Exactly-once processing &mdash; the guarantee that every event updates operator state exactly once, even under failure and recovery &mdash; addresses this. But it is not a configuration flag. It is an architecture commitment that changes how the job is deployed (checkpointing interval, state backend, Kafka transactional producer), how the downstream systems must behave (idempotent writes keyed on transaction ID), and what latency the end-to-end system delivers (checkpointing adds measurable overhead; Kafka transactions add commit latency). The commitment must be made at the design stage, not retrofitted after the first production incident.</p>
+
+        <blockquote>
+          <p>Exactly-once at the stream processor layer is a necessary condition for correct fraud detection, but it is not sufficient. The downstream authorisation system must also be idempotent. A Flink job that guarantees exactly-once state updates but writes to an authorisation gateway that does not deduplicate decisions can still produce duplicate BLOCK outcomes for a single transaction.</p>
+        </blockquote>
+
+        <p class="article-section">The regulatory angle</p>
+
+        <p>SAMA&rsquo;s real-time fraud requirements are not advisory. The Technology Risk Management framework expects that velocity-based controls &mdash; limits on transaction count and amount within defined time windows &mdash; operate continuously and correctly on all regulated payment channels. For Mada card authorisations, the screening decision must be made within the network&rsquo;s SLA window. For IPS credit transfers, SAMA expects a status response within seconds. These are not aspirational targets; they are operational requirements that a SAMA examination will test.</p>
+
+        <p>The velocity limits themselves are regulatory controls. When SAMA defines that a card must not exceed N transactions in a rolling window without step-up authentication, that window computation must be correct. An at-least-once pipeline that double-counts transactions during recovery is not implementing the regulatory control correctly &mdash; it is implementing a control that looks correct in normal operation and fails silently in edge cases. The examination question is not &ldquo;do you have a velocity check?&rdquo; but &ldquo;can you demonstrate that the velocity check is applied consistently and that its results are auditable?&rdquo;</p>
+
+        <p>The audit trail for declined transactions is a regulatory obligation that most teams design as an afterthought. Every transaction that is flagged or blocked by the fraud engine must generate an immutable audit event: the transaction ID, the decision, the features that drove the decision (velocity count at time of scoring, risk score, threshold), and the model version in use. This event must be stored in a way that cannot be altered &mdash; an append-only Kafka topic with infinite retention backed by object storage, not a database table with an update path. When a customer disputes a blocked transaction and the case reaches SAMA&rsquo;s consumer protection function, the bank must produce this audit record. Without it, the bank cannot defend the decision and risks the regulatory finding that the control is not operating correctly.</p>
+
+        <p class="article-section">The business trade-off</p>
+
+        <p>Exactly-once processing adds latency. The checkpoint mechanism that provides the exactly-once guarantee requires the stream processor to periodically snapshot its state to durable storage and to use Kafka transactions for output commits. In production, with RocksDB as the state backend and a 60-second checkpoint interval, the overhead is typically 5&ndash;8% additional end-to-end latency compared to at-least-once. For most payment channels, this is acceptable &mdash; the latency budget for IPS screening is measured in seconds, not the tens of milliseconds that exactly-once overhead adds.</p>
+
+        <p>For Mada card authorisation, where the Mada network SLA demands a decision in under 80&ndash;100 milliseconds end-to-end, the latency budget is tighter. The fraud check contribution to that budget is typically 10&ndash;20 milliseconds &mdash; the time to look up velocity state in RocksDB, score the transaction, and produce the decision to the authorisation topic. Exactly-once overhead within that window is manageable if the state backend and checkpoint interval are tuned correctly. But it requires explicit measurement and validation, not assumption.</p>
+
+        <p>At-least-once processing with carefully designed idempotency downstream is a legitimate design choice for high-throughput, low-latency pipelines where the exactly-once Kafka transaction overhead is genuinely prohibitive. The condition is that the downstream system must deduplicate on transaction ID, the state update logic must be idempotent (counting a transaction twice must produce the same result as counting it once), and the consequence of occasional double-processing must be understood and accepted by the business and the compliance function. This is a business and compliance decision, not an engineering one.</p>
+
+        <p class="article-section">What leadership must decide</p>
+
+        <p>Four decisions belong at the leadership level and cannot be delegated to the engineering team to resolve independently.</p>
+
+        <p><strong>The latency budget for fraud checks per payment channel.</strong> Mada, IPS, SADAD, and SARIE each have different network SLA constraints. The total latency budget for a fraud decision must be partitioned across the components that contribute to it: Kafka consumer fetch latency, state lookup time, model scoring time, Kafka producer commit time. The engineering team can measure each component&rsquo;s contribution, but only the business can decide how much of the network SLA window is available for fraud screening versus core transaction processing. This budget directly determines whether exactly-once processing is feasible or whether a carefully managed at-least-once approach is required for the highest-throughput channels.</p>
+
+        <p><strong>What &ldquo;exactly-once&rdquo; means at the business layer, not the Kafka layer.</strong> Engineers can configure Flink for exactly-once state updates and Kafka transactional sinks. What they cannot define is whether &ldquo;exactly-once&rdquo; at the business level means that a customer is charged exactly once, that a fraud alert is created exactly once, or that a regulatory event is recorded exactly once. Each of these may require additional idempotency controls beyond what the stream processor provides &mdash; deduplication at the authorisation gateway, idempotent writes at the alert management system, exactly-once event publishing to the audit log. The business must define what the end-to-end guarantee means before the architecture can be designed to satisfy it.</p>
+
+        <p><strong>The state retention and recovery policy.</strong> A Flink fraud pipeline accumulates velocity state for every active customer key. If the job fails and cannot recover from its last checkpoint, some state is lost. The question &ldquo;how much state loss is acceptable?&rdquo; is a business question. A 60-second checkpoint interval means at most 60 seconds of velocity state is lost on an unrecoverable failure; transactions in that window may be incorrectly scored until the state warms up again. For a bank processing tens of thousands of transactions per minute, this may mean hundreds of transactions scored without accurate velocity context. Whether that is acceptable depends on the risk appetite and the regulatory exposure, not on the engineering team&rsquo;s judgment alone.</p>
+
+        <p><strong>The operational capability to run a stateful stream processor.</strong> Apache Flink is a distributed system with a learning curve. Diagnosing a checkpoint timeout, managing a parallelism change on a running job, performing a state migration during a job upgrade &mdash; these require engineers with specific Flink expertise. The decision to deploy stateful stream processing for a regulatory control like fraud velocity checking is also a decision to invest in that expertise. &ldquo;We will learn it as we go&rdquo; is not an acceptable posture for infrastructure that carries a SAMA compliance obligation. The headcount, training, and vendor support decisions must be made before the pipeline goes live on a production payment channel, not after the first 3&nbsp;a.m.&nbsp;incident.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind these decisions &mdash; window types, Flink and Kafka Streams state backends, exactly-once checkpoint configuration, velocity check implementation, stream enrichment patterns, and the production checklist &mdash; see the companion Lab article: <a href="../lab/data-streaming/stateful-stream-processing.html" style="color:var(--color-accent);">Data Streaming: Stateful Stream Processing Patterns</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

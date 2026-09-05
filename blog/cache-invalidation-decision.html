@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cache Invalidation via CDC: The Architecture Decision That Eliminates Stale Balances Without DBA Coordination &mdash; Waleed Albadawi</title>
+  <meta name="description" content="CDC-driven cache invalidation is a platform commitment, not an application feature. It requires Debezium infrastructure and Kafka &mdash; and it is the only invalidation strategy that satisfies SAMA's real-time balance display requirement without DBA coordination on every batch window.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/cache-invalidation-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Cache Invalidation via CDC &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Cache Invalidation via CDC: The Architecture Decision That Eliminates Stale Balances Without DBA Coordination &mdash; Waleed Albadawi">
+  <meta property="og:description" content="CDC invalidation is a platform commitment that requires Debezium and Kafka. It is the only pattern that survives out-of-band database writes the application never sees.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/cache-invalidation-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cache Invalidation via CDC: The Architecture Decision That Eliminates Stale Balances">
+  <meta name="twitter:description" content="CDC invalidation is a platform commitment, not an application feature. It is the only strategy that covers out-of-band DB writes without DBA coordination.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Cache Invalidation via CDC: The Architecture Decision That Eliminates Stale Balances Without DBA Coordination",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/cache-invalidation-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>Cache Invalidation Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Distributed Caching &middot; September 5, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">Cache Invalidation via CDC: The Architecture Decision That Eliminates Stale Balances Without DBA Coordination</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Every banking platform that caches account balances has made an implicit decision about how stale that cache is allowed to be. Most have made that decision without realising it &mdash; they set a TTL of 30 or 60 seconds, assumed that was &ldquo;good enough,&rdquo; and moved on. The SAMA examination team does not accept &ldquo;good enough&rdquo; as an answer when the displayed balance contradicts the authorised transaction record.</p>
+
+        <p>Change Data Capture invalidation is the architectural answer to that examination question. But it is not an application feature a development team can add in a sprint. It is a platform commitment: Debezium connectors running against the production database journal, a Kafka cluster sized for change-event throughput, a dedicated invalidation consumer service, and a shared cache-key derivation library that both the application and the consumer must agree on. Making this commitment without understanding its scope is how teams end up with a CDC pipeline that invalidates the wrong keys or misses entire categories of out-of-band writes.</p>
+
+        <p class="article-section">The regulatory angle</p>
+
+        <p>SAMA&rsquo;s Cyber Security Framework and retail banking operational guidelines treat balance display accuracy as a customer protection requirement, not a UX preference. A customer whose dashboard displays a pre-transaction balance &mdash; even for thirty seconds &mdash; after a completed payment has been shown incorrect information about their financial position. In a mobile-first market where customers check balances immediately after initiating payments, a 30-second staleness window is not a latency metric; it is a systematic inaccuracy that can trigger complaints, regulatory inquiries, and examination findings.</p>
+
+        <p>TTL-based invalidation fails this requirement structurally, not just at the margin. The failure is not that the TTL is too long &mdash; it is that TTL does not track the database change event. A balance that changes at second 1 of a 60-second TTL cycle will be stale for 59 seconds. A balance changed by a DBA emergency correction &mdash; the kind that happens after a settlement reconciliation failure, after a SAMA-mandated reversal, after a fraud stop &mdash; will be stale until the TTL expires, period. Application-level invalidation does not reach DBA changes. CDC does.</p>
+
+        <blockquote>
+          <p>A stale balance cache is not a performance issue. It is a data integrity deficiency that a regulator can classify as a control failure, and one that shows up exactly when the bank is under the most operational stress.</p>
+        </blockquote>
+
+        <p class="article-section">The business trade-off</p>
+
+        <p>CDC invalidation adds a real-time data pipeline between the core banking database and the cache layer. That pipeline &mdash; Debezium, Kafka, an invalidation consumer &mdash; has its own operational surface: connector configuration, topic management, consumer group lag monitoring, schema evolution, and restart behaviour during failover. These are not hypothetical concerns. A Debezium connector that loses its offset on restart will either replay events (causing spurious invalidations) or skip events (leaving stale keys alive) depending on how the recovery is configured. The team that operates this pipeline must understand both failure modes before it goes near a production database.</p>
+
+        <p>TTL-based invalidation, by contrast, has essentially no operational surface. It fails silently and predictably. You set a TTL, you accept the staleness, and you move on. If the business and the regulator accept the staleness window &mdash; for reference data, for exchange rates, for product configurations that change once a day &mdash; TTL is the right choice. CDC is the right choice only when the staleness window for a specific data type is smaller than what TTL can reliably deliver, and when the data is subject to out-of-band writes the application cannot track.</p>
+
+        <p>For account balances, limit structures, and any financial state that can change outside the API tier, CDC is not optional if you want to pass a SAMA examination with your cache architecture intact. For product catalogues and exchange rates, it is operational overhead that buys little above a short TTL. Applying CDC uniformly to every cached entity conflates these two categories and creates infrastructure cost for a problem that does not exist on the reference-data side.</p>
+
+        <p class="article-section">What leadership must own</p>
+
+        <p>Three decisions belong at VP level in this programme, not at engineering team level. The first is the invalidation SLA per data type: what is the acceptable staleness window for account balances, for limit matrices, for exchange rates? This is not a technical parameter &mdash; it is a regulatory and business position that should be documented and signed off by the CRO or CISO before the engineering team begins implementation. The staleness window drives every subsequent technical choice: whether CDC is required, what the safety-net TTL should be, and what the Debezium lag alert threshold must be.</p>
+
+        <p>The second is ownership of the invalidation pipeline. CDC is a platform component, not an application feature. The team that operates Kafka owns the Debezium connector health and the consumer group lag. When that lag exceeds the SLA &mdash; and during peak settlement windows, it will &mdash; someone must be paged. That person must have both the operational knowledge to diagnose the lag and the authority to take corrective action (scale consumer instances, increase connector task count, or escalate to the DB team for supplemental logging issues). If this ownership is not named before the pipeline goes live, the incident response will be chaotic.</p>
+
+        <p>The third is the alert-to-escalation path when CDC lag exceeds the staleness SLA. If Debezium lag reaches 5 seconds for the account balance topic, the cache is serving data that is 5 seconds older than SAMA requires. The response at that point is not a P3 ticket &mdash; it is a decision about whether to disable the cache for balance reads (serve every balance read from the DB directly, taking the latency hit) or to accept the temporary SLA breach and investigate. That decision requires both authority and context that cannot wait for a management escalation cycle at 2 AM on a month-end settlement night.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind this decision &mdash; Debezium DB2 connector configuration, Kafka consumer idempotency patterns, Redis tag-based invalidation, and the production checklist &mdash; see the companion Lab article: <a href="../lab/distributed-caching/cache-invalidation-via-cdc.html" style="color:var(--color-accent);">Distributed Caching: Cache Invalidation via CDC</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Synchronisation &mdash; Event-Driven Data Mesh Patterns &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Event-driven data mesh patterns for banking: domain-owned Kafka topics as data products, Debezium CDC as the source, Avro schema contracts, Kafka Streams cross-domain joins, and SAMA data residency enforcement.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Data Synchronisation &mdash; Event-Driven Data Mesh Patterns">
+  <meta property="og:description" content="Domain-owned Kafka topics as data products, CDC-sourced domain events, schema contracts, and federated governance for SAMA Open Banking.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-sync/event-driven-data-mesh.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Event-Driven Data Mesh Patterns">
+  <meta name="twitter:description" content="Data mesh in a banking context: Kafka topics as data products, Avro contracts, Flink cross-domain queries, PDPL-enforced ACLs.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/event-driven-data-mesh.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Data Synchronisation: Event-Driven Data Mesh Patterns",
+    "description": "Event-driven data mesh patterns for banking: domain-owned Kafka topics as data products, Debezium CDC as the source, Avro schema contracts, Kafka Streams cross-domain joins, and SAMA data residency enforcement.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/data-sync/event-driven-data-mesh.html",
+    "isPartOf": {
+      "@type": "TechArticleSeries",
+      "name": "Data Synchronisation &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/data-sync.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Event-Driven Data Mesh Patterns</div>
+          <span class="overline">Lab Article</span>
+          <h1>Data Synchronisation: Event-Driven Data Mesh Patterns</h1>
+          <p class="lead">Domain-owned Kafka topics as data products, Debezium CDC as the source of domain events, Avro schema contracts enforced by the Schema Registry, Kafka Streams and Flink for cross-domain queries, and federated governance that satisfies SAMA data residency and PDPL without recreating the central data warehouse you were trying to escape.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#data-products">Data products on Kafka</a></li>
+            <li><a href="#domain-design">Banking domain decomposition</a></li>
+            <li><a href="#cdc-as-source">CDC as the source of events</a></li>
+            <li><a href="#schema-contracts">Schema contracts</a></li>
+            <li><a href="#access-control">Access control</a></li>
+            <li><a href="#cross-domain-query">Cross-domain query patterns</a></li>
+            <li><a href="#governance">Federated governance</a></li>
+            <li><a href="#sama-residency">SAMA data residency</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Kafka 3.7 / Confluent Schema Registry / OpenShift 4.15 / Debezium 2.7 / Flink 1.19</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~16 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>A data mesh is an organisational model before it is a technology choice. It rests on four principles: domain-oriented data ownership, data products as first-class citizens, self-serve data infrastructure, and federated computational governance. In a banking context, the practical translation is this: the payments team owns the data that describes payments, the accounts team owns account data, and neither team should need a central integration team to access the other&rsquo;s data in near-real-time.</p>
+          <p>The traditional central data warehouse fails at the speed that SAMA Open Banking requires at the integration layer. By the time the ETL job lands payment data in the warehouse, the downstream consumer that needs to power a real-time account aggregation view for an open banking API has already missed its SLA. Batch pipelines with overnight runs are not a viable architecture when the regulatory expectation is that an account holder can see all their transactions across institutions within seconds of a payment settling.</p>
+          <p>An event-driven data mesh addresses this by making the domain&rsquo;s real-time event stream &mdash; a Kafka topic &mdash; its output data product. Consumers subscribe to that topic as they would subscribe to an API. The domain team owns the producer, the schema, and the SLA. The contract is not a SQL table schema that changes without notice; it is an Avro schema versioned and enforced by a Schema Registry that rejects breaking changes at publish time.</p>
+
+          <table>
+            <thead>
+              <tr><th>Dimension</th><th>Central integration hub</th><th>Data mesh</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Data ownership</td><td>Central integration team</td><td>Domain team</td></tr>
+              <tr><td>Schema governance</td><td>Central data dictionary (often stale)</td><td>Schema Registry per domain, versioned Avro</td></tr>
+              <tr><td>Cross-domain query</td><td>SQL join in the data warehouse</td><td>Kafka Streams join or Flink SQL over event streams</td></tr>
+              <tr><td>Consumer discovery</td><td>Data catalogue maintained by integration team</td><td>Schema Registry subjects + topic catalogue</td></tr>
+              <tr><td>SAMA compliance complexity</td><td>One perimeter to enforce</td><td>Per-domain enforcement; federated governance required</td></tr>
+              <tr><td>Change velocity</td><td>Change request to integration team; weeks</td><td>Domain team publishes new schema version; hours</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="data-products">Data Products as Kafka Topics</h2>
+          <p>In a data mesh, the output port of a domain is a Kafka topic with a versioned Avro schema registered in the Schema Registry. The domain team owns the producer application, owns the Avro schema definition, and owns the SLA commitment: message freshness within N seconds of the source event, partition count sufficient for the expected consumer throughput, and a schema evolution policy that does not break registered consumers without a migration window.</p>
+          <p>Consumers subscribe to that topic as data product consumers. They do not call an internal API that the domain team has to build separately; they read from the Kafka topic with a consumer group, and the Schema Registry enforces that the schema they compiled against is compatible with what the producer is publishing. The contract is the schema; the Schema Registry is the contract enforcer.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">A data mesh does not mean every team manages its own Kafka cluster</div>
+            <p>The infrastructure is shared. What is distributed is ownership, schema, and SLA accountability. A single Confluent or Red Hat AMQ Streams cluster runs on shared OpenShift infrastructure managed by the platform team. Domain teams own their topics, their producer deployments, and their Schema Registry subjects &mdash; not the brokers, the ZooKeeper replacement (KRaft), or the network infrastructure. This is the same separation of concerns as application teams owning their microservices without owning the Kubernetes nodes they run on.</p>
+          </div>
+
+          <div class="diagram" role="img" aria-label="Data mesh diagram: three domain teams (Payments, Accounts, Customer) own Kafka topics that flow through Schema Registry to authorised consumer domains, with a central governance layer above">
+            <div class="diagram__inner">
+              <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="dm-arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="dm-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="dm-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                </defs>
+
+                <!-- Governance bar at top -->
+                <rect x="10" y="10" width="760" height="38" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="390" y="25" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Central Governance Layer</text>
+                <text x="390" y="40" text-anchor="middle" fill="#71717a" font-size="9">PDPL classification enforcement &middot; SAMA data residency audit &middot; data product SLA accountability &middot; schema policy</text>
+
+                <!-- Domain team boxes (producer side) -->
+                <rect x="10" y="68" width="195" height="72" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="107" y="88" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Payments Domain</text>
+                <text x="107" y="104" text-anchor="middle" fill="#71717a" font-size="9">PaymentInitiated, PaymentSettled</text>
+                <text x="107" y="118" text-anchor="middle" fill="#71717a" font-size="9">PaymentFailed &middot; pacs.008 events</text>
+                <text x="107" y="132" text-anchor="middle" fill="#a78bfa" font-size="9">Producer &middot; owns schema &amp; SLA</text>
+
+                <rect x="293" y="68" width="195" height="72" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="390" y="88" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Accounts Domain</text>
+                <text x="390" y="104" text-anchor="middle" fill="#71717a" font-size="9">BalanceUpdated, StatementReady</text>
+                <text x="390" y="118" text-anchor="middle" fill="#71717a" font-size="9">AccountOpened, AccountClosed</text>
+                <text x="390" y="132" text-anchor="middle" fill="#a78bfa" font-size="9">Producer &middot; owns schema &amp; SLA</text>
+
+                <rect x="576" y="68" width="195" height="72" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="673" y="88" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Customer Domain</text>
+                <text x="673" y="104" text-anchor="middle" fill="#71717a" font-size="9">KYCCompleted, OnboardingDone</text>
+                <text x="673" y="118" text-anchor="middle" fill="#71717a" font-size="9">ProfileUpdated, ConsentGranted</text>
+                <text x="673" y="132" text-anchor="middle" fill="#a78bfa" font-size="9">Producer &middot; owns schema &amp; SLA</text>
+
+                <!-- Arrows down to Schema Registry / Kafka -->
+                <line x1="107" y1="140" x2="107" y2="175" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dm-arr1)"/>
+                <line x1="390" y1="140" x2="390" y2="175" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#dm-arr3)"/>
+                <line x1="673" y1="140" x2="673" y2="175" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#dm-arr1)"/>
+
+                <!-- Schema Registry + Kafka bus -->
+                <rect x="10" y="177" width="760" height="62" rx="6" fill="#0f0f16" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="390" y="196" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Kafka 3.7 &middot; Confluent Schema Registry</text>
+                <text x="160" y="215" text-anchor="middle" fill="#00d4aa" font-size="9">payments.settled.v1</text>
+                <text x="160" y="229" text-anchor="middle" fill="#00d4aa" font-size="9">payments.failed.v1</text>
+                <text x="390" y="215" text-anchor="middle" fill="#4a9eff" font-size="9">accounts.balance.v2</text>
+                <text x="390" y="229" text-anchor="middle" fill="#4a9eff" font-size="9">accounts.statement.v1</text>
+                <text x="620" y="215" text-anchor="middle" fill="#fbbf24" font-size="9">customer.kyc.v1</text>
+                <text x="620" y="229" text-anchor="middle" fill="#fbbf24" font-size="9">customer.consent.v1</text>
+
+                <!-- Arrows down to consumers -->
+                <line x1="160" y1="239" x2="107" y2="272" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dm-arr1)"/>
+                <line x1="390" y1="239" x2="390" y2="272" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#dm-arr3)"/>
+                <line x1="550" y1="239" x2="550" y2="272" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#dm-arr2)"/>
+                <line x1="673" y1="239" x2="673" y2="272" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#dm-arr1)"/>
+
+                <!-- Consumer boxes -->
+                <rect x="10" y="274" width="185" height="58" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="102" y="293" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Open Banking API</text>
+                <text x="102" y="309" text-anchor="middle" fill="#71717a" font-size="9">ACL: payments.settled.v1</text>
+                <text x="102" y="323" text-anchor="middle" fill="#71717a" font-size="9">accounts.balance.v2 (read)</text>
+
+                <rect x="295" y="274" width="190" height="58" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="390" y="293" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Fraud Engine</text>
+                <text x="390" y="309" text-anchor="middle" fill="#71717a" font-size="9">ACL: payments.* (read)</text>
+                <text x="390" y="323" text-anchor="middle" fill="#71717a" font-size="9">customer.kyc.v1 (read)</text>
+
+                <rect x="490" y="274" width="140" height="58" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="560" y="293" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Analytics DWH</text>
+                <text x="560" y="309" text-anchor="middle" fill="#71717a" font-size="9">ACL: *.v* (read)</text>
+                <text x="560" y="323" text-anchor="middle" fill="#71717a" font-size="9">Flink sink</text>
+
+                <rect x="636" y="274" width="145" height="58" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="708" y="293" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Regulatory Reports</text>
+                <text x="708" y="309" text-anchor="middle" fill="#71717a" font-size="9">ACL: payments.settled</text>
+                <text x="708" y="323" text-anchor="middle" fill="#71717a" font-size="9">accounts.statement (read)</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Three domain teams publish data products to Kafka topics; the Schema Registry enforces Avro contracts; authorised consumer domains subscribe with ACL-controlled consumer groups; a central governance layer enforces PDPL classification and SAMA data residency across all topics</div>
+          </div>
+
+          <h2 id="domain-design">Banking Domain Decomposition</h2>
+          <p>Domain decomposition in a banking data mesh follows the bounded context boundaries that the organisation already has &mdash; or should have. Four domains cover the core integration surface:</p>
+          <ul>
+            <li><strong>Payments domain.</strong> Owns events that describe the lifecycle of a payment instruction: <code>PaymentInitiated</code> (pacs.008 equivalent), <code>PaymentSettled</code>, <code>PaymentFailed</code>, <code>PaymentReturned</code>. Also owns settlement batch events. The payments domain does not own account balance state &mdash; that is a downstream effect it publishes for the accounts domain to consume.</li>
+            <li><strong>Accounts domain.</strong> Owns balance events (<code>BalanceUpdated</code>, triggered by settled payments and other debits/credits), statement events (<code>StatementReady</code>, <code>StatementLineAdded</code>), and account lifecycle events (<code>AccountOpened</code>, <code>AccountClosed</code>). The accounts domain consumes payment events to update balances; it does not own the payment data.</li>
+            <li><strong>Customer domain.</strong> Owns KYC events (<code>KYCInitiated</code>, <code>KYCCompleted</code>, <code>KYCRevoked</code>), onboarding events (<code>OnboardingStarted</code>, <code>OnboardingCompleted</code>), and consent events (<code>ConsentGranted</code>, <code>ConsentRevoked</code>). Customer domain events carry the highest PDPL classification weight &mdash; every consumer ACL in this domain requires a data classification justification.</li>
+            <li><strong>Products domain.</strong> Owns rate change events (<code>RateChanged</code>, <code>ProductTermsUpdated</code>), product availability events, and fee schedule updates. Products domain events are relatively low volume but high fan-out &mdash; many downstream consumers need rate changes immediately for pricing recalculations.</li>
+          </ul>
+          <p>The decomposition is not arbitrary. It maps to the teams that have the business knowledge to maintain the schema and the SLA. A data product owned by a team that does not understand the business rules of the data it publishes will drift into inconsistency the first time a regulatory requirement changes.</p>
+
+          <h2 id="cdc-as-source">CDC as the Source of Domain Events</h2>
+          <p>The practical source of most domain events in a brownfield banking environment is CDC: Debezium reading the payments database change log and transforming row-level changes into domain events. The Debezium connector captures every INSERT, UPDATE, and DELETE on the payments table and publishes it to a raw CDC topic. A Kafka Streams transformation application consumes the raw CDC topic and produces the domain event topic.</p>
+          <p>The transformation step is critical. A raw Debezium event for a payment row update is a database record change &mdash; it contains every column, including internal state columns that have no meaning outside the database. The domain event is a business event: it carries only the fields that are part of the domain contract, expressed in domain language, with a schema that is stable across database refactors.</p>
+          <p>Three transformation decisions matter in production:</p>
+          <ul>
+            <li><strong>Filter internal state changes from domain events.</strong> A status column that transitions through intermediate states (<code>PENDING &rarr; PROCESSING &rarr; SETTLED</code>) should not produce a domain event on every transition unless the intermediate states are meaningful to consumers. Only the transitions that represent a business state change the consuming domain cares about should become domain events.</li>
+            <li><strong>Set the Kafka message key to the business entity key, not the database primary key.</strong> For a payment, the key is the end-to-end transaction reference (UETR in SWIFT, payment reference in SARIE), not an internal auto-increment ID. This ensures that all events for the same payment land in the same partition &mdash; preserving causal order for consumers that need it.</li>
+            <li><strong>Tombstone events for deletes.</strong> When a row is deleted from the source, publish a tombstone (null value, entity key as the Kafka message key) to the domain event topic. Consumers that maintain a local materialised view can use the tombstone to delete their local copy. Without tombstones, deleted records linger in downstream stores indefinitely.</li>
+          </ul>
+
+          <h2 id="schema-contracts">Schema Contracts Between Domains</h2>
+          <p>The Avro schema registered in the Schema Registry is the API contract between a data product producer and its consumers. It is not documentation; it is an enforceable constraint. The Schema Registry configured with <code>BACKWARD</code> compatibility mode will reject any schema publication that breaks existing consumers: adding a field without a default, removing a required field, changing a field type. A breaking change cannot be pushed to production without first creating a new schema subject version and allowing a consumer migration window.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentSettled.avsc</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-k">"type"</span>: <span class="tok-s">"record"</span>,
+  <span class="tok-k">"name"</span>: <span class="tok-s">"PaymentSettled"</span>,
+  <span class="tok-k">"namespace"</span>: <span class="tok-s">"info.wbadawi.payments.v1"</span>,
+  <span class="tok-k">"doc"</span>: <span class="tok-s">"A payment has settled successfully. Data classification: CONFIDENTIAL. PDPL category: financial-transaction. Owner: payments-domain-team@saib.com.sa. SLA: published within 5s of settlement confirmation."</span>,
+  <span class="tok-k">"fields"</span>: [
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"uetr"</span>,
+      <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"Unique End-to-end Transaction Reference (ISO 20022). Not PII. Classification: INTERNAL."</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"amount"</span>,
+      <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"bytes"</span>, <span class="tok-k">"logicalType"</span>: <span class="tok-s">"decimal"</span>, <span class="tok-k">"precision"</span>: 18, <span class="tok-k">"scale"</span>: 2 },
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"Settlement amount. Classification: CONFIDENTIAL."</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"currency"</span>,
+      <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"ISO 4217 currency code. Classification: INTERNAL."</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"debtorIban"</span>,
+      <span class="tok-k">"type"</span>: [<span class="tok-s">"null"</span>, <span class="tok-s">"string"</span>],
+      <span class="tok-k">"default"</span>: <span class="tok-k">null</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"Debtor IBAN. PII. Classification: RESTRICTED. Access requires consumer ACL approval."</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"creditorIban"</span>,
+      <span class="tok-k">"type"</span>: [<span class="tok-s">"null"</span>, <span class="tok-s">"string"</span>],
+      <span class="tok-k">"default"</span>: <span class="tok-k">null</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"Creditor IBAN. PII. Classification: RESTRICTED. Access requires consumer ACL approval."</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"settlementTimestamp"</span>,
+      <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"long"</span>, <span class="tok-k">"logicalType"</span>: <span class="tok-s">"timestamp-millis"</span> },
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"UTC epoch milliseconds of settlement confirmation. Classification: INTERNAL."</span>
+    },
+    {
+      <span class="tok-k">"name"</span>: <span class="tok-s">"channel"</span>,
+      <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"enum"</span>, <span class="tok-k">"name"</span>: <span class="tok-s">"Channel"</span>,
+                <span class="tok-k">"symbols"</span>: [<span class="tok-s">"SARIE"</span>, <span class="tok-s">"SWIFT"</span>, <span class="tok-s">"RTGS"</span>, <span class="tok-s">"IPS"</span>, <span class="tok-s">"INTERNAL"</span>] },
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"Payment rail used for settlement. Classification: INTERNAL."</span>
+    }
+  ]
+}</code></pre>
+          </div>
+
+          <p>The schema evolution policy for data products in the mesh:</p>
+          <ul>
+            <li><strong>Adding a field with a default value</strong> is BACKWARD-compatible. Existing consumers deserialise without the field; new consumers read the default. This is the safe change path.</li>
+            <li><strong>Removing a field</strong> requires a new subject version (e.g., <code>payments.settled.v2</code>), a documented consumer migration window (minimum 30 days), deprecation notices on the v1 subject, and a committed decommission date. No silent removals.</li>
+            <li><strong>Changing a field type</strong> is always a major version bump. No exceptions. Type changes break existing consumers at deserialisation time in ways that are silent unless consumers log schema errors.</li>
+          </ul>
+
+          <h2 id="access-control">Access Control on Data Products</h2>
+          <p>Kafka ACLs implement the consumer authorisation model. Every topic is owned by its domain team (producer ACL), and consumer access is granted per consumer group after a documented access request. In a SAMA-regulated environment, the access request process must record the data classification, the consuming team, the consuming system, and the business justification. The ACL grant is the technical enforcement; the process record is the audit trail.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kafka-acl-setup.sh</span><span class="code-block__lang">bash</span></div>
+<pre><code><span class="tok-c">#!/bin/bash</span>
+<span class="tok-c"># Domain ownership: payments-domain-service is the only authorised producer</span>
+kafka-acls.sh --bootstrap-server kafka.internal:9093 \
+  --command-config /etc/kafka/admin.properties \
+  --add \
+  --allow-principal User:payments-domain-service \
+  --operation Write \
+  --operation Describe \
+  --topic payments.settled.v1
+
+<span class="tok-c"># Consumer authorisation: open-banking-api service, read-only</span>
+kafka-acls.sh --bootstrap-server kafka.internal:9093 \
+  --command-config /etc/kafka/admin.properties \
+  --add \
+  --allow-principal User:open-banking-api-service \
+  --operation Read \
+  --operation Describe \
+  --topic payments.settled.v1 \
+  --group open-banking-payments-cg
+
+<span class="tok-c"># Consumer authorisation: fraud-engine, read-only</span>
+kafka-acls.sh --bootstrap-server kafka.internal:9093 \
+  --command-config /etc/kafka/admin.properties \
+  --add \
+  --allow-principal User:fraud-engine-service \
+  --operation Read \
+  --operation Describe \
+  --topic payments.settled.v1 \
+  --group fraud-engine-payments-cg
+
+<span class="tok-c"># Schema Registry: producer can write schema subjects; consumers can read only</span>
+<span class="tok-c"># Enforced via Schema Registry RBAC (Confluent) or sr-acl plugin</span>
+
+<span class="tok-c"># Verify ACLs on the topic</span>
+kafka-acls.sh --bootstrap-server kafka.internal:9093 \
+  --command-config /etc/kafka/admin.properties \
+  --list \
+  --topic payments.settled.v1</code></pre>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Broadcasting PII on a Kafka topic without PDPL-compliant ACLs is a data breach at scale</div>
+            <p>A Kafka topic that carries customer name, IBAN, or Saudi National ID without consumer ACL enforcement is not a data product &mdash; it is a data breach that runs continuously. Every consumer group that subscribes to that topic receives PII without a legal basis, without a data processing record, and without the data subject&rsquo;s informed consent as required by the Saudi Personal Data Protection Law. The scale multiplier of Kafka makes this worse, not better: a misconfigured ACL exposes PII to every consumer that can reach the broker. Enforce consumer ACLs for every topic that carries PDPL-classified data before the topic receives its first production message.</p>
+          </div>
+
+          <h2 id="cross-domain-query">Cross-Domain Query Patterns</h2>
+          <p>The most common cross-domain query in a banking data mesh is the enriched payment view: join a <code>PaymentSettled</code> event with the current account balance from the accounts domain to produce a view that shows both the payment and the post-settlement balance. This cannot be a synchronous call to the accounts service &mdash; at settlement volume, that call would saturate the accounts service. It must be a stream join.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>EnrichedPaymentView.java (Kafka Streams)</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-c">// Kafka Streams topology: join payments.settled.v1 with accounts.balance.v2</span>
+<span class="tok-c">// Both topics must be co-partitioned on IBAN for the join to work without repartition</span>
+<span class="tok-k">StreamsBuilder</span> builder = <span class="tok-k">new</span> <span class="tok-t">StreamsBuilder</span>();
+
+<span class="tok-t">KStream</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">PaymentSettled</span>&gt; payments =
+    builder.stream(<span class="tok-s">"payments.settled.v1"</span>,
+        Consumed.with(<span class="tok-t">Serdes</span>.String(), paymentSerde));
+
+<span class="tok-c">// GlobalKTable for account balance: small-ish, needs low-latency lookup</span>
+<span class="tok-c">// If balance topic is large, use KTable with co-partitioned keys instead</span>
+<span class="tok-t">GlobalKTable</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">AccountBalance</span>&gt; balances =
+    builder.globalTable(<span class="tok-s">"accounts.balance.v2"</span>,
+        Consumed.with(<span class="tok-t">Serdes</span>.String(), balanceSerde),
+        <span class="tok-t">Materialized</span>.as(<span class="tok-s">"account-balance-store"</span>));
+
+<span class="tok-t">KStream</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">EnrichedPayment</span>&gt; enriched = payments
+    .join(
+        balances,
+        <span class="tok-c">// key mapper: extract IBAN from PaymentSettled to look up in balance table</span>
+        (paymentKey, payment) -&gt; payment.getDebtorIban(),
+        <span class="tok-c">// value joiner: merge payment event with current balance snapshot</span>
+        (payment, balance) -&gt; <span class="tok-t">EnrichedPayment</span>.builder()
+            .uetr(payment.getUetr())
+            .settledAmount(payment.getAmount())
+            .currency(payment.getCurrency())
+            .settlementTimestamp(payment.getSettlementTimestamp())
+            .postSettlementBalance(balance.getAvailableBalance())
+            .accountCurrency(balance.getCurrency())
+            .build()
+    );
+
+<span class="tok-c">// Publish to a new data product topic owned by the cross-domain team</span>
+enriched.to(<span class="tok-s">"payments.enriched.v1"</span>,
+    Produced.with(<span class="tok-t">Serdes</span>.String(), enrichedSerde));
+
+<span class="tok-c">// Also expose via interactive query (REST API over state store)</span>
+<span class="tok-c">// Allows REST clients to query current balance without subscribing to Kafka</span>
+<span class="tok-t">ReadOnlyKeyValueStore</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">AccountBalance</span>&gt; balanceStore =
+    streams.store(<span class="tok-t">StoreQueryParameters</span>.fromNameAndType(
+        <span class="tok-s">"account-balance-store"</span>, <span class="tok-t">QueryableStoreTypes</span>.keyValueStore()));</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Cross-domain joins in Kafka Streams are expensive when partition counts differ</div>
+            <p>Kafka Streams joins between a KStream and a KTable require both topics to be co-partitioned: same number of partitions, same partitioning key. If <code>payments.settled.v1</code> has 12 partitions and <code>accounts.balance.v2</code> has 6 partitions, Kafka Streams will silently repartition the smaller topic &mdash; creating an internal repartition topic, adding latency, and doubling broker storage for the duration of the join. Design both topics with the same partition count from the start, keyed on the same business entity key (IBAN or account number). Changing partition counts after consumers are live requires a coordinated migration that is far more painful than getting the count right initially.</p>
+          </div>
+
+          <p>For complex cross-domain aggregations that span more than two domains &mdash; for example, a regulatory report that joins payment events with account state and customer KYC status &mdash; Flink SQL is more appropriate than Kafka Streams. Flink&rsquo;s SQL layer treats Kafka topics as tables and expresses multi-way joins as standard SQL, with temporal joins for handling slowly-changing dimension data (KYC status changes infrequently; payment events arrive continuously).</p>
+
+          <h2 id="governance">Federated Governance Model</h2>
+          <p>Federated governance is the hardest part of a data mesh to implement in a regulated bank. The principle is that domain teams are accountable for their data products&rsquo; quality, classification, and compliance, while a central governance body sets the policies that domain teams must implement. In practice, this means the central governance team cannot manually approve every schema change, every topic creation, or every consumer ACL grant &mdash; that recreates the bottleneck you were trying to remove. Instead, governance enforces policy through tooling and automated checks.</p>
+
+          <ul>
+            <li><strong>Data product catalogue.</strong> Every Schema Registry subject is an entry in the data product catalogue. The catalogue records: domain owner, data classification label, consumer list, SLA, PDPL processing basis, and retention policy. This catalogue is maintained as code (a Git repository), and schema publication pipelines validate that the catalogue entry exists and is current before registering a new schema version.</li>
+            <li><strong>Data quality SLA per domain.</strong> Each domain team publishes data quality metrics for their topics: freshness (time between source event and domain event publication, p99), completeness (fraction of source events that produced a domain event), and schema validity rate (fraction of messages that deserialise against the registered schema). These are Prometheus metrics. Violations alert to the domain team first, then escalate to governance if unresolved within the SLA window.</li>
+            <li><strong>Central governance enforces PDPL and SAMA data classification.</strong> The governance layer sets the classification labels, validates that the schema <code>doc</code> fields carry the correct PDPL metadata, and audits consumer ACL grants against the classification policy. A consumer cannot be granted read access to a RESTRICTED topic without a documented data processing record in the PDPL register.</li>
+            <li><strong>Domain team accountability for data product SLA.</strong> Domain teams are on-call for their data products. If <code>payments.settled.v1</code> has a freshness SLA of 5 seconds p99 and the 5-second threshold is breached, the payments team is paged, not the platform team. Platform is accountable for broker availability; domain teams are accountable for producer behaviour and schema quality.</li>
+          </ul>
+
+          <h2 id="sama-residency">SAMA Data Residency in a Mesh</h2>
+          <p>SAMA requires that all banking data remains within the Kingdom of Saudi Arabia. In a data mesh, this constraint applies at every layer: the Kafka brokers, the Schema Registry, the ZooKeeper/KRaft quorum, the consumer state stores, and the Flink job state backends must all run on infrastructure physically located within Saudi Arabia. There is no exception for development, staging, or disaster recovery environments that replicate regulated data.</p>
+          <ul>
+            <li><strong>All Kafka topics reside on infrastructure within Saudi Arabia.</strong> Red Hat AMQ Streams on OpenShift running in a Saudi data center, or Confluent Platform in a SAMA-approved cloud region. Cross-border replication (MirrorMaker 2, Confluent Cluster Linking) to a DR site outside Saudi Arabia is prohibited without explicit SAMA approval under the data residency framework.</li>
+            <li><strong>Schema Registry within the regulated perimeter.</strong> The Schema Registry is not a stateless service &mdash; it stores schema versions that map to data product contracts. If the Schema Registry is hosted outside Saudi Arabia, schema subject registration and schema validation happen outside the regulatory perimeter, which is a compliance gap even if the data itself stays in-country.</li>
+            <li><strong>Data lineage tracking for audit.</strong> The central governance layer must maintain a record of which domain teams produce data to which topics, which consumer groups read from which topics, and which cross-domain joins materialise data from multiple topics. This lineage record is the evidence SAMA can request to map the flow of customer data through the mesh. Without it, a data residency audit cannot be completed.</li>
+          </ul>
+
+          <h2 id="checklist">Production Checklist: Publishing a Domain&rsquo;s First Data Product</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Write the data product specification</h4>
+              <p>Before writing any code, document in the data product catalogue: the domain, the topic name and version, the business event it represents, the Kafka message key, the SLA (freshness p99, completeness), the data classification label, the PDPL processing basis, and the planned consumer list. This document is a governance artefact. Get it reviewed by the data governance team before the Schema Registry subject is created.</p>
+            </li>
+            <li>
+              <h4>Draft and validate the Avro schema</h4>
+              <p>Write the Avro schema with <code>doc</code> fields on every field that carry the classification label and PII indicator. Validate BACKWARD compatibility against any previous version of the subject. Include at least one optional field with a default (not a union type unnecessarily) to leave room for the first expected evolution without a breaking change.</p>
+            </li>
+            <li>
+              <h4>Register the schema and create the topic</h4>
+              <p>Register the schema subject in the Schema Registry with the compatibility mode set to <code>BACKWARD</code>. Create the Kafka topic with the correct partition count (co-partitioned with the topics you plan to join against), replication factor of 3, and retention configured to match the data classification retention policy (minimum 7 years for transaction data under SAMA TRM).</p>
+            </li>
+            <li>
+              <h4>Set producer ACL and deploy the producer</h4>
+              <p>Grant the domain service principal Write and Describe ACLs on the topic. Deploy the Debezium connector or Kafka producer application. Verify that messages are being produced with the correct schema by consuming the first batch and checking deserialisation against the Schema Registry schema.</p>
+            </li>
+            <li>
+              <h4>Grant consumer ACLs per approved consumer</h4>
+              <p>For each approved consumer in the data product specification, grant Read and Describe ACLs to the consumer service principal and the consumer group name. Record the ACL grant in the PDPL data processing register if the topic carries PDPL-classified data. Do not use a wildcard consumer ACL (<code>*</code>) for any topic that carries RESTRICTED or CONFIDENTIAL data.</p>
+            </li>
+            <li>
+              <h4>Instrument and publish data quality metrics</h4>
+              <p>Add Prometheus metrics to the producer: <code>data_product_messages_published_total</code>, <code>data_product_source_to_topic_latency_seconds</code>, <code>data_product_schema_serialisation_errors_total</code>. Wire these to the Grafana data quality dashboard. Set alerts: freshness SLA breach pages the domain team on-call; schema serialisation errors are a P1 (a consumer that receives a message it cannot deserialise will fail silently if it lacks proper error handling).</p>
+            </li>
+            <li>
+              <h4>Run the governance review and open the topic to consumers</h4>
+              <p>Submit the data product for governance review: data product specification, schema Registry subject registration confirmation, ACL configuration, data quality dashboard link, and PDPL register entry. Once governance signs off, announce the data product in the internal data product catalogue and notify approved consumers that the topic is production-ready.</p>
+            </li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="reconciliation-pipelines-for-regulators.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Reconciliation Pipelines</div>
+            </a>
+            <a href="../data-sync.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Data Synchronisation &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

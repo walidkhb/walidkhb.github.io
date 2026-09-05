@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Composition &amp; Backend-for-Frontend &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="API composition patterns and Backend-for-Frontend architecture: IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budget management, BFF caching, and FAPI 2.0 scope enforcement for open banking channels.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="API Composition &amp; Backend-for-Frontend &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budgets, and FAPI 2.0 at the BFF layer for regulated banking channels.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/api-composition-and-bff.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="API Composition &amp; Backend-for-Frontend &mdash; Lab">
+  <meta name="twitter:description" content="ACE Fan-Out, Spring CompletableFuture, timeout budget management, and BFF circuit breaking for regulated banking.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/api-composition-and-bff.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Integration Patterns: API Composition & Backend-for-Frontend",
+    "description": "API composition patterns and Backend-for-Frontend architecture: IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budget management, BFF caching, and FAPI 2.0 scope enforcement for open banking channels.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/integration-patterns/api-composition-and-bff.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Integration Design Patterns &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/integration-patterns.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>API Composition &amp; BFF</div>
+          <span class="overline">Lab Article</span>
+          <h1>API Composition &amp; Backend-for-Frontend</h1>
+          <p class="lead">The aggregation problem, BFF architecture for mobile, web, and open banking channels, IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture composition, timeout budget management, and FAPI 2.0 scope enforcement &mdash; grounded in the channel integration challenges of a regulated KSA bank.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#bff-pattern">BFF architecture</a></li>
+            <li><a href="#ace-aggregator">ACE aggregator flow</a></li>
+            <li><a href="#spring-composition">Spring Boot composition</a></li>
+            <li><a href="#open-banking-bff">Open Banking BFF</a></li>
+            <li><a href="#timeout-budget">Timeout budget management</a></li>
+            <li><a href="#error-handling">Error handling strategies</a></li>
+            <li><a href="#caching">BFF-layer caching</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM ACE 12.0.10 / Spring Boot 3.3 / Kong 3.7 / OpenShift 4.15</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>The aggregation problem appears the moment a bank has more than one consumer channel and more than one domain service. The mobile app needs an account summary screen &mdash; three fields from the accounts API, one field from the payments API, and a notification badge from the notifications API. The desktop web app needs all fields from all three services plus transaction history from a fourth. The corporate portal needs a bulk view that calls the accounts API in a loop for 200 accounts. The open banking API needs a consent-filtered view with only the fields the customer has authorised the third party to see.</p>
+          <p>The naive solution is to let each channel call each service directly. The result is over-fetching on mobile (the accounts API returns 40 fields; mobile uses 3), under-fetching on desktop (desktop needs account and payment data in a single screen transition, which requires two sequential API calls with a dependency between them), and performance coupling between channels &mdash; the slowest downstream service determines the latency of every channel&rsquo;s most critical screen.</p>
+          <p>The Backend-for-Frontend (BFF) pattern addresses this by placing a thin aggregation layer between each channel and the downstream domain services. The BFF is not a domain service &mdash; it has no business logic, no database, and no state. It is an aggregator and transformer that owns the shape of the API contract a specific channel needs. Each channel gets its own BFF, owned by the channel team, not the domain service teams.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">BFF is a channel concern, not a domain concern</div>
+            <p>The BFF for the mobile channel should be owned and deployed by the mobile channel team. It knows what the mobile app needs. Domain logic &mdash; rules about when a payment can be initiated, what constitutes a valid IBAN, how account limits work &mdash; belongs in the domain services. The moment a BFF starts enforcing domain rules, it has become a second domain layer, which multiplies the places where domain logic must be changed when business rules evolve.</p>
+          </div>
+
+          <h2 id="bff-pattern">BFF Architecture</h2>
+          <p>The BFF architecture at a KSA bank with three primary channels &mdash; mobile, web, and open banking &mdash; produces three BFF services. Each is independently deployable, independently scalable, and independently versioned. The domain services are unaware of the BFF layer; they expose their APIs to any authenticated caller and the BFF is just another caller.</p>
+          <p>The BFF owns: aggregation (calling multiple downstream services and assembling a single response), transformation (renaming fields, converting types, filtering optional fields not needed by the channel), partial result handling (deciding what to return when a downstream is degraded), and caching (storing reference data that the channel reads frequently).</p>
+          <p>The BFF does not own: authentication of end users (that stays at the API gateway, Kong 3.7 in this stack), rate limiting (Kong plugin), TLS termination (OpenShift route or Kong), or domain validation (the domain service). Kong terminates the inbound TLS and enforces the OAuth 2.0 / FAPI 2.0 token validation before the request reaches the BFF. The BFF receives an already-authenticated request carrying the token claims and acts on them.</p>
+
+          <div class="diagram" role="img" aria-label="Mobile BFF and Web BFF calling Accounts, Payments, and Notifications APIs in parallel; Kong gateway in front">
+            <div class="diagram__inner">
+              <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="bff-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="bff-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="bff-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                  <marker id="bff-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Channels left column -->
+                <rect x="10" y="30" width="110" height="48" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="65" y="50" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Mobile App</text>
+                <text x="65" y="65" text-anchor="middle" fill="#71717a" font-size="8">iOS / Android</text>
+
+                <rect x="10" y="140" width="110" height="48" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="65" y="160" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Web App</text>
+                <text x="65" y="175" text-anchor="middle" fill="#71717a" font-size="8">Browser</text>
+
+                <rect x="10" y="250" width="110" height="48" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="65" y="270" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Open Banking</text>
+                <text x="65" y="285" text-anchor="middle" fill="#71717a" font-size="8">TPP / FAPI 2.0</text>
+
+                <!-- Kong gateway -->
+                <rect x="155" y="15" width="80" height="310" rx="6" fill="#0f0f16" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="195" y="175" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600" transform="rotate(-90, 195, 175)">Kong 3.7 &mdash; Auth &middot; Rate-limit &middot; TLS</text>
+
+                <!-- BFF layer -->
+                <rect x="262" y="15" width="130" height="100" rx="6" fill="#1c1c28" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="327" y="40" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Mobile BFF</text>
+                <text x="327" y="55" text-anchor="middle" fill="#71717a" font-size="8">Spring Boot 3.3</text>
+                <text x="327" y="70" text-anchor="middle" fill="#71717a" font-size="8">CompletableFuture</text>
+                <text x="327" y="85" text-anchor="middle" fill="#71717a" font-size="8">3 fields from Accounts</text>
+                <text x="327" y="99" text-anchor="middle" fill="#71717a" font-size="8">1 field from Payments</text>
+
+                <rect x="262" y="125" width="130" height="100" rx="6" fill="#1c1c28" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="327" y="150" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Web BFF</text>
+                <text x="327" y="165" text-anchor="middle" fill="#71717a" font-size="8">IBM ACE 12.0.10</text>
+                <text x="327" y="180" text-anchor="middle" fill="#71717a" font-size="8">Fan-Out / Fan-In</text>
+                <text x="327" y="195" text-anchor="middle" fill="#71717a" font-size="8">all fields + history</text>
+                <text x="327" y="209" text-anchor="middle" fill="#71717a" font-size="8">partial result OK</text>
+
+                <rect x="262" y="235" width="130" height="100" rx="6" fill="#1c1c28" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="327" y="260" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Open Banking BFF</text>
+                <text x="327" y="275" text-anchor="middle" fill="#71717a" font-size="8">Spring Boot 3.3</text>
+                <text x="327" y="290" text-anchor="middle" fill="#71717a" font-size="8">FAPI 2.0 consent filter</text>
+                <text x="327" y="305" text-anchor="middle" fill="#71717a" font-size="8">AIS vs PIS scopes</text>
+                <text x="327" y="319" text-anchor="middle" fill="#71717a" font-size="8">SAMA rate plans</text>
+
+                <!-- Domain services right column -->
+                <rect x="450" y="60" width="140" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="520" y="82" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Accounts API</text>
+                <text x="520" y="97" text-anchor="middle" fill="#71717a" font-size="9">balance &middot; IBAN &middot; limits</text>
+
+                <rect x="450" y="140" width="140" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="520" y="162" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Payments API</text>
+                <text x="520" y="177" text-anchor="middle" fill="#71717a" font-size="9">status &middot; history &middot; limits</text>
+
+                <rect x="450" y="220" width="140" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="520" y="242" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Notifications API</text>
+                <text x="520" y="257" text-anchor="middle" fill="#71717a" font-size="9">unread count &middot; badge</text>
+
+                <!-- Arrows: Channels to Kong -->
+                <line x1="120" y1="54" x2="153" y2="54" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#bff-arr)"/>
+                <line x1="120" y1="164" x2="153" y2="164" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#bff-arr2)"/>
+                <line x1="120" y1="274" x2="153" y2="274" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#bff-arr4)"/>
+
+                <!-- Arrows: Kong to BFFs -->
+                <line x1="235" y1="54" x2="260" y2="54" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#bff-arr)"/>
+                <line x1="235" y1="164" x2="260" y2="164" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#bff-arr2)"/>
+                <line x1="235" y1="274" x2="260" y2="274" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#bff-arr4)"/>
+
+                <!-- Arrows: BFFs to domain services (parallel) -->
+                <line x1="392" y1="55" x2="448" y2="85" stroke="#00d4aa" stroke-width="1" marker-end="url(#bff-arr)"/>
+                <line x1="392" y1="65" x2="448" y2="165" stroke="#00d4aa" stroke-width="1" marker-end="url(#bff-arr)"/>
+                <line x1="392" y1="175" x2="448" y2="110" stroke="#00d4aa" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#bff-arr)"/>
+                <line x1="392" y1="185" x2="448" y2="165" stroke="#00d4aa" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#bff-arr)"/>
+                <line x1="392" y1="195" x2="448" y2="245" stroke="#00d4aa" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#bff-arr)"/>
+                <line x1="392" y1="275" x2="448" y2="120" stroke="#00d4aa" stroke-width="1" marker-end="url(#bff-arr)"/>
+                <line x1="392" y1="285" x2="448" y2="165" stroke="#00d4aa" stroke-width="1" marker-end="url(#bff-arr)"/>
+
+                <!-- Parallel label -->
+                <text x="417" y="30" text-anchor="middle" fill="#00d4aa" font-size="8">parallel calls</text>
+                <text x="417" y="40" text-anchor="middle" fill="#71717a" font-size="7">within timeout budget</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Each channel (Mobile, Web, Open Banking) has a dedicated BFF that makes parallel calls to domain services and assembles a channel-specific response; Kong enforces auth and rate limiting before the BFF layer</div>
+          </div>
+
+          <h2 id="ace-aggregator">ACE Aggregator Flow</h2>
+          <p>IBM ACE 12.0.10&rsquo;s Fan Out and Fan In message flow nodes are the native mechanism for parallel aggregation in an ACE integration. The Fan Out node clones the inbound message, routes each copy to a separate parallel branch, and the Fan In node reassembles the results when all branches have completed or the timeout has expired.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>WebBffAggregator_OverrideBuiltin.esql &mdash; ACE Fan-Out/Fan-In configuration</span><span class="code-block__lang">esql</span></div>
+<pre><code><span class="tok-c">-- ACE flow: WebBffAggregator.msgflow</span>
+<span class="tok-c">-- Nodes: MQInput &rarr; FanOut &rarr; [AccountsBranch, PaymentsBranch, NotificationsBranch] &rarr; FanIn &rarr; Aggregator &rarr; HTTPReply</span>
+
+<span class="tok-c">-- FanOut node configuration (set in message flow properties)</span>
+<span class="tok-c">-- Distribution mode: Fan out to all terminals</span>
+<span class="tok-c">-- Timeout: 800ms (total SLA budget: 1000ms minus 200ms for aggregation and reply serialisation)</span>
+
+<span class="tok-k">CREATE COMPUTE MODULE</span> AggregateResults
+  <span class="tok-k">CREATE FUNCTION</span> Main() <span class="tok-k">RETURNS</span> BOOLEAN
+  <span class="tok-k">BEGIN</span>
+    <span class="tok-k">DECLARE</span> accountsResult   <span class="tok-k">REFERENCE TO</span> InputRoot.XMLNSC.AggregateReply.Reply[1];
+    <span class="tok-k">DECLARE</span> paymentsResult   <span class="tok-k">REFERENCE TO</span> InputRoot.XMLNSC.AggregateReply.Reply[2];
+    <span class="tok-k">DECLARE</span> notifyResult     <span class="tok-k">REFERENCE TO</span> InputRoot.XMLNSC.AggregateReply.Reply[3];
+
+    <span class="tok-c">-- Check for partial results (Fan In with timeout: some branches may have timed out)</span>
+    <span class="tok-k">DECLARE</span> accountsOk  <span class="tok-k">BOOLEAN</span> (FIELDNAME(accountsResult) <span class="tok-k">IS NOT NULL</span>);
+    <span class="tok-k">DECLARE</span> paymentsOk  <span class="tok-k">BOOLEAN</span> (FIELDNAME(paymentsResult) <span class="tok-k">IS NOT NULL</span>);
+    <span class="tok-k">DECLARE</span> notifyOk    <span class="tok-k">BOOLEAN</span> (FIELDNAME(notifyResult) <span class="tok-k">IS NOT NULL</span>);
+
+    <span class="tok-c">-- Accounts is mandatory: fail fast if absent</span>
+    <span class="tok-k">IF NOT</span> accountsOk <span class="tok-k">THEN</span>
+      <span class="tok-k">SET</span> OutputRoot.XMLNSC.BffError.code    = <span class="tok-s">'UPSTREAM_TIMEOUT'</span>;
+      <span class="tok-k">SET</span> OutputRoot.XMLNSC.BffError.service = <span class="tok-s">'accounts-api'</span>;
+      <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out_error'</span>;
+      <span class="tok-k">RETURN</span> FALSE;
+    <span class="tok-k">END IF</span>;
+
+    <span class="tok-c">-- Assemble response; use degraded values for optional services</span>
+    <span class="tok-k">SET</span> OutputRoot.XMLNSC.WebDashboard.accountSummary  = accountsResult.AccountSummary;
+    <span class="tok-k">SET</span> OutputRoot.XMLNSC.WebDashboard.paymentStatus   =
+        <span class="tok-k">CASE</span> paymentsOk <span class="tok-k">WHEN</span> TRUE
+          <span class="tok-k">THEN</span> paymentsResult.LatestPaymentStatus
+          <span class="tok-k">ELSE</span> <span class="tok-s">'UNAVAILABLE'</span>   <span class="tok-c">-- documented in API contract; consumer renders grey badge</span>
+        <span class="tok-k">END</span>;
+    <span class="tok-k">SET</span> OutputRoot.XMLNSC.WebDashboard.notificationCount =
+        <span class="tok-k">CASE</span> notifyOk <span class="tok-k">WHEN</span> TRUE
+          <span class="tok-k">THEN</span> notifyResult.UnreadCount
+          <span class="tok-k">ELSE</span> <span class="tok-s">NULL</span>   <span class="tok-c">-- null badge: consumer hides notification icon when null</span>
+        <span class="tok-k">END</span>;
+    <span class="tok-k">SET</span> OutputRoot.XMLNSC.WebDashboard.partial =
+        <span class="tok-k">NOT</span> (paymentsOk <span class="tok-k">AND</span> notifyOk);
+
+    <span class="tok-k">RETURN</span> TRUE;
+  <span class="tok-k">END</span>;
+<span class="tok-k">END MODULE</span>;</code></pre>
+          </div>
+
+          <h2 id="spring-composition">Spring Boot Composition Service</h2>
+          <p>For the Mobile BFF, Spring Boot 3.3 with <code>CompletableFuture.allOf</code> provides parallel composition without the operational overhead of an ACE integration server. Resilience4j circuit breakers per downstream service prevent a single downstream failure from cascading to all channels.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>MobileBffCompositionService.java &mdash; CompletableFuture + Resilience4j</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">package</span> info.saib.bff.mobile.service;
+
+<span class="tok-k">import</span> io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+<span class="tok-k">import</span> java.util.concurrent.CompletableFuture;
+<span class="tok-k">import</span> java.util.concurrent.TimeUnit;
+
+<span class="tok-k">@Service</span>
+<span class="tok-t">public class</span> <span class="tok-n">MobileBffCompositionService</span> {
+
+    <span class="tok-t">private final</span> <span class="tok-n">AccountsApiClient</span>      accountsClient;
+    <span class="tok-t">private final</span> <span class="tok-n">PaymentsApiClient</span>      paymentsClient;
+    <span class="tok-t">private final</span> <span class="tok-n">NotificationsApiClient</span> notifyClient;
+    <span class="tok-t">private final</span> <span class="tok-n">MeterRegistry</span>         meterRegistry;
+
+    <span class="tok-c">// Total SLA budget: 800ms (Kong adds ~50ms; serialisation ~50ms; leaves 700ms for calls)</span>
+    <span class="tok-t">private static final long</span> DEADLINE_MS = <span class="tok-n">700L</span>;
+
+    <span class="tok-t">public</span> <span class="tok-n">MobileDashboardDto</span> <span class="tok-n">compose</span>(<span class="tok-n">String</span> customerId, <span class="tok-n">String</span> correlationId) {
+        <span class="tok-n">Sample</span> timer = Timer.start(meterRegistry);
+
+        <span class="tok-c">// Parallel calls with per-downstream circuit breakers</span>
+        <span class="tok-n">CompletableFuture</span>&lt;<span class="tok-n">AccountSummaryDto</span>&gt; accountsFuture =
+            CompletableFuture.supplyAsync(() -&gt; fetchAccounts(customerId, correlationId))
+                .orTimeout(DEADLINE_MS, TimeUnit.MILLISECONDS);
+
+        <span class="tok-n">CompletableFuture</span>&lt;<span class="tok-n">PaymentStatusDto</span>&gt; paymentsFuture =
+            CompletableFuture.supplyAsync(() -&gt; fetchPaymentStatus(customerId, correlationId))
+                .orTimeout(DEADLINE_MS, TimeUnit.MILLISECONDS)
+                .exceptionally(ex -&gt; PaymentStatusDto.degraded());  <span class="tok-c">// optional field: degrade gracefully</span>
+
+        <span class="tok-n">CompletableFuture</span>&lt;<span class="tok-n">Integer</span>&gt; notifyFuture =
+            CompletableFuture.supplyAsync(() -&gt; fetchUnreadCount(customerId, correlationId))
+                .orTimeout(DEADLINE_MS, TimeUnit.MILLISECONDS)
+                .exceptionally(ex -&gt; <span class="tok-t">null</span>);  <span class="tok-c">// badge absent when notifications unavailable</span>
+
+        <span class="tok-c">// Wait for all; accountsFuture failure propagates (mandatory field)</span>
+        CompletableFuture.allOf(accountsFuture, paymentsFuture, notifyFuture)
+            .orTimeout(DEADLINE_MS + <span class="tok-n">50L</span>, TimeUnit.MILLISECONDS)
+            .join();
+
+        timer.stop(Timer.builder(<span class="tok-s">"bff.mobile.compose.duration"</span>)
+            .tag(<span class="tok-s">"partial"</span>, String.valueOf(paymentsFuture.isCompletedExceptionally() || notifyFuture.join() == null))
+            .register(meterRegistry));
+
+        <span class="tok-t">return</span> <span class="tok-n">MobileDashboardDto</span>.builder()
+            .account(accountsFuture.join())              <span class="tok-c">// throws if accounts failed (mandatory)</span>
+            .paymentStatus(paymentsFuture.join())        <span class="tok-c">// returns degraded DTO if payments failed</span>
+            .notificationBadge(notifyFuture.join())      <span class="tok-c">// returns null if notifications failed</span>
+            .partial(!paymentsFuture.join().isHealthy() || notifyFuture.join() == null)
+            .build();
+    }
+
+    <span class="tok-k">@CircuitBreaker</span>(name = <span class="tok-s">"accounts-api"</span>, fallbackMethod = <span class="tok-s">"accountsFallback"</span>)
+    <span class="tok-t">private</span> <span class="tok-n">AccountSummaryDto</span> <span class="tok-n">fetchAccounts</span>(<span class="tok-n">String</span> customerId, <span class="tok-n">String</span> correlationId) {
+        <span class="tok-t">return</span> accountsClient.getSummary(customerId, correlationId);
+    }
+
+    <span class="tok-k">@CircuitBreaker</span>(name = <span class="tok-s">"payments-api"</span>, fallbackMethod = <span class="tok-s">"paymentsFallback"</span>)
+    <span class="tok-t">private</span> <span class="tok-n">PaymentStatusDto</span> <span class="tok-n">fetchPaymentStatus</span>(<span class="tok-n">String</span> customerId, <span class="tok-n">String</span> correlationId) {
+        <span class="tok-t">return</span> paymentsClient.getLatestStatus(customerId, correlationId);
+    }
+
+    <span class="tok-t">private</span> <span class="tok-n">AccountSummaryDto</span> <span class="tok-n">accountsFallback</span>(<span class="tok-n">String</span> cid, <span class="tok-n">String</span> cid2, <span class="tok-n">Exception</span> ex) {
+        <span class="tok-t">throw new</span> <span class="tok-n">BffMandatoryServiceException</span>(<span class="tok-s">"accounts-api"</span>, ex);  <span class="tok-c">// bubble up: mandatory</span>
+    }
+    <span class="tok-t">private</span> <span class="tok-n">PaymentStatusDto</span> <span class="tok-n">paymentsFallback</span>(<span class="tok-n">String</span> cid, <span class="tok-n">String</span> cid2, <span class="tok-n">Exception</span> ex) {
+        <span class="tok-t">return</span> <span class="tok-n">PaymentStatusDto</span>.degraded();  <span class="tok-c">// silent degrade: optional</span>
+    }
+}</code></pre>
+          </div>
+
+          <h2 id="open-banking-bff">Open Banking BFF</h2>
+          <p>The Open Banking BFF has compliance requirements that the mobile and web BFFs do not. SAMA&rsquo;s Open Banking framework mandates FAPI 2.0 security profiles for third-party provider (TPP) access. The BFF layer is the correct place to enforce consent scope filtering, not the downstream domain services.</p>
+          <p>When a TPP presents an AIS (Account Information Service) token, the Open Banking BFF must return only the fields the customer has consented to share, regardless of what the Accounts API would return for a full authenticated session. The Accounts API has no concept of per-TPP consent &mdash; it returns all data for the authenticated customer. The BFF reads the consent record from the consent store and applies field-level filtering before the response leaves the BFF.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>openapi-mobile-bff.yaml &mdash; BFF endpoint with composed response schema</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">openapi</span>: <span class="tok-s">"3.1.0"</span>
+<span class="tok-k">info</span>:
+  <span class="tok-k">title</span>: <span class="tok-s">Mobile BFF API</span>
+  <span class="tok-k">version</span>: <span class="tok-s">"1.0.0"</span>
+  <span class="tok-k">description</span>: <span class="tok-s">Mobile-channel aggregation layer. All fields from multiple domain services composed into one response.</span>
+
+<span class="tok-k">paths</span>:
+  <span class="tok-k">/v1/dashboard</span>:
+    <span class="tok-k">get</span>:
+      <span class="tok-k">summary</span>: <span class="tok-s">Mobile dashboard composition</span>
+      <span class="tok-k">description</span>: <span class="tok-s">Returns composed dashboard data from Accounts, Payments, and Notifications APIs. When partial=true, one or more optional fields are absent due to downstream degradation.</span>
+      <span class="tok-k">security</span>:
+        - <span class="tok-k">bearerAuth</span>: []
+      <span class="tok-k">parameters</span>:
+        - <span class="tok-k">name</span>: <span class="tok-s">X-Correlation-ID</span>
+          <span class="tok-k">in</span>: <span class="tok-s">header</span>
+          <span class="tok-k">required</span>: <span class="tok-n">true</span>
+          <span class="tok-k">schema</span>: { <span class="tok-k">type</span>: <span class="tok-s">string</span>, <span class="tok-k">format</span>: <span class="tok-s">uuid</span> }
+        - <span class="tok-k">name</span>: <span class="tok-s">X-Request-Deadline</span>
+          <span class="tok-k">in</span>: <span class="tok-s">header</span>
+          <span class="tok-k">description</span>: <span class="tok-s">Absolute deadline as Unix epoch milliseconds; BFF respects this as an external constraint on internal timeout budget</span>
+          <span class="tok-k">schema</span>: { <span class="tok-k">type</span>: <span class="tok-s">integer</span>, <span class="tok-k">format</span>: <span class="tok-s">int64</span> }
+      <span class="tok-k">responses</span>:
+        <span class="tok-s">"200"</span>:
+          <span class="tok-k">description</span>: <span class="tok-s">Full or partial dashboard response</span>
+          <span class="tok-k">content</span>:
+            <span class="tok-k">application/json</span>:
+              <span class="tok-k">schema</span>:
+                <span class="tok-k">$ref</span>: <span class="tok-s">"#/components/schemas/MobileDashboard"</span>
+        <span class="tok-s">"206"</span>:
+          <span class="tok-k">description</span>: <span class="tok-s">Partial Content — mandatory fields present, one or more optional fields absent due to downstream degradation. Consumer must check partial=true and render gracefully.</span>
+          <span class="tok-k">content</span>:
+            <span class="tok-k">application/json</span>:
+              <span class="tok-k">schema</span>:
+                <span class="tok-k">$ref</span>: <span class="tok-s">"#/components/schemas/MobileDashboard"</span>
+        <span class="tok-s">"503"</span>:
+          <span class="tok-k">description</span>: <span class="tok-s">Mandatory downstream (Accounts API) unavailable; BFF cannot return a usable response</span>
+
+<span class="tok-k">components</span>:
+  <span class="tok-k">schemas</span>:
+    <span class="tok-k">MobileDashboard</span>:
+      <span class="tok-k">type</span>: <span class="tok-s">object</span>
+      <span class="tok-k">required</span>: [<span class="tok-s">account</span>, <span class="tok-s">partial</span>]
+      <span class="tok-k">properties</span>:
+        <span class="tok-k">account</span>:
+          <span class="tok-k">$ref</span>: <span class="tok-s">"#/components/schemas/AccountSummary"</span>   <span class="tok-c"># mandatory</span>
+        <span class="tok-k">paymentStatus</span>:
+          <span class="tok-k">$ref</span>: <span class="tok-s">"#/components/schemas/PaymentStatus"</span>     <span class="tok-c"># optional; null when unavailable</span>
+        <span class="tok-k">notificationBadge</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">integer</span>
+          <span class="tok-k">nullable</span>: <span class="tok-n">true</span>                                <span class="tok-c"># null: hide badge icon</span>
+        <span class="tok-k">partial</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">boolean</span>
+          <span class="tok-k">description</span>: <span class="tok-s">true when one or more optional downstream services were degraded</span></code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Partial results must be documented in the API contract, not discovered in production</div>
+            <p>If the BFF returns a response with some fields absent due to downstream degradation and the API contract does not explicitly describe this behaviour &mdash; which fields are mandatory, which are optional, what value is returned when optional fields are absent &mdash; mobile or web clients will interpret the absent field as a bug and file an incident. Document partial result behaviour in the OpenAPI spec (<code>nullable: true</code> on optional fields, HTTP 206 for degraded responses, an explicit <code>partial: boolean</code> flag in the response body) and validate it in consumer-driven contract tests before the BFF reaches production.</p>
+          </div>
+
+          <h2 id="timeout-budget">Timeout Budget Management</h2>
+          <p>The timeout budget is the total time available from the moment a request enters the BFF to the moment the BFF must begin sending its response. Every hop inside the BFF consumes from this budget. The budget is not negotiable &mdash; it is determined by the channel SLA, typically 1,000ms for mobile and 2,000ms for web. Allocating it carefully is the difference between a fast BFF and a fast-failing BFF.</p>
+          <p>For a 1,000ms mobile SLA: subtract Kong overhead (~50ms), BFF framework overhead (~30ms), response serialisation (~30ms). That leaves ~890ms for upstream calls. If downstream services are called in parallel, the wall-clock time consumed is the maximum of all call durations, not the sum. Budget 700ms for upstream calls, which gives 190ms of margin for p99 latency variance.</p>
+          <p>Propagate the deadline to downstream services via a request header: <code>X-Request-Deadline: &lt;unix epoch ms&gt;</code>. A downstream service that receives an <code>X-Request-Deadline</code> header can short-circuit expensive operations if the deadline has already passed, avoiding wasted work. This is the gRPC context deadline model applied to HTTP. Not all downstream services honour this header initially &mdash; add it now, enforce it as downstream services are upgraded.</p>
+          <p>For Kong 3.7, set the proxy connect timeout and send timeout to match the BFF&rsquo;s external SLA, not the internal timeout budget. Kong&rsquo;s read timeout for the BFF upstream should be 2,000ms (web SLA + buffer); the BFF&rsquo;s own internal calls use 700ms. This ensures Kong doesn&rsquo;t time out the BFF before the BFF has had a chance to return a partial result.</p>
+
+          <h2 id="error-handling">Error Handling Strategies</h2>
+          <p>Two error handling philosophies apply at the BFF level, and the choice between them must be made per field in the composed response, not globally for the BFF.</p>
+          <p><strong>Fail-fast.</strong> When a mandatory downstream service (Accounts API for a dashboard screen) returns 503 or times out, the BFF immediately returns 503 to the channel. There is no degraded view that is useful to the mobile user without account data. The circuit breaker for the Accounts API trips after 50% failure rate in a 10-second window; while open, the BFF returns 503 without attempting the call, reducing latency of the failure response from 700ms (timeout) to under 10ms.</p>
+          <p><strong>Partial results.</strong> When an optional downstream service (Notifications API for a badge count) returns 503, the BFF returns 200 or 206 with <code>partial: true</code> and a null <code>notificationBadge</code>. The mobile client is responsible for rendering the badge-absent state gracefully &mdash; typically by hiding the notification icon. This behaviour must be tested in the mobile client&rsquo;s contract test suite, not assumed.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">BFF without circuit breakers turns a single downstream failure into a full-channel outage</div>
+            <p>Without circuit breakers, a Notifications API that is responding slowly (800ms instead of 50ms) causes every BFF request to block for 800ms before returning, even though the Notifications data is optional. Under load, all BFF threads are consumed waiting for a slow optional service; the mobile channel becomes unresponsive. Configure Resilience4j circuit breakers for every downstream service in the BFF, regardless of whether the service is mandatory or optional. A circuit breaker in open state returns immediately with a fallback value; a slow service without a circuit breaker holds every thread until the request timeout.</p>
+          </div>
+
+          <h2 id="caching">BFF-Layer Caching</h2>
+          <p>Reference data that the BFF reads on every request and that changes infrequently is a strong caching candidate at the BFF layer. Account metadata &mdash; IBAN, account name, product type &mdash; is stable for hours between changes; caching it at the BFF eliminates a downstream call on every dashboard load.</p>
+          <p>The caching strategy for the Mobile BFF: Caffeine in-process cache for per-customer reference data with a 5-minute TTL and a stale-while-revalidate window. For the Web BFF running in IBM ACE, use ACE&rsquo;s built-in <code>GlobalCache</code> node backed by an embedded WebSphere eXtreme Scale partition; this cache is shared across all ACE instances in the integration server group.</p>
+          <p>Cache invalidation via event: when the Accounts API publishes an <code>account.updated</code> Kafka event, the BFF consumes it and evicts the cached entry for the affected <code>customerId</code>. This keeps the cache coherent without a short TTL that would increase downstream load. The event consumer in the BFF is a lightweight Spring Kafka consumer; it does not participate in the request path.</p>
+          <p>Per-channel cache TTL: the mobile BFF caches reference data for 5 minutes; the open banking BFF caches reference data for 1 minute (TPP-visible data has a tighter freshness requirement under SAMA&rsquo;s Open Banking framework). Never cache consent records at the BFF &mdash; consent changes must be reflected immediately, and a 5-minute-stale consent cache would return data a customer has revoked.</p>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">BFF becoming a second domain layer through business logic creep</div>
+            <p>The most common way a BFF degrades in production: a business rule is added to it because it is convenient (&ldquo;the BFF already has the account data, so let&rsquo;s add the eligibility check here&rdquo;). Over 18 months, the BFF accumulates eligibility rules, limit calculations, and product-type logic that should live in domain services. The BFF is now a domain service that also aggregates. When the domain rule changes, it must be changed in the BFF and in the domain service. Enforce a rule: the BFF transforms and selects data; it never derives data. Any computation that could be expressed as a domain service method belongs in a domain service.</p>
+          </div>
+
+          <ul>
+            <li><strong>N+1 calls from naive composition.</strong> A BFF that calls the Accounts API once per account in a list &mdash; instead of calling a bulk-fetch endpoint &mdash; produces N+1 round trips per request. For a customer with 10 accounts, this is 10 serial calls taking 10&times; the latency of a single call. Audit every BFF call pattern during design; if the domain service does not have a bulk-fetch endpoint, build one rather than doing N+1 at the BFF layer.</li>
+            <li><strong>BFF not propagating correlation IDs.</strong> Every request that enters the BFF carries a <code>X-Correlation-ID</code> or <code>traceparent</code> header from Kong (or from the client, validated by Kong). The BFF must propagate this header to every downstream call. Without correlation ID propagation, distributed traces break at the BFF boundary and the downstream service logs cannot be correlated to the originating channel request &mdash; which makes diagnosing BFF-originating issues in downstream services impossible.</li>
+            <li><strong>Single BFF for multiple channels.</strong> A team that creates one BFF for both mobile and web because &ldquo;they need similar data&rdquo; ends up with a service that neither channel fully owns. When the mobile team needs to add a field, they need coordination with the web team. When the web BFF changes its error contract, the mobile client breaks. The operational overhead of two BFFs is modest; the coupling overhead of one shared BFF is not.</li>
+          </ul>
+
+          <ol class="step-list">
+            <li>
+              <h4>Identify the channel and its data requirements</h4>
+              <p>For each channel that will have a BFF, document every field the channel needs on its most critical screens, which domain service owns each field, and whether each field is mandatory or optional for the channel to be usable.</p>
+            </li>
+            <li>
+              <h4>Define the BFF API contract first</h4>
+              <p>Write the OpenAPI specification for the BFF endpoint before writing any code. Mark mandatory fields, document optional fields and their degraded values, and specify the <code>partial</code> flag behaviour. Share the spec with the channel team for validation before implementation.</p>
+            </li>
+            <li>
+              <h4>Classify each downstream service as mandatory or optional per screen</h4>
+              <p>Apply fail-fast to mandatory services, partial-result handling to optional ones. Wire Resilience4j circuit breakers for all downstream services with different thresholds for mandatory (lower failure rate tolerance) and optional (higher failure rate tolerance).</p>
+            </li>
+            <li>
+              <h4>Deploy the BFF and its circuit breakers to a lower environment before adding caching</h4>
+              <p>Caching makes circuit breaker behaviour harder to test. Validate that the fail-fast and partial-result paths work correctly without caching before adding the cache layer.</p>
+            </li>
+            <li>
+              <h4>Add BFF-layer caching with cache invalidation events</h4>
+              <p>Cache reference data with per-channel TTLs; wire Kafka event consumers to invalidate cache entries when upstream data changes. Never cache consent data or anything the customer has a right to revoke immediately.</p>
+            </li>
+            <li>
+              <h4>Write consumer-driven contract tests between the channel and the BFF</h4>
+              <p>Pact contract tests ensure that when the BFF&rsquo;s response schema changes, the channel&rsquo;s tests fail before the BFF is deployed. Without contract tests, schema changes at the BFF are discovered in production.</p>
+            </li>
+            <li>
+              <h4>Establish a governance process for domain logic in the BFF</h4>
+              <p>Define and enforce a rule distinguishing BFF logic (field selection, field renaming, partial result assembly) from domain logic (business rules, calculations, eligibility). Review BFF pull requests for domain logic creep during the code review phase.</p>
+            </li>
+          </ol>
+
+          <h2 id="checklist">Production Checklist</h2>
+          <ol>
+            <li>One BFF per channel (mobile, web, open banking); each owned and deployed by the channel team.</li>
+            <li>OpenAPI spec published before implementation; mandatory vs optional fields documented; <code>partial: boolean</code> flag in response body.</li>
+            <li>Resilience4j circuit breakers configured for every downstream service: mandatory services fail-fast, optional services degrade gracefully.</li>
+            <li>Timeout budget calculated and allocated: channel SLA minus Kong overhead minus framework overhead leaves headroom for upstream calls.</li>
+            <li><code>X-Request-Deadline</code> header propagated to all downstream calls with the absolute epoch timestamp.</li>
+            <li>Correlation ID (<code>X-Correlation-ID</code> and <code>traceparent</code>) propagated to all downstream calls from every BFF request.</li>
+            <li>BFF-layer reference data cache configured with per-channel TTLs; cache invalidation wired to upstream change events via Kafka consumer.</li>
+            <li>Consent records never cached; Open Banking BFF applies consent scope filtering on every request using a freshly fetched consent record.</li>
+            <li>FAPI 2.0 token validation at Kong; BFF reads token claims and applies scope filtering (AIS vs PIS); SAMA rate plans enforced at Kong plugin, not in BFF code.</li>
+            <li>N+1 call patterns audited and eliminated; bulk-fetch endpoints requested from domain service teams before BFF goes to production.</li>
+            <li>Consumer-driven contract tests (Pact) between each channel and its BFF; CI pipeline breaks on contract violation.</li>
+            <li>No domain logic (eligibility rules, limit calculations, business validations) in any BFF; code review checklist includes explicit domain-logic check.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="iso-20022-transformation.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">ISO 20022 Transformation</div>
+            </a>
+            <a href="../integration-patterns.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Integration Patterns &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

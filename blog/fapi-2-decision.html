@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAPI 2.0: The Security Architecture Decision That Determines Whether Your Open Banking APIs Satisfy SAMA Phase 2 &mdash; Waleed Albadawi</title>
+  <meta name="description" content="FAPI 2.0 is not optional for SAMA-regulated Open Banking &mdash; it is the baseline profile. The implementation choices within it have significant cost and UX implications that leadership must own before TPP onboarding can proceed.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/fapi-2-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="FAPI 2.0: The Architecture Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="FAPI 2.0: The Security Architecture Decision That Determines Whether Your Open Banking APIs Satisfy SAMA Phase 2 &mdash; Waleed Albadawi">
+  <meta property="og:description" content="FAPI 2.0 is not optional for SAMA Open Banking &mdash; it is the baseline. The choices within it have real cost and UX implications that VP-level leadership must own.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/fapi-2-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="FAPI 2.0: The Security Architecture Decision That Determines Whether Your Open Banking APIs Satisfy SAMA Phase 2">
+  <meta name="twitter:description" content="FAPI 2.0 is not optional for SAMA Open Banking. The implementation choices &mdash; DPoP vs mTLS, consent model, IdP selection &mdash; have significant cost and UX implications.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "FAPI 2.0: The Security Architecture Decision That Determines Whether Your Open Banking APIs Satisfy SAMA Phase 2",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/fapi-2-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="api-security.html">API Security</a><span>/</span>FAPI 2.0 Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">API Security &middot; September 5, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">FAPI 2.0: The Security Architecture Decision That Determines Whether Your Open Banking APIs Satisfy SAMA Phase 2</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Every bank running an Open Banking programme in Saudi Arabia is navigating a version of the same question: what does SAMA Phase 2 actually require of our authentication and authorization infrastructure, and how much of what we have already built needs to change? The answer is not comfortable. SAMA Open Banking Phase 2 mandates FAPI 2.0 as the security profile for all TPP access &mdash; Account Information Services, Payment Initiation Services, and Confirmation of Funds. FAPI 2.0 is not an upgrade to your existing OAuth 2.0 setup. It is a different security model that adds mandatory controls most current implementations do not have.</p>
+
+        <p>The decision is not whether to implement FAPI 2.0 &mdash; SAMA has made that decision for you. The decision is how to implement it, in what sequence, at what cost, and who in the organization owns the consequences of getting it wrong. Those choices have significant implications for your IdP budget, your TPP onboarding timeline, your consent management architecture, and the user experience that PSUs (Payment Service Users) encounter every time they authorize a TPP to access their account.</p>
+
+        <p class="article-section">What SAMA requires</p>
+
+        <p>SAMA Open Banking Phase 2 aligns to the FAPI 2.0 Security Profile (FAPI2SP) and the FAPI 2.0 Message Signing profile (FAPI2MS). Practically, this means five things that your current OAuth 2.0 implementation almost certainly does not have. First, Pushed Authorization Requests (PAR): all authorization parameters must be sent from the TPP&rsquo;s server to the authorization server directly, before the browser redirect, producing a short-lived <code>request_uri</code> that the redirect carries instead of the parameters themselves. Second, sender-constrained tokens: every access token issued to a TPP must be bound to the TPP&rsquo;s cryptographic identity &mdash; either a DPoP proof-of-possession key pair (RFC 9449) or the TLS client certificate the TPP presents during the token request (RFC 8705). Third, Rich Authorization Requests: the consent model must capture the exact accounts, amounts, and operations covered by each TPP authorization, not just a broad OAuth scope. Fourth, JARM &mdash; JWT Secured Authorization Response Mode: the authorization code returned after consent must be wrapped in a signed JWT, not returned as a plain redirect parameter. Fifth, no implicit grant and no resource owner password credentials &mdash; both are banned under FAPI 2.0 and the SAMA Open Banking Technical Standards.</p>
+
+        <p>Your IdP must support all five of these features before you can onboard a single TPP in Phase 2. If your current identity platform is not on the FAPI 2.0-certified list, either the platform must be upgraded or replaced, or you build the missing controls in your API gateway layer &mdash; a path that creates ongoing maintenance debt and increases the complexity of your SAMA examination evidence package. Keycloak 24 ships a built-in FAPI 2.0 Security Profile realm policy that handles all five requirements natively. IBM Security Verify also carries FAPI 2.0 certification. The upgrade budget decision must happen before the technical implementation can start, and it must be owned at the VP level because it is not a technical upgrade &mdash; it is a compliance infrastructure investment.</p>
+
+        <blockquote>
+          <p>An IdP that is not FAPI 2.0 certified is not a minor gap &mdash; it is a prerequisite blocker. No amount of API gateway workarounds makes a non-certified IdP FAPI 2.0 compliant in a way that survives a SAMA technical examination.</p>
+        </blockquote>
+
+        <p class="article-section">The business trade-off</p>
+
+        <p>FAPI 2.0 adds steps to the authorization flow that standard OAuth 2.0 does not have. PAR requires a server-to-server call from the TPP to the bank before the user sees a consent screen. DPoP requires the TPP to generate an ephemeral key pair and sign a proof JWT for every API call. Sender-constrained tokens bind the authorization to the specific TPP client that requested it &mdash; which is the security benefit, but it also means the consent cannot be transferred or reused in ways that some aggregator business models depended on. Each of these controls adds latency, increases TPP integration complexity, and in some cases changes the PSU experience in the authorization flow.</p>
+
+        <p>The business framing that I have seen used most often &mdash; &ldquo;this will reduce conversion rates&rdquo; &mdash; is accurate but incomplete. Yes, a multi-step authorization flow with an explicit consent screen for each specific payment reduces the friction-free experience that some Open Banking architectures targeted. But that friction is not a design failure. The friction is the security control. The difference between an OAuth 2.0 payment authorization and a FAPI 2.0 payment authorization is precisely this: in the FAPI 2.0 model, the PSU sees and approves a specific payment amount to a specific account, and that consent is cryptographically bound to that specific TPP. In a weaker model, the PSU approves a general &ldquo;payments&rdquo; scope and may not see the specific payment details at all until after the fact. SAMA has decided which model Saudi banking consumers deserve. The executive trade-off is not conversion rate versus security &mdash; it is compliance versus non-compliance.</p>
+
+        <p>The DPoP versus mTLS decision is a genuine trade-off with no universally correct answer. DPoP is lower-friction for TPP onboarding: the TPP generates key pairs in software and does not need a client certificate provisioned by the bank&rsquo;s PKI. mTLS is operationally simpler at the gateway: the binding is enforced at the TLS layer before any application logic runs, and there is no per-request proof JWT to validate. The choice between them depends on your TPP population, your PKI infrastructure maturity, and your API gateway&rsquo;s DPoP validation capabilities. Both are SAMA-compliant; the decision should be driven by what your organization can operate reliably at scale, not by what sounds more secure in a presentation.</p>
+
+        <p class="article-section">What leadership must own</p>
+
+        <p>Four decisions in the FAPI 2.0 programme cannot be delegated to the engineering team because they have budget, governance, and regulatory implications that require VP-level authority.</p>
+
+        <p>The first is IdP selection or upgrade budget. If your current identity platform does not support FAPI 2.0, the programme cannot proceed without a platform decision. This is not a security team budget item &mdash; it is an enterprise architecture investment that spans payments, retail banking, and the CTO&rsquo;s technology roadmap. The decision must be made with the full cost in view: not just the license cost of a certified IdP, but the migration cost of moving existing OAuth 2.0 clients to the new platform, the operational cost of running and supporting it, and the timeline impact on SAMA Phase 2 go-live.</p>
+
+        <p>The second is TPP onboarding process governance. FAPI 2.0 TPP onboarding is not a developer portal registration. It requires verification of the TPP&rsquo;s SAMA Open Banking Directory registration (the Software Statement Assertion), automated or manual client certificate issuance if mTLS is chosen, mapping the TPP to a rate plan by API class, and activation in the consent model. This is a process that spans compliance, IT security, and operations &mdash; not a task that the API team can own end to end without explicit governance and SLAs. The VP of Enterprise Integration or equivalent must define the TPP onboarding process, the SLA for activation, and the escalation path when a SAMA-registered TPP cannot be onboarded within the agreed timeline.</p>
+
+        <p>The third is consent lifecycle management. SAMA&rsquo;s consent model requires that a PSU can revoke consent at any time through the bank&rsquo;s own channels, that the TPP is notified of revocation within a defined window, and that the bank maintains an auditable record of every consent grant, status transition, and revocation. This is not a feature &mdash; it is regulatory infrastructure. The bank must build and operate a consent management system, expose a PSU-facing consent management interface (through the bank&rsquo;s app or internet banking portal), and integrate consent status with the authorization server&rsquo;s token lifecycle. None of this is in scope for a standard OAuth 2.0 implementation, and none of it can be built as an afterthought after TPP onboarding has started.</p>
+
+        <p>The fourth is the annual security assessment. SAMA requires that Open Banking APIs undergo an annual security assessment aligned to FAPI 2.0. This means a penetration test by an accredited vendor that specifically covers FAPI 2.0 attack surface &mdash; PAR replay, DPoP jti replay, token binding bypass, RAR consent tampering, JARM response injection. The VP must own the budget for this assessment, the remediation budget for findings, and the attestation process that reports results to SAMA. This is not a one-time activity; it is a recurring cost of operating a SAMA Phase 2 Open Banking programme.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind these decisions &mdash; PAR implementation, DPoP proof-of-possession internals, mTLS binding, RAR consent model, JARM configuration in Keycloak 24, Kong enforcement, and the production checklist &mdash; see the companion Lab article: <a href="../lab/api-security/fapi-2-open-banking.html" style="color:var(--color-accent);">API Security: FAPI 2.0 &amp; Open Banking Security</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Cluster GitOps with ArgoCD ApplicationSets &mdash; DevOps &amp; Platform Engineering &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="ArgoCD 2.12 ApplicationSets for multi-cluster fleet management on OpenShift 4.15: Cluster, Git, and Matrix generators, hub-spoke topology, environment promotion, SAMA BCP multi-zone requirements, and multi-cluster RBAC.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Multi-Cluster GitOps with ArgoCD ApplicationSets &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="ArgoCD ApplicationSets: Cluster, Git, and Matrix generators for managing 8+ clusters from a single hub without per-cluster Application manifest duplication.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/devops/multi-cluster-gitops.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Multi-Cluster GitOps with ArgoCD ApplicationSets &mdash; Lab">
+  <meta name="twitter:description" content="ApplicationSet generators for fleet-scale GitOps across OpenShift clusters with SAMA BCP multi-zone requirements.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/devops/multi-cluster-gitops.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Multi-Cluster GitOps with ArgoCD ApplicationSets: Fleet Management for 8+ OpenShift Clusters",
+    "description": "ArgoCD 2.12 ApplicationSets for multi-cluster fleet management on OpenShift 4.15: Cluster, Git, and Matrix generators, hub-spoke topology, environment promotion, SAMA BCP multi-zone requirements, and multi-cluster RBAC.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/devops/multi-cluster-gitops.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "DevOps &amp; Platform Engineering &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/devops.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform</a><span>/</span>Multi-Cluster GitOps</div>
+          <span class="overline">Lab Article</span>
+          <h1>Multi-Cluster GitOps with ArgoCD ApplicationSets</h1>
+          <p class="lead">ArgoCD 2.12 ApplicationSet controller for fleet-scale GitOps &mdash; Cluster, Git, and Matrix generators eliminating per-cluster Application manifest duplication, hub-spoke topology, environment promotion as a git PR, SAMA BCP multi-zone deployment, and multi-cluster RBAC scoped to platform and integration teams.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#applicationsets">ApplicationSets</a></li>
+            <li><a href="#cluster-generator">Cluster generator</a></li>
+            <li><a href="#git-generator">Git generator</a></li>
+            <li><a href="#matrix-generator">Matrix generator</a></li>
+            <li><a href="#hub-spoke">Hub-spoke vs mesh</a></li>
+            <li><a href="#promotion">Environment promotion</a></li>
+            <li><a href="#sama-multizone">SAMA multi-zone</a></li>
+            <li><a href="#rbac">Multi-cluster RBAC</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> ArgoCD 2.12 / OpenShift 4.15 / Helm 3.16 / Kustomize / ApplicationSet</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>The multi-cluster problem arrives quietly. One day you have a dev cluster and a production cluster. Six months later you have dev, test, staging, prod-zone-1, prod-zone-2 (required by SAMA&rsquo;s Business Continuity Policy for Tier 1 systems), a dedicated cluster for the payments team, and a platform services cluster. That is eight clusters. Each cluster needs every shared platform application deployed to it &mdash; cert-manager, the observability stack, ExternalDNS, External Secrets Operator, the Vault agent injector &mdash; and each application team&rsquo;s services deployed to the applicable subset of clusters. With a naive ArgoCD setup you write one <code>Application</code> manifest per app per cluster: 8 clusters &times; 30 apps = 240 <code>Application</code> objects to maintain manually.</p>
+          <p>Adding a new cluster means writing 30 new Application manifests. Deleting an app means hunting down 8 Application manifests. Changing a Helm values override that should apply to all prod clusters means editing 2 manifests. At 240 objects this is tedious; at 400 it is the primary reason platform engineers leave.</p>
+          <p>The <strong>ArgoCD ApplicationSet controller</strong> eliminates this by generating Application objects from a template and a generator. Add a cluster to ArgoCD with the right label: the ApplicationSet automatically generates an Application for every app that should run on it. Add an app directory to the repo: the ApplicationSet generates an Application for every cluster that should run it. The git repo is still the source of truth; the ApplicationSet is the factory that turns the repo structure into Application objects without manual authoring.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">ApplicationSets eliminate Application manifest duplication at fleet scale</div>
+            <p>When you add a new cluster to the ArgoCD cluster inventory with the appropriate labels, it automatically receives all apps managed by matching ApplicationSets &mdash; no new manifests to write. When you add a new app directory to the git repo, all clusters in the matching generator scope receive it at the next sync. The platform team writes one ApplicationSet per logical app group; fleet growth is a label on a cluster, not a YAML authoring event.</p>
+          </div>
+
+          <h2 id="applicationsets">ArgoCD ApplicationSets</h2>
+          <p>An <code>ApplicationSet</code> is an ArgoCD CRD processed by the ApplicationSet controller (bundled with ArgoCD 2.3+ and now GA in 2.12). It has two required fields: a <code>generators</code> list (which produces parameter sets) and a <code>template</code> (which defines the ArgoCD Application to generate for each parameter set). For every combination of parameters the generator produces, the controller creates one ArgoCD Application object. When the generator produces a parameter set that no longer matches (a cluster removed from inventory, a directory deleted from the repo), the controller deletes the Application and ArgoCD garbage-collects its resources from the spoke cluster according to the configured pruning policy.</p>
+          <p>The five generator types available in ArgoCD 2.12 serve distinct use cases:</p>
+
+          <table>
+            <thead>
+              <tr><th>Generator</th><th>Use case</th><th>Dynamic discovery</th><th>Scale ceiling</th><th>When to use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Cluster</td><td>Deploy an app to many clusters</td><td>Yes &mdash; reads ArgoCD cluster secrets</td><td>Hundreds of clusters</td><td>Platform apps that run on every cluster (cert-manager, ESO)</td></tr>
+              <tr><td>Git (files)</td><td>One app per config file in a directory</td><td>Yes &mdash; walks the repo glob</td><td>Thousands of files</td><td>Tenant-per-file patterns; bank subsidiary per env config</td></tr>
+              <tr><td>Git (dirs)</td><td>One app per subdirectory</td><td>Yes &mdash; walks the repo tree</td><td>Hundreds of directories</td><td>One app per team folder; microservice per directory</td></tr>
+              <tr><td>Matrix</td><td>Cross-product of two generators</td><td>Yes &mdash; inherited from child generators</td><td>Product of both scales; watch for combinatorial explosion</td><td>Apps &times; Clusters; directories &times; Clusters</td></tr>
+              <tr><td>Pull Request</td><td>Ephemeral preview per open PR</td><td>Yes &mdash; polls SCM API</td><td>Open PR count</td><td>Preview environments; integration team feature branches</td></tr>
+              <tr><td>SCM Provider</td><td>Discover repositories in an org</td><td>Yes &mdash; polls SCM org</td><td>Repository count in org</td><td>Auto-onboarding repos that match a naming convention</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="cluster-generator">Cluster Generator Pattern</h2>
+          <p>The Cluster generator reads ArgoCD&rsquo;s cluster registry (cluster secrets in the <code>argocd</code> namespace) and produces one parameter set per matching cluster. Labels on the cluster secret drive selection &mdash; a cluster labelled <code>tier: prod</code> and <code>region: riyadh</code> matches a generator selector for <code>tier: prod</code> but not one for <code>tier: dev</code>. This label-based selection is the only mechanism that prevents a dev-targeted ApplicationSet from deploying to production clusters, so treat cluster labels as a security boundary: only the platform team can apply or change labels on cluster secrets.</p>
+          <p>Per-cluster Helm values overrides are passed via the cluster secret&rsquo;s metadata annotations and referenced in the ApplicationSet template as <code>&#123;&#123; metadata.annotations.&lt;key&gt; &#125;&#125;</code>. This is how you express &ldquo;prod-zone-1 uses 3 replicas and the <code>ssd-retain</code> StorageClass, while dev uses 1 replica and the default StorageClass&rdquo; without duplicating Helm charts or templating logic.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>platform-apps-applicationset.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">argoproj.io/v1alpha1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">ApplicationSet</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">platform-apps</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">argocd</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">generators</span>:
+    - <span class="tok-k">clusters</span>:
+        <span class="tok-k">selector</span>:
+          <span class="tok-k">matchLabels</span>:
+            <span class="tok-k">platform.saib.internal/managed</span>: <span class="tok-s">"true"</span>  <span class="tok-c"># only platform-managed clusters</span>
+        <span class="tok-k">values</span>:                <span class="tok-c"># static values available in template as {{ values.* }}</span>
+          <span class="tok-k">revision</span>: <span class="tok-s">main</span>
+
+  <span class="tok-k">template</span>:
+    <span class="tok-k">metadata</span>:
+      <span class="tok-k">name</span>: <span class="tok-s">"platform-cert-manager-{{ name }}"</span>   <span class="tok-c"># unique per cluster</span>
+    <span class="tok-k">spec</span>:
+      <span class="tok-k">project</span>: <span class="tok-s">platform</span>
+      <span class="tok-k">source</span>:
+        <span class="tok-k">repoURL</span>: <span class="tok-s">https://gitops.saib.internal/platform/apps.git</span>
+        <span class="tok-k">targetRevision</span>: <span class="tok-s">"{{ values.revision }}"</span>
+        <span class="tok-k">path</span>: <span class="tok-s">platform/cert-manager</span>
+        <span class="tok-k">helm</span>:
+          <span class="tok-k">valueFiles</span>:
+            - <span class="tok-s">values.yaml</span>
+            <span class="tok-c"># per-cluster overlay resolved from cluster secret annotation</span>
+            - <span class="tok-s">"values-{{ metadata.annotations.tier }}.yaml"</span>
+          <span class="tok-k">parameters</span>:
+            <span class="tok-c"># per-cluster values injected directly from cluster secret metadata</span>
+            - <span class="tok-k">name</span>: <span class="tok-s">replicaCount</span>
+              <span class="tok-k">value</span>: <span class="tok-s">"{{ metadata.annotations.replicaCount }}"</span>
+            - <span class="tok-k">name</span>: <span class="tok-s">global.storageClass</span>
+              <span class="tok-k">value</span>: <span class="tok-s">"{{ metadata.annotations.storageClass }}"</span>
+            - <span class="tok-k">name</span>: <span class="tok-s">global.clusterName</span>
+              <span class="tok-k">value</span>: <span class="tok-s">"{{ name }}"</span>
+      <span class="tok-k">destination</span>:
+        <span class="tok-k">server</span>: <span class="tok-s">"{{ server }}"</span>          <span class="tok-c"># cluster API URL from the generator</span>
+        <span class="tok-k">namespace</span>: <span class="tok-s">cert-manager</span>
+      <span class="tok-k">syncPolicy</span>:
+        <span class="tok-k">automated</span>:
+          <span class="tok-k">prune</span>: <span class="tok-n">true</span>
+          <span class="tok-k">selfHeal</span>: <span class="tok-n">true</span>
+        <span class="tok-k">syncOptions</span>:
+          - <span class="tok-s">CreateNamespace=true</span>
+          - <span class="tok-s">ServerSideApply=true</span>
+        <span class="tok-k">retry</span>:
+          <span class="tok-k">limit</span>: <span class="tok-n">5</span>
+          <span class="tok-k">backoff</span>:
+            <span class="tok-k">duration</span>: <span class="tok-s">5s</span>
+            <span class="tok-k">factor</span>: <span class="tok-n">2</span>
+            <span class="tok-k">maxDuration</span>: <span class="tok-s">3m</span></code></pre>
+          </div>
+
+          <h2 id="git-generator">Git Generator for Configuration Files</h2>
+          <p>The Git generator walks a git repository and produces one parameter set per file or per directory that matches a glob pattern. The files generator is ideal for tenant-per-file patterns: each bank subsidiary or integration team has a <code>config/&lt;env&gt;/&lt;tenant&gt;.json</code> file in the GitOps repo. When a new tenant is onboarded, the team submits a PR adding their config file; ArgoCD detects the new file on the next refresh and generates a new Application for that tenant automatically, without any change to the ApplicationSet itself.</p>
+          <p>The configuration file&rsquo;s JSON fields become template parameters. A file at <code>config/prod/payments-north.json</code> containing <code>&#123; "tenant": "payments-north", "namespace": "payments-north", "tier": "prod", "replicaCount": "2" &#125;</code> produces parameters <code>&#123;&#123; tenant &#125;&#125;</code>, <code>&#123;&#123; namespace &#125;&#125;</code>, <code>&#123;&#123; tier &#125;&#125;</code>, and <code>&#123;&#123; replicaCount &#125;&#125;</code> available in the Application template.</p>
+
+          <h2 id="matrix-generator">Matrix Generator</h2>
+          <p>The Matrix generator computes the cross-product of two child generators. The canonical use case: deploy every app directory in the repo to every cluster in the inventory &mdash; one Application per app per cluster. A Matrix generator whose first child is a Git (directories) generator returning 10 apps and whose second child is a Cluster generator returning 8 clusters produces 80 Applications.</p>
+          <p>The Matrix generator is powerful and therefore dangerous. An unguarded Matrix over many apps and many clusters produces a large number of Applications that all attempt to sync simultaneously when the ApplicationSet is first applied or when a cluster is restored after maintenance. Use sync wave annotations to stagger syncs: wave 0 for namespace and RBAC objects, wave 1 for platform services (cert-manager, ESO), wave 2 for application services. Without waves, a restored cluster receiving 80 simultaneous syncs will saturate the API server and likely fail several of them.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>integration-services-matrix-applicationset.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">argoproj.io/v1alpha1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">ApplicationSet</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">integration-services</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">argocd</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">generators</span>:
+    - <span class="tok-k">matrix</span>:
+        <span class="tok-k">generators</span>:
+          <span class="tok-c"># First: discover app directories under apps/ in the gitops repo</span>
+          - <span class="tok-k">git</span>:
+              <span class="tok-k">repoURL</span>: <span class="tok-s">https://gitops.saib.internal/platform/integration-apps.git</span>
+              <span class="tok-k">revision</span>: <span class="tok-s">HEAD</span>
+              <span class="tok-k">directories</span>:
+                - <span class="tok-k">path</span>: <span class="tok-s">"apps/*"</span>        <span class="tok-c"># one dir per integration app</span>
+                - <span class="tok-k">path</span>: <span class="tok-s">"apps/archived"</span>
+                  <span class="tok-k">exclude</span>: <span class="tok-n">true</span>       <span class="tok-c"># skip the archived directory</span>
+          <span class="tok-c"># Second: all clusters labelled for integration workloads</span>
+          - <span class="tok-k">clusters</span>:
+              <span class="tok-k">selector</span>:
+                <span class="tok-k">matchLabels</span>:
+                  <span class="tok-k">platform.saib.internal/integration</span>: <span class="tok-s">"true"</span>
+
+  <span class="tok-k">template</span>:
+    <span class="tok-k">metadata</span>:
+      <span class="tok-k">name</span>: <span class="tok-s">"{{ path.basenameNormalized }}-{{ name }}"</span>
+      <span class="tok-k">annotations</span>:
+        <span class="tok-c"># Sync waves: stagger across clusters to prevent thundering herd</span>
+        <span class="tok-k">argocd.argoproj.io/sync-wave</span>: <span class="tok-s">"2"</span>
+    <span class="tok-k">spec</span>:
+      <span class="tok-k">project</span>: <span class="tok-s">integration</span>
+      <span class="tok-k">source</span>:
+        <span class="tok-k">repoURL</span>: <span class="tok-s">https://gitops.saib.internal/platform/integration-apps.git</span>
+        <span class="tok-k">targetRevision</span>: <span class="tok-s">HEAD</span>
+        <span class="tok-k">path</span>: <span class="tok-s">"{{ path }}"</span>
+        <span class="tok-k">helm</span>:
+          <span class="tok-k">valueFiles</span>:
+            - <span class="tok-s">values.yaml</span>
+            - <span class="tok-s">"values-{{ metadata.annotations.tier }}.yaml"</span>
+          <span class="tok-k">parameters</span>:
+            - <span class="tok-k">name</span>: <span class="tok-s">global.env</span>
+              <span class="tok-k">value</span>: <span class="tok-s">"{{ metadata.annotations.tier }}"</span>
+            - <span class="tok-k">name</span>: <span class="tok-s">global.clusterName</span>
+              <span class="tok-k">value</span>: <span class="tok-s">"{{ name }}"</span>
+      <span class="tok-k">destination</span>:
+        <span class="tok-k">server</span>: <span class="tok-s">"{{ server }}"</span>
+        <span class="tok-k">namespace</span>: <span class="tok-s">"{{ path.basenameNormalized }}"</span>
+      <span class="tok-k">syncPolicy</span>:
+        <span class="tok-k">automated</span>:
+          <span class="tok-k">prune</span>: <span class="tok-n">true</span>
+          <span class="tok-k">selfHeal</span>: <span class="tok-n">true</span>
+        <span class="tok-k">syncOptions</span>: [<span class="tok-s">CreateNamespace=true</span>, <span class="tok-s">ServerSideApply=true</span>]</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Matrix generator can cause a thundering herd on cluster restore</div>
+            <p>A Matrix ApplicationSet with 10 clusters and 10 apps creates 100 Applications. When a cluster is restored after maintenance, ArgoCD queues all 100 Applications for sync simultaneously. Without sync wave annotations, the spoke cluster&rsquo;s API server receives 100 concurrent apply operations that can overload the admission controllers and cause cascading sync failures. Add <code>argocd.argoproj.io/sync-wave</code> annotations to stagger syncs: wave 0 for namespaces and RBAC, wave 1 for platform services, wave 2 for application services, wave 3 for integration services. Each wave must reach Healthy before the next begins.</p>
+          </div>
+
+          <h2 id="hub-spoke">Hub-Spoke vs Mesh Topology</h2>
+          <p>Two ArgoCD topologies emerge at multi-cluster scale: <strong>hub-spoke</strong> (one ArgoCD instance on a management cluster manages all spoke clusters) and <strong>mesh</strong> (each cluster runs its own ArgoCD, all syncing from a shared git repo). The hub-spoke model is operationally simpler &mdash; one control plane to upgrade, one place to review sync status, one set of RBAC policies to audit. The mesh model provides cluster isolation: a compromised or unavailable management cluster does not block deployments to spoke clusters.</p>
+          <p><strong>For most regulated bank deployments, hub-spoke is the correct starting point.</strong> The management cluster is a platform team concern; its availability SLA should be equivalent to the highest-tier spoke cluster it manages. The spoke clusters have ArgoCD <code>Application</code> objects applied to them by the hub &mdash; the spoke does not run an ArgoCD server itself.</p>
+          <p>The primary objection to hub-spoke is blast radius: if the management cluster is unavailable, no new deployments can reach any spoke. This is acceptable if your deployment cadence is measured in hours (batch CI/CD pipeline) but not if you need continuous autonomous reconciliation per cluster (security patching pipelines that run independently of the management cluster). In that case, run a lightweight Argo CD Application Set instance on each spoke that manages only security-patch-critical applications; retain the hub for integration service deployments where coordination across clusters is a feature, not a problem.</p>
+
+          <div class="diagram" role="img" aria-label="Hub-spoke GitOps: management cluster running ArgoCD and ApplicationSet controller generates Applications for 4 spoke clusters driven by git repo as source of truth">
+            <div class="diagram__inner">
+              <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="gs-arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="gs-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="gs-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                  <marker id="gs-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                </defs>
+
+                <!-- Git repo (source of truth) -->
+                <rect x="285" y="10" width="210" height="65" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="390" y="33" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">Git Repository</text>
+                <text x="390" y="48" text-anchor="middle" fill="#71717a" font-size="9">apps/ &middot; config/ &middot; platform/</text>
+                <text x="390" y="62" text-anchor="middle" fill="#71717a" font-size="9">source of truth &mdash; no kubectl from CI</text>
+
+                <!-- Hub cluster -->
+                <rect x="220" y="120" width="340" height="110" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="390" y="143" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Management Cluster (Hub)</text>
+
+                <!-- ArgoCD box inside hub -->
+                <rect x="235" y="152" width="145" height="64" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="307" y="170" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">ArgoCD 2.12</text>
+                <text x="307" y="184" text-anchor="middle" fill="#71717a" font-size="8">Application controller</text>
+                <text x="307" y="196" text-anchor="middle" fill="#71717a" font-size="8">Repo server &middot; API server</text>
+                <text x="307" y="208" text-anchor="middle" fill="#71717a" font-size="8">Redis &middot; Notifications</text>
+
+                <!-- ApplicationSet controller inside hub -->
+                <rect x="400" y="152" width="145" height="64" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="472" y="170" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">ApplicationSet</text>
+                <text x="472" y="184" text-anchor="middle" fill="#71717a" font-size="8">Cluster generator</text>
+                <text x="472" y="196" text-anchor="middle" fill="#71717a" font-size="8">Git generator</text>
+                <text x="472" y="208" text-anchor="middle" fill="#71717a" font-size="8">Matrix generator</text>
+
+                <!-- Arrow: Git -> Hub (reconcile) -->
+                <line x1="390" y1="75" x2="390" y2="118" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#gs-arr3)"/>
+                <text x="395" y="100" fill="#fbbf24" font-size="8">git pull</text>
+
+                <!-- Spoke clusters -->
+                <!-- dev -->
+                <rect x="10" y="270" width="155" height="60" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="87" y="292" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">dev cluster</text>
+                <text x="87" y="307" text-anchor="middle" fill="#71717a" font-size="9">tier: dev</text>
+                <text x="87" y="320" text-anchor="middle" fill="#71717a" font-size="8">auto-sync · self-heal</text>
+
+                <!-- test -->
+                <rect x="205" y="270" width="155" height="60" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="282" y="292" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">test cluster</text>
+                <text x="282" y="307" text-anchor="middle" fill="#71717a" font-size="9">tier: test</text>
+                <text x="282" y="320" text-anchor="middle" fill="#71717a" font-size="8">auto-sync · self-heal</text>
+
+                <!-- prod-zone-1 -->
+                <rect x="420" y="270" width="155" height="60" rx="6" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="497" y="289" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">prod-zone-1</text>
+                <text x="497" y="304" text-anchor="middle" fill="#71717a" font-size="9">Riyadh · tier: prod</text>
+                <text x="497" y="318" text-anchor="middle" fill="#71717a" font-size="8">manual sync gate</text>
+
+                <!-- prod-zone-2 -->
+                <rect x="615" y="270" width="155" height="60" rx="6" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="692" y="289" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">prod-zone-2</text>
+                <text x="692" y="304" text-anchor="middle" fill="#71717a" font-size="9">Jeddah · tier: prod</text>
+                <text x="692" y="318" text-anchor="middle" fill="#71717a" font-size="8">SAMA BCP &ge;30 km</text>
+
+                <!-- Hub -> spoke arrows -->
+                <line x1="340" y1="230" x2="130" y2="268" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#gs-arr2)"/>
+                <line x1="360" y1="230" x2="290" y2="268" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#gs-arr2)"/>
+                <line x1="420" y1="230" x2="490" y2="268" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#gs-arr2)"/>
+                <line x1="440" y1="230" x2="660" y2="268" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#gs-arr2)"/>
+
+                <!-- Label on arrows -->
+                <text x="215" y="258" fill="#a78bfa" font-size="8">Application objects (generated)</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Hub-spoke topology: the management cluster runs ArgoCD and the ApplicationSet controller; ApplicationSets generate Application objects targeting dev, test, prod-zone-1 (Riyadh), and prod-zone-2 (Jeddah) clusters; git is the only source of truth; no kubectl runs from CI pipelines</div>
+          </div>
+
+          <h2 id="promotion">Environment Promotion Workflow</h2>
+          <p>Promotion in a GitOps model is a git operation, not a kubectl command. A CI pipeline that successfully builds and tests an image tags it and opens a pull request against the env-specific Helm values file in the GitOps repo. The PR changes exactly one thing: the <code>image.tag</code> value in <code>config/test/values.yaml</code> (or whichever environment is the promotion target). A human or an automated gate reviews and merges the PR. ArgoCD detects the change via its 3-minute polling interval (or a webhook push) and syncs the Application. The deployment to that environment happens as a side effect of the PR merge &mdash; no deploy script, no CI runner with <code>kubectl</code> credentials, no manual rollout.</p>
+          <p>The audit trail is the git history: who approved the PR, when it was merged, what the previous and new values were. For a SAMA change management audit, the git history of the GitOps repo is the change log. Production deployments require a PR from a protected branch reviewed by at least two engineers &mdash; enforced by the git platform&rsquo;s branch protection rules, not by an ArgoCD configuration.</p>
+          <p>ArgoCD&rsquo;s <strong>sync windows</strong> provide time-based deployment gates at the platform layer: no automated syncs to production clusters on Friday between 14:00 and 24:00 (SAMA change freeze window), or outside business hours for non-emergency changes. Sync windows are defined on the AppProject and apply to all Applications within the project, regardless of how they were generated.</p>
+
+          <h2 id="sama-multizone">SAMA Multi-Zone Requirements</h2>
+          <p>SAMA&rsquo;s Business Continuity Policy (BCP) requires that Tier 1 systems (which include payment processing, core banking interfaces, and SARIE/IPS connectivity) be active at two geographically separate sites at least 30 kilometres apart, with each site capable of sustaining full operational load independently. For OpenShift this means two separate prod clusters &mdash; not a stretched cluster, not a cluster with nodes in two datacentres &mdash; in two physically distinct facilities.</p>
+          <p>The ApplicationSet with a Cluster generator selecting <code>tier: prod</code> deploys identically to both <code>prod-zone-1</code> (Riyadh) and <code>prod-zone-2</code> (Jeddah) automatically. The per-cluster annotation carries site-specific values: storage class names differ by site, the Vault server URL points to the local Vault cluster, and the SIEM endpoint is the regional collector. The application image, the Helm chart, and the business logic are identical &mdash; only infrastructure coordinates differ, expressed as Helm parameter overrides.</p>
+          <p>Cross-zone health comparison is a platform SLA obligation: an ArgoCD health dashboard should show sync state for both zones side by side. A zone where ArgoCD reports <code>OutOfSync</code> for more than 30 minutes is a BCP violation in progress. Alert on this condition from the Prometheus metrics ArgoCD exposes (<code>argocd_app_info</code> with <code>sync_status="OutOfSync"</code> filtered to the prod project) and route to the on-call platform engineer, not just the application team.</p>
+
+          <h2 id="rbac">Multi-Cluster RBAC</h2>
+          <p>ArgoCD&rsquo;s RBAC model has three scopes: the <strong>AppProject</strong> (which repos, which clusters, which namespaces an Application can target), the <strong>RBAC policy</strong> (which ArgoCD actions a user or group can perform on Applications in a project), and the <strong>sync window</strong> (time-based deployment gates on the project). Together they allow you to grant an integration team the ability to deploy to dev and test clusters while requiring platform team review for production.</p>
+          <p>SSO integration via SAML or OIDC maps the bank&rsquo;s Active Directory groups (via Entra ID or LDAP) to ArgoCD roles. A member of the <code>payments-integration-team</code> AD group gets the <code>integration-dev</code> ArgoCD role, which can sync Applications in the <code>payments-dev</code> AppProject targeting the dev and test clusters. They cannot sync Applications in the <code>payments-prod</code> AppProject &mdash; that requires membership in the <code>platform-engineering</code> group, which maps to the <code>platform-admin</code> role.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payments-integration-appproject.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">argoproj.io/v1alpha1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">AppProject</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments-integration</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">argocd</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">description</span>: <span class="tok-s">Payments integration team — dev and test only; prod requires platform team PR</span>
+
+  <span class="tok-c"># Restrict which source repos are allowed</span>
+  <span class="tok-k">sourceRepos</span>:
+    - <span class="tok-s">https://gitops.saib.internal/payments/*</span>
+    - <span class="tok-s">https://gitops.saib.internal/platform/integration-apps.git</span>
+
+  <span class="tok-c"># Integration team can only deploy to dev and test cluster namespaces</span>
+  <span class="tok-k">destinations</span>:
+    - <span class="tok-k">server</span>: <span class="tok-s">https://dev-cluster.saib.internal:6443</span>
+      <span class="tok-k">namespace</span>: <span class="tok-s">"payments-*"</span>
+    - <span class="tok-k">server</span>: <span class="tok-s">https://test-cluster.saib.internal:6443</span>
+      <span class="tok-k">namespace</span>: <span class="tok-s">"payments-*"</span>
+    <span class="tok-c"># prod clusters NOT listed — integration team has no destination on prod</span>
+
+  <span class="tok-c"># Block deploy of cluster-scoped resources (ClusterRole, CRDs)</span>
+  <span class="tok-k">clusterResourceWhitelist</span>: []
+
+  <span class="tok-k">namespaceResourceBlacklist</span>:
+    - <span class="tok-k">group</span>: <span class="tok-s">""</span>
+      <span class="tok-k">kind</span>: <span class="tok-s">ResourceQuota</span>    <span class="tok-c"># platform team owns quota; integration teams cannot change it</span>
+    - <span class="tok-k">group</span>: <span class="tok-s">networking.k8s.io</span>
+      <span class="tok-k">kind</span>: <span class="tok-s">NetworkPolicy</span>   <span class="tok-c"># NetworkPolicy is injected by Crossplane, not app teams</span>
+
+  <span class="tok-c"># Sync window: no automated syncs to test on Friday afternoon</span>
+  <span class="tok-k">syncWindows</span>:
+    - <span class="tok-k">kind</span>: <span class="tok-s">deny</span>
+      <span class="tok-k">schedule</span>: <span class="tok-s">"0 14 * * 5"</span>    <span class="tok-c"># Friday 14:00</span>
+      <span class="tok-k">duration</span>: <span class="tok-s">10h</span>             <span class="tok-c"># until Friday midnight</span>
+      <span class="tok-k">applications</span>: [<span class="tok-s">"*"</span>]
+      <span class="tok-k">clusters</span>: [<span class="tok-s">"test-cluster"</span>]
+      <span class="tok-k">namespaces</span>: [<span class="tok-s">"*"</span>]
+      <span class="tok-k">manualSync</span>: <span class="tok-n">true</span>           <span class="tok-c"># allow manual sync override for hotfixes</span>
+
+  <span class="tok-c"># RBAC: integration team can sync dev/test; platform team can sync anywhere</span>
+  <span class="tok-k">roles</span>:
+    - <span class="tok-k">name</span>: <span class="tok-s">integration-developer</span>
+      <span class="tok-k">description</span>: <span class="tok-s">Payments integration team — dev and test only</span>
+      <span class="tok-k">policies</span>:
+        - <span class="tok-s">p, proj:payments-integration:integration-developer, applications, get, payments-integration/*, allow</span>
+        - <span class="tok-s">p, proj:payments-integration:integration-developer, applications, sync, payments-integration/*, allow</span>
+        - <span class="tok-s">p, proj:payments-integration:integration-developer, applications, action/*, payments-integration/*, deny</span>
+      <span class="tok-k">groups</span>:
+        - <span class="tok-s">payments-integration-team</span>   <span class="tok-c"># maps from SAML group assertion</span></code></pre>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never give the ArgoCD service account cluster-admin on spoke clusters</div>
+            <p>The ArgoCD hub uses a service account (bound to a cluster secret) to apply resources to each spoke cluster. Granting cluster-admin to this service account means a misconfigured or malicious Application can delete any resource on the spoke, including its own RBAC objects. Instead, create a namespace-scoped role for each AppProject&rsquo;s namespace prefix, and a minimal cluster-scoped role for CRDs and ClusterRoles that only the platform AppProject can request. Audit the ArgoCD service account RBAC on every spoke quarterly; cluster-admin should appear nowhere in the audit output for integration team projects.</p>
+          </div>
+
+          <h2 id="checklist">Production Checklist</h2>
+          <ol>
+            <li>ArgoCD running in HA mode on the management cluster: 3 application controller replicas, 2 repo server replicas, Redis Sentinel; PodDisruptionBudget on each component.</li>
+            <li>Management cluster has the same SLA as the highest-tier spoke it manages; it is not a dev or shared cluster.</li>
+            <li>All spoke clusters registered in ArgoCD with labels encoding tier (<code>dev</code>/<code>test</code>/<code>prod</code>), region (<code>riyadh</code>/<code>jeddah</code>), and function (<code>integration</code>/<code>platform</code>).</li>
+            <li>Platform apps (cert-manager, ESO, Vault agent injector, monitoring stack) managed by a Cluster-generator ApplicationSet; no per-cluster Application manifests for platform components.</li>
+            <li>Integration services managed by a Matrix-generator ApplicationSet (Git dirs &times; Clusters); sync wave annotations prevent thundering herd on cluster restore.</li>
+            <li>AppProject per team scoping destinations to dev and test only; platform team AppProject for prod destinations; no overlap.</li>
+            <li>ArgoCD service account on each spoke has namespace-scoped RBAC; cluster-admin absent from all integration team project service accounts.</li>
+            <li>SSO configured via SAML/OIDC from bank IdP (Entra ID); AD group &rarr; ArgoCD role mapping reviewed quarterly.</li>
+            <li>Sync windows configured: deny automated syncs to prod and test on Friday 14:00&ndash;24:00; manual sync override allowed for platform team.</li>
+            <li>Promotion workflow documented and enforced: image tag change via PR to GitOps repo; no <code>kubectl rollout</code> from CI pipelines; CI runner has no kubeconfig.</li>
+            <li>SAMA BCP: prod-zone-1 and prod-zone-2 are geographically separate (&ge;30 km); ApplicationSet deploys identically to both; sync state compared in Prometheus dashboard.</li>
+            <li>Alert on <code>argocd_app_info{sync_status="OutOfSync", project=~"payments.*|platform.*"}</code> for more than 30 minutes; routes to platform on-call, not application teams.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="vault-secrets-management.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Secrets Management &amp; Dynamic Credentials</div>
+            </a>
+            <a href="../devops.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">DevOps &amp; Platform &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

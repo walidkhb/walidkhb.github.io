@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOAP-to-REST Modernisation: The API Architecture Decision That Lets You Retire the WSDL Without Rewriting the Backend &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Wrap versus rewrite versus expose as-is: the SOAP-to-REST decision carries different risk and cost profiles. SAMA Open Banking requires FAPI 2.0 on the facade even if the backend uses WS-Security BasicAuth. A well-designed wrapper extends the life of a proven backend by 5-10 years.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/soap-to-rest-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="SOAP-to-REST Modernisation: The API Architecture Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="SOAP-to-REST Modernisation: The API Architecture Decision That Lets You Retire the WSDL Without Rewriting the Backend &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Wrap vs rewrite vs expose as-is. SAMA Open Banking requires FAPI 2.0 on the facade. A well-designed wrapper extends backend life by 5-10 years. A poor wrapper creates double the maintenance burden.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/soap-to-rest-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SOAP-to-REST Modernisation: The API Architecture Decision That Lets You Retire the WSDL Without Rewriting the Backend">
+  <meta name="twitter:description" content="Wrap vs rewrite: SAMA FAPI 2.0 applies to the facade regardless of what the backend uses. A good wrapper extends proven backend life by a decade.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "SOAP-to-REST Modernisation: The API Architecture Decision That Lets You Retire the WSDL Without Rewriting the Backend",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/soap-to-rest-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="legacy-integration.html">Legacy Integration</a><span>/</span>SOAP-to-REST Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Legacy Integration &middot; September 5, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">SOAP-to-REST Modernisation: The API Architecture Decision That Lets You Retire the WSDL Without Rewriting the Backend</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Saudi banks carry a large estate of SOAP services &mdash; WSDL-defined operations built over the past 15 to 20 years that represent the accumulated business logic of core banking, payment processing, trade finance, and customer onboarding. These services work. They have been tested by every transaction the bank has processed since they were deployed. Their WSDLs document every operation, input type, and fault condition with a precision that most REST API definitions never achieve. What they do not do is speak the language that digital channels, fintech partners, and Open Banking consumers expect: JSON payloads, OAuth2 bearer tokens, HTTP status codes, and OpenAPI documentation they can explore without understanding XML namespace resolution.</p>
+
+        <p class="article-section">What the decision is</p>
+
+        <p>The SOAP-to-REST modernisation decision presents three options. <strong>Wrap:</strong> place a REST facade in front of the existing SOAP service, leaving the backend unchanged. The facade translates REST calls to SOAP calls and SOAP responses to JSON responses. <strong>Rewrite:</strong> build a new service that implements the same business logic in a modern stack and retire the SOAP service. <strong>Expose as-is:</strong> make the SOAP service accessible to new consumers without change &mdash; requiring those consumers to understand WSDL, XML, and SOAP fault handling themselves.</p>
+
+        <p>The expose-as-is option is not a real option for consumer-facing APIs. No digital channel team will build a mobile app against a SOAP backend in 2026, and no fintech partner will accept a WSDL as documentation for an Open Banking integration. It remains a viable internal option when the only consumers are other enterprise systems that already have SOAP integration capabilities, but even then it defers rather than solves the modernisation problem.</p>
+
+        <blockquote>
+          <p>The rewrite option is seductive precisely when the SOAP service is most painful to work with &mdash; when it is complex, underdocumented, or slow. But complexity, inadequate documentation, and slow response times are not arguments for rewriting; they are symptoms of the same underlying problem that a rewrite will reproduce unless the root cause is addressed first.</p>
+        </blockquote>
+
+        <p>The rewrite option carries a risk profile that organisations consistently underestimate: the SOAP service&rsquo;s behaviour is the specification. Every edge case in 15 years of WSDL operations &mdash; the SOAP fault that gets returned for a duplicate payment reference, the field that must be empty rather than absent for a specific account type, the response timing behaviour that downstream systems have been coded to work around &mdash; is implicit in the existing implementation and invisible in any documentation. A rewrite that does not replicate all of this behaviour faithfully will produce production incidents that the SOAP service has never experienced. Wrapping avoids this risk entirely: the SOAP service continues to handle the business logic, including all its accumulated edge case behaviour, while the REST facade changes only the interface.</p>
+
+        <p class="article-section">The regulatory angle</p>
+
+        <p>SAMA&rsquo;s Open Banking Framework specifies that consumer-facing APIs must conform to the Financial-grade API Security Profile 2.0 (FAPI 2.0). This requirement applies to the API that the consumer sees &mdash; the REST facade &mdash; not to the backend that the facade calls. A SOAP service that authenticates via WS-Security UsernameToken with BasicAuth credentials over TLS is compliant for internal integration; it is not compliant as a consumer-facing Open Banking endpoint regardless of what any architecture diagram says. The facade must implement FAPI 2.0: OAuth2 authorisation code flow with PKCE, Demonstrating Proof-of-Possession (DPoP) for bearer tokens, and the required FAPI response headers (<code>x-fapi-interaction-id</code>, <code>x-fapi-auth-date</code>) on every response.</p>
+
+        <p>This distinction matters for project scoping. The FAPI 2.0 compliance work is not trivial. It requires a compatible identity provider, certificate infrastructure for DPoP, and configuration of the API gateway layer. It is not a two-day configuration task. If the project plan for a SOAP-to-REST wrapper does not include FAPI 2.0 compliance as an explicit work item &mdash; with its own timeline, its own infrastructure dependencies, and its own compliance testing &mdash; the project will either miss the regulatory requirement or delay it to a follow-on phase that may not get funded. Include it in the initial scope, budget for it accordingly, and test it against the SAMA Open Banking conformance suite before the facade goes live on a consumer-facing channel.</p>
+
+        <p class="article-section">The business trade-off</p>
+
+        <p>A well-designed REST facade extends the operational life of a proven SOAP backend by five to ten years at a cost that is typically 10 to 20 percent of the cost of a backend rewrite. The backend continues to handle business logic it has been doing correctly for years. The facade handles the interface concern. New digital channels, new fintech partners, and new regulatory requirements are addressed at the facade layer &mdash; not by modifying a production backend that carries payment processing risk.</p>
+
+        <p>A poorly designed wrapper creates a different problem: two API surfaces to maintain simultaneously, with coupling between them that makes changes to either difficult. The failure mode is a wrapper that exposes the SOAP backend&rsquo;s internal model through the REST interface &mdash; JSON keys that are XML element names with namespace prefixes stripped, REST responses whose structure mirrors the SOAP response tree rather than the resource model, error messages that contain SOAP fault codes in JSON strings. A REST API designed this way is a SOAP API in disguise, and it combines the development friction of SOAP with the operational complexity of a REST layer on top of it.</p>
+
+        <p>The design discipline that prevents this is a <strong>contract-first approach</strong>: the OpenAPI specification is written first, without reference to the WSDL, as if the SOAP backend did not exist. The specification defines what developers consuming the REST API will see. Only after the specification is agreed does the implementation work begin, with the WSDL as a reference for the backend behaviour but not as the template for the REST design. This sequence requires more discipline to maintain than starting from the WSDL and deriving the REST shape, but the result is an API that reads as a native REST service and can survive a backend replacement without breaking its consumers.</p>
+
+        <p class="article-section">What leadership must own</p>
+
+        <p>The SOAP-to-REST wrapper project is often scoped as a platform engineering initiative with a clear technical deliverable: a REST endpoint that wraps a SOAP backend. The decisions that determine whether that deliverable has durable value are not technical; they are governance decisions that require VP-level ownership.</p>
+
+        <p>The first is <strong>OpenAPI contract ownership</strong>. The contract is the commitment to consumers. When the SOAP backend changes a field type, when a new operation is added, when an existing fault code changes meaning, the OpenAPI contract must be updated in a controlled way. This requires a named owner who reviews backend changes against the contract, determines what is a breaking change, and manages the versioning process. Without a named owner, the contract drifts from the implementation, and consumers who relied on the published specification find their integrations broken by changes they were not notified about.</p>
+
+        <p>The second is <strong>developer portal governance</strong>: who approves the publication of new API versions, who manages the subscription tiers and rate plans, and who is responsible for the API documentation that fintech partners and third-party developers read. These are product management responsibilities that do not naturally fall to the integration engineering team. If they are not explicitly assigned, the developer portal becomes an orphaned catalogue of outdated specifications.</p>
+
+        <p>The third is a <strong>deprecation timeline and auth migration budget for direct SOAP consumers</strong>. The wrapper creates a migration path for new consumers. Existing SOAP consumers &mdash; other internal systems that have been calling the SOAP backend directly for years &mdash; must migrate to the REST facade before the SOAP interface can be decommissioned. This migration requires effort from the consuming teams, not just the integration team. It will not happen unless it is mandated with a deadline and funded in the consuming teams&rsquo; roadmaps. Setting a SOAP deprecation deadline without the authority and budget to enforce it produces a situation where the SOAP endpoint is nominally deprecated but continues to receive traffic indefinitely, and the integration team maintains two interfaces in perpetuity.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind these decisions &mdash; WSDL analysis and operation-to-verb mapping, ACE ESQL envelope construction, IBM API Connect assembly policies, SOAP fault to RFC 7807 mapping, FAPI 2.0 configuration, the strangler fig migration pattern, and the production checklist &mdash; see the companion Lab article: <a href="../lab/legacy-integration/soap-to-rest-modernisation.html" style="color:var(--color-accent);">Legacy Integration: SOAP-to-REST API Modernisation</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

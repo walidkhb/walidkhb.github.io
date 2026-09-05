@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COBOL Data Mapping: The Mainframe Integration Decision That Determines Whether Modern Services Can Read 40-Year-Old Data &mdash; Waleed Albadawi</title>
+  <meta name="description" content="DFDL versus bespoke Java parsers versus mainframe retirement: the COBOL data mapping decision is a risk and longevity question, not a technical one. Mapping errors produce incorrect balances under SAMA supervision &mdash; a regulatory incident, not a bug.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/cobol-data-mapping-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="COBOL Data Mapping: The Mainframe Integration Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="COBOL Data Mapping: The Mainframe Integration Decision That Determines Whether Modern Services Can Read 40-Year-Old Data &mdash; Waleed Albadawi">
+  <meta property="og:description" content="DFDL versus bespoke Java parsers: the COBOL mapping decision is a risk and longevity question. Mapping errors produce incorrect balances &mdash; a regulatory incident under SAMA supervision.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/cobol-data-mapping-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="COBOL Data Mapping: The Mainframe Integration Decision That Determines Whether Modern Services Can Read 40-Year-Old Data">
+  <meta name="twitter:description" content="DFDL versus bespoke Java parsers: the mapping decision is a regulatory risk question, not a technical one.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "COBOL Data Mapping: The Mainframe Integration Decision That Determines Whether Modern Services Can Read 40-Year-Old Data",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-05",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/cobol-data-mapping-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="legacy-integration.html">Legacy Integration</a><span>/</span>COBOL Data Mapping Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Legacy Integration &middot; September 5, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">COBOL Data Mapping: The Mainframe Integration Decision That Determines Whether Modern Services Can Read 40-Year-Old Data</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Every Saudi bank that has been operating for more than two decades has core banking data in COBOL-defined formats on a mainframe. Account balances, transaction histories, customer records, and payment references &mdash; the data that every digital channel, analytics pipeline, and new microservice needs &mdash; are stored in packed decimal, EBCDIC character sets, and fixed-length records whose layout is described in a copybook file that may not have changed since the 1990s. Making that data readable to a JSON-consuming REST service is not a trivial technical task, and the decision about how to approach it has consequences that persist for years.</p>
+
+        <p class="article-section">What the decision is</p>
+
+        <p>The COBOL data mapping decision is a choice between three approaches, each with a different risk and longevity profile. The first is <strong>DFDL with IBM ACE</strong>: a schema-governed approach where the COBOL copybook is modelled in a Data Format Description Language schema, and the ACE integration platform applies that schema to parse binary records into a typed logical tree. The schema is the single source of truth; when the copybook changes, the schema is updated and regression tests run. The second is a <strong>bespoke Java parser</strong>: hand-coded parsing logic that reads the byte offsets, converts packed decimal fields, handles EBCDIC conversion, and emits JSON. Faster to ship for a single copybook, but every new copybook requires new code, and every change to an existing copybook requires a code change, a review, and a deployment. The third is <strong>mainframe retirement</strong>: replacing the mainframe system with a modern one and eliminating the COBOL data problem entirely. This is the right answer for some institutions on a long enough timeline. It is not a data mapping strategy; it is a multi-year programme that costs an order of magnitude more than either of the first two options and carries programme risk that organisations routinely underestimate.</p>
+
+        <blockquote>
+          <p>The choice between DFDL and a bespoke parser is not a technology preference. It is a decision about how many copybooks the organisation expects to integrate over the next five years, and who will own the integration layer when the engineers who wrote the original parser have moved on.</p>
+        </blockquote>
+
+        <p class="article-section">The regulatory angle</p>
+
+        <p>SAMA supervises core banking systems and the data they produce. Account balances reported to customers through digital channels, payment amounts processed through SARIE and SWIFT, and transaction records retained for regulatory purposes all originate from mainframe data. If the COBOL-to-JSON mapping is wrong &mdash; if the packed decimal parser misreads the sign nibble, if the implicit decimal point is applied at the wrong scale, if the EBCDIC conversion uses the wrong code page &mdash; the downstream systems receive incorrect data. An incorrect balance displayed in a mobile banking app is a customer complaint. An incorrect amount in a payment instruction is a potential financial loss and a SAMA reportable incident. An incorrect amount in a regulatory report is a compliance failure.</p>
+
+        <p>None of these outcomes are hypothetical. Every team that has built a COBOL parser from scratch has at some point shipped one of these bugs. The sign nibble that treats D as positive because the developer misread the specification. The scale that is off by one because the PIC V clause was overlooked. The EBCDIC dollar sign that becomes a different character because the wrong code page was assumed. The regulatory significance of these bugs is that they are silent: the system continues to run, the data continues to flow, and the error accumulates in downstream records until an auditor or a customer finds a discrepancy.</p>
+
+        <p>DFDL does not eliminate mapping errors, but it makes the mapping specification explicit, testable, and independently reviewable. A DFDL schema can be reviewed by an integration architect who did not write it. A bespoke parser is often intelligible only to the person who wrote it and anyone willing to work through hundreds of lines of byte-offset arithmetic.</p>
+
+        <p class="article-section">The business trade-off</p>
+
+        <p>DFDL is the right long-term investment for any organisation that expects to integrate more than a handful of COBOL copybooks or expects those copybooks to evolve over the integration&rsquo;s lifetime. The investment pays back in two ways. First, each new copybook costs less to onboard: the DFDL tooling, the testing framework, and the governance process are already in place. Second, copybook changes are handled through schema versioning rather than code changes: the mainframe team delivers a new copybook version, the integration team updates the DFDL schema, runs the regression suite against the existing hex dump test fixtures, and deploys. The deployment cycle is measurably shorter and the audit trail is cleaner.</p>
+
+        <p>Bespoke parsers are faster to ship for the first copybook. That advantage is real &mdash; a motivated Java developer can write a working packed decimal parser and an EBCDIC converter in a day. The technical debt accrues on the second copybook, when the first parser&rsquo;s conventions are not followed consistently. It compounds on the fifth, when the team is maintaining five separate parsing implementations with five different null-handling conventions, five different date format assumptions, and five different test coverage levels. By the tenth copybook, the bespoke parser estate is a maintenance burden that consumes more engineering capacity than a DFDL implementation would have required for all ten.</p>
+
+        <p class="article-section">What leadership must own</p>
+
+        <p>The COBOL data mapping problem is fundamentally a governance problem. The technical implementation &mdash; whether DFDL or Java &mdash; is manageable by the integration engineering team. What the engineering team cannot manage without executive backing is the governance of the copybooks themselves: who approves changes to a copybook that affects a live integration, who is responsible for notifying the integration team when a mainframe maintenance release changes a field length, and what the rollback plan is when a copybook change breaks a mapping and incorrect data has already flowed to downstream systems for some period of time.</p>
+
+        <p>These questions must be answered before the first COBOL integration goes to production, not after the first incident. The mainframe team and the integration team operate on different release cycles, different change management processes, and different organisational hierarchies. A copybook change that is routine from the mainframe team&rsquo;s perspective can silently break an integration that has been running correctly for three years. The governance structure that prevents this &mdash; a shared change advisory process, mandatory regression testing of the integration layer before any mainframe change goes live, and a clear escalation path when a conflict arises &mdash; requires VP-level sponsorship on both sides of the boundary to be effective. Without it, the COBOL data mapping implementation, however technically sound, will eventually produce an incident that could have been prevented.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind these decisions &mdash; PIC clause types and byte lengths, EBCDIC code page selection, packed decimal parsing in Java, DFDL schema construction in ACE 12, round-trip testing, and the production checklist &mdash; see the companion Lab article: <a href="../lab/legacy-integration/cobol-data-mapping.html" style="color:var(--color-accent);">Legacy Integration: COBOL Data Mapping &amp; Type Conversion</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
