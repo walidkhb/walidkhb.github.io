@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المواقع — الديوان والمسجد والمقبرة</title>
+  <meta name="description" content="مواقع الديوان والمسجد والمقبرة على الخريطة — اضغط على الموقع لفتح الاتجاهات في تطبيق الخرائط.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0a0f0d">
+  <meta property="og:title" content="المواقع — الديوان والمسجد والمقبرة">
+  <meta property="og:description" content="مواقع الديوان والمسجد والمقبرة على الخريطة — اضغط على الموقع لفتح الاتجاهات.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.wbadawi.info/maps/">
+  <meta property="og:locale" content="ar_SA">
+  <link rel="canonical" href="https://www.wbadawi.info/maps/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/favicon-192.png">
+  <link rel="apple-touch-icon" href="/assets/img/favicon-192.png">
+
+  <style>
+    :root {
+      --bg: #0a0f0d;
+      --bg-glow: rgba(201, 169, 97, 0.10);
+      --surface: rgba(255, 255, 255, 0.045);
+      --surface-hover: rgba(255, 255, 255, 0.075);
+      --border: rgba(255, 255, 255, 0.10);
+      --border-strong: rgba(201, 169, 97, 0.38);
+      --accent: #c9a961;
+      --accent-soft: rgba(201, 169, 97, 0.14);
+      --text: #edece8;
+      --text-dim: #a8a8a2;
+      --text-muted: #7c7c77;
+      --radius: 16px;
+      --font: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Naskh Arabic', 'Geeza Pro', Tahoma, sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, var(--bg-glow), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 90% 100%, rgba(201, 169, 97, 0.05), transparent 70%);
+      background-repeat: no-repeat;
+      color: var(--text);
+      line-height: 1.8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-block: 3rem 2rem;
+      padding-inline: 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { width: 100%; max-width: 560px; }
+
+    /* --- Header --- */
+    .header { text-align: center; margin-bottom: 2.5rem; }
+
+    .header__mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      background: var(--accent-soft);
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+    }
+
+    .header h1 {
+      font-size: clamp(1.75rem, 6vw, 2.25rem);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.4;
+    }
+
+    .header p {
+      color: var(--text-dim);
+      font-size: 0.975rem;
+      margin-top: 0.5rem;
+      max-width: 34ch;
+      margin-inline: auto;
+      text-wrap: balance;
+    }
+
+    /* --- Cards --- */
+    .cards { display: flex; flex-direction: column; gap: 1rem; }
+
+    .card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover, .card:focus-within {
+      background: var(--surface-hover);
+      border-color: var(--border-strong);
+    }
+
+    .card__link {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem 1.25rem;
+      text-decoration: none;
+      color: inherit;
+      border-radius: var(--radius);
+    }
+
+    .card__link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .card__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(201, 169, 97, 0.08);
+      color: var(--accent);
+    }
+
+    .card__body { min-width: 0; }
+
+    .card__title {
+      display: block;
+      font-size: 1.2rem;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .card__meta {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .card__arrow {
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover .card__arrow { color: var(--accent); transform: translateX(-3px); }
+
+    /* --- Copy row --- */
+    .card__actions {
+      display: flex;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-copy {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1rem;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      background: transparent;
+      border: 0;
+      border-radius: 0 0 var(--radius) var(--radius);
+      cursor: pointer;
+      transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .btn-copy:hover { color: var(--accent); background: rgba(201, 169, 97, 0.07); }
+    .btn-copy:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .btn-copy[data-copied="true"] { color: var(--accent); }
+
+    /* --- Footer --- */
+    .footer {
+      margin-top: 2.5rem;
+      text-align: center;
+    }
+
+    .btn-share {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      padding: 0.8rem 1.6rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--bg);
+      background: var(--accent);
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn-share:hover { opacity: 0.9; }
+    .btn-share:active { transform: scale(0.98); }
+    .btn-share:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+    .footer__note {
+      margin-top: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .footer__note a { color: var(--text-dim); text-decoration: none; }
+    .footer__note a:hover { color: var(--accent); }
+
+    /* --- Toast --- */
+    .toast {
+      position: fixed;
+      inset-inline: 0;
+      bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(0.75rem);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 10;
+    }
+
+    .toast[data-visible="true"] { opacity: 1; transform: translateY(0); }
+
+    .toast span {
+      background: #16201c;
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      font-size: 0.875rem;
+      padding: 0.55rem 1.1rem;
+      border-radius: 999px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    /* --- Entrance --- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .reveal:nth-child(1) { animation-delay: 0.05s; }
+    .reveal:nth-child(2) { animation-delay: 0.13s; }
+    .reveal:nth-child(3) { animation-delay: 0.21s; }
+
+    @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { animation: none; opacity: 1; transform: none; }
+      * { transition: none !important; }
+      html { scroll-behavior: auto; }
+    }
+
+    @media (max-width: 380px) {
+      .card__link { padding: 1.1rem 1rem; gap: 0.8rem; }
+      .card__icon { width: 42px; height: 42px; }
+      .card__title { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+
+    <header class="header">
+      <div class="header__mark" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"></path>
+          <circle cx="12" cy="10" r="2.5"></circle>
+        </svg>
+      </div>
+      <h1>المواقع</h1>
+      <p>اضغط على الموقع لفتح الاتجاهات في تطبيق الخرائط</p>
+    </header>
+
+    <div class="cards">
+
+      <!-- الديوان -->
+      <article class="card reveal">
+        <a class="card__link" href="https://maps.app.goo.gl/sGS24EnqcZw4FieT8" target="_blank" rel="noopener noreferrer">
+          <span class="card__icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3.5 10.5 12 4l8.5 6.5"></path>
+              <path d="M5.5 9.8V20h13V9.8"></path>
+              <path d="M10 20v-5h4v5"></path>
+            </svg>
+          </span>
+          <span class="card__body">
+            <span class="card__title">الديوان</span>
+            <span class="card__meta">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"></path>
+                <circle cx="12" cy="10" r="2.2"></circle>
+              </svg>
+              الاتجاهات في خرائط جوجل
+            </span>
+          </span>
+          <span class="card__arrow" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 6l-6 6 6 6"></path>
+            </svg>
+          </span>
+        </a>
+        <div class="card__actions">
+          <button class="btn-copy" type="button" data-copy="https://maps.app.goo.gl/sGS24EnqcZw4FieT8" data-label="نسخ رابط الديوان">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+              <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path>
+            </svg>
+            <span class="btn-copy__text">نسخ الرابط</span>
+          </button>
+        </div>
+      </article>
+
+      <!-- المسجد -->
+      <article class="card reveal">
+        <a class="card__link" href="https://maps.app.goo.gl/kSXdmL2RTNsGkArD8" target="_blank" rel="noopener noreferrer">
+          <span class="card__icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3.2v1.6"></path>
+              <path d="M6 11c0-3.2 2.7-5.6 6-5.6s6 2.4 6 5.6"></path>
+              <path d="M5 11h14v9H5z"></path>
+              <path d="M10.3 20v-3.4a1.7 1.7 0 0 1 3.4 0V20"></path>
+              <path d="M3 20V9.5M21 20V9.5"></path>
+            </svg>
+          </span>
+          <span class="card__body">
+            <span class="card__title">المسجد</span>
+            <span class="card__meta">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"></path>
+                <circle cx="12" cy="10" r="2.2"></circle>
+              </svg>
+              الاتجاهات في خرائط جوجل
+            </span>
+          </span>
+          <span class="card__arrow" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 6l-6 6 6 6"></path>
+            </svg>
+          </span>
+        </a>
+        <div class="card__actions">
+          <button class="btn-copy" type="button" data-copy="https://maps.app.goo.gl/kSXdmL2RTNsGkArD8" data-label="نسخ رابط المسجد">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+              <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path>
+            </svg>
+            <span class="btn-copy__text">نسخ الرابط</span>
+          </button>
+        </div>
+      </article>
+
+      <!-- المقبرة -->
+      <article class="card reveal">
+        <a class="card__link" href="https://maps.app.goo.gl/zgNCFnVkgHeffKeM8" target="_blank" rel="noopener noreferrer">
+          <span class="card__icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8.5 20v-8a3.5 3.5 0 0 1 7 0v8"></path>
+              <path d="M10.5 13.5h3"></path>
+              <path d="M4 20h16"></path>
+              <path d="M6 20v-3"></path>
+            </svg>
+          </span>
+          <span class="card__body">
+            <span class="card__title">المقبرة</span>
+            <span class="card__meta">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"></path>
+                <circle cx="12" cy="10" r="2.2"></circle>
+              </svg>
+              الاتجاهات في خرائط جوجل
+            </span>
+          </span>
+          <span class="card__arrow" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 6l-6 6 6 6"></path>
+            </svg>
+          </span>
+        </a>
+        <div class="card__actions">
+          <button class="btn-copy" type="button" data-copy="https://maps.app.goo.gl/zgNCFnVkgHeffKeM8" data-label="نسخ رابط المقبرة">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+              <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path>
+            </svg>
+            <span class="btn-copy__text">نسخ الرابط</span>
+          </button>
+        </div>
+      </article>
+
+    </div>
+
+    <footer class="footer">
+      <button class="btn-share" type="button" id="share">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"></path>
+          <path d="M12 15V3.5"></path>
+          <path d="M8 7.5 12 3.5l4 4"></path>
+        </svg>
+        <span id="share-text">مشاركة هذه الصفحة</span>
+      </button>
+      <p class="footer__note"><a href="https://www.wbadawi.info/">wbadawi.info</a></p>
+    </footer>
+
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-text"></span></div>
+
+  <script>
+    (function () {
+      var toast = document.getElementById('toast');
+      var toastText = document.getElementById('toast-text');
+      var toastTimer;
+
+      function showToast(message) {
+        toastText.textContent = message;
+        toast.setAttribute('data-visible', 'true');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          toast.removeAttribute('data-visible');
+        }, 2200);
+      }
+
+      function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(text);
+        }
+        return new Promise(function (resolve, reject) {
+          var field = document.createElement('textarea');
+          field.value = text;
+          field.setAttribute('readonly', '');
+          field.style.position = 'fixed';
+          field.style.top = '-1000px';
+          document.body.appendChild(field);
+          field.select();
+          field.setSelectionRange(0, text.length);
+          var ok = false;
+          try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+          document.body.removeChild(field);
+          ok ? resolve() : reject(new Error('copy failed'));
+        });
+      }
+
+      Array.prototype.forEach.call(document.querySelectorAll('.btn-copy'), function (btn) {
+        var label = btn.querySelector('.btn-copy__text');
+        var original = label.textContent;
+        btn.setAttribute('aria-label', btn.getAttribute('data-label'));
+
+        btn.addEventListener('click', function () {
+          copyText(btn.getAttribute('data-copy')).then(function () {
+            label.textContent = 'تم النسخ';
+            btn.setAttribute('data-copied', 'true');
+            showToast('تم نسخ الرابط');
+            setTimeout(function () {
+              label.textContent = original;
+              btn.removeAttribute('data-copied');
+            }, 2200);
+          }).catch(function () {
+            showToast('تعذّر النسخ — اضغط مطولاً على الرابط لنسخه');
+          });
+        });
+      });
+
+      var share = document.getElementById('share');
+      share.addEventListener('click', function () {
+        var url = window.location.href;
+        var data = { title: 'المواقع', text: 'مواقع الديوان والمسجد والمقبرة', url: url };
+
+        if (navigator.share) {
+          navigator.share(data).catch(function () { /* المستخدم أغلق نافذة المشاركة */ });
+          return;
+        }
+
+        copyText(url).then(function () {
+          showToast('تم نسخ رابط الصفحة');
+        }).catch(function () {
+          showToast('انسخ رابط الصفحة من شريط العنوان');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
