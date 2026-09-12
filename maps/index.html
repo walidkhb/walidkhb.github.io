@@ -13,6 +13,15 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.wbadawi.info/maps/">
   <meta property="og:locale" content="ar_JO">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/naei/khalid-albadawi.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="1500">
+  <meta property="og:image:alt" content="نعي المرحوم خالد وليد البدوي">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="المرحوم خالد وليد البدوي">
+  <meta name="twitter:description" content="إنا لله وإنا إليه راجعون — مواعيد التشييع والعزاء ومواقع المسجد والمقبرة والديوان.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/naei/khalid-albadawi.png">
   <link rel="canonical" href="https://www.wbadawi.info/maps/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,76 +73,43 @@
 
     .wrap { width: 100%; max-width: 580px; }
 
-    /* --- النعي --- */
+    /* --- بطاقة النعي --- */
     .notice { text-align: center; }
 
-    .bismillah {
-      font-family: var(--serif);
-      font-size: 1.05rem;
-      color: var(--accent);
-      letter-spacing: 0.02em;
-    }
-
-    .verse {
-      font-family: var(--serif);
-      font-size: clamp(1.15rem, 4.6vw, 1.4rem);
-      line-height: 2.2;
-      color: var(--text);
-      margin-top: 1.5rem;
-      padding-block: 1.35rem;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      text-wrap: pretty;
-    }
-
-    .verse__src {
+    .notice__card {
       display: block;
-      font-family: var(--sans);
-      font-size: 0.75rem;
-      letter-spacing: 0.06em;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border-strong);
+      background: #000;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+      -webkit-tap-highlight-color: rgba(197, 170, 118, 0.15);
+    }
+
+    .notice__card:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+    .notice__card img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .notice__hint {
+      margin-top: 0.9rem;
       color: var(--text-muted);
-      margin-top: 0.75rem;
-      line-height: 1.6;
+      font-size: 0.8rem;
     }
 
-    .lead {
-      margin-top: 2.25rem;
-      color: var(--text-dim);
-      font-size: 0.975rem;
-      text-wrap: balance;
-    }
-
-    .name {
-      font-family: var(--serif);
-      font-size: clamp(2.1rem, 9vw, 3rem);
-      font-weight: 700;
-      line-height: 1.35;
-      margin-top: 0.5rem;
-      color: #fff;
-    }
-
-    .dates {
-      margin-top: 1.1rem;
-      color: var(--text-dim);
-      font-size: 0.925rem;
-      line-height: 2;
-    }
-
-    .dates span { display: block; }
-    .dates .hijri { color: var(--text-muted); font-size: 0.875rem; }
-
-    .dua {
-      margin-top: 1.5rem;
-      color: var(--text-dim);
-      font-size: 0.95rem;
-      text-wrap: balance;
-    }
-
-    .inna {
-      font-family: var(--serif);
-      font-size: 1.25rem;
-      color: var(--accent);
-      margin-top: 1.1rem;
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
     }
 
     /* --- الفاصل --- */
@@ -373,25 +349,14 @@
   <main class="wrap">
 
     <section class="notice reveal">
-      <p class="bismillah">بسم الله الرحمن الرحيم</p>
-
-      <p class="verse">
-        ﴿يَا أَيَّتُهَا النَّفْسُ الْمُطْمَئِنَّةُ ارْجِعِي إِلَىٰ رَبِّكِ رَاضِيَةً مَرْضِيَّةً فَادْخُلِي فِي عِبَادِي وَادْخُلِي جَنَّتِي﴾
-        <span class="verse__src">سورة الفجر · الآيات ٢٧ – ٣٠</span>
-      </p>
-
-      <p class="lead">بقلوب يملؤها الحزن والرضا، ننعى فقيدنا الغالي</p>
-
-      <h1 class="name">خالد وليد البدوي</h1>
-
-      <p class="dates">
-        <span>الذي فارق الحياة يوم الجمعة 11 / 9 / 2026</span>
-        <span class="hijri">الموافق 1 / ربيع الأول / 1448 هجري</span>
-      </p>
-
-      <p class="dua">رحم الله روحاً عزيزة، وأن يلهمنا جميعاً الصبر والقوة</p>
-
-      <p class="inna">إنّا لله وإنّا إليه راجعون</p>
+      <h1 class="sr-only">نعي المرحوم خالد وليد البدوي</h1>
+      <a class="notice__card" href="/assets/img/naei/khalid-albadawi.png">
+        <img
+          src="/assets/img/naei/khalid-albadawi.png"
+          width="1200" height="1500" fetchpriority="high"
+          alt="بسم الله الرحمن الرحيم. ﴿يا أيتها النفس المطمئنة ارجعي إلى ربك راضية مرضية فادخلي في عبادي وادخلي جنتي﴾. بقلوب يملؤها الحزن والرضا، ننعى فقيدنا الغالي خالد وليد البدوي، الذي فارق الحياة يوم الجمعة 11/9/2026 الموافق 1 ربيع الأول 1448 هجري. رحم الله روحاً عزيزة، وأن يلهمنا جميعاً الصبر والقوة. إنا لله وإنا إليه راجعون. مدة العزاء يومين من الساعة الخامسة مساءً إلى الساعة العاشرة مساءً. موقع العزاء: ديوان جمعية الأسرة الرفاعية، شفا بدران. سيشيع جثمان الفقيد بعد صلاة العصر من مسجد حاتم الحوتري، شفا بدران. موقع المقبرة: مقبرة شفا بدران.">
+      </a>
+      <p class="notice__hint">اضغط على البطاقة لعرضها بالحجم الكامل</p>
     </section>
 
     <div class="rule" aria-hidden="true">
