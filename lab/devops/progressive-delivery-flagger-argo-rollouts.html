@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progressive Delivery: Flagger, Argo Rollouts &amp; Feature Flags &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Canary release automation with Flagger and Argo Rollouts, Prometheus metric-gated analysis, Unleash feature flags with OpenFeature SDK, and the SAMA change-management alignment that makes progressive delivery audit-safe in KSA financial services.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Progressive Delivery: Flagger, Argo Rollouts &amp; Feature Flags &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Canary analysis, Argo Rollouts strategy manifests, Flagger with Istio, Unleash feature flags, and the SAMA TRM alignment for progressive delivery in regulated banking.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/devops/progressive-delivery-flagger-argo-rollouts.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Progressive Delivery: Flagger, Argo Rollouts &amp; Feature Flags &mdash; Lab">
+  <meta name="twitter:description" content="Canary analysis, Argo Rollouts manifests, Flagger with Istio, Unleash feature flags, and SAMA TRM alignment for progressive delivery.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/devops/progressive-delivery-flagger-argo-rollouts.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Progressive Delivery: Flagger, Argo Rollouts &amp; Feature Flags for Regulated Financial Services",
+    "description": "Canary release automation with Flagger and Argo Rollouts, Prometheus metric-gated analysis, Unleash feature flags with OpenFeature SDK, and the SAMA change-management alignment that makes progressive delivery audit-safe in KSA financial services.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-19",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/devops/progressive-delivery-flagger-argo-rollouts.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "DevOps &amp; Platform Engineering &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/devops.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform Engineering</a><span>/</span>Progressive Delivery</div>
+          <span class="overline">Lab Article</span>
+          <h1>Progressive Delivery: Flagger, Argo Rollouts &amp; Feature Flags</h1>
+          <p class="lead">Canary release automation with Flagger and Argo Rollouts, Prometheus metric-gated promotion, Unleash feature flags with the OpenFeature SDK, and the SAMA Technology Risk Management alignment that makes progressive delivery audit-safe &mdash; grounded in the integration delivery constraints of a regulated KSA bank.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#landscape">Progressive delivery landscape</a></li>
+            <li><a href="#argo-rollouts">Argo Rollouts canary strategy</a></li>
+            <li><a href="#analysis-templates">Metric-gated analysis</a></li>
+            <li><a href="#flagger">Flagger with Istio</a></li>
+            <li><a href="#feature-flags">Feature flags: Unleash &amp; OpenFeature</a></li>
+            <li><a href="#sama-alignment">SAMA TRM alignment</a></li>
+            <li><a href="#rollback">Rollback automation</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Argo Rollouts 1.7 / Flagger 1.38 / Istio 1.22 / Unleash 6.x / OpenFeature Java SDK 1.x</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>The conventional deployment risk model in financial services is binary: a change is either in production or it is not. Every new version goes from zero traffic to one hundred percent in a single step, gated by a change advisory board window and a post-deployment verification checklist that takes thirty minutes to run. When the change fails in production &mdash; and some percentage of changes always fail in production, regardless of the quality of pre-production testing &mdash; the blast radius is the entire user population, the rollback is manual and takes another change window, and the incident ticket attributes the failure to &ldquo;insufficient testing.&rdquo;</p>
+          <p>Progressive delivery is the architectural inversion of that model. Instead of treating production exposure as binary, progressive delivery treats it as a variable: a new version begins serving a small fraction of traffic, automated analysis measures whether that version is performing within defined bounds, and traffic shifts progressively toward the new version as confidence accumulates. If analysis detects a regression &mdash; p99 latency above threshold, error rate spike, a business-level KPI like payment success rate dropping below baseline &mdash; traffic is automatically shifted back to the stable version. The blast radius of a bad deployment is the percentage of traffic the canary was serving when the regression was detected, typically less than ten percent.</p>
+          <p>The critical framing for a regulated KSA bank: progressive delivery is not a circumvention of SAMA&rsquo;s Technology Risk Management (TRM) change management requirements. It is a more rigorous implementation of them. SAMA&rsquo;s TRM framework requires that changes be tested, that risk be assessed, and that rollback capability be verified before a change goes live. A canary deployment that is automatically rolled back when a Prometheus metric breaches a threshold provides stronger rollback capability guarantees than a manual rollback procedure documented in a runbook. The engineering challenge is wiring the automated analysis to the right metrics and aligning the rollout strategy to the change management approval your board already granted.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Progressive delivery requires observability as a prerequisite</div>
+            <p>You cannot run metric-gated canary analysis without the metrics. Before implementing Flagger or Argo Rollouts canary analysis, your application must expose the signals the analysis will query: HTTP error rate, p99 request latency, and at least one business-level KPI (payment success rate, message throughput, queue depth). If those metrics do not exist in Prometheus at the time the canary starts, the analysis template will fail to collect enough data points and the promotion will time out. Wire observability first; the OTel pipeline for integration services is covered in the <a href="observability-pipeline-architecture.html">Observability Pipeline Architecture</a> article in this series.</p>
+          </div>
+
+          <h2 id="landscape">Progressive Delivery Landscape</h2>
+          <p>Three strategies are in common use on Kubernetes, with significantly different trade-off profiles.</p>
+
+          <table>
+            <thead>
+              <tr><th>Strategy</th><th>Traffic split mechanism</th><th>Rollback speed</th><th>Best fit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Rolling update</strong></td><td>Pod replacement; no explicit traffic split</td><td>Minutes (pod restarts)</td><td>Stateless services with low blast-radius tolerance; fastest to configure</td></tr>
+              <tr><td><strong>Blue/green</strong></td><td>Kubernetes Service selector flip; 0% or 100%</td><td>Seconds (selector change)</td><td>Batch jobs, schema migrations, services that cannot tolerate mixed-version traffic</td></tr>
+              <tr><td><strong>Canary</strong></td><td>Service mesh weight; Ingress header routing; Argo Rollouts TrafficRouting</td><td>Seconds (weight reset to 0%)</td><td>High-traffic APIs where partial exposure reduces risk; metric-gated promotion</td></tr>
+            </tbody>
+          </table>
+
+          <p>For integration services at a KSA bank the recommendation is canary for live payment API paths and blue/green for batch processors and schema migrations. Rolling updates are appropriate for supporting services (config servers, internal tooling) where a brief mixed-version state is acceptable. The rest of this article focuses on canary.</p>
+
+          <p><strong>Argo Rollouts vs Flagger</strong>: both tools implement automated canary analysis on Kubernetes, and both are production-grade. The architectural difference is where they sit. Argo Rollouts replaces the Deployment object entirely with a Rollout CRD &mdash; it owns the pod lifecycle, the traffic weight, and the promotion logic. Flagger wraps an existing Deployment, creates canary and primary Deployments behind the scenes, and delegates traffic to a service mesh (Istio, Linkerd) or ingress controller. If you already have ArgoCD and want a unified GitOps toolchain, Argo Rollouts is the natural choice. If you already have Istio managing traffic and want a lightweight operator that does not change how your Deployments are structured, Flagger fits better.</p>
+
+          <div class="diagram" role="img" aria-label="Progressive delivery topology showing stable and canary versions receiving weighted traffic, with Prometheus analysis and automated promotion or rollback">
+            <div class="diagram__inner">
+              <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="pd-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="pd-arr-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="pd-arr-y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                  <marker id="pd-arr-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Ingress / VirtualService -->
+                <rect x="10" y="150" width="130" height="55" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="75" y="173" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">VirtualService</text>
+                <text x="75" y="188" text-anchor="middle" fill="#71717a" font-size="9">Istio / Argo</text>
+                <text x="75" y="200" text-anchor="middle" fill="#71717a" font-size="8">TrafficRouting</text>
+
+                <!-- Stable -->
+                <rect x="210" y="85" width="140" height="65" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="280" y="108" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Stable (v1)</text>
+                <text x="280" y="125" text-anchor="middle" fill="#71717a" font-size="9">payments-api</text>
+                <text x="280" y="140" text-anchor="middle" fill="#71717a" font-size="8">weight: 90%</text>
+
+                <!-- Canary -->
+                <rect x="210" y="210" width="140" height="65" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="280" y="233" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Canary (v2)</text>
+                <text x="280" y="250" text-anchor="middle" fill="#71717a" font-size="9">payments-api</text>
+                <text x="280" y="265" text-anchor="middle" fill="#71717a" font-size="8">weight: 10%</text>
+
+                <!-- Arrows from ingress -->
+                <line x1="140" y1="165" x2="206" y2="125" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#pd-arr)"/>
+                <line x1="140" y1="190" x2="206" y2="240" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#pd-arr-y)"/>
+
+                <!-- Prometheus -->
+                <rect x="410" y="110" width="130" height="60" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="475" y="133" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Prometheus</text>
+                <text x="475" y="150" text-anchor="middle" fill="#71717a" font-size="9">AnalysisTemplate</text>
+                <text x="475" y="162" text-anchor="middle" fill="#71717a" font-size="8">metric queries</text>
+
+                <!-- Arrows from pods to Prometheus -->
+                <line x1="350" y1="120" x2="406" y2="140" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#pd-arr-p)"/>
+                <line x1="350" y1="243" x2="406" y2="165" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#pd-arr-p)"/>
+
+                <!-- Analysis controller -->
+                <rect x="410" y="220" width="130" height="60" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="475" y="243" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Rollout Controller</text>
+                <text x="475" y="258" text-anchor="middle" fill="#71717a" font-size="9">Argo Rollouts /</text>
+                <text x="475" y="270" text-anchor="middle" fill="#71717a" font-size="8">Flagger</text>
+
+                <!-- Prometheus to controller -->
+                <line x1="475" y1="170" x2="475" y2="216" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#pd-arr)"/>
+
+                <!-- Promote path -->
+                <rect x="600" y="85" width="130" height="55" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="665" y="108" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Promote</text>
+                <text x="665" y="122" text-anchor="middle" fill="#71717a" font-size="9">weight → 100%</text>
+                <text x="665" y="134" text-anchor="middle" fill="#71717a" font-size="8">stable = v2</text>
+
+                <!-- Rollback path -->
+                <rect x="600" y="210" width="130" height="55" rx="6" fill="#16161f" stroke="#ef4444"/>
+                <text x="665" y="233" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Rollback</text>
+                <text x="665" y="248" text-anchor="middle" fill="#71717a" font-size="9">weight → 0%</text>
+                <text x="665" y="260" text-anchor="middle" fill="#71717a" font-size="8">stable stays v1</text>
+
+                <!-- Controller to promote/rollback -->
+                <line x1="540" y1="240" x2="596" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#pd-arr)"/>
+                <line x1="540" y1="255" x2="596" y2="252" stroke="#ef4444" stroke-width="1.5" marker-end="url(#pd-arr-red)"/>
+
+                <!-- Labels -->
+                <text x="555" y="195" text-anchor="middle" fill="#00d4aa" font-size="9">metrics OK</text>
+                <text x="565" y="275" text-anchor="middle" fill="#ef4444" font-size="9">threshold breach</text>
+
+                <text x="390" y="330" text-anchor="middle" fill="#71717a" font-size="9">Progressive delivery: traffic shifts from stable to canary as Prometheus analysis accumulates confidence</text>
+              </svg>
+            </div>
+          </div>
+
+          <h2 id="argo-rollouts">Argo Rollouts Canary Strategy</h2>
+          <p>Argo Rollouts replaces the <code>Deployment</code> resource with a <code>Rollout</code> CRD. The Rollout defines the canary strategy: the step weights, the pause durations, the analysis template references, and the traffic routing integration. When ArgoCD syncs a new image tag to the Rollout, the controller executes the steps in sequence.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payments-api-rollout.yaml &mdash; Argo Rollouts canary strategy</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">argoproj.io/v1alpha1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">Rollout</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments-api</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">payments</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">replicas</span>: <span class="tok-n">6</span>
+  <span class="tok-k">selector</span>:
+    <span class="tok-k">matchLabels</span>:
+      <span class="tok-k">app</span>: <span class="tok-s">payments-api</span>
+  <span class="tok-k">template</span>:
+    <span class="tok-k">metadata</span>:
+      <span class="tok-k">labels</span>:
+        <span class="tok-k">app</span>: <span class="tok-s">payments-api</span>
+    <span class="tok-k">spec</span>:
+      <span class="tok-k">containers</span>:
+        - <span class="tok-k">name</span>: <span class="tok-s">payments-api</span>
+          <span class="tok-k">image</span>: <span class="tok-s">registry.saib.com/payments/payments-api:$(IMAGE_TAG)</span>
+  <span class="tok-k">strategy</span>:
+    <span class="tok-k">canary</span>:
+      <span class="tok-c"># Traffic routing via Istio VirtualService + DestinationRule</span>
+      <span class="tok-k">trafficRouting</span>:
+        <span class="tok-k">istio</span>:
+          <span class="tok-k">virtualService</span>:
+            <span class="tok-k">name</span>: <span class="tok-s">payments-api-vs</span>
+          <span class="tok-k">destinationRule</span>:
+            <span class="tok-k">name</span>: <span class="tok-s">payments-api-dr</span>
+            <span class="tok-k">canarySubsetName</span>: <span class="tok-s">canary</span>
+            <span class="tok-k">stableSubsetName</span>: <span class="tok-s">stable</span>
+      <span class="tok-c"># Analysis runs throughout canary steps</span>
+      <span class="tok-k">analysis</span>:
+        <span class="tok-k">startingStep</span>: <span class="tok-n">2</span>            <span class="tok-c"># start analysis after first weight step</span>
+        <span class="tok-k">templates</span>:
+          - <span class="tok-k">templateName</span>: <span class="tok-s">payments-api-canary-analysis</span>
+        <span class="tok-k">args</span>:
+          - <span class="tok-k">name</span>: <span class="tok-s">canary-hash</span>
+            <span class="tok-k">valueFrom</span>:
+              <span class="tok-k">podTemplateHashValue</span>: <span class="tok-s">Latest</span>
+      <span class="tok-k">steps</span>:
+        - <span class="tok-k">setWeight</span>: <span class="tok-n">5</span>              <span class="tok-c"># 5% to canary; wait 3 min</span>
+        - <span class="tok-k">pause</span>: {<span class="tok-k">duration</span>: <span class="tok-s">3m</span>}
+        - <span class="tok-k">setWeight</span>: <span class="tok-n">20</span>             <span class="tok-c"># 20%; analysis starts here</span>
+        - <span class="tok-k">pause</span>: {<span class="tok-k">duration</span>: <span class="tok-s">5m</span>}
+        - <span class="tok-k">setWeight</span>: <span class="tok-n">50</span>             <span class="tok-c"># 50%; manual gate for major releases</span>
+        - <span class="tok-k">pause</span>: {}                 <span class="tok-c"># indefinite pause; requires `argo rollouts promote`</span>
+        - <span class="tok-k">setWeight</span>: <span class="tok-n">80</span>
+        - <span class="tok-k">pause</span>: {<span class="tok-k">duration</span>: <span class="tok-s">5m</span>}
+</code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">The indefinite pause at 50% is the change advisory gate</div>
+            <p>The <code>pause: {}</code> step without a duration holds the rollout until a human promotes it with <code>argo rollouts promote payments-api</code>. This maps directly to the &ldquo;go/no-go&rdquo; decision point in SAMA TRM change management. The first two automated steps (5% and 20%) give operations a 3&ndash;5 minute window to observe behaviour before the major exposure occurs; the manual gate at 50% is where the change manager signs off. Wire the promote command to your ITSM approval workflow so that the ITSM ticket closure triggers the promote rather than a manual kubectl command.</p>
+          </div>
+
+          <p>The corresponding Istio resources for traffic routing. Argo Rollouts will update the <code>weights</code> field in the VirtualService as the canary progresses:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payments-api-vs.yaml &mdash; Istio VirtualService for canary routing</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">networking.istio.io/v1beta1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">VirtualService</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments-api-vs</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">payments</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">hosts</span>:
+    - <span class="tok-s">payments-api</span>
+  <span class="tok-k">http</span>:
+    - <span class="tok-k">name</span>: <span class="tok-s">primary</span>
+      <span class="tok-k">route</span>:
+        - <span class="tok-k">destination</span>:
+            <span class="tok-k">host</span>: <span class="tok-s">payments-api</span>
+            <span class="tok-k">subset</span>: <span class="tok-s">stable</span>
+          <span class="tok-k">weight</span>: <span class="tok-n">100</span>       <span class="tok-c"># Argo Rollouts controller overwrites this during canary</span>
+        - <span class="tok-k">destination</span>:
+            <span class="tok-k">host</span>: <span class="tok-s">payments-api</span>
+            <span class="tok-k">subset</span>: <span class="tok-s">canary</span>
+          <span class="tok-k">weight</span>: <span class="tok-n">0</span>
+<span class="tok-c">---</span>
+<span class="tok-k">apiVersion</span>: <span class="tok-s">networking.istio.io/v1beta1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">DestinationRule</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments-api-dr</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">payments</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">host</span>: <span class="tok-s">payments-api</span>
+  <span class="tok-k">subsets</span>:
+    - <span class="tok-k">name</span>: <span class="tok-s">stable</span>
+      <span class="tok-k">labels</span>:
+        <span class="tok-k">rollouts-pod-template-hash</span>: <span class="tok-s">"stable-hash"</span>   <span class="tok-c"># managed by Argo Rollouts</span>
+    - <span class="tok-k">name</span>: <span class="tok-s">canary</span>
+      <span class="tok-k">labels</span>:
+        <span class="tok-k">rollouts-pod-template-hash</span>: <span class="tok-s">"canary-hash"</span>   <span class="tok-c"># managed by Argo Rollouts</span>
+</code></pre>
+          </div>
+
+          <h2 id="analysis-templates">Metric-Gated Analysis</h2>
+          <p>The <code>AnalysisTemplate</code> defines the success criteria for canary promotion. Each metric query runs at a configurable interval; if the metric returns a value outside the threshold for a consecutive failure count, the analysis fails and the rollout is aborted. The template below queries Prometheus for three signals: HTTP error rate, p99 latency, and payment success rate. The third metric is the critical one for a payment service &mdash; a canary that technically has a low HTTP error rate but is failing more ISO 20022 payment validations than the stable version is a regression that a purely infrastructure-level analysis would miss.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payments-api-canary-analysis.yaml &mdash; AnalysisTemplate</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">argoproj.io/v1alpha1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">AnalysisTemplate</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments-api-canary-analysis</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">payments</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">args</span>:
+    - <span class="tok-k">name</span>: <span class="tok-s">canary-hash</span>
+  <span class="tok-k">metrics</span>:
+    <span class="tok-c"># Metric 1: HTTP error rate must stay below 1%</span>
+    - <span class="tok-k">name</span>: <span class="tok-s">http-error-rate</span>
+      <span class="tok-k">interval</span>: <span class="tok-s">60s</span>
+      <span class="tok-k">failureLimit</span>: <span class="tok-n">3</span>           <span class="tok-c"># fail after 3 consecutive failed intervals</span>
+      <span class="tok-k">successCondition</span>: <span class="tok-s">result[0] &lt; 0.01</span>
+      <span class="tok-k">failureCondition</span>: <span class="tok-s">result[0] &gt;= 0.05</span>  <span class="tok-c"># immediate abort at 5%</span>
+      <span class="tok-k">provider</span>:
+        <span class="tok-k">prometheus</span>:
+          <span class="tok-k">address</span>: <span class="tok-s">http://prometheus.monitoring.svc.cluster.local:9090</span>
+          <span class="tok-k">query</span>: |
+            sum(rate(http_requests_total{
+              job="payments-api",
+              rollouts_pod_template_hash="{{args.canary-hash}}",
+              status=~"5.."
+            }[5m]))
+            /
+            sum(rate(http_requests_total{
+              job="payments-api",
+              rollouts_pod_template_hash="{{args.canary-hash}}"
+            }[5m]))
+    <span class="tok-c"># Metric 2: p99 latency must stay below 800ms</span>
+    - <span class="tok-k">name</span>: <span class="tok-s">p99-latency</span>
+      <span class="tok-k">interval</span>: <span class="tok-s">60s</span>
+      <span class="tok-k">failureLimit</span>: <span class="tok-n">2</span>
+      <span class="tok-k">successCondition</span>: <span class="tok-s">result[0] &lt; 0.8</span>  <span class="tok-c"># seconds</span>
+      <span class="tok-k">provider</span>:
+        <span class="tok-k">prometheus</span>:
+          <span class="tok-k">address</span>: <span class="tok-s">http://prometheus.monitoring.svc.cluster.local:9090</span>
+          <span class="tok-k">query</span>: |
+            histogram_quantile(0.99, sum by (le) (
+              rate(http_request_duration_seconds_bucket{
+                job="payments-api",
+                rollouts_pod_template_hash="{{args.canary-hash}}"
+              }[5m])
+            ))
+    <span class="tok-c"># Metric 3: business KPI — payment success rate must be >= 99.5%</span>
+    - <span class="tok-k">name</span>: <span class="tok-s">payment-success-rate</span>
+      <span class="tok-k">interval</span>: <span class="tok-s">120s</span>           <span class="tok-c"># longer interval: business metric needs more data points</span>
+      <span class="tok-k">count</span>: <span class="tok-n">5</span>                 <span class="tok-c"># must pass 5 consecutive intervals</span>
+      <span class="tok-k">failureLimit</span>: <span class="tok-n">1</span>
+      <span class="tok-k">successCondition</span>: <span class="tok-s">result[0] &gt;= 0.995</span>
+      <span class="tok-k">provider</span>:
+        <span class="tok-k">prometheus</span>:
+          <span class="tok-k">address</span>: <span class="tok-s">http://prometheus.monitoring.svc.cluster.local:9090</span>
+          <span class="tok-k">query</span>: |
+            sum(increase(payment_transactions_total{
+              job="payments-api",
+              rollouts_pod_template_hash="{{args.canary-hash}}",
+              outcome="success"
+            }[5m]))
+            /
+            sum(increase(payment_transactions_total{
+              job="payments-api",
+              rollouts_pod_template_hash="{{args.canary-hash}}"
+            }[5m]))
+</code></pre>
+          </div>
+
+          <p>The <code>payment_transactions_total</code> metric requires that the payments-api service exposes a counter with <code>outcome</code> label (<code>success</code> or <code>failure</code>) and a <code>rollouts_pod_template_hash</code> label that allows Prometheus to distinguish canary pods from stable pods. In a Spring Boot 3.x application, use Micrometer to expose this counter with a tag that reads the pod template hash from an environment variable injected by the Rollout controller:</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Low-traffic canaries need a minimum request count guard</div>
+            <p>A canary analysis interval that runs against a pod receiving 5% of traffic will have far fewer data points than the same interval against the stable version. A 5% canary serving 10 payment transactions per minute means 2&ndash;3 transactions per analysis interval &mdash; statistically meaningless. Add a <code>successCondition</code> that guards on the denominator: <code>result[0] &gt;= 0.995 and result[1] &gt; 20</code> where result[1] is the transaction count. Without this guard, a canary that serves zero traffic in an interval will show 100% success rate and promote without evidence.</p>
+          </div>
+
+          <h2 id="flagger">Flagger with Istio</h2>
+          <p>Flagger takes a different approach: you keep your existing Deployment, and Flagger&rsquo;s operator watches it. When the Deployment&rsquo;s pod template changes (a new image, a config change), Flagger creates a <code>-canary</code> Deployment for the new version, progressively shifts traffic from the primary Service to the canary Service using an Istio VirtualService, and promotes (or rolls back) based on the metric thresholds in its Canary CRD.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payments-api-flagger.yaml &mdash; Flagger Canary resource</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">flagger.app/v1beta1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">Canary</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payments-api</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">payments</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">provider</span>: <span class="tok-s">istio</span>
+  <span class="tok-k">targetRef</span>:
+    <span class="tok-k">apiVersion</span>: <span class="tok-s">apps/v1</span>
+    <span class="tok-k">kind</span>: <span class="tok-s">Deployment</span>
+    <span class="tok-k">name</span>: <span class="tok-s">payments-api</span>
+  <span class="tok-k">service</span>:
+    <span class="tok-k">port</span>: <span class="tok-n">8080</span>
+    <span class="tok-k">targetPort</span>: <span class="tok-n">8080</span>
+    <span class="tok-k">gateways</span>:
+      - <span class="tok-s">payments/payments-gateway</span>
+    <span class="tok-k">hosts</span>:
+      - <span class="tok-s">payments-api.payments.svc.cluster.local</span>
+  <span class="tok-k">analysis</span>:
+    <span class="tok-k">interval</span>: <span class="tok-s">2m</span>
+    <span class="tok-k">threshold</span>: <span class="tok-n">5</span>               <span class="tok-c"># abort after 5 failed metric checks</span>
+    <span class="tok-k">maxWeight</span>: <span class="tok-n">50</span>              <span class="tok-c"># cap canary at 50% before manual gate</span>
+    <span class="tok-k">stepWeight</span>: <span class="tok-n">10</span>             <span class="tok-c"># increment by 10% per interval</span>
+    <span class="tok-k">metrics</span>:
+      - <span class="tok-k">name</span>: <span class="tok-s">request-success-rate</span>
+        <span class="tok-k">thresholdRange</span>:
+          <span class="tok-k">min</span>: <span class="tok-n">99</span>             <span class="tok-c"># percent; Flagger uses Istio telemetry by default</span>
+        <span class="tok-k">interval</span>: <span class="tok-s">1m</span>
+      - <span class="tok-k">name</span>: <span class="tok-s">request-duration</span>
+        <span class="tok-k">thresholdRange</span>:
+          <span class="tok-k">max</span>: <span class="tok-n">800</span>            <span class="tok-c"># milliseconds; Flagger reads from Istio histograms</span>
+        <span class="tok-k">interval</span>: <span class="tok-s">1m</span>
+      - <span class="tok-k">name</span>: <span class="tok-s">payment-success-rate</span>  <span class="tok-c"># custom metric from Prometheus</span>
+        <span class="tok-k">templateRef</span>:
+          <span class="tok-k">name</span>: <span class="tok-s">payment-success-rate</span>
+          <span class="tok-k">namespace</span>: <span class="tok-s">flagger-system</span>
+        <span class="tok-k">thresholdRange</span>:
+          <span class="tok-k">min</span>: <span class="tok-n">99.5</span>
+        <span class="tok-k">interval</span>: <span class="tok-s">2m</span>
+    <span class="tok-k">webhooks</span>:
+      - <span class="tok-k">name</span>: <span class="tok-s">acceptance-test</span>    <span class="tok-c"># smoke tests run before first traffic step</span>
+        <span class="tok-k">type</span>: <span class="tok-s">pre-rollout</span>
+        <span class="tok-k">url</span>: <span class="tok-s">http://smoke-runner.payments/test/payments-api</span>
+      - <span class="tok-k">name</span>: <span class="tok-s">itsm-gate</span>          <span class="tok-c"># ITSM approval required at 50%</span>
+        <span class="tok-k">type</span>: <span class="tok-s">confirm-rollout</span>    <span class="tok-c"># Flagger pauses and calls this URL for go/no-go</span>
+        <span class="tok-k">url</span>: <span class="tok-s">http://itsm-bridge.ops/flagger/gate/payments-api</span>
+</code></pre>
+          </div>
+
+          <p>The <code>confirm-rollout</code> webhook is the bridge between Flagger&rsquo;s automated progression and your ITSM change management workflow. Flagger calls the webhook URL with a JSON body describing the canary state; the ITSM bridge service returns 200 only when the ITSM ticket attached to this deployment has been approved by the change manager. The ITSM ticket is opened automatically at the start of the rollout (via the <code>pre-rollout</code> webhook) with the canary metrics snapshot attached. The change manager reviews actual production metrics, not a hypothetical risk assessment, before approving.</p>
+
+          <h2 id="feature-flags">Feature Flags: Unleash and OpenFeature</h2>
+          <p>Feature flags decouple deployment from release. A new version of a payment service can be deployed to 100% of traffic while the new payment flow it contains is toggled off for all users. The toggle is flipped when the business decides the feature is ready &mdash; not when the next deployment slot becomes available. For a regulated bank this is valuable: it separates the SAMA TRM change management window (required for every deployment) from the product release decision (which happens on business timing).</p>
+          <p>The <strong>OpenFeature</strong> specification (CNCF incubating project) provides a vendor-neutral SDK that wraps any feature flag backend. Unleash is the open-source backend: self-hosted, with role-based access control for flag management and a full audit log of flag changes. The combination gives you flagging capability that is both auditable and not locked to a SaaS vendor &mdash; an important consideration for a bank with data residency requirements.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentFeatureConfig.java &mdash; OpenFeature SDK with Unleash provider</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">package</span> info.saib.payments.config;
+
+<span class="tok-k">import</span> dev.openfeature.sdk.OpenFeatureAPI;
+<span class="tok-k">import</span> dev.openfeature.contrib.providers.unleash.UnleashProvider;
+<span class="tok-k">import</span> io.getunleash.UnleashContext;
+<span class="tok-k">import</span> io.getunleash.strategy.Strategy;
+
+<span class="tok-k">@Configuration</span>
+<span class="tok-t">public class</span> <span class="tok-n">PaymentFeatureConfig</span> {
+
+    <span class="tok-k">@Value</span>(<span class="tok-s">"${unleash.api-url}"</span>)
+    <span class="tok-t">private</span> <span class="tok-n">String</span> unleashApiUrl;
+
+    <span class="tok-k">@Value</span>(<span class="tok-s">"${unleash.api-token}"</span>)
+    <span class="tok-t">private</span> <span class="tok-n">String</span> unleashApiToken;
+
+    <span class="tok-k">@Bean</span>
+    <span class="tok-t">public</span> <span class="tok-n">OpenFeatureAPI</span> <span class="tok-n">openFeatureAPI</span>() {
+        <span class="tok-t">var</span> config = <span class="tok-t">new</span> <span class="tok-n">UnleashConfig</span>.Builder()
+            .unleashAPI(unleashApiUrl)
+            .apiKey(unleashApiToken)
+            .appName(<span class="tok-s">"payments-api"</span>)
+            .instanceId(<span class="tok-n">System</span>.getenv(<span class="tok-s">"POD_NAME"</span>))    <span class="tok-c">// k8s pod name for per-instance context</span>
+            .environment(<span class="tok-n">System</span>.getenv(<span class="tok-s">"APP_ENV"</span>))    <span class="tok-c">// prod | staging | uat</span>
+            .build();
+        <span class="tok-t">var</span> provider = <span class="tok-t">new</span> <span class="tok-n">UnleashProvider</span>(config);
+        <span class="tok-t">var</span> api = <span class="tok-n">OpenFeatureAPI</span>.getInstance();
+        api.setProvider(provider);
+        <span class="tok-k">return</span> api;
+    }
+}
+
+<span class="tok-c">// Usage in payment service — flag check at the business logic boundary</span>
+<span class="tok-k">@Service</span>
+<span class="tok-t">public class</span> <span class="tok-n">PaymentRoutingService</span> {
+
+    <span class="tok-t">private final</span> <span class="tok-n">Client</span> featureClient;
+
+    <span class="tok-t">public</span> <span class="tok-n">PaymentRoutingService</span>(<span class="tok-n">OpenFeatureAPI</span> api) {
+        <span class="tok-k">this</span>.featureClient = api.getClient(<span class="tok-s">"payments-api"</span>);
+    }
+
+    <span class="tok-t">public</span> <span class="tok-n">PaymentRoute</span> <span class="tok-n">routePayment</span>(<span class="tok-n">PaymentRequest</span> request) {
+        <span class="tok-c">// Context carries bank identifier; Unleash strategy can target by bankId</span>
+        <span class="tok-t">var</span> ctx = <span class="tok-n">EvaluationContext</span>.builder()
+            .targetingKey(request.getBankId())
+            .build();
+        <span class="tok-t">boolean</span> useIso20022v2 = featureClient.getBooleanValue(
+            <span class="tok-s">"iso20022-v2-payment-routing"</span>, <span class="tok-n">false</span>, ctx
+        );
+        <span class="tok-k">return</span> useIso20022v2
+            ? routeViaIso20022V2(request)
+            : routeViaLegacy(request);
+    }
+}</code></pre>
+          </div>
+
+          <p>The Unleash feature flag <code>iso20022-v2-payment-routing</code> can be targeted at specific bank IDs (or user segments, or percentage rollouts) without touching the deployment. When the product team is ready to roll out ISO 20022 v2 routing to all banks, they flip the flag from the Unleash console &mdash; no deployment required, no change advisory board, and every flag change is timestamped and attributed in the Unleash audit log.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Stale flags are technical debt with a compliance dimension</div>
+            <p>A feature flag that has been fully enabled for six months and is never queried in the <code>false</code> branch is dead code wrapped in an SDK call. More importantly, in a regulated environment it is an unmarked code path that auditors may ask about. Set a flag expiry policy in Unleash: flags older than 90 days with no recent variant switches trigger a review notification. Dead flags should be removed in the next sprint with a corresponding code cleanup, not left as a permanent toggle that obscures the actual code path.</p>
+          </div>
+
+          <h2 id="sama-alignment">SAMA TRM Alignment</h2>
+          <p>SAMA&rsquo;s Technology Risk Management framework (2017, updated 2022) requires that technology changes follow a structured change management process covering risk assessment, testing evidence, rollback capability, and post-implementation review. Progressive delivery aligns with each of these requirements &mdash; but the alignment must be made explicit in your change management documentation, not assumed.</p>
+
+          <table>
+            <thead>
+              <tr><th>SAMA TRM Requirement</th><th>Progressive Delivery Implementation</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Risk assessment before change</td><td>Rollout strategy document describes step weights, analysis metrics and thresholds, manual gate position, and automatic rollback trigger conditions. Attached to the ITSM change ticket as a PDF.</td></tr>
+              <tr><td>Testing evidence</td><td>Pre-rollout smoke test webhook result, plus canary analysis run record (Argo Rollouts AnalysisRun or Flagger Canary event history) attached to the post-implementation review ticket.</td></tr>
+              <tr><td>Rollback capability verified</td><td>Automated rollback demonstrated in the change plan: the Prometheus metric threshold that would trigger rollback, the rollback time (seconds for traffic reset), and the rollback test result from the most recent DR exercise.</td></tr>
+              <tr><td>Post-implementation review</td><td>Argo Rollouts <code>rollout status</code> history or Flagger Canary events provide a complete record: when each step completed, which metrics were evaluated, what values were observed, and when promotion occurred. Export to ITSM ticket at promotion completion.</td></tr>
+              <tr><td>Segregation of duties</td><td>The ITSM-gated pause at 50% ensures the deployment engineer and the change manager are two different people. The promote command requires a separate ITSM approval action, not just a code push.</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Progressive delivery does not replace change management &mdash; it makes it verifiable</div>
+            <p>A canary rollout that runs fully automated from 0% to 100% without a human gate satisfies the technical risk management objective but fails the SAMA segregation of duties requirement for significant changes to production payment systems. For any change classified as significant (new payment flow, changes to IPS or BUNA connectivity, modifications to SAMA Open Banking API flows), retain the manual gate at 50% and wire it to ITSM approval. Reserve fully automated rollouts for low-risk changes (dependency updates, non-payment-path features, internal tooling). Document the classification criteria in your change management policy.</p>
+          </div>
+
+          <h2 id="rollback">Rollback Automation</h2>
+          <p>Rollback in Argo Rollouts is a traffic weight reset: the controller sets the canary VirtualService weight to 0%, scales down the canary ReplicaSet, and marks the Rollout as <code>Degraded</code>. The stable version continues serving 100% of traffic without any pod restarts &mdash; it was never removed from the pool. This is the fundamental advantage over a standard rolling update rollback, which requires a new pod bring-up. The rollback time is bounded by the time for the VirtualService update to propagate through Istio &mdash; typically under 5 seconds on a well-configured mesh.</p>
+
+          <ol class="step-list">
+            <li>Argo Rollouts AnalysisRun detects that the <code>payment-success-rate</code> metric has returned below threshold for <code>failureLimit</code> consecutive intervals. The AnalysisRun is marked <code>Failed</code>.</li>
+            <li>The Rollout controller reads the failed AnalysisRun result and aborts the rollout. It patches the Istio VirtualService: <code>stable.weight: 100</code>, <code>canary.weight: 0</code>. Istio envoy sidecars pick up the new VirtualService within 2&ndash;5 seconds.</li>
+            <li>The canary ReplicaSet is scaled to zero over the next 30 seconds. The stable ReplicaSet continues unchanged. No pods in the stable path are restarted.</li>
+            <li>The Rollout is marked <code>Degraded</code>. An alert fires to the on-call team via Alertmanager with the AnalysisRun detail: which metric failed, the threshold value, the observed value, and a link to the Grafana dashboard showing the canary metric time series.</li>
+            <li>The ITSM change ticket associated with the rollout is automatically transitioned to &ldquo;Rollback Complete&rdquo; by the ITSM bridge webhook. The change record preserves the full canary analysis run history for the post-incident review.</li>
+            <li>The on-call engineer diagnoses the root cause using the Grafana canary dashboard (available even post-rollback because Prometheus retains the metric time series). No production logs are lost; canary pods were not forcibly terminated.</li>
+            <li>A new rollout (with the bug fixed) is opened after the root cause is resolved. The canary analysis provides evidence that the fix resolves the metric regression before promoting again.</li>
+          </ol>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Canary metric latency means analysis lags reality by several minutes</div>
+            <p>Prometheus scrapes at 15-second intervals by default, and the analysis queries use a 5-minute rate window. This means the canary analysis is always observing behaviour from 2&ndash;5 minutes ago, not the current second. A canary that starts failing at T+0 may not trip the analysis until T+5 to T+8 minutes, depending on the <code>failureLimit</code> and interval configuration. For a payment service processing 1,000 transactions per minute, that is up to 8,000 transactions at the canary weight before rollback begins. Size the <code>stepWeight</code> with this lag in mind: a 5% canary weight with a 5-minute analysis window means at most 400 transactions on the canary before rollback &mdash; acceptable. A 20% canary weight with a 5-minute lag means 1,600 transactions before rollback.</p>
+          </div>
+
+          <ul>
+            <li><strong>Sticky sessions break canary analysis.</strong> If your API gateway or load balancer uses session affinity (cookie-based sticky sessions), the &ldquo;5% canary&rdquo; weight applies to new sessions, not to all requests. Existing sessions will stay pinned to their assigned pod version, which may be stable or canary depending on when the session was established. This distorts the canary analysis: the canary metric data is actually from a mix of new sessions (5%) and pre-existing sessions that happened to land on canary pods. Disable session affinity for services that run canary deployments, or use header-based canary routing (a fixed <code>x-canary: true</code> header for a specific test user pool) instead of weighted traffic split.</li>
+            <li><strong>Schema-incompatible changes need blue/green, not canary.</strong> A canary that runs database schema migrations (ALTER TABLE, new index) alongside application changes will leave the stable pods running against a schema they were not tested against. Use blue/green with a maintenance window for any change that alters the database schema visible to the running application. Progressive delivery applies to the application tier; schema changes are a separate concern that requires a different deployment pattern.</li>
+            <li><strong>Unleash flag evaluation latency in the critical payment path.</strong> The Unleash client SDK caches the flag state and refreshes it in the background at a configurable interval (default 15 seconds). A flag toggle in the Unleash console will not propagate to all running pods within the same second. For features that must toggle instantaneously across all pods simultaneously &mdash; an emergency circuit breaker that must disable a payment flow across the entire fleet within 2 seconds &mdash; the Unleash background polling model is too slow. Use an Istio <code>EnvoyFilter</code> for sub-second traffic manipulation in emergency scenarios, and reserve Unleash for business feature toggles that can tolerate a 15&ndash;30 second propagation window.</li>
+            <li><strong>Argo Rollouts and ArgoCD conflict on Deployment ownership.</strong> If you have an existing ArgoCD Application managing a Deployment and you convert it to a Rollout, ArgoCD will still see the Deployment resource (which Argo Rollouts creates alongside the Rollout) as the source of truth and try to sync it back to the spec in Git. Configure the ArgoCD Application to ignore the Deployment that Argo Rollouts creates: add <code>ignoreDifferences</code> for the managed Deployment&rsquo;s <code>spec.replicas</code> and pod template hash fields, and add the Rollout CRD to the Application&rsquo;s tracked resources.</li>
+          </ul>
+
+          <h2 id="checklist">Production Checklist</h2>
+
+          <ol class="step-list">
+            <li>Verify that the application exposes the required Prometheus metrics before the first canary rollout: HTTP error rate with status code label, p99 request duration histogram, and at least one business-level counter (payment transactions with outcome label). Confirm these metrics appear in Prometheus with correct labels before configuring the AnalysisTemplate.</li>
+            <li>Configure the Rollout or Flagger Canary with a conservative first step weight: 5% for payment-critical services, 10% for supporting services. The first step exists to detect gross failures before significant traffic is exposed; reserve larger weights for later steps after analysis has run.</li>
+            <li>Wire the manual gate (indefinite pause or Flagger <code>confirm-rollout</code> webhook) to your ITSM change management workflow for changes classified as significant by your change management policy. Do not bypass the gate for convenience; it is the segregation-of-duties control that satisfies SAMA TRM.</li>
+            <li>Set <code>failureCondition</code> thresholds for the business KPI metric to trigger immediate abort (not just a failed interval) for values that represent an unacceptable user impact: a payment success rate below 95% should abort immediately, not after 5 consecutive intervals at 94.9%.</li>
+            <li>Deploy Unleash in HA mode on OpenShift with a PostgreSQL backend. Run at least two Unleash proxy instances; the proxy is what the SDK connects to, and a single-instance proxy taking 5 minutes of downtime means all feature flag evaluations fall back to their default values for 5 minutes &mdash; which may be fine for most flags but is a production incident for an emergency circuit breaker flag.</li>
+            <li>Set flag expiry dates in Unleash at creation time for all release flags. A release flag that enabled a new payment flow should expire within 90 days; if the flag is still being evaluated in the default-on path at day 91, it should trigger a review notification and a Jira ticket to remove it from the code.</li>
+            <li>Document the rollback procedure in the ITSM change template: &ldquo;Automated rollback triggered by Argo Rollouts if Prometheus analysis fails; rollback time &lt;5 seconds. Manual rollback: <code>argo rollouts abort payments-api</code> or flag-off via Unleash console.&rdquo; This is the rollback evidence SAMA TRM requires attached to every significant change ticket.</li>
+            <li>Test the rollback path in the pre-production environment before the first production canary. Deliberately trigger a threshold breach (inject synthetic errors via a Chaos Monkey or a test flag that increments the error counter), confirm the AnalysisRun fails, confirm the traffic resets to 100% stable within the expected window, and confirm the ITSM ticket is transitioned by the bridge webhook.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="multi-cluster-gitops.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Multi-Cluster GitOps</div>
+            </a>
+            <a href="../devops.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">DevOps &amp; Platform &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

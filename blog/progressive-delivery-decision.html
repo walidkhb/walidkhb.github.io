@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progressive Delivery: The Release Strategy Decision That Separates Platform Builders from Project Runners &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Most KSA banks still deploy in binary steps &mdash; zero to one hundred percent in a single change window. Progressive delivery changes the risk model. The question for leadership is not whether canary deployments are technically possible, but whether the organisation is structured to act on what they reveal.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/progressive-delivery-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Progressive Delivery Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Progressive Delivery: The Release Strategy Decision That Separates Platform Builders from Project Runners &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Canary deployments change the risk model for production releases at a regulated bank. The decision is not technical &mdash; it is about who owns the promotion gate and how the organisation acts on automated rollback signals.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/progressive-delivery-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Progressive Delivery: The Release Strategy Decision That Separates Platform Builders from Project Runners">
+  <meta name="twitter:description" content="Canary deployments change the risk model for production releases. The decision is not technical &mdash; it is about who owns the promotion gate and what the organisation does when automated rollback fires.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Progressive Delivery: The Release Strategy Decision That Separates Platform Builders from Project Runners",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-19",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/progressive-delivery-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>Progressive Delivery</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; September 19, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">Progressive Delivery: The Release Strategy Decision That Separates Platform Builders from Project Runners</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>At most KSA banks I have observed, a production deployment still looks like this: the change advisory board approves a maintenance window, the deployment engineer promotes a build in the ITSM ticket, someone runs through a verification checklist, and the service goes from 0% to 100% of traffic in a single step. If it works, the ticket is closed. If it does not work, the rollback is manual, it takes another change window, and the incident report attributes the failure to &ldquo;insufficient testing in the lower environment.&rdquo;</p>
+
+        <p>The failure mode is not that the testing was insufficient. The failure mode is that the risk model is wrong. A lower environment that matches production in infrastructure but not in traffic patterns, not in data volume, and not in the combination of concurrent user behaviours that only manifests at scale will always miss some failures. Production is the only environment that looks like production. The question is not how to make the lower environment a better proxy for production &mdash; it never will be fully &mdash; but how to expose production failures before they affect the entire user population.</p>
+
+        <p>Progressive delivery &mdash; canary deployments, feature flags, metric-gated promotion &mdash; is the answer to that question. But adopting it requires a leadership decision, not a tooling decision. The tooling (Argo Rollouts, Flagger, Unleash) is straightforward. The decision is about the organisation: who owns the promotion gate, what happens when the automated rollback fires at 2am, and whether the change management process can adapt to a deployment model where rollback is measured in seconds rather than change windows.</p>
+
+        <p class="article-section">What the risk model actually looks like</p>
+
+        <p>In a standard canary deployment for a payment API, the new version begins serving 5% of traffic. Automated analysis measures the payment success rate, the HTTP error rate, and the p99 latency every minute. If any of those metrics breach a threshold, the canary is rolled back automatically &mdash; the traffic weight resets to zero in under 5 seconds, before the operations team has finished reading the alert. The maximum impact of a bad deployment is whatever damage can be done at 5% canary weight before the first analysis interval catches it: typically 2&ndash;5 minutes of partial exposure, not the full production blast radius of the traditional deployment model.</p>
+
+        <p>This is not theoretical risk reduction. It is a structural change to the economics of a failed deployment. Under the traditional model, a bad deployment that is caught in post-deployment verification has already affected 100% of users. Under progressive delivery, the same failure is caught at 5% exposure, with an automatic rollback that does not require the on-call engineer to be awake and logged in. The blast radius shrinks by an order of magnitude.</p>
+
+        <blockquote>
+          <p>Progressive delivery does not prevent failures. It constrains their blast radius and automates the response. The decision leadership has to make is whether to invest in the observability infrastructure that makes metric-gated analysis possible, and whether the change management process is flexible enough to accommodate a promotion gate that is partly automated and partly human.</p>
+        </blockquote>
+
+        <p class="article-section">The trade-off leadership has to make explicit</p>
+
+        <p>Progressive delivery introduces a new failure mode that the traditional deployment model does not have: a stuck canary. A canary that is neither promoted nor rolled back &mdash; because the metric analysis is inconclusive, because the traffic volume is too low to collect statistically significant data, or because the manual gate at 50% is waiting on a change manager who is in a meeting &mdash; leaves the production environment in a mixed-version state indefinitely. Two versions of the service are serving traffic simultaneously. Support tickets about inconsistent behaviour are difficult to diagnose when the routing decision that determined which version a user hit is not logged.</p>
+
+        <p>This is a real operational risk, and it requires explicit mitigations: a maximum canary window after which the promotion either succeeds or is automatically aborted, logging of the pod template hash alongside every payment transaction for post-hoc version attribution, and a clear ownership model for the promotion gate. Without those mitigations, the stuck canary is worse than the traditional binary deployment.</p>
+
+        <p>The ownership model is the leadership decision. Someone must be responsible for monitoring the canary during its analysis window, responding to alert escalations when the automated analysis is inconclusive, and making the promotion decision at the manual gate. In a project-delivery organisation, that responsibility falls to whoever is on call &mdash; which means it falls to no one in particular, and the gate is either rushed through (cancelling the risk reduction benefit) or left open indefinitely (creating the stuck-canary risk). In a platform organisation, that responsibility belongs to a platform team with a defined SLA for gate decisions and a runbook for inconclusive analysis.</p>
+
+        <p class="article-section">What SAMA expects</p>
+
+        <p>SAMA&rsquo;s Technology Risk Management framework does not prescribe deployment methodology. It requires that changes be risk-assessed, tested, and reversible. Progressive delivery satisfies all three requirements &mdash; more rigorously than the traditional maintenance-window model. The risk assessment is live: the canary analysis is watching the actual production risk surface in real time, not a pre-deployment estimate. The testing evidence is production data: the AnalysisRun record shows exactly which metrics were measured and what values were observed during the canary window. The rollback capability is verified: the automated rollback was tested in the lower environment before the production canary, and the rollback time is documented as a concrete number, not a change-window estimate.</p>
+
+        <p>The specific alignment that matters for a SAMA examination is the manual gate at 50% canary weight. SAMA TRM requires segregation of duties for significant changes. The manual gate &mdash; wired to an ITSM approval action &mdash; ensures that the person who deployed the change is not the same person who authorised it to reach the majority of production traffic. The change manager reviews actual canary metric data, not a hypothetical risk assessment. When an auditor asks &ldquo;how do you verify that a change is behaving correctly before full rollout?&rdquo;, the answer is a Grafana dashboard showing the canary metric time series during the analysis window, not a verbal assurance.</p>
+
+        <p class="article-section">Feature flags are a separate decision</p>
+
+        <p>Feature flags and canary deployments address different problems and are often conflated. A canary deployment manages the risk of deploying a new version of an application. A feature flag manages the risk of releasing a new capability within an already-deployed version. They are complementary, not equivalent.</p>
+
+        <p>The leadership decision on feature flags is about ownership and discipline. Flags are cheap to create and expensive to maintain. Every flag that is not removed after its feature is fully rolled out is a code path that exists but is not tested, a toggle that could be accidentally flipped, and an audit question that needs an answer (&ldquo;what is this flag controlling in production?&rdquo;). Banks that adopt feature flags without an expiry policy and a flag hygiene process within six months have a flag inventory that is larger and more opaque than their deployment inventory was before. The tool solves a problem and creates a different one.</p>
+
+        <p>The governance that makes feature flags safe in a regulated environment: a flag registry in Unleash that is reviewed quarterly, an expiry date attached to every release flag at creation, a named owner for every flag that controls a regulatory-adjacent feature (payment routing, consent management, SAMA Open Banking flows), and a process for removing flags from code within 30 days of their being fully enabled in production. Without that governance, feature flags are a liability. With it, they are one of the highest-leverage tools available for reducing the cost and risk of releasing in a regulated environment.</p>
+
+        <p class="article-section">What the team needs from leadership to ship it</p>
+
+        <p>Three things, in order of importance:</p>
+
+        <p><strong>Permission to instrument.</strong> Progressive delivery requires that every service on the canary path expose the metrics the analysis needs: HTTP error rate, p99 latency, and a business-level KPI. For a legacy payments service that was built before observability was a team norm, adding those metrics requires a code change and a deployment. That code change will not happen unless the team has explicit permission to treat observability instrumentation as a first-class delivery item, not something to be deferred until &ldquo;we have capacity.&rdquo; The VP has to name it as a priority.</p>
+
+        <p><strong>A change management policy that accommodates automated rollback.</strong> If the current change management policy requires that every production rollback be approved by a change advisory board, an automated rollback that fires at 2am when no one is available to convene a board is non-compliant. The change management team needs to agree in advance that automated rollback triggered by a Prometheus metric threshold is an approved rollback mechanism for services operating under a canary strategy. This is a policy change, not a technical one, and it requires VP-level sponsorship to get through the governance process.</p>
+
+        <p><strong>An explicit on-call model for the promotion gate.</strong> The manual gate at 50% canary weight will fire during business hours, after hours, and on weekends. Someone has to be reachable to make the promotion decision. If the change manager who approved the original deployment is not on call, the gate will either be left open (stuck canary) or bypassed (missing the segregation of duties control). Define who owns the gate, what the response SLA is (30 minutes during business hours, 2 hours after hours), and what the automated fallback is if the gate is not acted on within the SLA window.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind this topic &mdash; Argo Rollouts manifests, Flagger Canary CRDs, AnalysisTemplate Prometheus queries, OpenFeature SDK wiring, SAMA TRM change ticket mapping, and the rollback automation steps that satisfy a SAMA audit &mdash; see the companion Lab article: <a href="../lab/devops/progressive-delivery-flagger-argo-rollouts.html" style="color:var(--color-accent);">Progressive Delivery: Flagger, Argo Rollouts &amp; Feature Flags for Regulated Financial Services</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
