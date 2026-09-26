@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Certificate Lifecycle Debt Every KSA Bank Carries &mdash; And How to Pay It Off &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Manual certificate spreadsheets are a SAMA audit finding waiting to happen. The decision to automate certificate lifecycle with Vault PKI and cert-manager is not technical &mdash; it is about operational accountability and what the bank owes its regulators when a cert expires unexpectedly.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/vault-pki-cert-lifecycle-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Certificate Lifecycle Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="The Certificate Lifecycle Debt Every KSA Bank Carries &mdash; And How to Pay It Off &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Manual cert spreadsheets are a SAMA audit finding waiting to happen. The decision to automate certificate lifecycle is about operational accountability, not tooling.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/vault-pki-cert-lifecycle-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Certificate Lifecycle Debt Every KSA Bank Carries">
+  <meta name="twitter:description" content="Manual cert spreadsheets are a SAMA audit finding waiting to happen. The automation decision is organisational, not technical.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The Certificate Lifecycle Debt Every KSA Bank Carries &mdash; And How to Pay It Off",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-09-26",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/vault-pki-cert-lifecycle-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span>API Security</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">API Security &middot; September 26, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">The Certificate Lifecycle Debt Every KSA Bank Carries &mdash; And How to Pay It Off</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Ask the information security team at any KSA bank how many TLS certificates are currently in production. The honest answer involves opening a spreadsheet. The spreadsheet has a &ldquo;last rotated&rdquo; column that is sometimes blank. It has a notes field where someone wrote &ldquo;check with Ahmed&rdquo; eighteen months ago. It has certificates that expired and were renewed in a panic after an incident, and certificates that expired and were renewed so quietly that no one updated the spreadsheet. It is, in other words, not a reliable source of truth &mdash; and SAMA&rsquo;s cybersecurity auditors know what a spreadsheet-managed PKI looks like.</p>
+
+        <p>This is not primarily a technology problem. The tooling to automate certificate lifecycle &mdash; HashiCorp Vault as the issuing CA, cert-manager as the Kubernetes-native renewal controller &mdash; has been production-ready for years. The problem is organisational: whose job is it to maintain the inventory, who is accountable when a cert expires, and how does the change management process accommodate a rotation that happens automatically at 3am without a change ticket.</p>
+
+        <p class="article-section">What the risk actually looks like</p>
+
+        <p>A TLS certificate expiry that causes a production outage is not a security incident. It is an operational failure &mdash; and that distinction matters to SAMA. An expired server cert on the payment gateway takes the payment channel down entirely. An expired client cert on the partner mTLS connection silently drops all API calls from that partner until someone diagnoses the 502s. An expired cert on an internal microservice-to-microservice connection causes a cascade that looks, from the outside, like a service outage of uncertain cause.</p>
+
+        <p>The business cost is straightforward: downtime during payment-critical hours, SLA breach with partners, and an incident report that has &ldquo;certificate expired&rdquo; in the root cause field. That root cause invites a question from the regulator: &ldquo;what is your certificate management process?&rdquo; The answer &ldquo;we have a spreadsheet and calendar reminders&rdquo; is not what SAMA CSF Domain 3-9 is looking for.</p>
+
+        <blockquote>
+          <p>The operational risk of manual cert management is not that someone will forget &mdash; it is that the organisation has no visibility into how close to expiry any given certificate is until someone looks. A monitoring gap is a compliance gap.</p>
+        </blockquote>
+
+        <p class="article-section">The trade-off leadership has to make</p>
+
+        <p>Automated certificate lifecycle with Vault and cert-manager introduces a dependency: if Vault is unavailable and a cert needs renewal at that moment, the renewal fails. In a bank that runs a highly available Vault cluster (three nodes, Raft storage, auto-unseal with HSM), this risk is low &mdash; but it is not zero, and it is a different failure mode than the one the team is accustomed to. Manual rotation fails because a human forgot. Automated rotation fails because an infrastructure component is unavailable.</p>
+
+        <p>The leadership decision is whether the second failure mode &mdash; controlled, observable, alertable &mdash; is preferable to the first &mdash; unpredictable, human-dependent, and auditable only after the incident. For any bank running more than thirty certificates across its API estate (and most KSA banks running Open Banking are well above that number), the answer is clearly yes. The automation risk is manageable. The manual risk scales with headcount and holiday schedules.</p>
+
+        <p>The harder trade-off is the change management process. SAMA TRM requires that changes to production systems go through a change advisory board. An automatic certificate rotation &mdash; which updates a TLS Secret in Kubernetes without a deployment event, without a change ticket, and at a time determined by cert-manager&rsquo;s renewal schedule rather than by a human &mdash; does not fit neatly into that process. The change management team needs to be engaged before automation goes live, not after. The agreement that &ldquo;cert-manager rotating a TLS Secret is a pre-approved standard change&rdquo; requires VP-level sponsorship to get through the governance process; it is not a decision the engineering team can make unilaterally.</p>
+
+        <p class="article-section">What SAMA auditors will check</p>
+
+        <p>SAMA CSF 3-9-2 requires certificates to be rotated at defined intervals. It does not require automation &mdash; but it does require evidence that the rotation actually happened, on schedule, and that no certificate in scope is expired or nearing expiry without a documented remediation plan. Manual cert management can technically satisfy this requirement if the documentation is rigorous. In practice, it rarely is.</p>
+
+        <p>The audit artefact that automated lifecycle produces is structurally stronger than any spreadsheet: a <code>kubectl get certificates -A -o wide</code> export shows every cert, its expiry, and its renewal status at the moment of export. Vault&rsquo;s audit log shows exactly when each cert was signed, by whom (which AppRole), and with what TTL. The CertificateRequest history in Kubernetes shows the rotation sequence. An auditor asking &ldquo;show me that your payment API cert was rotated in the last 30 days&rdquo; gets a timestamped Vault log entry, not a line in a spreadsheet.</p>
+
+        <p>For external partner certs &mdash; CSF 4-2-3 &mdash; the question is tracking, not control. The bank cannot rotate a partner&rsquo;s client certificate. It can monitor when it expires, alert the partner 30 days in advance, and document what happens if the partner does not respond. That 30-day monitoring gap &mdash; the period between &ldquo;we sent a notification&rdquo; and &ldquo;the cert expires&rdquo; &mdash; is the control SAMA is checking. Prometheus alerting against partner endpoint certificate expiry, wired into a ServiceNow incident workflow, is the evidence trail.</p>
+
+        <p class="article-section">What the team needs from leadership to ship it</p>
+
+        <p>Three things, in order:</p>
+
+        <p><strong>A pre-approved standard change category for cert-manager rotations.</strong> Without this, every automatic cert rotation is technically an unapproved production change. Engineering should prepare the proposal; the CAB signs off; the VP sponsors it through the governance committee. This takes three to four weeks if prioritised; it never happens if it is left to engineering to drive alone.</p>
+
+        <p><strong>Vault HA on the infrastructure roadmap.</strong> cert-manager&rsquo;s dependency on Vault means Vault availability is now on the critical path for API security. A single Vault node is not acceptable. The three-node Raft cluster with auto-unseal via the bank&rsquo;s HSM &mdash; already a best practice &mdash; needs to be on the infrastructure team&rsquo;s Q1 delivery list, not on a future-state architecture diagram.</p>
+
+        <p><strong>An explicit owner for the PKI governance process.</strong> cert-manager automates renewal. It does not automate the decision to add a new certificate, the process for revoking a partner cert on demand, or the quarterly audit review. Someone owns the Vault PKI policy, the partner cert tracking alerts, and the SAMA CSF documentation. That someone is probably in the architecture or security operations team, and they need to know they own it before the automation goes live, not after the first question arrives from the auditor.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering implementation &mdash; Vault PKI engine setup, cert-manager ClusterIssuer manifests, Certificate CRD configuration, zero-restart rotation patterns, RFC 8705 cert-bound token wiring, Prometheus expiry alerting, and the full SAMA CSF control mapping &mdash; see the companion Lab article: <a href="../lab/api-security/vault-pki-and-cert-manager.html" style="color:var(--color-accent);">API Security: Vault PKI &amp; cert-manager &mdash; Zero-Touch Certificate Lifecycle</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
