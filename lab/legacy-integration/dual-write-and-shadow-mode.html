@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legacy Integration: Dual-Write &amp; Shadow Mode &mdash; Zero-Risk Database Migration &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="How to migrate a production database without downtime or data risk: dual-write patterns, shadow read validation, Kafka CDC migration bus, traffic shifting, and the exact cutover sequence for a KSA bank migrating from DB2 to PostgreSQL.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Legacy Integration: Dual-Write &amp; Shadow Mode &mdash; Zero-Risk Database Migration &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Dual-write, shadow reads, and traffic shifting for zero-risk database migration at a regulated bank. DB2-to-PostgreSQL, Kafka CDC bus, SAMA audit continuity, and the exact cutover sequence.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/legacy-integration/dual-write-and-shadow-mode.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dual-Write &amp; Shadow Mode: Zero-Risk Database Migration">
+  <meta name="twitter:description" content="DB2-to-PostgreSQL zero-risk migration: dual-write, shadow reads, Kafka CDC, traffic shifting, and cutover at a KSA bank.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration/dual-write-and-shadow-mode.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Legacy Integration: Dual-Write & Shadow Mode — Zero-Risk Database Migration",
+    "description": "How to migrate a production database without downtime or data risk: dual-write patterns, shadow read validation, Kafka CDC migration bus, traffic shifting, and the exact cutover sequence for a KSA bank migrating from DB2 to PostgreSQL.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-10-03",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/legacy-integration/dual-write-and-shadow-mode.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Legacy Integration &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/legacy-integration.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../legacy-integration.html">Legacy Integration</a><span>/</span>Dual-Write &amp; Shadow Mode</div>
+          <span class="overline">Lab Article</span>
+          <h1>Dual-Write &amp; Shadow Mode: Zero-Risk Database Migration</h1>
+          <p class="lead">Big-bang database cutovers fail at a rate that should terrify anyone running payment systems. The alternative &mdash; dual-write to both old and new databases simultaneously, shadow reads to validate results without serving them, Kafka as the migration synchronisation bus &mdash; adds operational complexity but removes the one failure mode you cannot recover from at 2am: realising the data in the new database is wrong after you have already switched traffic.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#why-migrations-fail">Why migrations fail</a></li>
+            <li><a href="#migration-approaches">Migration approach trade-offs</a></li>
+            <li><a href="#dual-write-pattern">Dual-write pattern</a></li>
+            <li><a href="#shadow-reads">Shadow reads &amp; validation</a></li>
+            <li><a href="#kafka-migration-bus">Kafka as migration bus</a></li>
+            <li><a href="#schema-evolution">Schema evolution rules</a></li>
+            <li><a href="#traffic-shifting">Traffic shifting</a></li>
+            <li><a href="#cutover-execution">Cutover execution</a></li>
+            <li><a href="#sama-audit-trail">SAMA audit continuity</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM DB2 z/OS 12 &middot; PostgreSQL 16 &middot; Kafka 3.7 &middot; Debezium 2.6 &middot; Spring Boot 3.3 &middot; OpenShift 4.15</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="why-migrations-fail">Why Database Migrations Fail in Production</h2>
+          <p>The failure mode is always the same: a team spends months migrating data from the old database to the new one, runs reconciliation queries that look clean in staging, schedules a maintenance window, cuts over &mdash; and discovers within hours that production data was different from what they tested. The customer data was modified between the last staging refresh and go-live. The stored procedures had undocumented side effects on audit tables. The ETL job that everyone forgot about was writing directly to the old schema and now has nowhere to go.</p>
+          <p>At a KSA bank, the stakes are higher than at a startup. SAMA expects continuous availability of payment channels. The PDPL requires audit trail continuity &mdash; you cannot have a gap in transaction records because your migration tool missed a schema-mapped column. Core banking data is a regulatory asset, not just application state. A two-hour maintenance window to cut over the accounts table is an operational incident, not an upgrade procedure.</p>
+          <p>The root cause is treating database migration as a one-time operation. It is not. It is a <strong>state synchronisation problem</strong> &mdash; keeping two databases consistent while the world keeps writing to both, for long enough to be confident the new one is correct, and then ending that synchronisation by making the new one primary. Every technique in this article is a consequence of that framing.</p>
+
+          <div class="diagram" role="img" aria-label="Dual-write and shadow read migration architecture: application writes to both legacy DB2 and new PostgreSQL simultaneously; shadow reads compare results; traffic shifting meter moves from 0 to 100 percent against new database">
+            <div class="diagram__inner">
+              <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="dw-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="dw-arr-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="dw-arr-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                  <marker id="dw-arr-y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Application layer -->
+                <rect x="10" y="130" width="130" height="60" rx="6" fill="#1c1c28" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="75" y="155" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Application</text>
+                <text x="75" y="169" text-anchor="middle" fill="#71717a" font-size="8">Spring Boot 3.3</text>
+                <text x="75" y="182" text-anchor="middle" fill="#71717a" font-size="8">DualWriteRepository</text>
+
+                <!-- Dual-write hub -->
+                <rect x="195" y="120" width="150" height="80" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="2"/>
+                <text x="270" y="145" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Dual-Write Hub</text>
+                <text x="270" y="160" text-anchor="middle" fill="#71717a" font-size="8">write both, read primary</text>
+                <text x="270" y="173" text-anchor="middle" fill="#71717a" font-size="8">async secondary write</text>
+                <text x="270" y="186" text-anchor="middle" fill="#71717a" font-size="8">error isolation per store</text>
+
+                <line x1="140" y1="160" x2="193" y2="160" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#dw-arr-b)"/>
+
+                <!-- DB2 legacy -->
+                <rect x="415" y="50" width="150" height="80" rx="6" fill="#1c1c28" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="490" y="75" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">DB2 z/OS 12</text>
+                <text x="490" y="90" text-anchor="middle" fill="#71717a" font-size="8">Primary (Phase 1&ndash;3)</text>
+                <text x="490" y="103" text-anchor="middle" fill="#71717a" font-size="8">Reads served from here</text>
+                <text x="490" y="116" text-anchor="middle" fill="#71717a" font-size="8">Write #1 (synchronous)</text>
+
+                <!-- PostgreSQL new -->
+                <rect x="415" y="200" width="150" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="490" y="225" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">PostgreSQL 16</text>
+                <text x="490" y="240" text-anchor="middle" fill="#71717a" font-size="8">New datastore</text>
+                <text x="490" y="253" text-anchor="middle" fill="#71717a" font-size="8">Shadow reads only (P1&ndash;2)</text>
+                <text x="490" y="266" text-anchor="middle" fill="#71717a" font-size="8">Write #2 (async)</text>
+
+                <!-- Arrows to both DBs -->
+                <line x1="345" y1="148" x2="413" y2="100" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#dw-arr-y)"/>
+                <line x1="345" y1="172" x2="413" y2="230" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#dw-arr-p)"/>
+
+                <!-- Kafka bus -->
+                <rect x="195" y="290" width="370" height="55" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1"/>
+                <text x="380" y="313" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Kafka 3.7 &mdash; Migration Bus</text>
+                <text x="380" y="328" text-anchor="middle" fill="#71717a" font-size="8">topic: migration.accounts.cdc &middot; Debezium source → reconciler → PG sink</text>
+
+                <!-- Arrow from DB2 to Kafka -->
+                <line x1="490" y1="130" x2="490" y2="268" stroke="#71717a" stroke-width="1" stroke-dasharray="4,2"/>
+                <line x1="490" y1="280" x2="400" y2="288" stroke="#4a9eff" stroke-width="1" marker-end="url(#dw-arr-b)"/>
+
+                <!-- Shadow comparator -->
+                <rect x="610" y="120" width="155" height="100" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1"/>
+                <text x="687" y="143" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Shadow Comparator</text>
+                <text x="687" y="158" text-anchor="middle" fill="#71717a" font-size="8">reads both stores async</text>
+                <text x="687" y="171" text-anchor="middle" fill="#71717a" font-size="8">deep-equals account rows</text>
+                <text x="687" y="184" text-anchor="middle" fill="#71717a" font-size="8">emits diff events to Kafka</text>
+                <text x="687" y="197" text-anchor="middle" fill="#71717a" font-size="8">never serves responses</text>
+
+                <line x1="565" y1="90" x2="608" y2="145" stroke="#00d4aa" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#dw-arr)"/>
+                <line x1="565" y1="240" x2="608" y2="195" stroke="#00d4aa" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#dw-arr)"/>
+
+                <!-- Traffic shift meter -->
+                <rect x="10" y="50" width="165" height="60" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1"/>
+                <text x="92" y="70" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Read traffic % &rarr; new DB</text>
+                <text x="22" y="90" fill="#71717a" font-size="8">Phase 1: </text><text x="68" y="90" fill="#fbbf24" font-size="8">0%</text>
+                <text x="22" y="102" fill="#71717a" font-size="8">Phase 2: </text><text x="68" y="102" fill="#fbbf24" font-size="8">10% shadow</text>
+                <text x="105" y="90" fill="#71717a" font-size="8">Phase 3: </text><text x="148" y="90" fill="#a78bfa" font-size="8">50%</text>
+                <text x="105" y="102" fill="#71717a" font-size="8">Phase 4: </text><text x="148" y="102" fill="#00d4aa" font-size="8">100%</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Dual-write migration architecture: the application writes synchronously to DB2 (primary) and asynchronously to PostgreSQL (new) throughout the migration; shadow reads compare both stores without affecting served responses; Kafka carries CDC events from DB2 via Debezium to fill any gaps; traffic shifts progressively to the new store as validation confidence grows</div>
+          </div>
+
+          <h2 id="migration-approaches">Migration Approach Trade-offs</h2>
+          <p>There are four broad approaches to database migration. The choice is not purely technical &mdash; it is a risk management decision that determines what can go wrong and how quickly you can recover. At a regulated bank, &ldquo;recovery&rdquo; from a corrupted accounts database is not a rollback script; it is a SAMA incident report.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Approach</th>
+                <th>Risk level</th>
+                <th>Downtime</th>
+                <th>Data validation</th>
+                <th>Suitable for payment systems</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Big-bang cutover</strong></td>
+                <td>Extreme &mdash; all risk concentrated at cutover moment</td>
+                <td>Hours to days (maintenance window)</td>
+                <td>Pre-migration only; no live validation</td>
+                <td>No &mdash; unacceptable downtime and unrecoverable data risk</td>
+              </tr>
+              <tr>
+                <td><strong>ETL with freeze</strong></td>
+                <td>High &mdash; data freeze breaks business continuity</td>
+                <td>Minutes to hours (during freeze)</td>
+                <td>Point-in-time snapshot; misses in-flight transactions</td>
+                <td>No &mdash; payment systems cannot freeze; SARIE RTGS runs continuously</td>
+              </tr>
+              <tr>
+                <td><strong>CDC-only</strong></td>
+                <td>Medium &mdash; replication lag creates read-your-own-writes anomalies</td>
+                <td>Seconds (cutover only)</td>
+                <td>Ongoing replication; lag window remains unvalidated</td>
+                <td>Partial &mdash; acceptable for read-only APIs; not for payment state writes</td>
+              </tr>
+              <tr>
+                <td><strong>Dual-write + shadow mode</strong></td>
+                <td>Low &mdash; new database proven under real load before serving</td>
+                <td>None &mdash; old database serves reads until new is validated</td>
+                <td>Continuous live validation against production traffic</td>
+                <td>Yes &mdash; designed for payment-grade availability requirements</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>The trade-off of dual-write is operational cost. You are running two databases, two write paths, and a validation layer simultaneously for weeks or months. Write latency increases because the secondary write, even if async, adds a network hop and error handling path. The reconciliation infrastructure must itself be reliable enough not to produce false positives that erode team confidence in the new database. These are real costs &mdash; but they are bounded and recoverable. A big-bang cutover failure on the accounts database of a KSA bank is neither bounded nor recoverable.</p>
+
+          <h2 id="dual-write-pattern">The Dual-Write Pattern</h2>
+          <p>Dual-write means every write operation is applied to both databases: the legacy database (primary, authoritative) and the new database (secondary, under validation). Reads are served exclusively from the primary until validation confidence is high enough to begin shifting read traffic.</p>
+          <p>The implementation lives in the repository layer, not in the service layer. This is intentional: the service layer should not know which database is primary at any given moment. The dual-write repository wraps both implementations and applies the write strategy transparently.</p>
+          <p>Key design decisions for the dual-write repository:</p>
+          <ul>
+            <li><strong>Primary write is synchronous; secondary write is async.</strong> The calling code waits for the primary write to complete before returning. The secondary write is dispatched to an executor service and its failure does not propagate to the caller. This ensures that a PostgreSQL outage does not affect the payment flow.</li>
+            <li><strong>Secondary write failures are logged, not thrown.</strong> A failed write to PostgreSQL emits an error metric and a compensation event to Kafka, but does not roll back the DB2 write. The reconciler picks up the compensation event and retries.</li>
+            <li><strong>Idempotent writes on the secondary.</strong> Because the Kafka reconciler may replay events, every write to PostgreSQL must be idempotent: <code>INSERT ... ON CONFLICT DO UPDATE</code> (upsert), never a bare INSERT. The primary key from DB2 is preserved as the natural key in PostgreSQL to make this possible.</li>
+            <li><strong>Write amplification monitoring.</strong> Track the secondary write latency, failure rate, and queue depth as first-class metrics. A growing queue depth means the executor cannot keep up with the write rate &mdash; a warning before the lag becomes a consistency problem.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>DualWriteAccountRepository.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Repository</span>
+<span class="tok-k">@Primary</span>
+<span class="tok-k">public class</span> <span class="tok-t">DualWriteAccountRepository</span> <span class="tok-k">implements</span> <span class="tok-t">AccountRepository</span> {
+
+    <span class="tok-k">private final</span> <span class="tok-t">Db2AccountRepository</span>      db2Repo;
+    <span class="tok-k">private final</span> <span class="tok-t">PostgresAccountRepository</span>  pgRepo;
+    <span class="tok-k">private final</span> <span class="tok-t">ExecutorService</span>            asyncWriter;
+    <span class="tok-k">private final</span> <span class="tok-t">MigrationEventPublisher</span>    eventPublisher;
+    <span class="tok-k">private final</span> <span class="tok-t">MeterRegistry</span>              meterRegistry;
+
+    <span class="tok-k">@Override</span>
+    <span class="tok-k">public</span> <span class="tok-t">Account</span> save(<span class="tok-t">Account</span> account) {
+        <span class="tok-c">// Primary write — synchronous, throws on failure</span>
+        <span class="tok-t">Account</span> saved = db2Repo.save(account);
+        meterRegistry.counter(<span class="tok-s">"migration.write.primary"</span>, <span class="tok-s">"store"</span>, <span class="tok-s">"db2"</span>).increment();
+
+        <span class="tok-c">// Secondary write — async, isolated from caller</span>
+        asyncWriter.submit(() -&gt; {
+            <span class="tok-k">try</span> {
+                pgRepo.upsert(saved);   <span class="tok-c">// idempotent: INSERT ... ON CONFLICT DO UPDATE</span>
+                meterRegistry.counter(<span class="tok-s">"migration.write.secondary"</span>, <span class="tok-s">"store"</span>, <span class="tok-s">"pg"</span>, <span class="tok-s">"status"</span>, <span class="tok-s">"ok"</span>).increment();
+            } <span class="tok-k">catch</span> (<span class="tok-t">Exception</span> e) {
+                meterRegistry.counter(<span class="tok-s">"migration.write.secondary"</span>, <span class="tok-s">"store"</span>, <span class="tok-s">"pg"</span>, <span class="tok-s">"status"</span>, <span class="tok-s">"error"</span>).increment();
+                <span class="tok-c">// Publish compensation event — Kafka reconciler will retry</span>
+                eventPublisher.publishCompensation(
+                    <span class="tok-k">new</span> <span class="tok-t">CompensationEvent</span>(saved.getAccountId(), saved.getVersion(), e.getMessage())
+                );
+            }
+        });
+
+        <span class="tok-k">return</span> saved;   <span class="tok-c">// always return the DB2-saved entity</span>
+    }
+
+    <span class="tok-k">@Override</span>
+    <span class="tok-k">public</span> <span class="tok-t">Optional</span>&lt;<span class="tok-t">Account</span>&gt; findById(<span class="tok-t">String</span> accountId) {
+        <span class="tok-c">// Read routing — controlled by MigrationReadPolicy (feature flag per account ID range)</span>
+        <span class="tok-k">if</span> (readPolicy.serveFromNew(accountId)) {
+            <span class="tok-k">return</span> pgRepo.findById(accountId);
+        }
+        <span class="tok-k">return</span> db2Repo.findById(accountId);
+    }
+}
+</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Write amplification increases load on both databases</div>
+            <p>Dual-write doubles the write load on the database tier. For most OLTP banking workloads this is acceptable because write throughput is modest compared to read throughput &mdash; a typical accounts service at a KSA bank sees 5&ndash;20% writes in its traffic mix. However, batch jobs and end-of-day settlement processing can spike writes dramatically. Profile your write peak load before enabling dual-write in production, and ensure the PostgreSQL instance is sized to handle 100% of the DB2 write rate &mdash; not the steady-state rate. If the async write executor queue exceeds 10 000 items, the reconciler has fallen behind and you are accumulating consistency debt that will need manual resolution.</p>
+          </div>
+
+          <h2 id="shadow-reads">Shadow Reads and Validation</h2>
+          <p>Shadow mode means reading from the new database on every request, comparing the result to the primary database result, and discarding the new database result without serving it. The consumer sees the primary result as if shadow mode does not exist. The comparison runs asynchronously and emits a diff event if the results diverge.</p>
+          <p>Shadow reads answer the question the team needs answered before they can trust the new database: <strong>Does PostgreSQL return the same account state as DB2, for every account, under real production load?</strong> A test suite in staging cannot answer this question because it does not have production data characteristics, production concurrent modification patterns, or production legacy batch job interactions.</p>
+          <p>The shadow comparator must handle several categories of &ldquo;expected&rdquo; differences before it can produce actionable divergence alerts:</p>
+          <ul>
+            <li><strong>Replication lag differences.</strong> The async secondary write means PostgreSQL may be milliseconds behind DB2 for recently-modified accounts. A shadow read immediately after a write will see a stale PostgreSQL value. Suppress lag-driven diffs by checking the account&rsquo;s <code>last_modified_at</code>: if the DB2 value was modified within the past 30 seconds and the PostgreSQL value matches a slightly earlier version, log as expected lag, not divergence.</li>
+            <li><strong>Data type normalisation differences.</strong> DB2 DECIMAL columns have different trailing-zero behaviour compared to PostgreSQL NUMERIC. A balance of <code>1000.00</code> in DB2 may appear as <code>1000</code> in PostgreSQL depending on the JDBC driver configuration. Normalise all numeric fields to a canonical decimal format before comparison. The same applies to timestamp precision: DB2 timestamps carry microseconds; PostgreSQL carries microseconds too but the JDBC driver may truncate to milliseconds.</li>
+            <li><strong>Arabic character encoding differences.</strong> DB2 z/OS historically stores Arabic text in EBCDIC-encoded columns. The COBOL data mapping layer converts these to UTF-8 before writing to PostgreSQL. Verify that the EBCDIC→UTF-8 conversion is lossless and handles all Arabic Extended-A code points used in customer names. A single wrong conversion will produce divergence for all accounts with that character in their name.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ShadowReadComparator.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Component</span>
+<span class="tok-k">public class</span> <span class="tok-t">ShadowReadComparator</span> {
+
+    <span class="tok-k">private static final</span> <span class="tok-t">Duration</span> LAG_WINDOW = <span class="tok-t">Duration</span>.ofSeconds(<span class="tok-n">30</span>);
+
+    <span class="tok-k">public void</span> compareAsync(<span class="tok-t">String</span> accountId, <span class="tok-t">Account</span> primaryResult) {
+        executor.submit(() -&gt; {
+            <span class="tok-k">try</span> {
+                <span class="tok-t">Optional</span>&lt;<span class="tok-t">Account</span>&gt; pgResult = pgRepo.findById(accountId);
+
+                <span class="tok-k">if</span> (pgResult.isEmpty()) {
+                    <span class="tok-c">// Account not yet replicated — expected during initial backfill</span>
+                    eventPublisher.publishShadowDiff(
+                        <span class="tok-k">new</span> <span class="tok-t">ShadowDiffEvent</span>(accountId, <span class="tok-s">"MISSING_IN_NEW"</span>, <span class="tok-k">null</span>));
+                    <span class="tok-k">return</span>;
+                }
+
+                <span class="tok-t">Account</span> pg = pgResult.get();
+
+                <span class="tok-c">// Suppress lag-driven diffs: PG version may be behind DB2</span>
+                <span class="tok-k">boolean</span> lagExpected = primaryResult.getLastModifiedAt()
+                    .isAfter(<span class="tok-t">Instant</span>.now().minus(LAG_WINDOW));
+                <span class="tok-k">if</span> (lagExpected &amp;&amp; pg.getVersion() == primaryResult.getVersion() - <span class="tok-n">1</span>) {
+                    meterRegistry.counter(<span class="tok-s">"shadow.diff.suppressed"</span>, <span class="tok-s">"reason"</span>, <span class="tok-s">"lag"</span>).increment();
+                    <span class="tok-k">return</span>;
+                }
+
+                <span class="tok-t">List</span>&lt;<span class="tok-t">String</span>&gt; diffs = AccountComparator.deepEquals(primaryResult, pg);
+                <span class="tok-k">if</span> (!diffs.isEmpty()) {
+                    meterRegistry.counter(<span class="tok-s">"shadow.diff.real"</span>).increment();
+                    eventPublisher.publishShadowDiff(
+                        <span class="tok-k">new</span> <span class="tok-t">ShadowDiffEvent</span>(accountId, <span class="tok-s">"FIELD_MISMATCH"</span>, diffs));
+                }
+            } <span class="tok-k">catch</span> (<span class="tok-t">Exception</span> e) {
+                meterRegistry.counter(<span class="tok-s">"shadow.diff.error"</span>).increment();
+            }
+        });
+    }
+}
+</code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Shadow mode is not optional for regulated datastores</div>
+            <p>For a payment accounts database, shadow mode is the difference between &ldquo;we tested in staging&rdquo; and &ldquo;we validated against production traffic.&rdquo; SAMA&rsquo;s Information Security Framework requires that critical system changes go through a documented validation process before go-live. Shadow mode is that process made operational: it produces a live validation report that quantifies the divergence rate between old and new databases over time, gives the team a data-driven basis for the go/no-go cutover decision, and provides an audit trail that demonstrates due diligence if SAMA requests evidence of the migration validation methodology.</p>
+          </div>
+
+          <h2 id="kafka-migration-bus">Kafka as the Migration Synchronisation Bus</h2>
+          <p>The async secondary write in the dual-write layer is best-effort: it fails silently and emits a compensation event. Something must pick up those compensation events and retry them. Kafka is the natural choice because it provides ordered, durable event delivery, replay capability, and a single place to observe the migration state.</p>
+          <p>The migration Kafka bus serves three distinct functions simultaneously:</p>
+          <ol>
+            <li><strong>Initial backfill pipeline.</strong> Before dual-write is enabled, Debezium reads the DB2 change log and emits all historical account records to a Kafka topic. A Kafka Streams backfill consumer reads from this topic and writes to PostgreSQL. This populates the new database with the current state of DB2 before live writes begin.</li>
+            <li><strong>Compensation event replay.</strong> When the async secondary write fails, the dual-write layer publishes a <code>MigrationCompensationEvent</code> to a dedicated Kafka topic. The reconciler consumer retries the write with exponential backoff and idempotent upsert semantics. The consumer group lag on this topic is a real-time measure of the PostgreSQL write backlog.</li>
+            <li><strong>Shadow diff event stream.</strong> The shadow comparator publishes divergence events to <code>migration.shadow.diffs</code>. A Grafana dashboard consuming this topic shows the real-time divergence rate, the most common diverging fields, and the accounts with the most divergences &mdash; giving the team a clear signal of whether validation confidence is improving or worsening over time.</li>
+          </ol>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>debezium-db2-source.json</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-k">"name"</span>: <span class="tok-s">"db2-accounts-source"</span>,
+  <span class="tok-k">"config"</span>: {
+    <span class="tok-k">"connector.class"</span>: <span class="tok-s">"io.debezium.connector.db2.Db2Connector"</span>,
+    <span class="tok-k">"database.hostname"</span>: <span class="tok-s">"corebanking-db2.internal"</span>,
+    <span class="tok-k">"database.port"</span>: <span class="tok-s">"50000"</span>,
+    <span class="tok-k">"database.user"</span>: <span class="tok-s">"${file:/opt/kafka/secrets/db2-creds.properties:username}"</span>,
+    <span class="tok-k">"database.password"</span>: <span class="tok-s">"${file:/opt/kafka/secrets/db2-creds.properties:password}"</span>,
+    <span class="tok-k">"database.dbname"</span>: <span class="tok-s">"CBCORE"</span>,
+    <span class="tok-k">"database.cdcschema"</span>: <span class="tok-s">"ASNCDC"</span>,
+    <span class="tok-k">"table.include.list"</span>: <span class="tok-s">"CBCORE.ACCOUNTS,CBCORE.ACCOUNT_LIMITS,CBCORE.ACCOUNT_FLAGS"</span>,
+    <span class="tok-k">"topic.prefix"</span>: <span class="tok-s">"migration"</span>,
+    <span class="tok-k">"snapshot.mode"</span>: <span class="tok-s">"initial"</span>,
+    <span class="tok-k">"snapshot.isolation.mode"</span>: <span class="tok-s">"read_committed"</span>,
+    <span class="tok-k">"decimal.handling.mode"</span>: <span class="tok-s">"precise"</span>,
+    <span class="tok-c">// preserve exact DB2 DECIMAL precision — critical for financial amounts</span>
+    <span class="tok-k">"tombstones.on.delete"</span>: <span class="tok-s">"true"</span>,
+    <span class="tok-k">"key.converter"</span>: <span class="tok-s">"io.confluent.kafka.serializers.KafkaAvroSerializer"</span>,
+    <span class="tok-k">"value.converter"</span>: <span class="tok-s">"io.confluent.kafka.serializers.KafkaAvroSerializer"</span>,
+    <span class="tok-k">"key.converter.schema.registry.url"</span>: <span class="tok-s">"https://schema-registry.infra.svc:8081"</span>,
+    <span class="tok-k">"value.converter.schema.registry.url"</span>: <span class="tok-s">"https://schema-registry.infra.svc:8081"</span>,
+    <span class="tok-k">"transforms"</span>: <span class="tok-s">"unwrap,dropNull"</span>,
+    <span class="tok-k">"transforms.unwrap.type"</span>: <span class="tok-s">"io.debezium.transforms.ExtractNewRecordState"</span>,
+    <span class="tok-k">"transforms.unwrap.add.fields"</span>: <span class="tok-s">"op,ts_ms"</span>,
+    <span class="tok-k">"transforms.dropNull.type"</span>: <span class="tok-s">"org.apache.kafka.connect.transforms.Filter"</span>,
+    <span class="tok-k">"transforms.dropNull.filter.condition"</span>: <span class="tok-s">"${value.op} != 'd'"</span>
+    <span class="tok-c">// suppress delete tombstones during migration — handle deletes via dual-write layer</span>
+  }
+}
+</code></pre>
+          </div>
+
+          <h2 id="schema-evolution">Schema Evolution Rules Under Dual-Write</h2>
+          <p>Dual-write constrains how you can evolve the database schema during the migration period. Because both databases must remain consistent with each other and with the application code, schema changes must follow strict backward-compatible rules for the duration.</p>
+          <p>The rule is simple but has significant consequences: <strong>every schema change to DB2 must also be applied to PostgreSQL, in the same transaction window, before any application code that uses the new column is deployed.</strong> This is the expand/contract pattern applied to a two-database scenario.</p>
+          <ul>
+            <li><strong>Additive changes only during dual-write.</strong> Add columns, add tables, add indexes. Never drop a column or rename one &mdash; the other database will immediately diverge and shadow reads will produce meaningless diffs.</li>
+            <li><strong>Column renames must expand-and-contract.</strong> Add the new column, dual-write to both old and new column names, backfill the new column from the old, migrate readers to the new column name, then drop the old column &mdash; but only after dual-write ends and the old database is decommissioned.</li>
+            <li><strong>Liquibase manages both databases.</strong> Maintain a single Liquibase changelog with profiles for DB2 (using DECIMAL, CHAR FOR BIT DATA) and PostgreSQL (using NUMERIC, BYTEA). This ensures the two schemas stay in sync through the migration and drift cannot be introduced by a manual SQL hotfix.</li>
+            <li><strong>Type promotions require explicit mapping.</strong> DB2&rsquo;s SMALLINT is 2 bytes; PostgreSQL&rsquo;s SMALLINT is also 2 bytes. But DB2&rsquo;s INTEGER is 4 bytes; PostgreSQL&rsquo;s INTEGER is also 4 bytes. The dangerous case is VARCHAR length semantics: DB2 VARCHAR(100) means 100 bytes in EBCDIC for many legacy schemas; PostgreSQL VARCHAR(100) means 100 characters in UTF-8. An Arabic name that fits in 100 EBCDIC bytes may not fit in 100 UTF-8 characters after conversion. Audit all VARCHAR columns in the account schema before migration.</li>
+          </ul>
+
+          <h2 id="traffic-shifting">Traffic Shifting: Progressive Migration</h2>
+          <p>Traffic shifting is the mechanism for moving read traffic from the old database to the new one incrementally, controlled by a feature flag or configuration, while validation is still running. It is not a binary switch; it is a gradual shift that can be paused or reversed at any point.</p>
+          <p>The <code>MigrationReadPolicy</code> bean controls which accounts are read from which database. The policy is driven by a configuration property that can be changed at runtime via Spring Boot&rsquo;s <code>@RefreshScope</code> or a configuration management tool like Vault or Kubernetes ConfigMap, without redeployment.</p>
+          <p>Three shifting strategies are available:</p>
+          <ul>
+            <li><strong>Canary slice (recommended first step).</strong> Route a percentage of accounts by modulo of the account ID to the new database. Start at 1%, watch shadow diffs and error rates for 48 hours, then increase. The deterministic routing ensures a given account always reads from the same database &mdash; no read-your-own-writes anomalies from toggling between stores per request.</li>
+            <li><strong>Feature flag per account group.</strong> Route specific account types (e.g., savings accounts only, or accounts opened after a certain date) to the new database. Useful when validation showed higher confidence for one account type than another.</li>
+            <li><strong>Read from both, serve from new.</strong> For a brief window before cutover, read from both stores, serve the new database result, and log divergences. This is shadow mode in reverse: the new database is serving responses, but the old is still being read to detect any regression.</li>
+          </ul>
+
+          <p>The decision to increase the traffic percentage should be driven by metrics, not by schedule. The criteria: shadow divergence rate below 0.01% of reads, compensation event queue depth below 100, secondary write error rate below 0.001%, and no open production incidents related to the migration. If any criterion fails, freeze the percentage at its current level until it recovers.</p>
+
+          <h2 id="cutover-execution">Cutover Execution: The Zero-Downtime Switch</h2>
+          <p>Cutover is the moment when the new database becomes primary &mdash; all reads and writes go to PostgreSQL, DB2 becomes a read-only backup. It is not the same as the traffic-shifting steps above; those shifted reads. Cutover shifts writes. When writes shift, dual-write ends and the synchronisation cost goes away.</p>
+          <p>The cutover sequence assumes you are already at 100% reads from PostgreSQL with zero divergence over the past 72 hours. If you are not at that point, do not cut over.</p>
+
+          <ol class="step-list">
+            <li><strong>Pre-cutover gate check (T-24 hours).</strong> Verify: shadow divergence rate = 0.00% over last 24 hours; compensation event queue depth = 0; secondary write error rate = 0.000% over last 6 hours; DB2 Debezium lag = 0; all batch jobs have been reviewed and confirmed to have a PostgreSQL-compatible equivalent. If any gate fails, postpone. Post the gate check result to the change management ticket.</li>
+            <li><strong>Freeze application deployments (T-1 hour).</strong> Prevent any application deployment during the cutover window. New deployments could change the dual-write behavior mid-cutover and introduce hard-to-diagnose inconsistencies. The freeze applies to all services that touch the accounts schema, not just the one being migrated.</li>
+            <li><strong>Drain the compensation queue (T-30 min).</strong> Stop the dual-write executor&rsquo;s secondary write path. Allow all in-flight async writes to complete. Verify the compensation event Kafka topic consumer group lag reaches zero. This ensures PostgreSQL is fully caught up with DB2 at the moment you switch writes.</li>
+            <li><strong>Promote PostgreSQL to primary (T-0).</strong> Update the <code>MigrationReadPolicy</code> and <code>MigrationWritePolicy</code> configuration atomically via a Kubernetes ConfigMap update: <code>read.primary: postgres</code>, <code>write.primary: postgres</code>. The <code>@RefreshScope</code> picks this up within 30 seconds without restart. From this moment, DB2 is no longer receiving writes. Monitor the DB2 write rate metric: it must drop to zero within 60 seconds. If it does not, the configuration refresh has not propagated; roll back immediately.</li>
+            <li><strong>Run 15-minute hot observation.</strong> Watch the key metrics for 15 minutes after promotion: PostgreSQL write error rate, API p99 latency, payment success rate (via downstream SARIE callback metrics), and customer-facing error rate. A single payment failure that can be attributed to the migration is a rollback trigger. Define the rollback trigger criteria in the change management ticket before the cutover.</li>
+            <li><strong>Decommission DB2 writes (T+15 min if clean).</strong> Update the dual-write repository to skip the DB2 write path entirely. This can be done as a flag change, not a deployment. Continue monitoring DB2 as a read-only archive for 30 days before decommissioning the DB2 schema objects.</li>
+            <li><strong>Post-cutover reconciliation run (T+24 hours).</strong> Run a full-table reconciliation query comparing DB2 and PostgreSQL on the primary key and version column. Any rows that diverged during the cutover window (unlikely but possible due to in-flight transactions) will appear here. Resolve manually and document in the incident log. This reconciliation run is the evidence of migration completeness for the SAMA audit trail.</li>
+          </ol>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never cut over without a 72-hour zero-divergence window</div>
+            <p>A shadow divergence rate of &ldquo;only 0.05%&rdquo; sounds small. At a bank with 500 000 active accounts, 0.05% is 250 accounts whose balance or limit data in PostgreSQL does not match DB2. If you cut over and those 250 accounts try to make a payment, your payment authorisation service will return incorrect decisions. The 72-hour zero-divergence window is not bureaucratic caution &mdash; it is the minimum time needed to observe the full range of production conditions: week-day peak, end-of-day batch, overnight settlement, and early-morning opening. If you cannot hold zero divergence for 72 consecutive hours, the dual-write layer has a bug that production conditions expose and staging did not.</p>
+          </div>
+
+          <h2 id="sama-audit-trail">SAMA Audit Trail Continuity During Migration</h2>
+          <p>SAMA&rsquo;s Information Security Framework and its Open Banking Technical Standards both require that transaction and audit records are complete, unaltered, and accessible for examination. A database migration is a risk event that SAMA examiners may ask about during a review. The migration must not create gaps in the audit log and must be documentable as a controlled, validated change.</p>
+          <p>Four specific SAMA requirements apply during a database migration:</p>
+          <ul>
+            <li><strong>No audit record loss.</strong> The ACCOUNTS_AUDIT table that tracks every balance change must be migrated with full fidelity. If the legacy DB2 schema wrote audit records in a different format (CHAR timestamps, EBCDIC customer IDs) than the new PostgreSQL schema, the conversion must be lossless and every converted record must be verified by the reconciler. A missing audit record is not a data integrity issue &mdash; it is a regulatory compliance issue.</li>
+            <li><strong>Dual-write for audit tables during cutover.</strong> Even after the main accounts table is promoted to PostgreSQL, continue dual-writing the audit table to DB2 for 30 additional days. This gives the SAMA examination team a consistent source of truth if they request records from the migration period, without requiring them to query across two databases.</li>
+            <li><strong>Change management documentation.</strong> File the migration as a significant system change in your IT change management system. The CAB (Change Advisory Board) approval for the cutover must include the gate check results, the shadow validation report, and the rollback procedure. SAMA may ask for this documentation during a subsequent examination.</li>
+            <li><strong>PDPL data residency during backfill.</strong> The Debezium CDC pipeline and the Kafka migration bus topics contain personal data (customer names, IBANs, national IDs). Ensure the Kafka cluster is within the KSA regulatory perimeter and that the migration topics have appropriate ACLs. The backfill pipeline should be treated as a data processing activity under PDPL, requiring the same data protection controls as the production systems it serves.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>migration-reconciliation.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- Post-cutover reconciliation: find rows that diverged between DB2 and PostgreSQL</span>
+<span class="tok-c">-- Run via Debezium JDBC sink or IBM Data Replication; not via application layer</span>
+
+<span class="tok-k">SELECT</span>
+    db2.account_id,
+    db2.balance           <span class="tok-k">AS</span> db2_balance,
+    pg.balance            <span class="tok-k">AS</span> pg_balance,
+    db2.version           <span class="tok-k">AS</span> db2_version,
+    pg.version            <span class="tok-k">AS</span> pg_version,
+    db2.last_modified_at  <span class="tok-k">AS</span> db2_modified,
+    pg.last_modified_at   <span class="tok-k">AS</span> pg_modified,
+    <span class="tok-t">CASE</span>
+        <span class="tok-k">WHEN</span> db2.balance &lt;&gt; pg.balance         <span class="tok-k">THEN</span> <span class="tok-s">'BALANCE_MISMATCH'</span>
+        <span class="tok-k">WHEN</span> db2.version &lt;&gt; pg.version         <span class="tok-k">THEN</span> <span class="tok-s">'VERSION_MISMATCH'</span>
+        <span class="tok-k">WHEN</span> db2.status &lt;&gt; pg.status           <span class="tok-k">THEN</span> <span class="tok-s">'STATUS_MISMATCH'</span>
+        <span class="tok-k">WHEN</span> db2.account_limit &lt;&gt; pg.account_limit <span class="tok-k">THEN</span> <span class="tok-s">'LIMIT_MISMATCH'</span>
+        <span class="tok-k">ELSE</span> <span class="tok-s">'OTHER'</span>
+    <span class="tok-t">END</span>                   <span class="tok-k">AS</span> divergence_type
+<span class="tok-k">FROM</span>      db2_link.cbcore.accounts db2
+<span class="tok-k">FULL JOIN</span> pg_accounts              pg
+    <span class="tok-k">ON</span> db2.account_id = pg.account_id
+<span class="tok-k">WHERE</span>
+    db2.balance          &lt;&gt; pg.balance
+    <span class="tok-k">OR</span> db2.version       &lt;&gt; pg.version
+    <span class="tok-k">OR</span> db2.status        &lt;&gt; pg.status
+    <span class="tok-k">OR</span> db2.account_limit &lt;&gt; pg.account_limit
+    <span class="tok-k">OR</span> db2.account_id    <span class="tok-k">IS NULL</span>    <span class="tok-c">-- row in PG only</span>
+    <span class="tok-k">OR</span> pg.account_id     <span class="tok-k">IS NULL</span>    <span class="tok-c">-- row in DB2 only</span>
+<span class="tok-k">ORDER BY</span> divergence_type, db2.last_modified_at <span class="tok-k">DESC</span>;
+</code></pre>
+          </div>
+
+          <h2 id="checklist">Production Checklist</h2>
+
+          <h3>Zero-risk database migration phases</h3>
+          <p>Each phase gate must pass before proceeding to the next. No exceptions for schedule pressure.</p>
+
+          <h3>Phase 1 &mdash; Backfill &amp; validate (weeks 1&ndash;3)</h3>
+          <ol>
+            <li>Debezium DB2 connector deployed and emitting CDC events to Kafka.</li>
+            <li>Backfill consumer completed; PostgreSQL row count matches DB2 row count within 0.001%.</li>
+            <li>Full-table reconciliation SQL shows zero divergences on non-in-flight rows.</li>
+            <li>Arabic character encoding validated: spot-check 1 000 account names for lossless round-trip.</li>
+            <li>DECIMAL precision validated: spot-check 10 000 account balances at maximum precision.</li>
+          </ol>
+
+          <h3>Phase 2 &mdash; Dual-write &amp; shadow reads (weeks 4&ndash;8)</h3>
+          <ol>
+            <li>DualWriteAccountRepository deployed with <code>write.secondary: enabled</code>; primary = DB2.</li>
+            <li>Shadow comparator deployed and emitting to <code>migration.shadow.diffs</code> Kafka topic.</li>
+            <li>Grafana dashboard showing: secondary write error rate, compensation queue depth, shadow divergence rate.</li>
+            <li>Shadow divergence rate below 0.1% after week 1; below 0.01% after week 2.</li>
+            <li>Batch job inventory reviewed; all batch jobs writing directly to DB2 assessed for migration.</li>
+          </ol>
+
+          <h3>Phase 3 &mdash; Traffic shifting (weeks 9&ndash;11)</h3>
+          <ol>
+            <li>Read traffic shifted to PostgreSQL at 1%, 5%, 25%, 50%, 100% — each step held for 48 hours with zero regression.</li>
+            <li>Shadow divergence rate = 0.00% at 100% read traffic.</li>
+            <li>All batch jobs either migrated to PostgreSQL or confirmed to operate correctly in dual-write mode.</li>
+            <li>Rollback procedure tested in staging: <code>read.primary: db2</code> config change takes effect within 60 seconds.</li>
+          </ol>
+
+          <h3>Phase 4 &mdash; Cutover (week 12)</h3>
+          <ol>
+            <li>72-hour zero-divergence window confirmed; gate check documented in change ticket.</li>
+            <li>CAB approval received; cutover window communicated to all consuming teams.</li>
+            <li>Compensation queue depth = 0 at T-30 min; DB2 Debezium lag = 0.</li>
+            <li>PostgreSQL promoted to write primary; DB2 write rate drops to zero within 60 seconds.</li>
+            <li>15-minute hot observation clean; no rollback trigger events.</li>
+            <li>Post-cutover reconciliation SQL run at T+24 hours; results documented.</li>
+            <li>SAMA change management documentation filed.</li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="cdc-legacy-db2-modern-services.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">CDC from Legacy DB2 to Modern Services</div>
+            </a>
+            <a href="../legacy-integration.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Legacy Integration &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

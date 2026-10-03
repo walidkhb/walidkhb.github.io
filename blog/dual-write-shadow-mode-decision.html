@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Migration Risk No One Models: Why Banks Need Dual-Write Before They Need a New Database &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Database migrations fail because they are treated as a one-time event rather than a state synchronisation problem. The dual-write and shadow mode decision is not a technical choice &mdash; it is the risk governance decision that determines whether your bank can recover if the migration goes wrong.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/dual-write-shadow-mode-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Dual-Write &amp; Shadow Mode Migration Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="The Migration Risk No One Models: Why Banks Need Dual-Write Before They Need a New Database &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Database migrations fail because they are treated as a one-time event rather than a state synchronisation problem. The dual-write decision is risk governance, not tooling selection.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/dual-write-shadow-mode-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Migration Risk No One Models: Why Banks Need Dual-Write">
+  <meta name="twitter:description" content="Database migrations fail at the cutover because no one modelled the risk correctly. Dual-write is the answer — and it is a governance decision, not a tooling one.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The Migration Risk No One Models: Why Banks Need Dual-Write Before They Need a New Database",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-10-03",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/dual-write-shadow-mode-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span>Legacy Integration</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Legacy Integration &middot; October 3, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">The Migration Risk No One Models: Why Banks Need Dual-Write Before They Need a New Database</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Every database modernisation programme at a bank eventually reaches the same moment: someone has to move the accounts data. Not the product catalogue, not the transaction history archive, not the reference data tables &mdash; the accounts data. The ledger. The thing that says how much money each customer has, what limits apply, and what state their account is in. Moving that data without losing any of it, without serving incorrect balances during the transition, and without creating a SAMA-notifiable incident is the hardest migration problem in banking IT.</p>
+
+        <p>Most banks approach it by scheduling a maintenance window. The window gets shortened in review because it is too long. It gets approved anyway. The team stays up through the night, the migration runs, the reconciliation looks clean &mdash; and somewhere in the next 48 hours, something starts failing. An overnight batch job was writing to the old schema. A payment authorisation service cached account limits that are now stale. The EBCDIC-to-UTF-8 conversion handled Arabic names with hamza differently in the migration script than the application does in its regular reads. None of these failures were visible in staging because staging does not have production data, production concurrency, or production batch jobs.</p>
+
+        <p>This is not bad execution. It is a category error: treating database migration as a one-time event rather than a state synchronisation problem.</p>
+
+        <p class="article-section">The decision that precedes the technology</p>
+
+        <p>The dual-write approach &mdash; writing every account modification to both the old database and the new one simultaneously, running shadow reads to validate the new database without serving from it, and shifting traffic gradually over weeks rather than in a single maintenance window &mdash; is not primarily a technology decision. The technology is well understood: Spring&rsquo;s repository layer, a Kafka bus for backfill and compensation, Debezium for CDC. The decision is whether the organisation will accept the cost of running two databases in parallel for two to three months in exchange for removing the risk that a botched cutover corrupts the accounts ledger.</p>
+
+        <p>That cost is real. Write latency increases because every write touches two stores. Operational complexity doubles during the migration window. The reconciliation infrastructure has to be built, monitored, and maintained. Engineers who would otherwise be building features are building the migration scaffolding. And the programme timeline extends by the weeks needed to reach a credible zero-divergence signal before cutover.</p>
+
+        <p>Against that cost: a failed big-bang cutover on the accounts database of a Saudi bank is a SAMA notification event. It is an operational resilience failure under the CSAML and the Cybersecurity Framework. It is recoverable in principle &mdash; you can roll back and replay &mdash; but in practice, recovery from a corrupted accounts ledger takes longer than the window of acceptable downtime for SARIE payment channels, and the customer and regulatory damage happens in that gap.</p>
+
+        <blockquote>
+          <p>The dual-write programme is expensive because it is designed to make failure impossible, not merely unlikely. That is the right trade-off for a payment accounts database.</p>
+        </blockquote>
+
+        <p class="article-section">What the VP has to decide</p>
+
+        <p>The dual-write migration programme requires four explicit decisions from the VP of Enterprise Integration or equivalent. Engineers cannot make these decisions because they involve authority over production systems and tolerance for programme risk that sits at the leadership level.</p>
+
+        <p><strong>1. Accept the timeline extension.</strong> A dual-write migration to a new database for the accounts domain takes 10&ndash;14 weeks from Debezium deployment to cutover. A big-bang migration can be done in a single weekend. If the modernisation programme has a hard board-level deadline that does not accommodate a 14-week migration runway, that deadline needs to be renegotiated before engineering begins, not after the first failed cutover attempt. The VP owns that renegotiation.</p>
+
+        <p><strong>2. Define the cutover gate criteria.</strong> The decision to proceed from shadow mode to traffic shifting, and from traffic shifting to write cutover, must be governed by quantitative criteria &mdash; not by schedule, not by stakeholder pressure, not by &ldquo;it looks good enough.&rdquo; The VP must define those criteria in writing before the migration starts: what shadow divergence rate is acceptable, how many consecutive hours of zero divergence constitute confidence, what the rollback trigger conditions are. Engineers will make optimistic calls under schedule pressure unless the gate criteria are pre-committed and auditable.</p>
+
+        <p><strong>3. Authorise rollback without approval.</strong> The on-call engineer at 2am during cutover must have standing authority to roll back to the old database without escalating to a VP or a change advisory board. If rollback requires a CAB approval process, it will not happen fast enough to prevent customer impact. The VP authorises rollback as a pre-approved action in the change management system before the cutover window opens. The authority is time-bounded (the cutover window) and condition-bounded (specific rollback triggers), but within those bounds it is unilateral.</p>
+
+        <p><strong>4. Commit the resourcing for the migration period.</strong> The dual-write infrastructure is not a side task. The reconciliation dashboard, the shadow comparator, the compensation event consumer, the batch job migration &mdash; these require engineers who are focused on them, not split across three other priorities. A migration done in the gaps of a busy delivery team is a migration done slowly with recurring gaps in the validation signal. The VP secures dedicated resourcing for the migration period as a separate workstream, not an add-on to existing delivery capacity.</p>
+
+        <p class="article-section">What SAMA expects to see</p>
+
+        <p>SAMA examination teams increasingly ask for migration documentation as part of IT risk reviews, particularly for changes to payment-critical systems. The dual-write approach produces the documentation naturally: shadow validation reports, gate check records, compensation event metrics, and the post-cutover reconciliation query output are all artefacts that show a controlled, evidence-based migration. A big-bang cutover with a maintenance window produces a change ticket and a post-implementation review &mdash; a much thinner evidence trail for a much higher-risk operation.</p>
+
+        <p>The PDPL dimension is also significant. The Debezium CDC pipeline and Kafka migration bus carry personal data &mdash; customer names, IBANs, national IDs &mdash; across a new data path that did not exist before the migration programme. Under PDPL, this is a new data processing activity that requires appropriate controls: data residency within KSA, access controls on the migration topics, retention limits on the backfill data, and deletion of migration artefacts after the programme closes. A VP who approves the migration programme without approving a data protection review of the migration infrastructure has created a PDPL compliance gap alongside the technical migration.</p>
+
+        <p class="article-section">What the team needs from leadership to ship it</p>
+
+        <p>The engineers running the dual-write migration need one thing more than tooling or architecture guidance: a VP who will not override the gate criteria when the programme is behind schedule. The migration will fall behind schedule &mdash; it always does, because reconciliation reveals problems that require time to diagnose and fix. The moment the programme is behind schedule, stakeholder pressure to cut corners on the validation gates begins. &ldquo;The divergence rate is only 0.02%, that&rsquo;s fine.&rdquo; &ldquo;We&rsquo;ve been in shadow mode long enough.&rdquo; &ldquo;The business cannot wait another two weeks.&rdquo;</p>
+
+        <p>The VP&rsquo;s job at that moment is to hold the line on the gate criteria that were committed to before the programme started. Not because the criteria are sacred, but because the alternative &mdash; cutting over with a known divergence rate and hoping it does not affect payment authorisation &mdash; is the exact failure mode the 14-week migration runway was designed to avoid.</p>
+
+        <p>The technical companion to this post is the <a href="../lab/legacy-integration/dual-write-and-shadow-mode.html" style="color:var(--color-accent);">Dual-Write &amp; Shadow Mode lab article</a>, which covers the Spring Boot implementation of the dual-write repository, the Debezium DB2 connector configuration, the shadow comparator pattern, and the exact cutover sequence with pre-cutover gate checks.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
