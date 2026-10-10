@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AsyncAPI 3.0 Contracts for Kafka Channel Governance &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Contract-first event-driven design with AsyncAPI 3.0 for Kafka: channel definitions, PDPL-annotated message schemas, code generation with Spring Cloud Stream, schema-registry alignment, CI enforcement, and the governance model that keeps 60+ payment topics from becoming a fragile mesh of implicit contracts.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="AsyncAPI 3.0 Contracts for Kafka Channel Governance &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Contract-first Kafka channel design with AsyncAPI 3.0 for regulated financial services.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/asyncapi-kafka-contracts.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AsyncAPI 3.0 Contracts for Kafka Channel Governance &mdash; Lab">
+  <meta name="twitter:description" content="Contract-first Kafka channels with AsyncAPI 3.0 &mdash; patterns that hold up in regulated financial services.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/asyncapi-kafka-contracts.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "AsyncAPI 3.0 Contracts for Kafka Channel Governance",
+    "description": "Contract-first event-driven design with AsyncAPI 3.0 for Kafka: channel definitions, PDPL-annotated message schemas, code generation with Spring Cloud Stream, schema-registry alignment, CI enforcement, and the governance model that keeps 60+ payment topics from becoming a fragile mesh of implicit contracts.",
+    "url": "https://www.wbadawi.info/lab/event-driven/asyncapi-kafka-contracts.html",
+    "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
+    "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
+    "image": "https://www.wbadawi.info/assets/img/og-image.png"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>AsyncAPI 3.0 Contracts</div>
+          <span class="overline">Lab Article</span>
+          <h1>AsyncAPI 3.0 Contracts for Kafka Channel Governance</h1>
+          <p class="lead">Channel contracts are not documentation &mdash; they are the governance mechanism that lets sixty payment Kafka topics evolve independently without breaking producers and consumers. How to define AsyncAPI 3.0 specs for financial events, align them with Confluent Schema Registry, annotate channels with PDPL classification, enforce compatibility in CI, and build the channel ownership model that scales past a single team.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#why-contracts">Why channel contracts matter</a></li>
+            <li><a href="#asyncapi-structure">AsyncAPI 3.0 structure</a></li>
+            <li><a href="#payment-channels">Defining payment channels</a></li>
+            <li><a href="#schema-registry">Schema Registry alignment</a></li>
+            <li><a href="#pdpl-classification">PDPL classification metadata</a></li>
+            <li><a href="#code-generation">Code generation</a></li>
+            <li><a href="#versioning">Channel versioning strategy</a></li>
+            <li><a href="#ci-enforcement">CI enforcement</a></li>
+            <li><a href="#governance">Channel ownership &amp; governance</a></li>
+            <li><a href="#tradeoffs">AsyncAPI vs alternatives</a></li>
+            <li><a href="#antipatterns">Anti-patterns</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> AsyncAPI 3.0 &middot; Confluent Schema Registry 7.6 &middot; Apache Avro 1.11 &middot; Spring Cloud Stream 4.1 &middot; asyncapi-generator 2.4</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="why-contracts">Why channel contracts matter</h2>
+          <p>At a KSA bank running ISO 20022 payment flows, Kafka is not a message queue &mdash; it is the connective tissue between the payment initiation service, the fraud engine, the liquidity manager, the settlement adapter, and the SAMA regulatory feed. Each of these services is owned by a different squad, deployed on its own release cycle, and written by engineers who joined the bank at different times and may never have met each other.</p>
+          <p>The implicit contract problem surfaces quietly: a fraud engine update changes the field name from <code>transactionAmount</code> to <code>txnAmt</code> in the Kafka message it publishes. The fraud squad tests against their own consumer. The payment enrichment service, which reads from the same topic, does not find out until its deserialization starts silently nulling amounts in production. By then, three hundred IPS transactions have been risk-scored against a null amount and passed.</p>
+          <p>Avro Schema Registry with compatibility modes catches schema incompatibility. It does not catch: channel renaming, partition-key semantic changes, header field removal, encoding changes from Avro to Protobuf, or the addition of a new mandatory semantic field that is technically backward-compatible but logically breaks downstream logic. AsyncAPI contracts catch all of these &mdash; because they document the <em>intent</em> of the channel, not just the wire format.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">AsyncAPI is not a replacement for Schema Registry</div>
+            <p>AsyncAPI and Confluent Schema Registry solve different problems. Schema Registry enforces wire-format compatibility on every produce and consume. AsyncAPI documents the channel&rsquo;s semantic contract: which service owns it, what the message means, how it is partitioned, what PDPL classification the payload carries, and what downstream consumers can expect from the event ordering. Use both.</p>
+          </div>
+
+          <h2 id="asyncapi-structure">AsyncAPI 3.0 structure</h2>
+          <p>AsyncAPI 3.0 introduced a cleaner separation between channels (the broker-side entity) and operations (the application-side send/receive intent). This separation is particularly useful for Kafka: the same channel can be both produced to and consumed from, and the spec makes clear which services own which operations.</p>
+
+          <div class="diagram" role="img" aria-label="AsyncAPI 3.0 document structure: info, servers, channels, operations, components">
+            <div class="diagram__inner">
+              <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="aa1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="aa2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- AsyncAPI document root -->
+                <rect x="20" y="20" width="160" height="300" rx="6" fill="#1c1c28" stroke="#00d4aa" stroke-width="2"/>
+                <text x="100" y="46" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">AsyncAPI Doc</text>
+                <text x="100" y="62" text-anchor="middle" fill="#71717a" font-size="8">asyncapi: 3.0.0</text>
+                <line x1="30" y1="72" x2="170" y2="72" stroke="#2a2a3a" stroke-width="1"/>
+                <text x="36" y="90" fill="#e4e4e7" font-size="9" font-weight="500">info</text>
+                <text x="44" y="106" fill="#71717a" font-size="8">title, version</text>
+                <text x="44" y="118" fill="#71717a" font-size="8">contact, license</text>
+                <text x="36" y="138" fill="#e4e4e7" font-size="9" font-weight="500">servers</text>
+                <text x="44" y="154" fill="#71717a" font-size="8">broker endpoints</text>
+                <text x="44" y="166" fill="#71717a" font-size="8">security schemes</text>
+                <text x="36" y="186" fill="#e4e4e7" font-size="9" font-weight="500">channels</text>
+                <text x="44" y="202" fill="#71717a" font-size="8">topic names</text>
+                <text x="44" y="214" fill="#71717a" font-size="8">bindings (Kafka)</text>
+                <text x="36" y="234" fill="#e4e4e7" font-size="9" font-weight="500">operations</text>
+                <text x="44" y="250" fill="#71717a" font-size="8">send / receive</text>
+                <text x="44" y="262" fill="#71717a" font-size="8">message refs</text>
+                <text x="36" y="282" fill="#e4e4e7" font-size="9" font-weight="500">components</text>
+                <text x="44" y="298" fill="#71717a" font-size="8">schemas, messages</text>
+                <text x="44" y="310" fill="#71717a" font-size="8">security, bindings</text>
+
+                <!-- channels box -->
+                <rect x="250" y="60" width="190" height="100" rx="6" fill="#0f0f16" stroke="#4a9eff"/>
+                <text x="345" y="84" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">channels</text>
+                <text x="260" y="102" fill="#71717a" font-size="8">payments.initiated.v2:</text>
+                <text x="268" y="116" fill="#71717a" font-size="8">address: payments.initiated.v2</text>
+                <text x="268" y="128" fill="#71717a" font-size="8">bindings: kafka partition key</text>
+                <text x="268" y="140" fill="#71717a" font-size="8">messages: &lt;ref to component&gt;</text>
+                <text x="268" y="152" fill="#71717a" font-size="8">x-pdpl-class: restricted</text>
+
+                <!-- operations box -->
+                <rect x="250" y="180" width="190" height="110" rx="6" fill="#0f0f16" stroke="#a78bfa"/>
+                <text x="345" y="204" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">operations</text>
+                <text x="260" y="222" fill="#71717a" font-size="8">publishPaymentInitiated:</text>
+                <text x="268" y="236" fill="#71717a" font-size="8">action: send</text>
+                <text x="268" y="248" fill="#71717a" font-size="8">channel: $ref payments.initiated.v2</text>
+                <text x="268" y="260" fill="#71717a" font-size="8">bindings: clientId payment-svc</text>
+                <text x="260" y="278" fill="#71717a" font-size="8">consumeFraudCheck:</text>
+                <text x="268" y="290" fill="#71717a" font-size="8">action: receive</text>
+
+                <!-- components box -->
+                <rect x="510" y="60" width="210" height="170" rx="6" fill="#0f0f16" stroke="#fbbf24"/>
+                <text x="615" y="84" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">components</text>
+                <text x="520" y="102" fill="#71717a" font-size="8">messages:</text>
+                <text x="528" y="116" fill="#71717a" font-size="8">PaymentInitiatedMessage:</text>
+                <text x="536" y="128" fill="#71717a" font-size="8">contentType: avro</text>
+                <text x="536" y="140" fill="#71717a" font-size="8">payload: $ref schema</text>
+                <text x="536" y="152" fill="#71717a" font-size="8">headers: correlationId, traceId</text>
+                <text x="520" y="172" fill="#71717a" font-size="8">schemas:</text>
+                <text x="528" y="186" fill="#71717a" font-size="8">PaymentInitiatedPayload:</text>
+                <text x="536" y="198" fill="#71717a" font-size="8">endToEndId, debtorIban</text>
+                <text x="536" y="210" fill="#71717a" font-size="8">creditorIban, amount, ccy</text>
+
+                <!-- arrows -->
+                <line x1="180" y1="186" x2="248" y2="100" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#aa1)"/>
+                <line x1="180" y1="234" x2="248" y2="220" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#aa1)"/>
+                <line x1="180" y1="282" x2="248" y2="280" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#aa1)"/>
+                <line x1="440" y1="100" x2="508" y2="110" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#aa2)"/>
+                <line x1="440" y1="230" x2="508" y2="180" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#aa2)"/>
+
+                <text x="200" y="175" fill="#00d4aa" font-size="8">ref</text>
+                <text x="200" y="225" fill="#00d4aa" font-size="8">ref</text>
+                <text x="200" y="275" fill="#00d4aa" font-size="8">ref</text>
+                <text x="450" y="107" fill="#a78bfa" font-size="8">$ref</text>
+                <text x="450" y="225" fill="#a78bfa" font-size="8">$ref</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; AsyncAPI 3.0 document structure: channels describe broker-side topics, operations describe application-side intent, components hold reusable schemas and message definitions</div>
+          </div>
+
+          <p>The key change in 3.0 from 2.x: operations no longer live inside channels. A <code>channels</code> block entry is purely the broker entity &mdash; the Kafka topic &mdash; with its bindings, message types, and metadata. An <code>operations</code> block entry declares what an <em>application</em> does with that channel: sends to it, receives from it, or both. This model maps cleanly onto a bank&rsquo;s service ownership model: the Payment Service <em>sends</em> to <code>payments.initiated.v2</code>, while the Fraud Engine and the Settlement Adapter each independently <em>receive</em> from it &mdash; and the spec makes all of this explicit in one place.</p>
+
+          <h2 id="payment-channels">Defining payment channels</h2>
+          <p>A complete AsyncAPI spec for the payment-initiated event channel. This is the full spec that lives in source control alongside the code &mdash; not a generated artefact, not a documentation afterthought, but the primary contract reviewed and approved before a producer or consumer is written.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payments-initiated.asyncapi.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">asyncapi</span>: <span class="tok-s">'3.0.0'</span>
+
+<span class="tok-k">info</span>:
+  <span class="tok-k">title</span>: <span class="tok-s">Payment Initiated Channel</span>
+  <span class="tok-k">version</span>: <span class="tok-s">'2.0.0'</span>
+  <span class="tok-k">description</span>: <span class="tok-s">&gt;</span>
+    <span class="tok-s">Published by the Payment Initiation Service when a pacs.008 credit transfer</span>
+    <span class="tok-s">instruction has been validated, persisted, and assigned an internal payment ID.</span>
+    <span class="tok-s">Consumed by: fraud-engine, liquidity-manager, notification-service, audit-feed.</span>
+  <span class="tok-k">contact</span>:
+    <span class="tok-k">name</span>: <span class="tok-s">Payments Domain Squad</span>
+    <span class="tok-k">url</span>: <span class="tok-s">https://confluence.acmebank.internal/display/PAY/channel-contracts</span>
+  <span class="tok-k">x-channel-owner</span>: <span class="tok-s">payment-initiation-squad</span>  <span class="tok-c"># custom extension</span>
+  <span class="tok-k">x-pdpl-classification</span>: <span class="tok-s">restricted</span>           <span class="tok-c"># custom extension</span>
+  <span class="tok-k">x-sama-scope</span>: <span class="tok-s">payment-lifecycle</span>              <span class="tok-c"># custom extension</span>
+
+<span class="tok-k">servers</span>:
+  <span class="tok-k">production</span>:
+    <span class="tok-k">host</span>: <span class="tok-s">kafka.payments.internal:9093</span>
+    <span class="tok-k">protocol</span>: <span class="tok-s">kafka-secure</span>
+    <span class="tok-k">security</span>:
+      - <span class="tok-k">$ref</span>: <span class="tok-s">'#/components/securitySchemes/mTLS'</span>
+
+<span class="tok-k">channels</span>:
+  <span class="tok-k">paymentInitiated</span>:
+    <span class="tok-k">address</span>: <span class="tok-s">payments.initiated.v2</span>
+    <span class="tok-k">description</span>: <span class="tok-s">&gt;</span>
+      <span class="tok-s">Append-only topic. Log-compaction disabled. Retention: 90 days.</span>
+      <span class="tok-s">Partition key: paymentId (UUID). Partitions: 12.</span>
+    <span class="tok-k">messages</span>:
+      <span class="tok-k">PaymentInitiatedMessage</span>:
+        <span class="tok-k">$ref</span>: <span class="tok-s">'#/components/messages/PaymentInitiatedMessage'</span>
+    <span class="tok-k">bindings</span>:
+      <span class="tok-k">kafka</span>:
+        <span class="tok-k">topic</span>: <span class="tok-s">payments.initiated.v2</span>
+        <span class="tok-k">partitions</span>: <span class="tok-n">12</span>
+        <span class="tok-k">replicas</span>: <span class="tok-n">3</span>
+        <span class="tok-k">topicConfiguration</span>:
+          <span class="tok-k">retention.ms</span>: <span class="tok-n">7776000000</span>  <span class="tok-c"># 90 days</span>
+          <span class="tok-k">cleanup.policy</span>: <span class="tok-s">delete</span>
+          <span class="tok-k">min.insync.replicas</span>: <span class="tok-n">2</span>
+
+<span class="tok-k">operations</span>:
+  <span class="tok-k">publishPaymentInitiated</span>:
+    <span class="tok-k">action</span>: <span class="tok-s">send</span>
+    <span class="tok-k">channel</span>:
+      <span class="tok-k">$ref</span>: <span class="tok-s">'#/channels/paymentInitiated'</span>
+    <span class="tok-k">summary</span>: <span class="tok-s">Payment initiation service publishes after pacs.008 validation</span>
+    <span class="tok-k">bindings</span>:
+      <span class="tok-k">kafka</span>:
+        <span class="tok-k">clientId</span>: <span class="tok-s">payment-initiation-svc</span>
+        <span class="tok-k">groupId</span>: <span class="tok-s">~</span>  <span class="tok-c"># producer has no group</span>
+
+<span class="tok-k">components</span>:
+  <span class="tok-k">messages</span>:
+    <span class="tok-k">PaymentInitiatedMessage</span>:
+      <span class="tok-k">name</span>: <span class="tok-s">PaymentInitiated</span>
+      <span class="tok-k">title</span>: <span class="tok-s">Payment Initiated</span>
+      <span class="tok-k">contentType</span>: <span class="tok-s">application/vnd.apache.avro+json;version=1</span>
+      <span class="tok-k">schemaFormat</span>: <span class="tok-s">application/vnd.apache.avro;version=1.9.0</span>
+      <span class="tok-k">headers</span>:
+        <span class="tok-k">type</span>: <span class="tok-s">object</span>
+        <span class="tok-k">properties</span>:
+          <span class="tok-k">correlationId</span>:
+            <span class="tok-k">type</span>: <span class="tok-s">string</span>
+            <span class="tok-k">description</span>: <span class="tok-s">ISO 20022 EndToEndId, carries across all downstream events</span>
+          <span class="tok-k">traceId</span>:
+            <span class="tok-k">type</span>: <span class="tok-s">string</span>
+            <span class="tok-k">description</span>: <span class="tok-s">OpenTelemetry W3C TraceContext trace-id</span>
+          <span class="tok-k">schemaVersion</span>:
+            <span class="tok-k">type</span>: <span class="tok-s">string</span>
+            <span class="tok-k">enum</span>: [<span class="tok-s">"2.0"</span>]
+      <span class="tok-k">payload</span>:
+        <span class="tok-k">$ref</span>: <span class="tok-s">'#/components/schemas/PaymentInitiatedPayload'</span>
+
+  <span class="tok-k">schemas</span>:
+    <span class="tok-k">PaymentInitiatedPayload</span>:
+      <span class="tok-k">type</span>: <span class="tok-s">object</span>
+      <span class="tok-k">required</span>: [paymentId, endToEndId, debtorIban, creditorIban, amount, currency]
+      <span class="tok-k">properties</span>:
+        <span class="tok-k">paymentId</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">string</span>
+          <span class="tok-k">format</span>: <span class="tok-s">uuid</span>
+          <span class="tok-k">description</span>: <span class="tok-s">Internal UUID, partition key</span>
+        <span class="tok-k">endToEndId</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">string</span>
+          <span class="tok-k">maxLength</span>: <span class="tok-n">35</span>
+          <span class="tok-k">description</span>: <span class="tok-s">ISO 20022 EndToEndId, set by originator, idempotency key</span>
+        <span class="tok-k">debtorIban</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">string</span>
+          <span class="tok-k">x-pdpl-field</span>: <span class="tok-s">personal-financial</span>
+        <span class="tok-k">creditorIban</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">string</span>
+          <span class="tok-k">x-pdpl-field</span>: <span class="tok-s">personal-financial</span>
+        <span class="tok-k">amount</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">string</span>
+          <span class="tok-k">description</span>: <span class="tok-s">Decimal as string (Avro logicalType decimal, precision 18 scale 2)</span>
+        <span class="tok-k">currency</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">string</span>
+          <span class="tok-k">enum</span>: [<span class="tok-s">"SAR"</span>, <span class="tok-s">"USD"</span>, <span class="tok-s">"EUR"</span>, <span class="tok-s">"GBP"</span>]
+        <span class="tok-k">initiatedAt</span>:
+          <span class="tok-k">type</span>: <span class="tok-s">string</span>
+          <span class="tok-k">format</span>: <span class="tok-s">date-time</span>
+          <span class="tok-k">description</span>: <span class="tok-s">Server-set timestamp, not client-supplied</span>
+
+  <span class="tok-k">securitySchemes</span>:
+    <span class="tok-k">mTLS</span>:
+      <span class="tok-k">type</span>: <span class="tok-s">X509</span>
+      <span class="tok-k">description</span>: <span class="tok-s">mTLS with internal CA; certificate CN must match client-id pattern</span></code></pre>
+          </div>
+
+          <p>Two things worth calling out explicitly. First, the custom extensions (<code>x-channel-owner</code>, <code>x-pdpl-classification</code>, <code>x-sama-scope</code>, <code>x-pdpl-field</code>) are not decoration &mdash; they feed the governance pipeline. A CI gate validates that every channel spec has <code>x-pdpl-classification</code> set to a recognised value and that every field carrying personal data has <code>x-pdpl-field</code> annotated. Second, the Kafka bindings in the channel include <code>topicConfiguration</code>: this means the spec doubles as the source of truth for topic creation via Terraform or the Kafka Admin API, preventing topic configuration drift between environments.</p>
+
+          <h2 id="schema-registry">Schema Registry alignment</h2>
+          <p>AsyncAPI defines the contract; Confluent Schema Registry enforces the wire-format compatibility rule at produce and consume time. These two tools work at different layers and need to be kept consistent &mdash; which means the Avro schema in Schema Registry must be the canonical source for the payload definition referenced in the AsyncAPI spec, not a copy.</p>
+
+          <div class="diagram" role="img" aria-label="AsyncAPI spec and Confluent Schema Registry as the two contract layers for a Kafka channel">
+            <div class="diagram__inner">
+              <svg width="780" height="280" viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="sr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="sr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                  <marker id="sr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Git repo -->
+                <rect x="20" y="90" width="140" height="80" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="90" y="116" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Git Repo</text>
+                <text x="90" y="132" text-anchor="middle" fill="#71717a" font-size="8">*.asyncapi.yaml</text>
+                <text x="90" y="144" fill="#71717a" font-size="8" text-anchor="middle">*.avsc (Avro schemas)</text>
+                <text x="90" y="158" fill="#71717a" font-size="8" text-anchor="middle">asyncapi ref → avsc</text>
+
+                <!-- CI pipeline -->
+                <rect x="230" y="70" width="150" height="120" rx="6" fill="#0f0f16" stroke="#a78bfa"/>
+                <text x="305" y="95" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">CI Pipeline</text>
+                <text x="240" y="114" fill="#71717a" font-size="8">1. asyncapi validate spec</text>
+                <text x="240" y="128" fill="#71717a" font-size="8">2. avro compat check → SR</text>
+                <text x="240" y="142" fill="#71717a" font-size="8">3. register new version → SR</text>
+                <text x="240" y="156" fill="#71717a" font-size="8">4. generate Spring bindings</text>
+                <text x="240" y="170" fill="#71717a" font-size="8">5. publish to Maven</text>
+
+                <!-- Schema Registry -->
+                <rect x="460" y="90" width="150" height="80" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="535" y="116" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Schema Registry</text>
+                <text x="535" y="132" text-anchor="middle" fill="#71717a" font-size="8">subject: payments.initiated.v2</text>
+                <text x="535" y="144" text-anchor="middle" fill="#71717a" font-size="8">compatibility: FULL_TRANSITIVE</text>
+                <text x="535" y="156" text-anchor="middle" fill="#71717a" font-size="8">v1, v2 (current)</text>
+
+                <!-- Kafka topic -->
+                <rect x="460" y="200" width="150" height="55" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="535" y="224" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Kafka Topic</text>
+                <text x="535" y="240" text-anchor="middle" fill="#71717a" font-size="8">payments.initiated.v2</text>
+                <text x="535" y="252" text-anchor="middle" fill="#71717a" font-size="8">schema-id in message header</text>
+
+                <!-- Maven artifact -->
+                <rect x="660" y="90" width="110" height="80" rx="6" fill="#1c1c28" stroke="#ef4444"/>
+                <text x="715" y="114" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Maven JAR</text>
+                <text x="715" y="130" text-anchor="middle" fill="#71717a" font-size="8">generated POJOs</text>
+                <text x="715" y="142" text-anchor="middle" fill="#71717a" font-size="8">Spring Cloud Stream</text>
+                <text x="715" y="154" text-anchor="middle" fill="#71717a" font-size="8">channel beans</text>
+
+                <!-- arrows -->
+                <line x1="160" y1="130" x2="228" y2="130" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sr1)"/>
+                <line x1="380" y1="120" x2="458" y2="120" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#sr2)"/>
+                <line x1="380" y1="145" x2="458" y2="220" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#sr3)"/>
+                <line x1="380" y1="160" x2="658" y2="130" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#sr1)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; CI pipeline as the bridge between AsyncAPI spec + Avro schemas in Git and Schema Registry + generated Maven artefacts</div>
+          </div>
+
+          <p>The practical approach: the <code>.avsc</code> Avro schema file lives in Git next to the AsyncAPI spec. The AsyncAPI spec references the <code>.avsc</code> file via <code>schemaFormat: application/vnd.apache.avro</code> and a relative path. CI runs <code>schema-registry-maven-plugin</code> to check compatibility against the registered schema in Schema Registry before merging any PR that modifies the schema. On merge to main, CI registers the new schema version and publishes the updated Maven artefact. Services pull the versioned artefact &mdash; they do not embed schema definitions in their own source.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">FULL_TRANSITIVE compatibility is the only safe mode for payment channels</div>
+            <p>BACKWARD compatibility lets new consumers read old messages. FORWARD compatibility lets old consumers read new messages. FULL gives both. FULL_TRANSITIVE extends FULL to every historical version, not just the immediately prior one. For a payment topic that may have consumers still running a version from six months ago, FULL_TRANSITIVE is the only mode that guarantees no consumer breaks regardless of when they last updated their schema artefact.</p>
+          </div>
+
+          <h2 id="pdpl-classification">PDPL classification metadata</h2>
+          <p>Saudi Arabia&rsquo;s Personal Data Protection Law (PDPL) requires that personal data processing be documented, purpose-limited, and access-controlled. A Kafka topic carrying IBAN numbers, customer names, or national ID references is a personal data processing activity &mdash; not just a technical message bus. The AsyncAPI spec is the place to document this, and the custom extensions that do so need to be enforced in CI, not treated as optional annotations.</p>
+
+          <p>A three-level classification scheme maps cleanly onto PDPL categories and Kafka access control:</p>
+
+          <table>
+            <thead>
+              <tr><th>x-pdpl-classification</th><th>PDPL Category</th><th>Example channels</th><th>Kafka ACL pattern</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>public</code></td><td>Non-personal</td><td>currency rates, product catalogue</td><td>Any authenticated service</td></tr>
+              <tr><td><code>internal</code></td><td>Organisation data</td><td>service health events, audit log entries (aggregated)</td><td>Service certificate in payments org</td></tr>
+              <tr><td><code>restricted</code></td><td>Personal financial data (PDPL Art. 4)</td><td>payments.initiated, account-updates</td><td>Explicit allowlist of consumer groups, mTLS required</td></tr>
+              <tr><td><code>sensitive</code></td><td>Special categories (PDPL Art. 23)</td><td>fraud-flags, credit-score events</td><td>Separate Kafka cluster, dual-key encryption at rest</td></tr>
+            </tbody>
+          </table>
+
+          <p>The CI enforcement script checks every AsyncAPI spec for the presence of <code>x-pdpl-classification</code> at the info level, and validates that every schema property whose name matches a personal-data pattern (<code>.*Iban.*</code>, <code>.*NationalId.*</code>, <code>.*FullName.*</code>, <code>.*PhoneNumber.*</code>) has an <code>x-pdpl-field</code> annotation. Unannotated personal data fields fail the build.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ci/validate-pdpl-annotations.sh</span><span class="code-block__lang">shell</span></div>
+<pre><code><span class="tok-c">#!/usr/bin/env bash</span>
+<span class="tok-t">set</span> -euo pipefail
+
+<span class="tok-n">SPEC_FILE</span>=<span class="tok-s">"$1"</span>
+
+<span class="tok-c"># Require top-level PDPL classification</span>
+<span class="tok-n">PDPL_CLASS</span>=$(<span class="tok-n">yq</span> <span class="tok-s">'.info["x-pdpl-classification"]'</span> <span class="tok-s">"$SPEC_FILE"</span>)
+<span class="tok-k">if</span> [[ <span class="tok-s">"$PDPL_CLASS"</span> == <span class="tok-s">"null"</span> || -z <span class="tok-s">"$PDPL_CLASS"</span> ]]; <span class="tok-k">then</span>
+  <span class="tok-n">echo</span> <span class="tok-s">"ERROR: $SPEC_FILE missing info.x-pdpl-classification"</span> &gt;&amp;2
+  <span class="tok-t">exit</span> 1
+<span class="tok-k">fi</span>
+
+<span class="tok-c"># Find schema properties matching personal-data patterns</span>
+<span class="tok-n">PERSONAL_FIELDS</span>=$(<span class="tok-n">yq</span> <span class="tok-s">'.components.schemas[].properties | keys | .[]'</span> <span class="tok-s">"$SPEC_FILE"</span> \
+  | <span class="tok-n">grep</span> -iE <span class="tok-s">'iban|nationalid|fullname|phonenumber|email|address'</span> || <span class="tok-k">true</span>)
+
+<span class="tok-k">for</span> <span class="tok-n">field</span> <span class="tok-k">in</span> <span class="tok-s">$PERSONAL_FIELDS</span>; <span class="tok-k">do</span>
+  <span class="tok-n">ANNOTATION</span>=$(<span class="tok-n">yq</span> <span class="tok-s">".components.schemas[].properties[\"$field\"][\"x-pdpl-field\"]"</span> <span class="tok-s">"$SPEC_FILE"</span>)
+  <span class="tok-k">if</span> [[ <span class="tok-s">"$ANNOTATION"</span> == <span class="tok-s">"null"</span> || -z <span class="tok-s">"$ANNOTATION"</span> ]]; <span class="tok-k">then</span>
+    <span class="tok-n">echo</span> <span class="tok-s">"ERROR: field '$field' looks like personal data but has no x-pdpl-field annotation"</span> &gt;&amp;2
+    <span class="tok-t">exit</span> 1
+  <span class="tok-k">fi</span>
+<span class="tok-k">done</span>
+
+<span class="tok-n">echo</span> <span class="tok-s">"PDPL annotation check passed: $SPEC_FILE (class=$PDPL_CLASS)"</span></code></pre>
+          </div>
+
+          <h2 id="code-generation">Code generation</h2>
+          <p>The <code>asyncapi-generator</code> CLI with the <code>@asyncapi/java-spring-cloud-stream-template</code> template generates Spring Cloud Stream <code>@Bean</code> configurations, message POJOs, and channel binding interfaces from the AsyncAPI spec. The generated code is published as a Maven artefact and versioned alongside the spec &mdash; services depend on the artefact, not on the spec file itself.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>Jenkinsfile &mdash; generate and publish channel bindings</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">stage</span>(<span class="tok-s">'Generate Channel Bindings'</span>) {
+  <span class="tok-k">steps</span> {
+    <span class="tok-n">sh</span> <span class="tok-s">"""</span>
+      <span class="tok-s">asyncapi generate fromTemplate payments-initiated.asyncapi.yaml \</span>
+        <span class="tok-s">@asyncapi/java-spring-cloud-stream-template \</span>
+        <span class="tok-s">--param javaPackage=com.acmebank.events.payments \</span>
+        <span class="tok-s">--param artifactId=payments-channel-bindings \</span>
+        <span class="tok-s">--param springCloudStreamVersion=4.1.3 \</span>
+        <span class="tok-s">--output target/generated-sources/channels</span>
+      <span class="tok-s">"""</span>
+  }
+}
+
+<span class="tok-k">stage</span>(<span class="tok-s">'Publish to Maven'</span>) {
+  <span class="tok-k">when</span> { <span class="tok-k">branch</span> <span class="tok-s">'main'</span> }
+  <span class="tok-k">steps</span> {
+    <span class="tok-n">sh</span> <span class="tok-s">"""</span>
+      <span class="tok-s">mvn deploy -f target/generated-sources/channels/pom.xml \</span>
+        <span class="tok-s">-DaltDeploymentRepository=nexus::default::https://nexus.acmebank.internal/repository/maven-releases/ \</span>
+        <span class="tok-s">-Drevision=${SPEC_VERSION}.${BUILD_NUMBER}</span>
+      <span class="tok-s">"""</span>
+  }
+}</code></pre>
+          </div>
+
+          <p>The generated Spring Cloud Stream binding for a consumer looks like:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>FraudEngineChannelConsumer.java (generated)</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-c">// Generated by asyncapi-generator. Do not edit manually.</span>
+<span class="tok-k">@Component</span>
+<span class="tok-t">public class</span> <span class="tok-n">FraudEngineChannelConsumer</span>
+        <span class="tok-t">implements</span> <span class="tok-n">Consumer</span>&lt;<span class="tok-n">Message</span>&lt;<span class="tok-n">PaymentInitiatedPayload</span>&gt;&gt; {
+
+    <span class="tok-c">/**
+     * Bound to: payments.initiated.v2
+     * Consumer group: fraud-engine
+     * Channel contract: payments-initiated.asyncapi.yaml v2.0.0
+     */</span>
+    <span class="tok-k">@Override</span>
+    <span class="tok-t">public void</span> <span class="tok-n">accept</span>(<span class="tok-n">Message</span>&lt;<span class="tok-n">PaymentInitiatedPayload</span>&gt; message) {
+        <span class="tok-c">// Implement your fraud check logic here</span>
+        <span class="tok-c">// payload is already deserialized via Confluent Avro deserializer</span>
+        <span class="tok-n">PaymentInitiatedPayload</span> payload = message.getPayload();
+        <span class="tok-c">// headers are accessible via message.getHeaders()</span>
+        <span class="tok-n">String</span> correlationId = (<span class="tok-n">String</span>) message.getHeaders().get(<span class="tok-s">"correlationId"</span>);
+    }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Generated code is a starting point, not final code</div>
+            <p>The asyncapi-generator template produces the binding interface and the POJO &mdash; the shape and wiring. The business logic (the actual fraud check, the settlement instruction) stays in handwritten code that implements the generated interface. Keep the generated layer thin: binding, deserialization, header extraction. The moment you add business logic to generated code, you will regret the next time the spec version increments and you re-run the generator.</p>
+          </div>
+
+          <h2 id="versioning">Channel versioning strategy</h2>
+          <p>Channel versioning is not schema versioning. A schema version increment is a wire-format change handled by Schema Registry compatibility rules. A channel version increment is a semantic change to the contract: a new partition key, a changed retention policy, a redefined meaning for an existing field, a change in the set of consumers or producers, or a PDPL reclassification.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Encode the major version in the topic name</h4>
+              <p>Topic names are permanent in a running Kafka cluster without migration. Use <code>payments.initiated.v2</code>, not <code>payments.initiated</code>. When a breaking channel change is needed, create <code>payments.initiated.v3</code>, migrate consumers, and deprecate v2 with a 90-day sunset window. Never rename or repurpose an existing topic.</p>
+            </li>
+            <li>
+              <h4>Patch versions are schema-only</h4>
+              <p>A schema change that passes FULL_TRANSITIVE compatibility gets a patch version increment in the AsyncAPI spec (e.g. <code>2.0.0</code> &rarr; <code>2.0.1</code>). A new optional field, a description update, an <code>x-pdpl-field</code> annotation added &mdash; these are patch changes. No topic rename, no consumer re-registration required.</p>
+            </li>
+            <li>
+              <h4>Minor versions add operations, not channels</h4>
+              <p>Adding a new consuming service to the AsyncAPI spec (a new <code>operations</code> entry) is a minor version change (<code>2.0.0</code> &rarr; <code>2.1.0</code>). The channel itself is unchanged; the contract is updated to document the new consumer. This triggers a Maven artefact publish but no Kafka configuration change.</p>
+            </li>
+            <li>
+              <h4>Major versions always create a new topic</h4>
+              <p>Any change to the partition key, retention policy, cleanup.policy, or number of partitions is a major version change and requires a new topic. Run old and new topics in parallel: the producer writes to both, consumers migrate at their own pace, the old topic is sealed (no new produces) after all consumer groups have committed their final offsets, and deleted after the retention period.</p>
+            </li>
+            <li>
+              <h4>Sunset deprecated channels with a formal process</h4>
+              <p>Add a <code>x-deprecated-at</code> and <code>x-sunset-date</code> extension to the channel entry in the AsyncAPI spec when deprecation begins. CI alerts on consumer services still registering against a deprecated channel in their Spring config. The channel contract owner owns the migration &mdash; not the consumers.</p>
+            </li>
+          </ol>
+
+          <h2 id="ci-enforcement">CI enforcement</h2>
+          <p>An AsyncAPI spec checked into Git without CI enforcement is a documentation file. CI enforcement is what makes it a contract. Three gates are required on every PR that modifies a channel spec:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>.github/workflows/asyncapi-validate.yml (or Tekton equivalent)</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">name</span>: <span class="tok-s">AsyncAPI Contract Validation</span>
+<span class="tok-k">on</span>:
+  <span class="tok-k">pull_request</span>:
+    <span class="tok-k">paths</span>: [<span class="tok-s">'channels/**/*.asyncapi.yaml'</span>, <span class="tok-s">'schemas/**/*.avsc'</span>]
+
+<span class="tok-k">jobs</span>:
+  <span class="tok-k">validate</span>:
+    <span class="tok-k">runs-on</span>: <span class="tok-s">self-hosted</span>  <span class="tok-c"># air-gapped internal runner</span>
+    <span class="tok-k">steps</span>:
+      <span class="tok-c"># Gate 1: AsyncAPI spec structural validity</span>
+      - <span class="tok-k">name</span>: <span class="tok-s">Validate AsyncAPI spec</span>
+        <span class="tok-k">run</span>: |
+          <span class="tok-n">asyncapi validate</span> <span class="tok-s">${{ matrix.spec }}</span>
+
+      <span class="tok-c"># Gate 2: PDPL annotation completeness</span>
+      - <span class="tok-k">name</span>: <span class="tok-s">PDPL annotation check</span>
+        <span class="tok-k">run</span>: |
+          <span class="tok-n">bash ci/validate-pdpl-annotations.sh</span> <span class="tok-s">${{ matrix.spec }}</span>
+
+      <span class="tok-c"># Gate 3: Avro compatibility against Schema Registry</span>
+      - <span class="tok-k">name</span>: <span class="tok-s">Schema compatibility check</span>
+        <span class="tok-k">run</span>: |
+          <span class="tok-n">mvn schema-registry:test-compatibility</span> \
+            <span class="tok-s">-Dschema.registry.url=https://schema-registry.internal:8082</span> \
+            <span class="tok-s">-Dsubject=${SUBJECT}</span> \
+            <span class="tok-s">-DschemaPath=${AVSC_FILE}</span></code></pre>
+          </div>
+
+          <p>A fourth gate runs only on the main branch after merge: channel topic configuration reconciliation. A Kafka Admin API script reads the existing topic configuration from the broker and compares it to the <code>bindings.kafka.topicConfiguration</code> block in the AsyncAPI spec. Any drift &mdash; a manually applied retention change, a partition count that does not match &mdash; fails the post-merge check and opens a Jira ticket in the channel-governance backlog automatically. The spec is always the source of truth; the broker is the materialisation.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never allow a spec change without a co-located schema change review</div>
+            <p>AsyncAPI spec PRs that change a schema field but do not update the Avro <code>.avsc</code> file in the same commit are a red flag: the spec is drifting away from the actual wire format. Require that schema changes always update both the <code>.avsc</code> and the AsyncAPI spec in one atomic PR. A spec that references a Schema Registry subject but describes a different schema than what is registered is worse than no spec at all &mdash; it actively misleads consumers.</p>
+          </div>
+
+          <h2 id="governance">Channel ownership &amp; governance</h2>
+          <p>Channel governance answers three questions that matter for a bank running forty-plus Kafka topics across eight integration domains: who can create a new channel, who can modify an existing one, and who is accountable when a consumer breaks.</p>
+
+          <div class="diagram" role="img" aria-label="Channel governance model: domain channel registry, change review, and consumer impact tracking">
+            <div class="diagram__inner">
+              <svg width="780" height="300" viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="gov1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="gov2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Domain squad (producer) -->
+                <rect x="20" y="40" width="160" height="70" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="100" y="64" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Domain Squad</text>
+                <text x="100" y="80" text-anchor="middle" fill="#71717a" font-size="8">(channel owner &amp; producer)</text>
+                <text x="100" y="96" text-anchor="middle" fill="#71717a" font-size="8">proposes spec change via PR</text>
+
+                <!-- Architecture review -->
+                <rect x="260" y="20" width="180" height="110" rx="6" fill="#0f0f16" stroke="#a78bfa"/>
+                <text x="350" y="44" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Channel Registry PR</text>
+                <text x="270" y="62" fill="#71717a" font-size="8">CODEOWNERS: integration-arch</text>
+                <text x="270" y="76" fill="#71717a" font-size="8">Required reviewers:</text>
+                <text x="278" y="90" fill="#71717a" font-size="8">&bull; channel owner squad</text>
+                <text x="278" y="104" fill="#71717a" font-size="8">&bull; all consumer squad TLs</text>
+                <text x="278" y="118" fill="#71717a" font-size="8">&bull; data protection officer (restricted+)</text>
+
+                <!-- Channel registry (Git) -->
+                <rect x="520" y="40" width="160" height="70" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="600" y="64" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Channel Registry</text>
+                <text x="600" y="80" text-anchor="middle" fill="#71717a" font-size="8">Git: channels/ directory</text>
+                <text x="600" y="96" text-anchor="middle" fill="#71717a" font-size="8">one asyncapi.yaml per channel</text>
+
+                <!-- Consumer squads -->
+                <rect x="20" y="180" width="160" height="80" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="100" y="204" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Consumer Squads</text>
+                <text x="100" y="222" text-anchor="middle" fill="#71717a" font-size="8">fraud-engine</text>
+                <text x="100" y="236" text-anchor="middle" fill="#71717a" font-size="8">liquidity-manager</text>
+                <text x="100" y="250" text-anchor="middle" fill="#71717a" font-size="8">notification-service</text>
+
+                <!-- Impact tracker -->
+                <rect x="260" y="170" width="180" height="100" rx="6" fill="#0f0f16" stroke="#ef4444"/>
+                <text x="350" y="194" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Consumer Impact Check</text>
+                <text x="270" y="212" fill="#71717a" font-size="8">CI scans all consumer repos</text>
+                <text x="270" y="226" fill="#71717a" font-size="8">for $subject binding</text>
+                <text x="270" y="240" fill="#71717a" font-size="8">notifies consuming TLs if</text>
+                <text x="270" y="254" fill="#71717a" font-size="8">breaking change detected</text>
+
+                <!-- Arrows -->
+                <line x1="180" y1="75" x2="258" y2="75" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#gov1)"/>
+                <line x1="440" y1="75" x2="518" y2="75" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#gov1)"/>
+                <line x1="100" y1="110" x2="100" y2="178" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4 2"/>
+                <line x1="350" y1="130" x2="350" y2="168" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#gov1)"/>
+                <line x1="180" y1="220" x2="258" y2="220" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#gov2)"/>
+                <text x="210" y="69" fill="#00d4aa" font-size="8">PR</text>
+                <text x="470" y="69" fill="#00d4aa" font-size="8">merge</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 3 &mdash; Channel governance flow: domain squad proposes, architecture reviews with consumer TL sign-off, CI checks consumer impact before merge</div>
+          </div>
+
+          <p>Channel ownership rules at SAIB&rsquo;s integration programme:</p>
+          <ul>
+            <li><strong>One squad owns each channel</strong>, identified by <code>x-channel-owner</code> in the spec. The owning squad is responsible for the channel contract, the PDPL annotations, and the consumer migration when the channel changes. Consumers do not own channels they consume.</li>
+            <li><strong>New channels require architecture sign-off</strong>. A squad cannot create a new Kafka topic by pushing YAML &mdash; every new channel spec requires a PR reviewed by the integration architecture group. This prevents topic sprawl: the architecture team can reject a proposed channel if the same event is already published on an existing topic under a different name.</li>
+            <li><strong>Restricted and sensitive channels require Data Protection Officer review</strong> on every PR that changes the PDPL classification or adds a new consumer. The DPO sign-off is a CODEOWNERS requirement, not optional.</li>
+          </ul>
+
+          <h2 id="tradeoffs">AsyncAPI vs alternatives</h2>
+
+          <table>
+            <thead>
+              <tr><th>Approach</th><th>Catches semantic breaks</th><th>Code generation</th><th>PDPL metadata</th><th>CI integration</th><th>Tooling maturity</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>AsyncAPI 3.0</td><td>Yes (full channel contract)</td><td>Yes (Spring Cloud Stream)</td><td>Custom extensions, CI-enforced</td><td>Strong (asyncapi-cli)</td><td>Growing; 3.0 tools less mature than 2.x</td></tr>
+              <tr><td>Schema Registry only</td><td>Wire-format only</td><td>No</td><td>No</td><td>Strong (maven plugin)</td><td>Mature, production-proven</td></tr>
+              <tr><td>OpenAPI callbacks</td><td>No (REST-centric)</td><td>Yes (OpenAPI generator)</td><td>Extension pattern</td><td>Strong</td><td>Mature, but conceptually wrong for Kafka</td></tr>
+              <tr><td>Informal wiki docs</td><td>No</td><td>No</td><td>No</td><td>None</td><td>N/A</td></tr>
+              <tr><td>Protobuf + Buf</td><td>Partial (wire format + naming)</td><td>Yes (multi-language)</td><td>Custom options</td><td>Strong (buf CLI)</td><td>Mature for gRPC; Kafka integration via Buf Schema Registry</td></tr>
+            </tbody>
+          </table>
+
+          <p>The decision: use AsyncAPI 3.0 + Schema Registry together. AsyncAPI is the contract document; Schema Registry is the enforcement mechanism. Do not choose between them. If the team is not ready for the overhead of full AsyncAPI governance on all channels, start with the payment domain channels &mdash; the highest-risk, highest-PDPL-exposure topics &mdash; and expand coverage as the tooling becomes familiar.</p>
+
+          <h2 id="antipatterns">Anti-patterns</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Generating the AsyncAPI spec from code</div>
+            <p>Some frameworks auto-generate AsyncAPI specs by scanning <code>@KafkaListener</code> annotations. The result describes what the code does &mdash; not what the channel contract intends. Generated specs drift the moment a developer refactors the listener class. Write the spec first. The spec is the authority; the code is the implementation. If your tools cannot produce a spec from code that matches the intent you want to express, the answer is to write the spec manually, not to accept a weaker spec.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">One AsyncAPI spec for all channels</div>
+            <p>A single <code>banking-all-channels.asyncapi.yaml</code> file covering sixty topics is unmanageable: every PR touches the same file, CODEOWNERS cannot be applied per-channel, and the file becomes a merge conflict magnet. One spec per channel, stored in a <code>channels/</code> directory with a CODEOWNERS file mapping each channel spec to its owning squad. The CI pipeline validates all specs on each PR but only requires sign-off from the owners of the specific channels changed.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Treating <code>x-</code> extensions as optional decoration</div>
+            <p>Custom extensions are only useful if CI enforces them. An <code>x-pdpl-classification</code> that developers add only when they remember, or an <code>x-channel-owner</code> that nobody updates when a squad reorganisation happens, provides false confidence. Every <code>x-</code> extension that matters for governance must be checked in CI, with a build failure if it is absent or set to an unrecognised value. If you cannot enforce it in CI, remove it from the spec &mdash; misleading metadata is worse than no metadata.</p>
+          </div>
+
+          <nav class="article-nav">
+            <a href="../event-driven.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Event-Driven Architecture</div>
+            </a>
+            <a href="event-sourcing-and-cqrs.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Event Sourcing &amp; CQRS &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
