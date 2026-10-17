@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Circuit Breaker &amp; Bulkhead: Resilience4j for Financial Integration &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Production-grade circuit breaker and bulkhead patterns for financial services integration using Resilience4j 2: state machine configuration, thread-pool vs semaphore bulkheads, IBM ACE message flow hardening, fallback strategies for payment APIs, and the Micrometer metrics that prove the patterns are working.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Circuit Breaker &amp; Bulkhead: Resilience4j for Financial Integration &mdash; Lab">
+  <meta property="og:description" content="Production-grade circuit breakers and bulkheads using Resilience4j 2 in regulated banking integration. IBM ACE, Spring Boot, SAMA-grade fallback design.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/circuit-breaker-and-bulkhead.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Circuit Breaker &amp; Bulkhead: Resilience4j for Financial Integration">
+  <meta name="twitter:description" content="Resilience4j circuit breaker and bulkhead for payment APIs and IBM ACE flows in a KSA bank environment.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/circuit-breaker-and-bulkhead.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .comparison-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.875rem; }
+    .comparison-table th { background: var(--color-surface); color: var(--color-text); font-weight: 600; padding: 0.75rem 1rem; text-align: left; border-bottom: 2px solid var(--color-border); }
+    .comparison-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); vertical-align: top; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .comparison-table td:first-child { color: var(--color-text); font-weight: 500; }
+    .tag-yes { color: #00d4aa; font-weight: 600; }
+    .tag-no  { color: #ef4444; font-weight: 600; }
+    .tag-partial { color: #fbbf24; font-weight: 600; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Circuit Breaker & Bulkhead: Resilience4j for Financial Integration",
+    "description": "Production-grade circuit breaker and bulkhead patterns using Resilience4j 2 in regulated financial services integration with IBM ACE and Spring Boot.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-10-17",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/integration-patterns/circuit-breaker-and-bulkhead.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Integration Patterns &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/integration-patterns.html"
+    },
+    "proficiencyLevel": "Advanced",
+    "dependencies": "Resilience4j 2.x, Spring Boot 3.x, IBM ACE 12, Micrometer, Prometheus"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Patterns</a><span>/</span>Circuit Breaker &amp; Bulkhead</div>
+          <span class="overline">Lab Article</span>
+          <h1>Circuit Breaker &amp; Bulkhead: Resilience4j for Financial Integration</h1>
+          <p class="lead">The patterns that stop a slow SARIE adapter from taking down your entire payment platform: Resilience4j 2 circuit breaker state machine configuration, thread-pool versus semaphore bulkhead trade-offs, IBM ACE message flow hardening, fallback design for payment APIs, and the Micrometer metrics that prove the defence is actually working &mdash; not just deployed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#why-defaults-fail">Why defaults fail in banking</a></li>
+            <li><a href="#circuit-breaker">The circuit breaker pattern</a></li>
+            <li><a href="#bulkhead">The bulkhead pattern</a></li>
+            <li><a href="#resilience4j-config">Resilience4j 2 configuration</a></li>
+            <li><a href="#ace-hardening">IBM ACE flow hardening</a></li>
+            <li><a href="#fallbacks">Fallback design for payment APIs</a></li>
+            <li><a href="#observability">Observability &amp; Micrometer</a></li>
+            <li><a href="#pattern-comparison">Pattern comparison</a></li>
+            <li><a href="#production-checklist">Production checklist</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+            <li><a href="#when-not">When not to use circuit breakers</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Resilience4j 2.2 / Spring Boot 3.3 / IBM ACE 12 / Micrometer / Prometheus</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Financial services integration connects systems that were built by different teams, different vendors, and sometimes different decades. The SARIE payment gateway, the core banking CBS, the SAMA Open Banking authorisation server, the fraud screening engine &mdash; each of these has its own availability profile, its own latency characteristics, and its own failure modes. When one of them degrades, the naive integration does exactly the wrong thing: it holds threads waiting for a response, exhausts connection pools, and eventually takes down services that had nothing to do with the failing backend.</p>
+          <p><strong>Circuit breakers</strong> and <strong>bulkheads</strong> are the two patterns that interrupt this failure cascade. A circuit breaker monitors call outcomes and, when failures exceed a threshold, opens &mdash; refusing new calls to the failing backend and letting it recover. A bulkhead limits the concurrency any single downstream dependency can consume, so a slow backend cannot starve the thread pool that serves unrelated requests. Together, they form the fault-isolation layer that every production integration platform at a national bank needs before the first downstream goes slow.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Resilience4j over Hystrix</div>
+            <p>Netflix Hystrix is no longer maintained and its thread-pool model is heavyweight for modern reactive stacks. Resilience4j 2 is the production default for Spring Boot 3 applications: lighter, composable, native Micrometer integration, and compatible with both imperative and reactive Spring. The patterns in this article are Resilience4j 2 throughout; the principles apply to any implementation.</p>
+          </div>
+
+          <h2 id="why-defaults-fail">Why defaults fail in banking integration</h2>
+          <p>A standard Spring <code>RestTemplate</code> or Feign client configured with a 30-second connect timeout and a 60-second read timeout will hold a thread for up to 90 seconds waiting for a backend that has already stopped responding. A payment platform handling 500 concurrent payment initiations &mdash; each calling a CBS that is silently timing out &mdash; will exhaust a thread pool of 200 in under 20 seconds. The result is not a graceful degradation. It is a full platform outage, visible to every channel including channels whose underlying requests never needed the CBS at all.</p>
+          <p>Three failure modes are specific to financial services integration and absent from most general guidance.</p>
+          <ul>
+            <li><strong>Slow-response amplification.</strong> Payment gateways like SARIE respond in milliseconds under normal load but degrade to 5&ndash;15 seconds under settlement pressure at end-of-day. The integration layer has no visibility into whether this is transient overload or a sustained outage. Without a circuit breaker, every active request ties up a thread waiting for the answer.</li>
+            <li><strong>Partial failures in orchestrated flows.</strong> An ISO 20022 payment initiation may call fraud screening, currency conversion, beneficiary validation, and the payment gateway in sequence. If the third step starts timing out, the circuit breaker must trip on step 3 without affecting step 1, step 2, or the responses already returned. Correctly scoping the breaker to the individual downstream &mdash; not the whole flow &mdash; is the implementation detail that most first attempts get wrong.</li>
+            <li><strong>Cascading failures across domain boundaries.</strong> SAIB&rsquo;s integration estate spans domains owned by different teams. A circuit breaker that trips silently &mdash; with no metrics, no alert, and no fallback log entry &mdash; makes incident diagnosis significantly harder. The open state of a breaker must be visible in the observability stack within seconds of the trip, not discovered retroactively in a post-incident review.</li>
+          </ul>
+
+          <h2 id="circuit-breaker">The circuit breaker pattern</h2>
+          <p>A Resilience4j circuit breaker is a state machine with three primary states and two transitional ones. Understanding the transitions precisely matters for tuning &mdash; the defaults are almost always wrong for a banking integration environment.</p>
+
+          <div class="diagram" role="img" aria-label="Resilience4j circuit breaker state machine: CLOSED, OPEN, HALF_OPEN transitions">
+            <div class="diagram__inner">
+              <svg width="780" height="310" viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="cb1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="cb2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="cb3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- CLOSED state -->
+                <rect x="30" y="105" width="180" height="80" rx="8" fill="#1c1c28" stroke="#00d4aa" stroke-width="2"/>
+                <text x="120" y="135" text-anchor="middle" fill="#00d4aa" font-size="12" font-weight="700">CLOSED</text>
+                <text x="120" y="155" text-anchor="middle" fill="#a1a1aa" font-size="9">calls pass through</text>
+                <text x="120" y="170" text-anchor="middle" fill="#a1a1aa" font-size="9">ring buffer tracks outcomes</text>
+
+                <!-- OPEN state -->
+                <rect x="300" y="25" width="180" height="80" rx="8" fill="#1c1c28" stroke="#ef4444" stroke-width="2"/>
+                <text x="390" y="55" text-anchor="middle" fill="#ef4444" font-size="12" font-weight="700">OPEN</text>
+                <text x="390" y="75" text-anchor="middle" fill="#a1a1aa" font-size="9">calls rejected immediately</text>
+                <text x="390" y="90" text-anchor="middle" fill="#a1a1aa" font-size="9">CallNotPermittedException</text>
+
+                <!-- HALF_OPEN state -->
+                <rect x="300" y="195" width="180" height="80" rx="8" fill="#1c1c28" stroke="#fbbf24" stroke-width="2"/>
+                <text x="390" y="225" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="700">HALF_OPEN</text>
+                <text x="390" y="245" text-anchor="middle" fill="#a1a1aa" font-size="9">probe calls permitted</text>
+                <text x="390" y="260" text-anchor="middle" fill="#a1a1aa" font-size="9">outcome decides next state</text>
+
+                <!-- CLOSED → OPEN: failure rate exceeded -->
+                <path d="M 210 130 Q 260 70 298 70" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#cb2)"/>
+                <text x="246" y="88" text-anchor="middle" fill="#ef4444" font-size="9">failure rate &gt; threshold</text>
+                <text x="246" y="100" text-anchor="middle" fill="#71717a" font-size="8">(e.g. 50% in 100 calls)</text>
+
+                <!-- OPEN → HALF_OPEN: wait duration elapsed -->
+                <path d="M 480 105 Q 540 160 482 195" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#cb3)"/>
+                <text x="552" y="150" text-anchor="middle" fill="#fbbf24" font-size="9">waitDuration elapsed</text>
+                <text x="552" y="163" text-anchor="middle" fill="#71717a" font-size="8">(e.g. 30s)</text>
+
+                <!-- HALF_OPEN → CLOSED: probe calls pass -->
+                <path d="M 300 250 Q 180 280 120 187" fill="none" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cb1)"/>
+                <text x="200" y="293" text-anchor="middle" fill="#00d4aa" font-size="9">probe calls succeed</text>
+
+                <!-- HALF_OPEN → OPEN: probe calls fail -->
+                <path d="M 390 195 L 390 107" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#cb2)"/>
+                <text x="432" y="160" text-anchor="middle" fill="#ef4444" font-size="9">probe calls fail</text>
+
+                <!-- Slow calls annotation -->
+                <rect x="570" y="100" width="185" height="80" rx="6" fill="none" stroke="#a78bfa" stroke-dasharray="3 2"/>
+                <text x="663" y="120" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">SLOW calls also trip</text>
+                <text x="663" y="137" text-anchor="middle" fill="#a1a1aa" font-size="9">slowCallRateThreshold</text>
+                <text x="663" y="152" text-anchor="middle" fill="#a1a1aa" font-size="9">slowCallDurationThreshold</text>
+                <text x="663" y="167" text-anchor="middle" fill="#71717a" font-size="9">counts as failure if &gt; 5s</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Resilience4j circuit breaker state machine. Slow calls above a duration threshold count as failures and contribute to the trip condition.</div>
+          </div>
+
+          <p>The <strong>CLOSED</strong> state is normal operation. Resilience4j maintains a sliding window &mdash; count-based or time-based &mdash; of recent outcomes. When the failure rate (or slow-call rate) exceeds the configured threshold within the window, the breaker transitions to <strong>OPEN</strong>. In the open state, calls fail fast with a <code>CallNotPermittedException</code> rather than being forwarded to the backend. After the configured <code>waitDurationInOpenState</code>, the breaker enters <strong>HALF_OPEN</strong> and allows a configurable number of probe calls through. If enough probe calls succeed, the breaker closes; if they fail, it reopens and the wait timer resets.</p>
+          <p>The slow-call threshold deserves explicit attention in a banking context. A SARIE gateway call that consistently takes 8 seconds is a failure in practice even if it eventually returns a success response &mdash; it is holding a thread, blocking a saga step, and degrading end-user experience. Setting <code>slowCallDurationThreshold</code> to 5 seconds and <code>slowCallRateThreshold</code> to 80% catches this case, whereas a failure-rate-only configuration will not trip until the gateway starts returning errors rather than just being slow.</p>
+
+          <h2 id="bulkhead">The bulkhead pattern</h2>
+          <p>A circuit breaker controls whether calls are made. A bulkhead controls how many calls are made concurrently. The analogy is structural: a ship&rsquo;s bulkhead prevents a hull breach in one compartment from flooding the whole vessel. In an integration platform, a bulkhead prevents a slow or stuck downstream from consuming the entire thread pool that serves every other downstream.</p>
+          <p>Resilience4j provides two bulkhead implementations with materially different operational characteristics.</p>
+          <p><strong>Semaphore bulkhead.</strong> Limits concurrent calls using a counting semaphore. Lightweight, no additional threads. When the semaphore limit is reached, new calls fail immediately with <code>BulkheadFullException</code>. The caller&rsquo;s thread is blocked only for the duration of the actual downstream call &mdash; the semaphore acquisition is non-blocking by default (configurable with <code>maxWaitDuration</code>). The right choice for reactive applications and for high-throughput paths where you can tolerate a fast fail rather than queue.</p>
+          <p><strong>Thread-pool bulkhead.</strong> Executes calls in a dedicated thread pool and returns a <code>CompletableFuture</code>. Caller threads return immediately; the downstream call runs in a separate pool. When the pool is saturated, the call is rejected. The right choice for legacy blocking clients (JDBC, JMS, HttpClient with no async support) where you want caller-thread isolation. The cost is the additional thread pools &mdash; one per downstream &mdash; which adds memory and scheduling overhead. IBM ACE integration via Java Compute Nodes falls into this category.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Semaphore bulkhead does not isolate blocking callers</div>
+            <p>If your call to the downstream is blocking (synchronous JDBC, synchronous HTTP), a semaphore bulkhead limits concurrency but does not free the calling thread. A thread pool bulkhead submits the work to a separate pool, freeing the caller immediately. For IBM ACE Java Compute Nodes and any Spring service using JdbcTemplate, the thread-pool bulkhead is the correct choice.</p>
+          </div>
+
+          <h2 id="resilience4j-config">Resilience4j 2 configuration</h2>
+          <p>The canonical configuration for a banking integration service uses <code>application.yml</code> with Spring Boot&rsquo;s auto-configuration. Each downstream gets its own named circuit breaker instance; shared configuration is defined in a <code>default</code> profile and overridden per instance where the backend has a distinct latency or reliability profile.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>application.yml &mdash; Resilience4j circuit breakers</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">resilience4j:</span>
+  <span class="tok-k">circuitbreaker:</span>
+    <span class="tok-k">configs:</span>
+      <span class="tok-k">default:</span>
+        <span class="tok-k">slidingWindowType:</span> <span class="tok-s">COUNT_BASED</span>
+        <span class="tok-k">slidingWindowSize:</span> <span class="tok-n">100</span>
+        <span class="tok-k">minimumNumberOfCalls:</span> <span class="tok-n">20</span>
+        <span class="tok-k">failureRateThreshold:</span> <span class="tok-n">50</span>           <span class="tok-c"># % failures to trip CLOSED → OPEN</span>
+        <span class="tok-k">slowCallRateThreshold:</span> <span class="tok-n">80</span>           <span class="tok-c"># % slow calls also trips breaker</span>
+        <span class="tok-k">slowCallDurationThreshold:</span> <span class="tok-s">5s</span>       <span class="tok-c"># &gt;5s = counted as slow</span>
+        <span class="tok-k">waitDurationInOpenState:</span> <span class="tok-s">30s</span>
+        <span class="tok-k">permittedNumberOfCallsInHalfOpenState:</span> <span class="tok-n">5</span>
+        <span class="tok-k">automaticTransitionFromOpenToHalfOpenEnabled:</span> <span class="tok-s">true</span>
+        <span class="tok-k">registerHealthIndicator:</span> <span class="tok-s">true</span>
+        <span class="tok-k">recordExceptions:</span>
+          <span class="tok-p">-</span> <span class="tok-s">java.io.IOException</span>
+          <span class="tok-p">-</span> <span class="tok-s">java.util.concurrent.TimeoutException</span>
+          <span class="tok-p">-</span> <span class="tok-s">feign.FeignException.ServiceUnavailable</span>
+          <span class="tok-p">-</span> <span class="tok-s">feign.FeignException.GatewayTimeout</span>
+        <span class="tok-k">ignoreExceptions:</span>
+          <span class="tok-p">-</span> <span class="tok-s">com.acmebank.exception.ValidationException</span>  <span class="tok-c"># business errors, not infra</span>
+          <span class="tok-p">-</span> <span class="tok-s">com.acmebank.exception.InsufficientFundsException</span>
+    <span class="tok-k">instances:</span>
+      <span class="tok-k">sarie-gateway:</span>
+        <span class="tok-k">baseConfig:</span> <span class="tok-s">default</span>
+        <span class="tok-k">slowCallDurationThreshold:</span> <span class="tok-s">8s</span>    <span class="tok-c"># SARIE can be legitimately slow</span>
+        <span class="tok-k">waitDurationInOpenState:</span> <span class="tok-s">60s</span>   <span class="tok-c"># longer recovery window for gateway</span>
+      <span class="tok-k">cbs-core:</span>
+        <span class="tok-k">baseConfig:</span> <span class="tok-s">default</span>
+        <span class="tok-k">slidingWindowSize:</span> <span class="tok-n">200</span>          <span class="tok-c"># higher volume, wider window</span>
+        <span class="tok-k">failureRateThreshold:</span> <span class="tok-n">30</span>        <span class="tok-c"># tighter threshold for core banking</span>
+      <span class="tok-k">fraud-engine:</span>
+        <span class="tok-k">baseConfig:</span> <span class="tok-s">default</span>
+        <span class="tok-k">slowCallDurationThreshold:</span> <span class="tok-s">3s</span>   <span class="tok-c"># fraud must answer fast or not at all</span>
+        <span class="tok-k">waitDurationInOpenState:</span> <span class="tok-s">15s</span>   <span class="tok-c"># try to recover fraud quickly</span>
+
+  <span class="tok-k">bulkhead:</span>
+    <span class="tok-k">instances:</span>
+      <span class="tok-k">sarie-gateway:</span>
+        <span class="tok-k">maxConcurrentCalls:</span> <span class="tok-n">25</span>          <span class="tok-c"># SARIE license concurrency limit</span>
+        <span class="tok-k">maxWaitDuration:</span> <span class="tok-s">0ms</span>           <span class="tok-c"># fast-fail if limit reached</span>
+      <span class="tok-k">cbs-core:</span>
+        <span class="tok-k">maxConcurrentCalls:</span> <span class="tok-n">50</span>
+        <span class="tok-k">maxWaitDuration:</span> <span class="tok-s">100ms</span>
+
+  <span class="tok-k">thread-pool-bulkhead:</span>
+    <span class="tok-k">instances:</span>
+      <span class="tok-k">fraud-engine:</span>
+        <span class="tok-k">maxThreadPoolSize:</span> <span class="tok-n">10</span>
+        <span class="tok-k">coreThreadPoolSize:</span> <span class="tok-n">5</span>
+        <span class="tok-k">queueCapacity:</span> <span class="tok-n">20</span>
+        <span class="tok-k">keepAliveDuration:</span> <span class="tok-s">20ms</span></code></pre>
+          </div>
+
+          <p>The <code>ignoreExceptions</code> list is critical and is almost always omitted in first implementations. A <code>ValidationException</code> means the request was malformed &mdash; that is a client error, not an infrastructure failure. Counting it as a failure will trip the breaker during a period of legitimate high invalid-request volume, producing a false-positive open state that blocks all calls including valid ones. Separate infra exceptions from business exceptions explicitly.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentGatewayClient.java &mdash; Resilience4j annotations</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Component</span>
+<span class="tok-k">public class</span> <span class="tok-t">PaymentGatewayClient</span> {
+
+  <span class="tok-k">private final</span> <span class="tok-t">SarieGatewayFeign</span> feign;
+
+  <span class="tok-k">@CircuitBreaker</span>(name = <span class="tok-s">"sarie-gateway"</span>, fallbackMethod = <span class="tok-s">"sarieGatewayFallback"</span>)
+  <span class="tok-k">@Bulkhead</span>(name = <span class="tok-s">"sarie-gateway"</span>, type = Bulkhead.Type.<span class="tok-n">SEMAPHORE</span>)
+  <span class="tok-k">@TimeLimiter</span>(name = <span class="tok-s">"sarie-gateway"</span>)
+  <span class="tok-k">public</span> <span class="tok-t">CompletableFuture</span>&lt;<span class="tok-t">PaymentResponse</span>&gt; submitPayment(<span class="tok-t">PaymentRequest</span> req) {
+    <span class="tok-k">return</span> CompletableFuture.supplyAsync(() -&gt; feign.submit(req));
+  }
+
+  <span class="tok-k">private</span> <span class="tok-t">CompletableFuture</span>&lt;<span class="tok-t">PaymentResponse</span>&gt; sarieGatewayFallback(
+      <span class="tok-t">PaymentRequest</span> req, <span class="tok-t">CallNotPermittedException</span> ex) {
+    <span class="tok-c">// breaker is OPEN: queue to local outbox, return accepted</span>
+    outboxService.enqueue(req);
+    <span class="tok-k">return</span> CompletableFuture.completedFuture(
+        <span class="tok-t">PaymentResponse</span>.queued(req.getIdempotencyKey())
+    );
+  }
+
+  <span class="tok-k">private</span> <span class="tok-t">CompletableFuture</span>&lt;<span class="tok-t">PaymentResponse</span>&gt; sarieGatewayFallback(
+      <span class="tok-t">PaymentRequest</span> req, <span class="tok-t">BulkheadFullException</span> ex) {
+    <span class="tok-c">// concurrency cap: backpressure to caller, not silent drop</span>
+    <span class="tok-k">throw new</span> <span class="tok-t">PaymentGatewayCapacityException</span>(<span class="tok-s">"SARIE concurrency limit reached"</span>);
+  }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Annotation order matters</div>
+            <p>When stacking <code>@CircuitBreaker</code>, <code>@Bulkhead</code>, and <code>@TimeLimiter</code>, the outer-to-inner execution order follows the Spring AOP proxy chain. Resilience4j&rsquo;s default is: TimeLimiter wraps CircuitBreaker wraps Bulkhead. Apply the annotations in the order you want the inner execution to be wrapped outward, or configure <code>resilience4j.aspects-order</code> explicitly to avoid subtle evaluation surprises.</p>
+          </div>
+
+          <h2 id="ace-hardening">IBM ACE flow hardening</h2>
+          <p>IBM ACE 12 message flows call downstream services via HTTP Nodes, MQ Nodes, and Java Compute Nodes. The HTTP Request node has built-in timeout configuration but no circuit breaker semantics &mdash; a timed-out HTTP call is treated as a flow exception and triggers the flow&rsquo;s failure terminal, but repeated timeouts do not open a breaker to prevent the next call from waiting again. Wrapping ACE flows with a Resilience4j-backed Java Compute Node is the standard approach for production hardening.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ResilientHttpNode.java &mdash; ACE Java Compute Node with circuit breaker</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public class</span> <span class="tok-t">ResilientHttpNode</span> <span class="tok-k">extends</span> <span class="tok-t">JavaCompute</span> {
+
+  <span class="tok-k">private static final</span> <span class="tok-t">CircuitBreaker</span> breaker =
+      <span class="tok-t">CircuitBreakerRegistry</span>.ofDefaults()
+          .circuitBreaker(<span class="tok-s">"cbs-core"</span>, <span class="tok-t">CircuitBreakerConfig</span>.custom()
+              .failureRateThreshold(<span class="tok-n">50</span>)
+              .slowCallDurationThreshold(<span class="tok-t">Duration</span>.ofSeconds(<span class="tok-n">5</span>))
+              .waitDurationInOpenState(<span class="tok-t">Duration</span>.ofSeconds(<span class="tok-n">30</span>))
+              .build());
+
+  <span class="tok-k">@Override</span>
+  <span class="tok-k">public void</span> evaluate(<span class="tok-t">MbMessageAssembly</span> assembly) <span class="tok-k">throws</span> <span class="tok-t">MbException</span> {
+    <span class="tok-t">Supplier</span>&lt;<span class="tok-t">MbMessage</span>&gt; call = <span class="tok-t">Decorators</span>
+        .ofSupplier(() -&gt; forwardToHttp(assembly))
+        .withCircuitBreaker(breaker)
+        .withBulkhead(cbsBulkhead)
+        .withFallback(<span class="tok-t">List</span>.of(
+            <span class="tok-t">CallNotPermittedException</span>.class,
+            <span class="tok-t">BulkheadFullException</span>.class),
+            ex -&gt; buildFallbackMessage(assembly, ex))
+        .decorate();
+
+    <span class="tok-k">try</span> {
+      <span class="tok-t">MbMessage</span> response = call.get();
+      propagateToOut(assembly, response);
+    } <span class="tok-k">catch</span> (<span class="tok-t">Exception</span> e) {
+      propagateToFailure(assembly, e);
+    }
+  }
+}</code></pre>
+          </div>
+
+          <p>The Java Compute Node approach gives ACE flows the same resilience properties as a Spring service, at the cost of maintaining a static <code>CircuitBreakerRegistry</code> shared across flow invocations on the same ACE instance. Use a <code>static</code> registry scoped to the node class &mdash; not instantiated per-message &mdash; so the state machine persists across messages rather than resetting on every invocation.</p>
+
+          <h2 id="fallbacks">Fallback design for payment APIs</h2>
+          <p>A circuit breaker without a fallback is an error changer, not a resilience mechanism. When the breaker opens on the SARIE path, the API can: fail fast to the caller (which is appropriate for synchronous payment initiation), queue the payment to a local transactional outbox (which is appropriate for high-value transfers where eventual processing is acceptable), or return a cached last-known state (appropriate for read operations like balance checks).</p>
+          <p>The trade-offs for each are different and context-dependent. The decision to queue versus fail fast is not a technical one &mdash; it is a product and regulatory one. Under SAMA&rsquo;s Payment Execution Guidelines, a payment that a bank has accepted is the bank&rsquo;s liability to execute. Queuing and returning &ldquo;accepted&rdquo; binds the bank to a delivery commitment. Failing fast returns control to the customer to retry through another channel. Neither is universally correct; document the choice as an explicit business decision, not an engineering default.</p>
+
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Fallback strategy</th>
+                <th>When to use</th>
+                <th>SAMA implication</th>
+                <th>Implementation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Fail fast (503)</td>
+                <td>Synchronous payment initiation where the customer can retry</td>
+                <td>No liability created; customer retries via another channel</td>
+                <td>Throw <code>ServiceUnavailableException</code> from fallback; caller sees 503</td>
+              </tr>
+              <tr>
+                <td>Transactional outbox queue</td>
+                <td>High-value transfers; batch end-of-day settlement</td>
+                <td>Bank accepts liability on the queued payment; must execute when gateway recovers</td>
+                <td>Write to outbox table in same transaction; Debezium forwards when gateway recovers</td>
+              </tr>
+              <tr>
+                <td>Cached response</td>
+                <td>Balance enquiries, statement previews, reference data</td>
+                <td>Acceptable if staleness window is documented and disclosed</td>
+                <td>Redis GET on the account key; annotate response with <code>X-Cache-Age</code> header</td>
+              </tr>
+              <tr>
+                <td>Degraded mode</td>
+                <td>Fraud screening; AML pre-check</td>
+                <td>Risk appetite decision: proceed without screening or hold for manual review</td>
+                <td>Return a <code>PROCEED_WITH_FLAG</code> result; route to manual queue for post-hoc review</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Silent success fallbacks for payment writes</div>
+            <p>Never return a success response for a payment that was not actually submitted &mdash; and then silently discard it when the queue fails or the outbox is not processed. A queued fallback requires an operational runbook for processing the queue when the gateway recovers, automated monitoring for queue depth, and an SLA for clearing it. Without those, the &ldquo;queued&rdquo; fallback is a hole in the payment audit trail that only surfaces during a SAMA examination or a customer complaint two weeks later.</p>
+          </div>
+
+          <h2 id="observability">Observability &amp; Micrometer</h2>
+          <p>Resilience4j publishes Micrometer metrics automatically when <code>spring-boot-actuator</code> and the Resilience4j Spring Boot starter are on the classpath. The metrics are prefixed <code>resilience4j.circuitbreaker.*</code> and <code>resilience4j.bulkhead.*</code>. Three dashboards are required for a production payment platform.</p>
+          <ul>
+            <li><strong>State transition gauge.</strong> <code>resilience4j_circuitbreaker_state{name="sarie-gateway"}</code> reports the current state as 0 (CLOSED), 1 (OPEN), 2 (HALF_OPEN). An alert on this gauge fires within 10 seconds of any breaker opening. This is the most important alert in the stack: an open breaker means the integration is actively degraded, not just slow.</li>
+            <li><strong>Failure rate counter.</strong> <code>resilience4j_circuitbreaker_failure_rate{name="..."}</code> reports the current failure rate inside the sliding window. Track this on a 5-minute rolling average to distinguish a spike (tolerable) from a sustained elevated failure rate (investigate immediately).</li>
+            <li><strong>Bulkhead available concurrent calls.</strong> <code>resilience4j_bulkhead_available_concurrent_calls{name="..."}</code> tells you how much headroom is left. When this metric approaches zero for more than 30 seconds, the bulkhead is consistently near capacity &mdash; either scale the downstream connection pool or reduce inbound call volume.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>prometheus-alerts.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">groups:</span>
+  <span class="tok-p">-</span> <span class="tok-k">name:</span> <span class="tok-s">integration-resilience</span>
+    <span class="tok-k">rules:</span>
+      <span class="tok-p">-</span> <span class="tok-k">alert:</span> <span class="tok-s">CircuitBreakerOpen</span>
+        <span class="tok-k">expr:</span> <span class="tok-s">resilience4j_circuitbreaker_state{state="open"} == 1</span>
+        <span class="tok-k">for:</span> <span class="tok-s">0m</span>
+        <span class="tok-k">labels:</span>
+          <span class="tok-k">severity:</span> <span class="tok-s">critical</span>
+        <span class="tok-k">annotations:</span>
+          <span class="tok-k">summary:</span> <span class="tok-s">"Circuit breaker OPEN: {{ $labels.name }}"</span>
+          <span class="tok-k">description:</span> <span class="tok-s">"Breaker {{ $labels.name }} is OPEN. Fallbacks active. Payment platform degraded."</span>
+
+      <span class="tok-p">-</span> <span class="tok-k">alert:</span> <span class="tok-s">BulkheadNearCapacity</span>
+        <span class="tok-k">expr:</span> <span class="tok-s">resilience4j_bulkhead_available_concurrent_calls &lt; 3</span>
+        <span class="tok-k">for:</span> <span class="tok-s">30s</span>
+        <span class="tok-k">labels:</span>
+          <span class="tok-k">severity:</span> <span class="tok-s">warning</span>
+        <span class="tok-k">annotations:</span>
+          <span class="tok-k">summary:</span> <span class="tok-s">"Bulkhead near capacity: {{ $labels.name }}"</span>
+          <span class="tok-k">description:</span> <span class="tok-s">"{{ $labels.name }} has &lt; 3 available slots. Imminent BulkheadFullException."</span>
+
+      <span class="tok-p">-</span> <span class="tok-k">alert:</span> <span class="tok-s">CircuitBreakerFailureRateHigh</span>
+        <span class="tok-k">expr:</span> <span class="tok-s">resilience4j_circuitbreaker_failure_rate &gt; 30</span>
+        <span class="tok-k">for:</span> <span class="tok-s">2m</span>
+        <span class="tok-k">labels:</span>
+          <span class="tok-k">severity:</span> <span class="tok-s">warning</span>
+        <span class="tok-k">annotations:</span>
+          <span class="tok-k">summary:</span> <span class="tok-s">"High failure rate on {{ $labels.name }}: {{ $value }}%"</span></code></pre>
+          </div>
+
+          <h2 id="pattern-comparison">Pattern comparison</h2>
+          <p>The table below summarises which pattern addresses which failure mode. Use it as a first-pass checklist when deciding which patterns to apply to a new downstream integration.</p>
+
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Failure mode</th>
+                <th>Circuit Breaker</th>
+                <th>Semaphore Bulkhead</th>
+                <th>Thread-Pool Bulkhead</th>
+                <th>Time Limiter</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Downstream returns 5xx errors</td>
+                <td class="tag-yes">Yes &mdash; trips on failure rate</td>
+                <td class="tag-no">No</td>
+                <td class="tag-no">No</td>
+                <td class="tag-no">No</td>
+              </tr>
+              <tr>
+                <td>Downstream responds slowly</td>
+                <td class="tag-yes">Yes &mdash; slow-call threshold</td>
+                <td class="tag-no">No</td>
+                <td class="tag-no">No</td>
+                <td class="tag-yes">Yes &mdash; cancels after timeout</td>
+              </tr>
+              <tr>
+                <td>Thread pool exhaustion</td>
+                <td class="tag-no">No</td>
+                <td class="tag-yes">Yes &mdash; limits concurrency</td>
+                <td class="tag-yes">Yes &mdash; isolates to own pool</td>
+                <td class="tag-no">No</td>
+              </tr>
+              <tr>
+                <td>Caller thread blocked by sync call</td>
+                <td class="tag-no">No</td>
+                <td class="tag-no">No &mdash; caller still blocks</td>
+                <td class="tag-yes">Yes &mdash; caller returns immediately</td>
+                <td class="tag-partial">Partial &mdash; with timeout interrupt</td>
+              </tr>
+              <tr>
+                <td>Cascading failure across services</td>
+                <td class="tag-yes">Yes &mdash; open state fast-fails</td>
+                <td class="tag-yes">Yes &mdash; caps blast radius</td>
+                <td class="tag-yes">Yes &mdash; pool isolation</td>
+                <td class="tag-no">No</td>
+              </tr>
+              <tr>
+                <td>Downstream connection pool exhaustion</td>
+                <td class="tag-no">No</td>
+                <td class="tag-yes">Yes &mdash; max concurrent = max connections</td>
+                <td class="tag-yes">Yes &mdash; pool size caps connections</td>
+                <td class="tag-no">No</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="production-checklist">Production checklist</h2>
+          <p>The order matters. Step 1 is non-negotiable before step 6; adding circuit breakers without observability is adding invisible protection that will silently fail when most needed.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Identify every downstream dependency and its failure profile</h4>
+              <p>Map each downstream: what HTTP endpoints does it expose, what is its published SLA, what is its actual P99 latency in production, what does it return on degradation (5xx, timeout, partial response)? Score each one by impact if it fails or slows. SARIE, CBS core, and the fraud engine are always in the top tier for a payments platform.</p>
+            </li>
+            <li>
+              <h4>Set per-dependency thresholds from observed baselines</h4>
+              <p>Do not use generic defaults. Query your existing APM or Prometheus for the actual P99 and failure rate baseline for each downstream over the last 30 days. Set <code>slowCallDurationThreshold</code> at 2&times; the observed P99, and <code>failureRateThreshold</code> at 3&times; the baseline failure rate. This prevents false-positive trips during normal load spikes.</p>
+            </li>
+            <li>
+              <h4>Implement and test fallback behaviour before enabling the circuit breaker</h4>
+              <p>The fallback is the hardest part. Test it in isolation first: mock the circuit breaker in an open state and verify that the fallback produces the correct response, logs the correct structured event, and increments the correct metric. A fallback that silently swallows exceptions is worse than no fallback.</p>
+            </li>
+            <li>
+              <h4>Deploy in shadow mode for one sprint</h4>
+              <p>Configure the circuit breaker with an extremely high threshold (e.g., 99% failure rate) and observe the failure rate metric without allowing it to actually trip. This validates that the metric collection is correct and that your threshold choices are calibrated before the breaker can cause production impact.</p>
+            </li>
+            <li>
+              <h4>Enable Prometheus alerts and verify delivery</h4>
+              <p>The <code>CircuitBreakerOpen</code> alert must fire and reach the on-call engineer within 60 seconds of the first trip. Test this in a non-production environment by deliberately misconfiguring a downstream and confirming end-to-end alert delivery through PagerDuty or the bank&rsquo;s NOC alerting channel.</p>
+            </li>
+            <li>
+              <h4>Add bulkheads after circuit breakers are stable</h4>
+              <p>Do not add both at the same time. Circuit breakers change observable behaviour (fast-fail responses); bulkheads add a concurrency limit that might start rejecting requests at peak load if sized incorrectly. Tune circuit breakers first over two to three weeks of production data, then introduce bulkheads with conservative (high) limits and tighten over time.</p>
+            </li>
+            <li>
+              <h4>Document the operational runbook for each open breaker</h4>
+              <p>Every circuit breaker instance needs a runbook entry: what does it protect, what is the fallback behaviour, how does an operator force the breaker back to CLOSED, and what downstream health check must return green before closing manually. This runbook is a SAMA examination artefact for any COTS or SWIFT-connected integration.</p>
+            </li>
+          </ol>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Counting business errors as infrastructure failures</div>
+            <p>A <code>400 Bad Request</code> from the CBS is a client error, not an infrastructure failure. Counting it in the circuit breaker&rsquo;s failure rate will trip the breaker during periods of high invalid-input volume &mdash; a spike in malformed payment requests from a third-party integrator, for example. Explicitly configure <code>ignoreExceptions</code> for every business exception class. When in doubt, check the HTTP status code in a custom <code>RecordFailurePredicate</code> and count only 5xx and network-level failures.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Scoping the circuit breaker too broadly</div>
+            <p>A single circuit breaker wrapping all calls to the CBS &mdash; balance enquiries, payment initiation, account maintenance &mdash; will open when any subset of those calls degrades. A slow balance enquiry endpoint trips the breaker and blocks payment initiation, which is an unrelated and fully healthy path. Scope each breaker to a specific endpoint or flow, not to the downstream host. <code>cbs-balance-check</code> and <code>cbs-payment-submit</code> are separate instances with separate state machines.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">No minimum call count before tripping</div>
+            <p>The <code>minimumNumberOfCalls</code> parameter prevents the breaker from tripping on a handful of failures at startup or after a deployment when traffic is low. Without it, the first two requests failing during a warm-up period will hit a 100% failure rate and open the breaker immediately. Set <code>minimumNumberOfCalls</code> to at least 20 for low-volume paths and at least 50 for high-volume ones.</p>
+          </div>
+
+          <h2 id="when-not">When not to use circuit breakers</h2>
+          <ul>
+            <li><strong>Synchronous database calls within a single service.</strong> The circuit breaker pattern is designed for remote calls across a network boundary. Database calls within a service should use connection pool timeouts and health indicators, not a circuit breaker. Adding a breaker to a DB call introduces complexity without addressing the actual failure mode (pool exhaustion), which is better addressed with a bulkhead sized to the connection pool.</li>
+            <li><strong>Internal in-process calls.</strong> Method calls between beans in the same JVM process don&rsquo;t traverse a network. A circuit breaker around them adds overhead and the latency-based trip conditions are meaningless &mdash; an in-process call that takes 5 seconds is a CPU-bound computation, not a network timeout.</li>
+            <li><strong>Calls where the failure must be surfaced immediately.</strong> SAMA&rsquo;s real-time gross settlement (RTGS) notifications and some compliance-driven mandatory-check calls cannot be queued or degraded. An open circuit breaker on these paths must fail the entire transaction, not silently queue or fall back. Model the breaker as a fail-hard gate, not a resilience mechanism, for mandatory regulatory calls. Document the choice explicitly in the integration design.</li>
+            <li><strong>Message consumers without retry infrastructure.</strong> A Kafka consumer protected by a circuit breaker that opens will stop processing messages and leave the consumer group lagging. This is only acceptable if there is a dead-letter queue and a replay mechanism. Without those, an open breaker on a consumer is a silent queue buildup that becomes a larger problem when the breaker eventually closes.</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="../integration-patterns.html">
+              <div class="article-nav__label">&larr; Back</div>
+              <div class="article-nav__title">Integration Patterns</div>
+            </a>
+            <a href="idempotency-keys.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Idempotency Keys at Scale &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
