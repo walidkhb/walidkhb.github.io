@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Synchronisation &mdash; Idempotent Consumers &amp; Exactly-Once Semantics &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="How to guarantee at-most-once processing for payment messages in a Kafka-based financial services platform: deduplication keys, database idempotency tables, Redis atomic dedup, Kafka EOS, ISO 20022 EndToEndId, and the monitoring that proves it works in production.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Idempotent Consumers &amp; Exactly-Once Semantics &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Payment deduplication at scale: DB idempotency tables, Redis atomic dedup, Kafka EOS, and ISO 20022 EndToEndId patterns.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-sync/idempotent-consumer-exactly-once.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Idempotent Consumers &amp; Exactly-Once Semantics &mdash; Payment Deduplication at Scale">
+  <meta name="twitter:description" content="DB idempotency tables, Redis atomic dedup, Kafka EOS, and ISO 20022 EndToEndId for financial services.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/idempotent-consumer-exactly-once.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Idempotent Consumers & Exactly-Once Semantics: Payment Deduplication at Scale",
+    "description": "How to guarantee at-most-once processing for payment messages in a Kafka-based financial services platform: deduplication keys, database idempotency tables, Redis atomic dedup, Kafka EOS, ISO 20022 EndToEndId, and the monitoring that proves it works in production.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-10-24",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/data-sync/idempotent-consumer-exactly-once.html",
+    "isPartOf": {
+      "@type": "TechArticleSeries",
+      "name": "Data Synchronisation Lab",
+      "url": "https://www.wbadawi.info/lab/data-sync.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Idempotent Consumers &amp; Exactly-Once</div>
+          <span class="overline">Lab Article</span>
+          <h1>Idempotent Consumers &amp; Exactly-Once Semantics: Payment Deduplication at Scale</h1>
+          <p class="lead">At-least-once delivery is the honest default for every message bus you will ever run. The question is not whether duplicates arrive&mdash;they will&mdash;but whether your consumers handle them correctly. In financial services, the cost of getting this wrong is a duplicate debit.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#at-least-once">At-least-once delivery</a></li>
+            <li><a href="#dedup-key">The deduplication key</a></li>
+            <li><a href="#db-dedup">Database-level deduplication</a></li>
+            <li><a href="#redis-dedup">Redis atomic deduplication</a></li>
+            <li><a href="#kafka-eos">Kafka exactly-once semantics</a></li>
+            <li><a href="#producer-config">Idempotent producer config</a></li>
+            <li><a href="#consumer-isolation">Consumer isolation levels</a></li>
+            <li><a href="#iso20022">ISO 20022 EndToEndId</a></li>
+            <li><a href="#monitoring">Monitoring deduplication</a></li>
+            <li><a href="#limits">When idempotency is not enough</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Kafka 3.7 / Spring Kafka / Postgres 16 / Redis 7 / ISO 20022</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Every message broker guarantees at-least-once delivery if you configure retries. That guarantee has a corollary: messages will arrive more than once under failure conditions. A network partition clears, a consumer pod restarts mid-commit, a rebalance fires at the worst moment&mdash;any of these produces a re-delivered message that your consumer has already processed.</p>
+          <p>In most domains, a duplicate log entry or a replayed analytics event is an irritant. In payment processing, a duplicate execution is a regulatory incident: a double credit to a beneficiary, a double debit from a customer, a duplicate SWIFT pacs.008 submitted to SARIE. The Saudi Payments Network (SARIE) has reconciliation windows that will catch the discrepancy, but they will not catch it fast enough to prevent the debit going through. Your idempotency layer has to catch it before that.</p>
+          <p>This article covers the full deduplication stack: the key design problem, three implementation tiers (database, Redis, Kafka EOS), their interaction with ISO 20022 message identifiers, and the monitoring that lets you prove to an auditor that duplicates are being caught.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Trade-off summary up front</div>
+            <p>Database deduplication is the simplest and most durable approach; it adds one SQL write per event. Redis deduplication adds 1&ndash;3 ms and is appropriate when the database write is not acceptable on the hot path. Kafka EOS is the most complete guarantee, but it constrains your consumer topology and introduces latency that most financial services teams underestimate. You will almost certainly need all three at different points in your pipeline.</p>
+          </div>
+
+          <h2 id="at-least-once">At-least-once delivery: what it actually means</h2>
+          <p>At-least-once delivery means the broker ensures the message is delivered to a consumer at least one time. It does <em>not</em> mean once. The two scenarios that produce redelivery in Kafka are:</p>
+          <ul>
+            <li><strong>Consumer crash before offset commit.</strong> The consumer processes the message and updates its downstream state, but crashes before Kafka records the committed offset. On restart, Kafka redelivers from the last committed offset. The downstream sees the event twice.</li>
+            <li><strong>Producer retry on timeout.</strong> The producer sends a message, the broker receives and appends it, but the network drops the acknowledgement. The producer retries. Without idempotent producer configuration, the broker appends a second copy. Two messages, one intent.</li>
+          </ul>
+
+          <div class="diagram" role="img" aria-label="Kafka at-least-once delivery failure modes: consumer crash before commit and producer retry creating duplicate">
+            <div class="diagram__inner">
+              <svg width="780" height="300" viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                </defs>
+
+                <!-- Scenario A: Consumer crash before commit -->
+                <text x="195" y="22" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">SCENARIO A &mdash; CONSUMER CRASH BEFORE COMMIT</text>
+
+                <rect x="20" y="35" width="110" height="50" rx="6" fill="#16161f" stroke="#fbbf24"/>
+                <text x="75" y="57" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Kafka Broker</text>
+                <text x="75" y="73" text-anchor="middle" fill="#71717a" font-size="9">offset N committed</text>
+
+                <rect x="175" y="35" width="120" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="235" y="57" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Consumer</text>
+                <text x="235" y="73" text-anchor="middle" fill="#71717a" font-size="9">processes msg N+1</text>
+
+                <rect x="345" y="35" width="120" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="405" y="57" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Downstream DB</text>
+                <text x="405" y="73" text-anchor="middle" fill="#71717a" font-size="9">state updated</text>
+
+                <line x1="130" y1="60" x2="173" y2="60" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr1)"/>
+                <line x1="295" y1="60" x2="343" y2="60" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+                <!-- crash X -->
+                <text x="235" y="110" text-anchor="middle" fill="#ef4444" font-size="22" font-weight="600">&#x2717;</text>
+                <text x="235" y="128" text-anchor="middle" fill="#ef4444" font-size="9">crash before offset commit</text>
+
+                <!-- redeliver arrow -->
+                <path d="M130,75 Q150,140 173,75" stroke="#ef4444" stroke-width="1.5" fill="none" marker-end="url(#arr2)"/>
+                <text x="152" y="148" text-anchor="middle" fill="#ef4444" font-size="9">re-delivered</text>
+                <text x="152" y="160" text-anchor="middle" fill="#ef4444" font-size="9">msg N+1</text>
+
+                <!-- result -->
+                <rect x="510" y="35" width="240" height="50" rx="6" fill="#0f0f16" stroke="#ef4444"/>
+                <text x="630" y="54" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">RESULT: DUPLICATE APPLIED</text>
+                <text x="630" y="72" text-anchor="middle" fill="#71717a" font-size="9">downstream state mutated twice for one event</text>
+
+                <!-- Scenario B: Producer retry -->
+                <text x="195" y="185" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">SCENARIO B &mdash; PRODUCER RETRY WITHOUT IDEMPOTENCE</text>
+
+                <rect x="20" y="200" width="110" height="50" rx="6" fill="#16161f" stroke="#a78bfa"/>
+                <text x="75" y="222" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Producer</text>
+                <text x="75" y="238" text-anchor="middle" fill="#71717a" font-size="9">retries on timeout</text>
+
+                <rect x="175" y="200" width="120" height="50" rx="6" fill="#16161f" stroke="#fbbf24"/>
+                <text x="235" y="222" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Kafka Broker</text>
+                <text x="235" y="238" text-anchor="middle" fill="#71717a" font-size="9">appends 2nd copy</text>
+
+                <line x1="130" y1="220" x2="173" y2="220" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+                <text x="75" y="275" text-anchor="middle" fill="#ef4444" font-size="9">ACK dropped by network</text>
+
+                <rect x="510" y="200" width="240" height="50" rx="6" fill="#0f0f16" stroke="#ef4444"/>
+                <text x="630" y="219" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">RESULT: DUPLICATE IN TOPIC</text>
+                <text x="630" y="237" text-anchor="middle" fill="#71717a" font-size="9">two messages, one original intent; consumer sees both</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; The two root causes of duplicate message delivery in Kafka</div>
+          </div>
+
+          <p>At-exactly-once delivery eliminates these scenarios, but it is a property of the full producer&ndash;broker&ndash;consumer chain, not of any single component. The sections below build up the stack from the most durable layer (database) to the most complete (Kafka EOS).</p>
+
+          <h2 id="dedup-key">The deduplication key problem</h2>
+          <p>Before any implementation, you need a stable, globally unique key per business event. This sounds obvious; in practice it is the most common design mistake. Four anti-patterns:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Key choice</th>
+                <th>Problem</th>
+                <th>Use instead</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Kafka offset</td>
+                <td>Offset is partition-scoped; the same offset appears in partition 0, 1, 2. Unique only in combination with topic and partition.</td>
+                <td>Composite: topic + partition + offset</td>
+              </tr>
+              <tr>
+                <td>Database auto-increment ID</td>
+                <td>Generated at insert time. If the producer crashes between insert and publish, the ID never reaches the consumer. If the message is replayed from an outbox snapshot, the ID is the same but the dedup state may have been cleared.</td>
+                <td>UUID generated before the transaction; use as both PK and event ID in the payload.</td>
+              </tr>
+              <tr>
+                <td>Request timestamp</td>
+                <td>Not unique. Two payments from the same account at the same millisecond (concurrent API calls) produce the same key.</td>
+                <td>UUID or ISO 20022 EndToEndId (see <a href="#iso20022">&sect;ISO 20022</a>).</td>
+              </tr>
+              <tr>
+                <td>Message content hash</td>
+                <td>Semantically identical retries (re-submitted payment for the same amount) have the same hash and are silently dropped.</td>
+                <td>Combine content hash with a nonce or timestamp for idempotency windows, not global dedup.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Carry the key through every hop</div>
+            <p>The deduplication key generated at the payment entry point must be propagated unchanged through every transformation, enrichment, and routing step. It is a distributed system invariant, not a database concern. If any service in the chain re-generates the key, deduplication breaks silently&mdash;the new key has no history and always looks fresh to downstream consumers.</p>
+          </div>
+
+          <h2 id="db-dedup">Database-level deduplication</h2>
+          <p>The simplest and most reliable idempotency mechanism is an <code>INSERT ... ON CONFLICT DO NOTHING</code> into a dedicated table. When the same event ID arrives twice, the second insert is a no-op; the application never sees the duplicate.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>idempotency-schema.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-k">CREATE TABLE</span> processed_events (
+  event_id       <span class="tok-t">uuid</span>           <span class="tok-k">PRIMARY KEY</span>,
+  event_type     <span class="tok-t">varchar(80)</span>    <span class="tok-k">NOT NULL</span>,
+  consumer_group <span class="tok-t">varchar(80)</span>    <span class="tok-k">NOT NULL</span>,
+  processed_at   <span class="tok-t">timestamptz</span>    <span class="tok-k">NOT NULL DEFAULT</span> now()
+);
+
+<span class="tok-c">-- Optional: partition by month for very high-volume pipelines.</span>
+<span class="tok-c">-- Retention: delete rows older than the redelivery window (48h is conservative).</span>
+<span class="tok-c">-- Do NOT use TTL deletion based on wallclock age alone&mdash;use the Kafka retention</span>
+<span class="tok-c">-- window as the authority: if a message can no longer be redelivered, the row</span>
+<span class="tok-c">-- can be deleted.</span>
+
+<span class="tok-k">CREATE INDEX</span> processed_events_at_idx <span class="tok-k">ON</span> processed_events (processed_at);
+</code></pre>
+          </div>
+
+          <p>The consumer logic around this table must be atomic with the business write. If you insert into <code>processed_events</code> in one transaction and write the business state in another, a crash between the two leaves you either with a duplicate business write or a ghost idempotency record that permanently blocks the event.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentConsumer.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@KafkaListener</span>(topics = <span class="tok-s">"payment.submitted"</span>, groupId = <span class="tok-s">"payments-processor"</span>)
+<span class="tok-k">@Transactional</span>
+<span class="tok-k">public void</span> onPaymentSubmitted(<span class="tok-t">ConsumerRecord</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">PaymentEvent</span>&gt; record,
+                                <span class="tok-t">Acknowledgment</span> ack) {
+
+  <span class="tok-t">UUID</span> eventId = <span class="tok-t">UUID</span>.fromString(record.value().getEventId());
+
+  <span class="tok-c">// Atomic guard: insert returns 0 on conflict, skip if duplicate.</span>
+  <span class="tok-k">int</span> inserted = jdbc.update(
+    <span class="tok-s">"""
+    INSERT INTO processed_events (event_id, event_type, consumer_group)
+    VALUES (?, ?, ?)
+    ON CONFLICT (event_id) DO NOTHING
+    """</span>,
+    eventId, <span class="tok-s">"PaymentSubmitted"</span>, <span class="tok-s">"payments-processor"</span>);
+
+  <span class="tok-k">if</span> (inserted == <span class="tok-n">0</span>) {
+    <span class="tok-c">// Duplicate detected: ack and discard without side-effects.</span>
+    ack.acknowledge();
+    metrics.counter(<span class="tok-s">"payment.dedup.db.duplicate"</span>).increment();
+    <span class="tok-k">return</span>;
+  }
+
+  <span class="tok-c">// First-time processing: apply business logic in the same transaction.</span>
+  paymentService.process(record.value());
+  ack.acknowledge();   <span class="tok-c">// offset commit after DB commit confirms durability</span>
+}
+</code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Manual offset commit matters here</div>
+            <p>Use <code>enable.auto.commit=false</code> and acknowledge only after the database transaction commits. Auto-commit can advance the offset before the DB write lands, creating a window where a crash produces an undetectable duplicate (the offset is advanced so Kafka will not redeliver, but the DB state was never written).</p>
+          </div>
+
+          <h2 id="redis-dedup">Redis atomic deduplication</h2>
+          <p>For consumers that do not write to a relational database&mdash;notification services, fee calculation engines, routing tables&mdash;a Redis <code>SET NX</code> (set-if-not-exists) provides a low-latency idempotency gate. The pattern is a conditional SET with a TTL equal to the maximum redelivery window.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>RedisDeduplicator.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">private final</span> <span class="tok-t">RedisTemplate</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">String</span>&gt; redis;
+<span class="tok-k">private static final</span> <span class="tok-t">Duration</span> DEDUP_WINDOW = <span class="tok-t">Duration</span>.ofHours(<span class="tok-n">48</span>);
+
+<span class="tok-k">public boolean</span> tryAcquire(<span class="tok-t">String</span> eventId, <span class="tok-t">String</span> consumerGroup) {
+  <span class="tok-t">String</span> key = <span class="tok-s">"dedup:"</span> + consumerGroup + <span class="tok-s">":"</span> + eventId;
+  <span class="tok-c">// SET key value NX EX seconds — atomic, returns null if key already exists.</span>
+  <span class="tok-t">Boolean</span> acquired = redis.opsForValue()
+      .setIfAbsent(key, <span class="tok-s">"1"</span>, DEDUP_WINDOW);
+  <span class="tok-k">return</span> <span class="tok-t">Boolean</span>.TRUE.equals(acquired);
+}
+
+<span class="tok-c">// In the consumer:</span>
+<span class="tok-k">if</span> (!deduplicator.tryAcquire(eventId, <span class="tok-s">"notifications"</span>)) {
+  ack.acknowledge();
+  <span class="tok-k">return</span>;   <span class="tok-c">// duplicate, discard</span>
+}
+notificationService.send(record.value());
+ack.acknowledge();
+</code></pre>
+          </div>
+
+          <div class="diagram" role="img" aria-label="Redis deduplication flow: consumer calls SET NX, hit returns null meaning duplicate, miss returns OK meaning first delivery">
+            <div class="diagram__inner">
+              <svg width="780" height="240" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="90" width="130" height="60" rx="8" fill="#16161f" stroke="#4a9eff"/>
+                <text x="85" y="115" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">Consumer</text>
+                <text x="85" y="133" text-anchor="middle" fill="#71717a" font-size="9">receives msg</text>
+
+                <rect x="220" y="90" width="150" height="60" rx="8" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="295" y="112" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Redis</text>
+                <text x="295" y="130" text-anchor="middle" fill="#71717a" font-size="9">SET dedup:&lt;id&gt; NX EX 172800</text>
+
+                <!-- path 1: first delivery -->
+                <line x1="150" y1="110" x2="218" y2="110" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr3)"/>
+                <text x="184" y="105" text-anchor="middle" fill="#00d4aa" font-size="8">SET NX</text>
+
+                <line x1="370" y1="100" x2="460" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr3)"/>
+                <text x="415" y="70" text-anchor="middle" fill="#00d4aa" font-size="8">OK (first seen)</text>
+
+                <rect x="460" y="35" width="170" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="545" y="54" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Process &amp; Ack</text>
+                <text x="545" y="72" text-anchor="middle" fill="#71717a" font-size="9">business logic runs, offset commits</text>
+
+                <!-- path 2: duplicate -->
+                <line x1="370" y1="130" x2="460" y2="165" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr4)"/>
+                <text x="415" y="170" text-anchor="middle" fill="#a78bfa" font-size="8">nil (already set)</text>
+
+                <rect x="460" y="145" width="170" height="50" rx="6" fill="#16161f" stroke="#a78bfa"/>
+                <text x="545" y="164" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Discard &amp; Ack</text>
+                <text x="545" y="182" text-anchor="middle" fill="#71717a" font-size="9">duplicate dropped, offset advances</text>
+
+                <text x="295" y="200" text-anchor="middle" fill="#71717a" font-size="9">TTL = 48h (max Kafka redelivery window &mdash; set to match your retention config)</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; Redis SET NX as an idempotency gate: first delivery wins, all subsequent re-deliveries within the TTL window are discarded</div>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Redis replication lag is a real risk</div>
+            <p>In a Redis Cluster or Sentinel setup, a <code>SET NX</code> succeeds on the primary, and the primary fails before replicating to the secondary. The secondary is promoted; the new primary has no record of the key. The next delivery of the same event passes the gate and is processed a second time. For payments, this is unacceptable. Use Redis Cluster with <code>WAIT 1 0</code> after the SET to confirm replica acknowledgement, or fall back to the database idempotency table for anything that touches money.</p>
+          </div>
+
+          <h2 id="kafka-eos">Kafka exactly-once semantics</h2>
+          <p>Kafka 0.11 introduced exactly-once semantics (EOS) as a first-class feature. EOS covers two guarantees: idempotent producers (no broker-side duplicates on retry) and transactional producers (atomic multi-partition writes). Consumer-side exactly-once requires the consume&ndash;process&ndash;produce loop to use the same transaction.</p>
+
+          <div class="diagram" role="img" aria-label="Kafka EOS architecture: transactional producer writes atomically across input and output topics using the read-process-write pattern">
+            <div class="diagram__inner">
+              <svg width="780" height="280" viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <rect x="20" y="100" width="130" height="80" rx="8" fill="#0f0f16" stroke="#fbbf24"/>
+                <text x="85" y="124" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">payment.submitted</text>
+                <text x="85" y="142" text-anchor="middle" fill="#71717a" font-size="9">input topic</text>
+                <text x="85" y="158" text-anchor="middle" fill="#71717a" font-size="9">isolation.level =</text>
+                <text x="85" y="172" text-anchor="middle" fill="#71717a" font-size="9">read_committed</text>
+
+                <rect x="220" y="80" width="160" height="120" rx="8" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="300" y="104" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">Stream Processor</text>
+                <text x="300" y="122" text-anchor="middle" fill="#71717a" font-size="9">KafkaTransactionManager</text>
+                <text x="300" y="140" text-anchor="middle" fill="#71717a" font-size="9">1. beginTransaction()</text>
+                <text x="300" y="158" text-anchor="middle" fill="#71717a" font-size="9">2. produce to output</text>
+                <text x="300" y="176" text-anchor="middle" fill="#71717a" font-size="9">3. sendOffsetsToTxn()</text>
+                <text x="300" y="194" text-anchor="middle" fill="#71717a" font-size="9">4. commitTransaction()</text>
+
+                <rect x="460" y="100" width="130" height="80" rx="8" fill="#0f0f16" stroke="#00d4aa"/>
+                <text x="525" y="124" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">payment.enriched</text>
+                <text x="525" y="142" text-anchor="middle" fill="#71717a" font-size="9">output topic</text>
+                <text x="525" y="158" text-anchor="middle" fill="#71717a" font-size="9">only committed</text>
+                <text x="525" y="172" text-anchor="middle" fill="#71717a" font-size="9">records visible</text>
+
+                <rect x="650" y="80" width="110" height="120" rx="8" fill="#16161f" stroke="#a78bfa"/>
+                <text x="705" y="104" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Transaction</text>
+                <text x="705" y="122" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Coordinator</text>
+                <text x="705" y="145" text-anchor="middle" fill="#71717a" font-size="9">tracks txn state</text>
+                <text x="705" y="163" text-anchor="middle" fill="#71717a" font-size="9">per producer ID</text>
+                <text x="705" y="181" text-anchor="middle" fill="#71717a" font-size="9">epochs prevent</text>
+                <text x="705" y="197" text-anchor="middle" fill="#71717a" font-size="9">zombie writes</text>
+
+                <line x1="150" y1="140" x2="218" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr5)"/>
+                <line x1="380" y1="140" x2="458" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr5)"/>
+                <line x1="380" y1="120" x2="648" y2="120" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4 2"/>
+
+                <rect x="20" y="220" width="740" height="40" rx="6" fill="#0f0f16" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="390" y="244" text-anchor="middle" fill="#71717a" font-size="9">EOS constraint: consume, process, and produce must happen inside the same Kafka transaction &mdash; no external DB writes inside the loop</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 3 &mdash; Kafka EOS: the transactional read&ndash;process&ndash;write loop with atomic offset commit</div>
+          </div>
+
+          <p>EOS is the right tool when your pipeline is pure Kafka&mdash;you consume from one topic and produce to another, with no external state mutation inside the processing loop. Once you introduce a database write, Redis write, or HTTP call inside the consumer, you are back to needing application-level idempotency, because those side-effects cannot participate in the Kafka transaction.</p>
+
+          <h2 id="producer-config">Idempotent producer configuration</h2>
+          <p>The idempotent producer is the baseline: enable it unconditionally in any production Kafka producer. It adds a producer ID and sequence number to each message batch; the broker rejects any sequence the producer has already seen within its current epoch.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>kafka-producer.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Spring Boot application.yml &mdash; Kafka producer section</span>
+spring:
+  kafka:
+    producer:
+      <span class="tok-c"># Idempotent producer: prevent broker-side duplicates on retry.</span>
+      properties:
+        enable.idempotence: <span class="tok-s">"true"</span>          <span class="tok-c"># requires acks=all, retries>0</span>
+        acks: <span class="tok-s">"all"</span>
+        retries: <span class="tok-n">2147483647</span>               <span class="tok-c"># Integer.MAX_VALUE: retry until success</span>
+        max.in.flight.requests.per.connection: <span class="tok-n">5</span>  <span class="tok-c"># safe with idempotence enabled</span>
+        delivery.timeout.ms: <span class="tok-n">120000</span>       <span class="tok-c"># 2 min total; adjust to payment SLA</span>
+
+      <span class="tok-c"># Transactional producer (EOS): enable when consume-process-produce loop needed.</span>
+      transaction-id-prefix: <span class="tok-s">"payment-processor-"</span>  <span class="tok-c"># unique per application instance</span>
+
+    consumer:
+      properties:
+        <span class="tok-c"># Read only committed messages when consuming from a transactional topic.</span>
+        isolation.level: <span class="tok-s">"read_committed"</span>
+        enable.auto.commit: <span class="tok-s">"false"</span>
+        auto.offset.reset: <span class="tok-s">"earliest"</span>
+        max.poll.records: <span class="tok-n">100</span>
+        max.poll.interval.ms: <span class="tok-n">300000</span>    <span class="tok-c"># 5 min; sized to max batch processing time</span>
+</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">transaction-id-prefix must be unique per service instance</div>
+            <p>If two pods share the same <code>transaction-id-prefix</code>, the broker assigns the same producer ID to both. A producer with a higher epoch fences a lower-epoch producer&mdash;the lower-epoch pod&rsquo;s in-flight transactions abort. In Kubernetes, append the pod hostname or a deterministic shard ID to the prefix. Randomizing the suffix defeats the fencing guarantee, because the broker has no history to fence against.</p>
+          </div>
+
+          <h2 id="consumer-isolation">Consumer isolation levels</h2>
+          <p>The <code>isolation.level</code> consumer config controls which messages are visible to the consumer. Its interaction with transactional producers is subtle:</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>read_committed (recommended for payment pipelines)</h4>
+              <p>Only messages from committed transactions are visible. Aborted transaction messages are filtered by the broker. Uncommitted messages from an in-flight transaction are withheld until the transaction commits or aborts. This introduces a small amount of end-to-end latency but guarantees that aborted messages never reach the consumer.</p>
+            </li>
+            <li>
+              <h4>read_uncommitted (default)</h4>
+              <p>All messages, including those from in-flight and subsequently aborted transactions, are visible. The consumer sees the abort marker after the fact but has already processed the message. For a payment pipeline, this means consumers must handle abort markers explicitly&mdash;which most Spring Kafka setups do not do by default.</p>
+            </li>
+            <li>
+              <h4>LSO lag implications</h4>
+              <p>The Last Stable Offset (LSO) is the highest offset below any open transaction. Consumer lag metrics that use the log end offset minus the committed offset will be inflated by open transactions. Wire your consumer lag alerting to the LSO, not the LEO, to avoid false alerts during long-running transactions.</p>
+            </li>
+            <li>
+              <h4>Partition assignment and EOS</h4>
+              <p>A transactional producer is bound to specific partitions at send time. On consumer group rebalance, a new consumer instance inherits the partition&mdash;but the transaction manager on the old instance may still have an open transaction. The transaction coordinator will time out the open transaction and abort it, ensuring the new consumer does not see an orphaned partial write.</p>
+            </li>
+            <li>
+              <h4>Non-transactional topics alongside transactional ones</h4>
+              <p>If the pipeline mixes transactional and non-transactional topics in the same consumer group, <code>read_committed</code> applies only to the transactional topics. Non-transactional topics are read with no isolation. This is safe but must be explicitly understood by the engineering team maintaining the consumer group configuration.</p>
+            </li>
+          </ol>
+
+          <h2 id="iso20022">ISO 20022 EndToEndId as the idempotency key</h2>
+          <p>ISO 20022 payment messages carry a mandatory <code>EndToEndIdentification</code> field in the <code>CdtTrfTxInf</code> block. This identifier is assigned by the originating party and must remain unchanged across every step of the payment chain: pacs.008 origination, pacs.002 confirmation, pacs.004 return, and camt.056 cancellation request. It is, by the ISO 20022 specification, an idempotency key.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>pacs008-fragment.xml</span><span class="code-block__lang">xml</span></div>
+<pre><code><span class="tok-k">&lt;CdtTrfTxInf&gt;</span>
+  <span class="tok-k">&lt;PmtId&gt;</span>
+    <span class="tok-c">&lt;!-- EndToEndId: originator-assigned; MUST be preserved end-to-end --&gt;</span>
+    <span class="tok-k">&lt;EndToEndId&gt;</span><span class="tok-s">SAIB20261024001PAY</span><span class="tok-k">&lt;/EndToEndId&gt;</span>
+    <span class="tok-c">&lt;!-- TxId: bank-assigned; can change at each processing hop --&gt;</span>
+    <span class="tok-k">&lt;TxId&gt;</span><span class="tok-s">BNK-TXN-8823040</span><span class="tok-k">&lt;/TxId&gt;</span>
+    <span class="tok-c">&lt;!-- UETR: SWIFT-assigned; universally unique end-to-end --&gt;</span>
+    <span class="tok-k">&lt;UETR&gt;</span><span class="tok-s">a23cc4f5-7e8b-4c12-a9d1-3f4e5b6c7d8e</span><span class="tok-k">&lt;/UETR&gt;</span>
+  <span class="tok-k">&lt;/PmtId&gt;</span>
+  <span class="tok-k">&lt;IntrBkSttlmAmt Ccy=&quot;SAR&quot;&gt;</span><span class="tok-s">5000.00</span><span class="tok-k">&lt;/IntrBkSttlmAmt&gt;</span>
+  <span class="tok-c">&lt;!-- ... --&gt;</span>
+<span class="tok-k">&lt;/CdtTrfTxInf&gt;</span>
+</code></pre>
+          </div>
+
+          <p>For SARIE (Saudi Arabia&rsquo;s RTGS), the UETR is the authoritative deduplication key at the network level. Within a bank&rsquo;s internal Kafka pipeline, use the UETR as the primary idempotency key and the EndToEndId as a secondary key for customer-facing tracing. Do not conflate the two: the TxId changes at each bank leg, so using it as an idempotency key will fail for any multi-hop payment.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">UETR format and generation</div>
+            <p>A UETR is a UUIDv4 in lowercase hyphenated form (8-4-4-4-12). Generate it once, at the originating system, and treat it as immutable. The SWIFT gpi tracker uses it as the primary key across all correspondent banks in the payment chain. In the context of Saudi domestic payments via SARIE, SAMA&rsquo;s connectivity rules require UETR uniqueness within a 24-hour window per originating BIC. Include it in every event envelope your Kafka topics carry for ISO 20022 payment flows.</p>
+          </div>
+
+          <h2 id="monitoring">Monitoring deduplication</h2>
+          <p>A deduplication layer you cannot observe is a deduplication layer that fails silently. Four metrics to wire before going live:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>dedup-metrics.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Prometheus recording rules for deduplication health</span>
+
+groups:
+  - name: dedup
+    rules:
+
+    - record: <span class="tok-s">payment_dedup_duplicate_rate</span>
+      expr: <span class="tok-s">|
+        rate(payment_dedup_db_duplicate_total[5m])
+        / rate(payment_events_received_total[5m])</span>
+      <span class="tok-c"># Alert if >0.1% of messages are duplicates over a sustained 15m window.</span>
+      <span class="tok-c"># A sudden spike usually means a consumer rebalance storm or a bad deployment.</span>
+
+    - record: <span class="tok-s">payment_dedup_miss_rate</span>
+      expr: <span class="tok-s">|
+        rate(payment_dedup_redis_miss_total[5m])
+        / rate(payment_events_received_total[5m])</span>
+      <span class="tok-c"># A Redis miss followed by no DB duplicate = first delivery: OK.</span>
+      <span class="tok-c"># A Redis miss followed by a DB conflict = Redis TTL too short or cluster failover.</span>
+
+    - alert: <span class="tok-s">DedupDatabaseLag</span>
+      expr: <span class="tok-s">|
+        pg_table_bloat_bytes{table="processed_events"} > 10e9</span>
+      annotations:
+        summary: <span class="tok-s">"processed_events table bloat &gt; 10 GB &mdash; cleanup job may be stuck"</span>
+      <span class="tok-c"># processed_events must be pruned on schedule; bloat prevents index scan efficiency.</span>
+
+    - alert: <span class="tok-s">KafkaTransactionAbortRate</span>
+      expr: <span class="tok-s">|
+        rate(kafka_producer_transaction_abort_total[5m]) > 0.05</span>
+      annotations:
+        summary: <span class="tok-s">"Kafka transaction abort rate &gt;5% &mdash; check max.poll.interval.ms"</span>
+</code></pre>
+          </div>
+
+          <p>The most useful operational signal is the deduplication ratio over time. In a healthy pipeline, it stays below 0.1%. A ratio above 1% consistently indicates either a consumer rebalance storm (too-short <code>max.poll.interval.ms</code>), a Kafka offset replay triggered by a reset, or a producer misconfiguration that is re-sending batches.</p>
+
+          <h2 id="limits">When idempotency is not enough</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Idempotency does not solve ordering</div>
+            <p>An idempotent consumer correctly discards duplicate events, but it does not guarantee that events arrive in the order they were produced. A payment amendment that arrives before the original payment passes the deduplication check (it has a different event ID) but is applied to state that does not yet exist. Ordering is a partition-key problem: co-locate all events for the same payment on the same partition using the payment ID as the message key. Idempotency and ordering are independent guarantees&mdash;you need both.</p>
+          </div>
+
+          <p>Three additional scenarios where application-level idempotency alone is insufficient:</p>
+          <ul>
+            <li><strong>Long-running sagas.</strong> A multi-step payment saga (authorise &rarr; reserve funds &rarr; execute &rarr; confirm) involves events across multiple topics. Deduplication on each topic independently does not prevent a saga that completed step 3 from being replayed from step 1 if the saga coordinator crashes. Use a saga state machine with its own idempotency table keyed on the saga ID.</li>
+            <li><strong>External system calls inside the consumer.</strong> An HTTP call to a core banking system, an SMS notification, a SWIFT message dispatch&mdash;none of these can participate in a Kafka transaction or a database transaction. For these side-effects, use a dedicated outbox table to track whether the external call was made, and call the external system only once per idempotency key, checking the outbox before each call.</li>
+            <li><strong>Consumer group topic resets.</strong> An operations team manually resets the consumer group offset to replay a production incident. Without an idempotency layer, every downstream system re-receives every event from the reset point. With a database idempotency table and a sufficiently long retention window, the replayed events are silently discarded. If the retention window has elapsed, the table has been pruned and the events will be reprocessed. Size your retention window to the maximum credible reset window: for a production payment pipeline, 7 days is a reasonable minimum.</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="../data-sync.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Data Synchronisation</div>
+            </a>
+            <a href="debezium-and-outbox.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Debezium &amp; Outbox Pattern &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
