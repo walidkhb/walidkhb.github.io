@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Streaming &mdash; Flink on OpenShift: Checkpointing &amp; Exactly-Once &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Running Apache Flink on Red Hat OpenShift for financial-grade stream processing: Flink Kubernetes Operator deployment, checkpoint configuration to S3-compatible storage, exactly-once Kafka source and sink, RocksDB tuning, HA topology, and rolling upgrade patterns for regulated payment pipelines.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Flink on OpenShift: Checkpointing &amp; Exactly-Once &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Production Flink on OpenShift for financial services: checkpointing, exactly-once, RocksDB tuning, HA and rolling upgrades.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/flink-on-openshift-checkpointing.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Flink on OpenShift: Checkpointing &amp; Exactly-Once">
+  <meta name="twitter:description" content="Production Flink on OpenShift: checkpoint configuration, exactly-once Kafka sink, RocksDB tuning for payment pipelines.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/flink-on-openshift-checkpointing.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Flink on OpenShift: Checkpointing, Exactly-Once, and Production Operations for Financial Stream Processing",
+    "description": "Running Apache Flink on Red Hat OpenShift for financial-grade stream processing: Flink Kubernetes Operator deployment, checkpoint configuration to S3-compatible storage, exactly-once Kafka source and sink, RocksDB tuning, HA topology, and rolling upgrade patterns for regulated payment pipelines.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-10-31",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/data-streaming/flink-on-openshift-checkpointing.html",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "proficiencyLevel": "Expert",
+    "dependencies": "Apache Flink 1.19, Flink Kubernetes Operator 1.9, Red Hat OpenShift 4.15, Kafka 3.x, MinIO"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Flink on OpenShift</div>
+          <span class="overline">Lab Article</span>
+          <h1>Data Streaming: Flink on OpenShift &mdash; Checkpointing &amp; Exactly-Once</h1>
+          <p class="lead">Running Apache Flink as a production cluster on Red Hat OpenShift: Flink Kubernetes Operator topology, checkpoint and savepoint configuration against S3-compatible storage, exactly-once Kafka source and sink, RocksDB state backend tuning, HA failover, and rolling upgrade patterns for financial payment pipelines that cannot afford silent data loss.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#topology">Cluster topology</a></li>
+            <li><a href="#operator">Flink Kubernetes Operator</a></li>
+            <li><a href="#deploy">Deploying on OpenShift</a></li>
+            <li><a href="#checkpointing">Checkpointing</a></li>
+            <li><a href="#exactly-once">Exactly-once</a></li>
+            <li><a href="#rocksdb">RocksDB tuning</a></li>
+            <li><a href="#ha">JobManager HA</a></li>
+            <li><a href="#upgrades">Rolling upgrades</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#pitfalls">Common pitfalls</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Apache Flink 1.19 &middot; Flink Kubernetes Operator 1.9 &middot; OpenShift 4.15 &middot; MinIO / IBM COS &middot; Kafka 3.x</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Deploying Flink is easy. Running it in production on a regulated financial platform is not. The stream-processing logic articles in this Lab series cover windowing, joins, and state semantics; this article covers the operational layer that keeps those pipelines alive: how the cluster is structured on OpenShift, how checkpoints are persisted safely so a pod restart does not reprocess hours of payment data, and what exactly-once end-to-end really costs in latency and throughput.</p>
+          <p>The context is a payment screening and fraud-detection platform at SAIB: roughly 150,000 payment messages per day across SARIE, SWIFT, and internal transfers, with a hard requirement that duplicate payment execution is a production incident, not a tolerated edge case. That constraint drives every configuration choice here.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Flink vs Kafka Streams for this use case</div>
+            <p>The <a href="kafka-streams-and-flink.html">Kafka Streams &amp; Flink</a> article covers the library-vs-cluster trade-off. The short answer: Flink wins when the pipeline crosses microservice boundaries, when state exceeds 20 GB per partition, or when you need multi-source joins with different Kafka clusters. For per-service enrichment, Kafka Streams is simpler. For a cross-domain payment screening platform, Flink is the right call.</p>
+          </div>
+
+          <h2 id="topology">Cluster topology</h2>
+          <p>Flink runs a <strong>JobManager</strong> (coordinator, scheduler, checkpoint coordinator) and one or more <strong>TaskManagers</strong> (worker nodes that execute the actual operators). In Kubernetes/OpenShift terms:</p>
+
+          <div class="diagram" role="img" aria-label="Flink cluster topology on OpenShift showing JobManager, TaskManagers, checkpoints to S3, and Kafka source and sink">
+            <div class="diagram__inner">
+              <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="flink-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="flink-arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                  <marker id="flink-arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                </defs>
+
+                <!-- Kafka (source) -->
+                <rect x="10" y="140" width="120" height="80" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="70" y="174" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Kafka</text>
+                <text x="70" y="190" text-anchor="middle" fill="#71717a" font-size="9">payment-events</text>
+                <text x="70" y="204" text-anchor="middle" fill="#71717a" font-size="9">sanctions-updates</text>
+
+                <!-- JobManager -->
+                <rect x="200" y="20" width="160" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="280" y="52" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">JobManager</text>
+                <text x="280" y="68" text-anchor="middle" fill="#71717a" font-size="9">scheduler &middot; checkpoint coord</text>
+                <text x="280" y="82" text-anchor="middle" fill="#71717a" font-size="9">HA via ZooKeeper</text>
+
+                <!-- TaskManager 1 -->
+                <rect x="200" y="140" width="160" height="70" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="280" y="169" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">TaskManager-0</text>
+                <text x="280" y="185" text-anchor="middle" fill="#71717a" font-size="9">4 slots &middot; 8 GB heap &middot; RocksDB</text>
+                <text x="280" y="199" text-anchor="middle" fill="#71717a" font-size="9">local state: /var/flink/state</text>
+
+                <!-- TaskManager 2 -->
+                <rect x="200" y="230" width="160" height="70" rx="6" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="280" y="259" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">TaskManager-1</text>
+                <text x="280" y="275" text-anchor="middle" fill="#71717a" font-size="9">4 slots &middot; 8 GB heap &middot; RocksDB</text>
+                <text x="280" y="289" text-anchor="middle" fill="#71717a" font-size="9">local state: /var/flink/state</text>
+
+                <!-- TaskManager 3 -->
+                <rect x="200" y="320" width="160" height="30" rx="6" fill="#16161f" stroke="#444"/>
+                <text x="280" y="339" text-anchor="middle" fill="#71717a" font-size="9">&hellip; TaskManager-N (autoscaled)</text>
+
+                <!-- S3 / MinIO -->
+                <rect x="450" y="20" width="150" height="80" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="525" y="52" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">MinIO / IBM COS</text>
+                <text x="525" y="68" text-anchor="middle" fill="#71717a" font-size="9">s3://flink-checkpoints/</text>
+                <text x="525" y="82" text-anchor="middle" fill="#71717a" font-size="9">checkpoint &amp; savepoint store</text>
+
+                <!-- Kafka (sink) -->
+                <rect x="450" y="140" width="150" height="80" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="525" y="174" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Kafka (sink)</text>
+                <text x="525" y="190" text-anchor="middle" fill="#71717a" font-size="9">screening-decisions</text>
+                <text x="525" y="204" text-anchor="middle" fill="#71717a" font-size="9">fraud-alerts</text>
+
+                <!-- OpenShift boundary -->
+                <rect x="180" y="5" width="265" height="355" rx="10" fill="none" stroke="#a78bfa" stroke-dasharray="4 3" opacity="0.4"/>
+                <text x="312" y="352" text-anchor="middle" fill="#a78bfa" font-size="9" opacity="0.7">OpenShift namespace: flink-prod</text>
+
+                <!-- Arrows: Kafka → TM -->
+                <line x1="130" y1="180" x2="198" y2="175" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#flink-arrow)"/>
+                <!-- TM → JM control -->
+                <line x1="280" y1="140" x2="280" y2="102" stroke="#a78bfa" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#flink-arrow-purple)"/>
+                <line x1="280" y1="230" x2="280" y2="102" stroke="#a78bfa" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#flink-arrow-purple)"/>
+                <!-- JM → S3 checkpoint -->
+                <line x1="360" y1="60" x2="448" y2="60" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#flink-arrow-blue)"/>
+                <!-- TM → S3 checkpoint data -->
+                <line x1="360" y1="175" x2="448" y2="110" stroke="#4a9eff" stroke-width="1.2" stroke-dasharray="2 2" marker-end="url(#flink-arrow-blue)"/>
+                <line x1="360" y1="265" x2="448" y2="90" stroke="#4a9eff" stroke-width="1.2" stroke-dasharray="2 2" marker-end="url(#flink-arrow-blue)"/>
+                <!-- TM → Kafka sink -->
+                <line x1="360" y1="175" x2="448" y2="180" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#flink-arrow)"/>
+                <line x1="360" y1="265" x2="448" y2="200" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#flink-arrow)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Flink cluster on OpenShift: JobManager HA, TaskManagers with local RocksDB, incremental checkpoints to MinIO/COS, and Kafka source and sink</div>
+          </div>
+
+          <p>Two architectural choices have the biggest production impact: whether the JobManager is HA (yes, always), and whether checkpoints go to a durable object store (yes, always). Everything else is tuning.</p>
+
+          <h2 id="operator">Flink Kubernetes Operator</h2>
+          <p>The <strong>Flink Kubernetes Operator</strong> (version 1.9) manages the lifecycle of Flink clusters and jobs as Kubernetes custom resources. It replaces imperative <code>flink run</code> commands with a declarative <code>FlinkDeployment</code> CRD that GitOps tooling can own. The operator handles job submission, checkpoint-based upgrades, and graceful shutdown via savepoints.</p>
+
+          <table>
+            <thead>
+              <tr><th>Without operator</th><th>With operator (v1.9)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Manual <code>flink run</code> per deployment</td><td>GitOps-managed <code>FlinkDeployment</code> CR</td></tr>
+              <tr><td>Savepoints triggered by hand before upgrades</td><td>Operator triggers savepoint, waits, then restarts</td></tr>
+              <tr><td>JobManager restarts lose job state</td><td>HA metadata in ZooKeeper; job auto-resumes</td></tr>
+              <tr><td>Scaling requires manual TaskManager replica change</td><td>Autoscaler adjusts replicas based on lag metrics</td></tr>
+              <tr><td>Multiple YAML files to track</td><td>Single <code>FlinkDeployment</code> per pipeline</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--note">
+            <div class="callout__title">OpenShift SCC constraint</div>
+            <p>Flink&rsquo;s default container runs as UID 9999. OpenShift&rsquo;s <code>restricted</code> SCC rejects non-root images that don&rsquo;t declare a <code>runAsNonRoot: true</code> security context. Either use the official <code>apache/flink:1.19-scala_2.12-java17</code> image which already sets UID 9999, or configure a custom SCC that allows that UID range. Do not use <code>anyuid</code> in production; SAMA&rsquo;s hardening guidelines prohibit it.</p>
+          </div>
+
+          <h2 id="deploy">Deploying on OpenShift</h2>
+          <p>The steps below assume the Flink Kubernetes Operator is already installed via the OperatorHub catalog (namespace-scoped into <code>flink-operator</code>). The pipeline being deployed is the payment screening job from the real-time fraud detection article.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Create the namespace and RBAC</h4>
+              <p>The operator needs a <code>ServiceAccount</code> with permission to manage <code>Pods</code>, <code>Services</code>, and <code>ConfigMaps</code> in the target namespace. Use a minimal <code>Role</code>, not <code>cluster-admin</code>.</p>
+            </li>
+            <li>
+              <h4>Create the S3 secret and ConfigMap</h4>
+              <p>Checkpoint storage credentials for MinIO or IBM COS go in a Kubernetes <code>Secret</code> referenced by the <code>FlinkDeployment</code>. Never bake credentials into the image.</p>
+            </li>
+            <li>
+              <h4>Build and push the application JAR image</h4>
+              <p>Use a multi-stage Dockerfile: Maven build stage, then copy the fat JAR into the Flink base image. Tag with the commit SHA for traceability. Push to the internal OpenShift registry.</p>
+            </li>
+            <li>
+              <h4>Apply the FlinkDeployment CR</h4>
+              <p>The operator watches this CR and creates the JobManager and TaskManager pods. The <code>job</code> stanza points to the JAR and entry class. Savepoint path is set here for upgrade continuity.</p>
+            </li>
+            <li>
+              <h4>Verify checkpoint completion</h4>
+              <p>Watch the Flink dashboard or query the <code>/jobs/:id/checkpoints</code> REST API. The first checkpoint should complete within 60 seconds of job startup. If it does not, the pipeline has not reached a recoverable state.</p>
+            </li>
+            <li>
+              <h4>Wire Prometheus scraping</h4>
+              <p>Add the <code>metrics.reporter.prom.class</code> and <code>metrics.reporter.prom.port</code> Flink configuration entries. Create a <code>PodMonitor</code> so Prometheus discovers the pods.</p>
+            </li>
+          </ol>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>flink-payment-screening.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">flink.apache.org/v1beta1</span>
+<span class="tok-k">kind</span>: <span class="tok-s">FlinkDeployment</span>
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: <span class="tok-s">payment-screening</span>
+  <span class="tok-k">namespace</span>: <span class="tok-s">flink-prod</span>
+<span class="tok-k">spec</span>:
+  <span class="tok-k">image</span>: <span class="tok-s">image-registry.openshift-image-registry.svc:5000/flink-prod/payment-screening:1.4.2</span>
+  <span class="tok-k">flinkVersion</span>: <span class="tok-s">v1_19</span>
+  <span class="tok-k">flinkConfiguration</span>:
+    <span class="tok-c"># Checkpoint: incremental to MinIO every 30 s</span>
+    <span class="tok-k">execution.checkpointing.interval</span>: <span class="tok-s">"30000"</span>
+    <span class="tok-k">execution.checkpointing.mode</span>: <span class="tok-s">EXACTLY_ONCE</span>
+    <span class="tok-k">execution.checkpointing.max-concurrent-checkpoints</span>: <span class="tok-s">"1"</span>
+    <span class="tok-k">state.backend</span>: <span class="tok-s">rocksdb</span>
+    <span class="tok-k">state.backend.incremental</span>: <span class="tok-s">"true"</span>
+    <span class="tok-k">state.checkpoints.dir</span>: <span class="tok-s">s3://flink-checkpoints/payment-screening/checkpoints</span>
+    <span class="tok-k">state.savepoints.dir</span>: <span class="tok-s">s3://flink-checkpoints/payment-screening/savepoints</span>
+    <span class="tok-c"># JobManager HA via ZooKeeper</span>
+    <span class="tok-k">high-availability</span>: <span class="tok-s">zookeeper</span>
+    <span class="tok-k">high-availability.zookeeper.quorum</span>: <span class="tok-s">zookeeper.zookeeper.svc:2181</span>
+    <span class="tok-k">high-availability.storageDir</span>: <span class="tok-s">s3://flink-checkpoints/payment-screening/ha</span>
+    <span class="tok-c"># Metrics: Prometheus</span>
+    <span class="tok-k">metrics.reporter.prom.factory.class</span>: <span class="tok-s">org.apache.flink.metrics.prometheus.PrometheusReporterFactory</span>
+    <span class="tok-k">metrics.reporter.prom.port</span>: <span class="tok-s">"9249"</span>
+  <span class="tok-k">serviceAccount</span>: <span class="tok-s">flink-sa</span>
+  <span class="tok-k">jobManager</span>:
+    <span class="tok-k">resource</span>:
+      <span class="tok-k">memory</span>: <span class="tok-s">"2048m"</span>
+      <span class="tok-k">cpu</span>: <span class="tok-n">1</span>
+    <span class="tok-k">replicas</span>: <span class="tok-n">1</span>
+  <span class="tok-k">taskManager</span>:
+    <span class="tok-k">resource</span>:
+      <span class="tok-k">memory</span>: <span class="tok-s">"8192m"</span>
+      <span class="tok-k">cpu</span>: <span class="tok-n">4</span>
+    <span class="tok-k">replicas</span>: <span class="tok-n">3</span>
+  <span class="tok-k">job</span>:
+    <span class="tok-k">jarURI</span>: <span class="tok-s">local:///opt/flink/usrlib/payment-screening-1.4.2-fat.jar</span>
+    <span class="tok-k">entryClass</span>: <span class="tok-s">com.saib.streaming.PaymentScreeningJob</span>
+    <span class="tok-k">parallelism</span>: <span class="tok-n">12</span>
+    <span class="tok-k">upgradeMode</span>: <span class="tok-s">savepoint</span></code></pre>
+          </div>
+
+          <h2 id="checkpointing">Checkpointing</h2>
+          <p>A checkpoint is a consistent snapshot of the entire distributed streaming state, including Kafka consumer offsets. If a TaskManager dies and a new one starts, Flink restores the operators from the last successful checkpoint and resumes consuming from the Kafka offsets recorded in that checkpoint. No data is lost; some data may be reprocessed (the window between the last checkpoint and the failure). Incremental checkpoints only write changed RocksDB SST files, which reduces checkpoint size from several GB to tens of MB for a typical financial pipeline.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Checkpoint interval vs checkpoint timeout</div>
+            <p>The default checkpoint timeout is 10 minutes. If a checkpoint takes longer than 10 minutes (which can happen when RocksDB state grows large), Flink cancels it and logs a warning&mdash;but continues processing. You will not notice until a recovery reveals a stale restore point hours behind the current offset. Set <code>execution.checkpointing.timeout</code> explicitly and alarm on checkpoint failures. For a 5 GB state backend, 90 seconds is a reasonable initial timeout.</p>
+          </div>
+
+          <p>The recommended checkpoint-to-S3 path uses the Flink S3 filesystem plugin bundled with the distribution. For IBM COS, configure the S3 endpoint override:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>flink-conf.yaml additions for IBM COS</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Place in the flinkConfiguration stanza of the FlinkDeployment CR</span>
+<span class="tok-k">s3.endpoint</span>: <span class="tok-s">https://s3.ap.cloud-object-storage.appdomain.cloud</span>
+<span class="tok-k">s3.access-key</span>: <span class="tok-s">${S3_ACCESS_KEY}</span>      <span class="tok-c"># injected from Secret</span>
+<span class="tok-k">s3.secret-key</span>: <span class="tok-s">${S3_SECRET_KEY}</span>
+<span class="tok-k">s3.path.style.access</span>: <span class="tok-s">"true"</span>
+<span class="tok-c"># Incremental checkpoints: only changed SST files are uploaded</span>
+<span class="tok-k">state.backend.incremental</span>: <span class="tok-s">"true"</span>
+<span class="tok-c"># Retain 3 completed checkpoints in case a restore to a specific one is needed</span>
+<span class="tok-k">state.checkpoints.num-retained</span>: <span class="tok-s">"3"</span></code></pre>
+          </div>
+
+          <h2 id="exactly-once">Exactly-once</h2>
+          <p>Flink&rsquo;s exactly-once guarantee covers the processing state. Whether the end-to-end pipeline achieves exactly-once depends on the source and sink connectors too. With Kafka:</p>
+          <ul>
+            <li><strong>Source (Kafka consumer):</strong> offsets are checkpointed with the state. On recovery, Flink resets the Kafka consumer to the checkpointed offset. The source delivers <em>at-least-once</em> to the operators (events between the last checkpoint and the failure are replayed), but with idempotent operators the end result is exactly-once.</li>
+            <li><strong>Sink (Kafka producer):</strong> the Kafka sink uses <strong>two-phase commit</strong>: transactions are opened at each checkpoint barrier, committed when the checkpoint succeeds, aborted when it fails. This requires the downstream topic to use transactions-aware consumers (<code>isolation.level=read_committed</code>). The latency cost is real: a 30-second checkpoint interval means the sink data becomes visible every 30 seconds, not per-record.</li>
+          </ul>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Exactly-once with non-Kafka sinks</div>
+            <p>The two-phase commit protocol requires the sink to support transactional writes. Kafka does. A REST API, a direct JDBC connection (without XA), or a custom HTTP sink does not. If your pipeline writes to a non-transactional sink&mdash;a SWIFT message queue, a core banking API, an SFTP export&mdash;you have at-most-once (if you skip retries) or at-least-once (if you retry). Making those sinks idempotent at the consumer side is the only path to effectively-once semantics. The <a href="../data-sync/idempotent-consumer-exactly-once.html">Idempotent Consumers article</a> covers that pattern.</p>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>KafkaSink configuration (Java)</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-t">KafkaSink</span>&lt;<span class="tok-t">ScreeningDecision</span>&gt; sink = KafkaSink.&lt;<span class="tok-t">ScreeningDecision</span>&gt;builder()
+    .setBootstrapServers(<span class="tok-s">"kafka.kafka-prod.svc:9092"</span>)
+    .setRecordSerializer(
+        KafkaRecordSerializationSchema.builder()
+            .setTopic(<span class="tok-s">"screening-decisions"</span>)
+            .setValueSerializationSchema(<span class="tok-k">new</span> AvroSerializationSchema&lt;&gt;(ScreeningDecision.<span class="tok-k">class</span>))
+            .build())
+    <span class="tok-c">// EXACTLY_ONCE uses Kafka transactions; requires checkpoint mode EXACTLY_ONCE</span>
+    .setDeliveryGuarantee(DeliveryGuarantee.EXACTLY_ONCE)
+    <span class="tok-c">// Transactional ID prefix: unique per job to avoid transaction conflicts on restart</span>
+    .setTransactionalIdPrefix(<span class="tok-s">"payment-screening-"</span>)
+    .setKafkaProducerConfig(props -&gt; {
+        props.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, <span class="tok-s">"120000"</span>); <span class="tok-c">// 2 min</span>
+        props.setProperty(ProducerConfig.ACKS_CONFIG, <span class="tok-s">"all"</span>);
+        props.setProperty(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, <span class="tok-s">"true"</span>);
+    })
+    .build();</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Transaction timeout must exceed checkpoint interval + checkpoint duration</div>
+            <p>A Kafka transaction that is not committed within its timeout is aborted by the broker. If a checkpoint takes 90 seconds and the transaction timeout is 60 seconds, the sink aborts its transaction, the checkpoint fails, and the job restores from the previous checkpoint. Set the transaction timeout to at least 2&times; the checkpoint interval. The default Kafka transaction timeout is 60&thinsp;000 ms; extend it in the broker config too (<code>transaction.max.timeout.ms</code>).</p>
+          </div>
+
+          <h2 id="rocksdb">RocksDB tuning</h2>
+          <p>RocksDB is the default state backend for large stateful Flink jobs. Its default configuration is optimised for a generic workload, not for a financial screening pipeline where state is read heavily (sanctions lookups) and written moderately (velocity counters). Two tuning areas matter most: the <strong>block cache</strong> (keeps hot SST blocks in memory, reduces read I/O) and <strong>write buffer</strong> (batches writes before flushing to L0).</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>RocksDBTuner.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public class</span> <span class="tok-t">RocksDBTuner</span> <span class="tok-k">implements</span> <span class="tok-t">RocksDBOptionsFactory</span> {
+
+  <span class="tok-k">private static final</span> <span class="tok-t">Logger</span> LOG = LoggerFactory.getLogger(<span class="tok-t">RocksDBTuner</span>.<span class="tok-k">class</span>);
+
+  <span class="tok-p">@Override</span>
+  <span class="tok-k">public</span> <span class="tok-t">DBOptions</span> createDBOptions(<span class="tok-t">DBOptions</span> currentOptions, <span class="tok-t">Collection</span>&lt;<span class="tok-t">AutoCloseable</span>&gt; handlesToClose) {
+    <span class="tok-k">return</span> currentOptions
+        .setMaxBackgroundJobs(<span class="tok-n">4</span>)         <span class="tok-c">// parallel compaction threads</span>
+        .setInfoLogLevel(<span class="tok-t">InfoLogLevel</span>.WARN_LEVEL);
+  }
+
+  <span class="tok-p">@Override</span>
+  <span class="tok-k">public</span> <span class="tok-t">ColumnFamilyOptions</span> createColumnOptions(<span class="tok-t">ColumnFamilyOptions</span> currentOptions,
+                                                   <span class="tok-t">Collection</span>&lt;<span class="tok-t">AutoCloseable</span>&gt; handlesToClose) {
+    <span class="tok-c">// 256 MB block cache per TaskManager slot: hot sanctions data stays in memory</span>
+    <span class="tok-t">LRUCache</span> cache = <span class="tok-k">new</span> LRUCache(<span class="tok-n">256</span> * <span class="tok-n">1024</span> * <span class="tok-n">1024</span>L);
+    handlesToClose.add(cache);
+    <span class="tok-k">return</span> currentOptions
+        .setTableFormatConfig(<span class="tok-k">new</span> BlockBasedTableConfig()
+            .setBlockCache(cache)
+            .setBlockSize(<span class="tok-n">64</span> * <span class="tok-n">1024</span>))     <span class="tok-c">// 64 KB blocks</span>
+        .setWriteBufferSize(<span class="tok-n">128</span> * <span class="tok-n">1024</span> * <span class="tok-n">1024</span>L)   <span class="tok-c">// 128 MB write buffer</span>
+        .setMaxWriteBufferNumber(<span class="tok-n">2</span>)
+        .setLevel0FileNumCompactionTrigger(<span class="tok-n">4</span>);
+  }
+}</code></pre>
+          </div>
+
+          <p>Register in <code>flinkConfiguration</code>: <code>state.backend.rocksdb.options-factory: com.saib.streaming.RocksDBTuner</code>.</p>
+
+          <p>State TTL is also configured in the operator code, not in RocksDB. For velocity counters (how many transactions in the last 5 minutes), set a TTL on the state descriptor so RocksDB does not accumulate per-customer rows indefinitely:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>State TTL setup</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-t">StateTtlConfig</span> ttlConfig = <span class="tok-t">StateTtlConfig</span>
+    .newBuilder(Time.minutes(<span class="tok-n">15</span>))              <span class="tok-c">// evict after 15 min of inactivity</span>
+    .setUpdateType(<span class="tok-t">StateTtlConfig</span>.<span class="tok-t">UpdateType</span>.OnCreateAndWrite)
+    .setStateVisibility(<span class="tok-t">StateTtlConfig</span>.<span class="tok-t">StateVisibility</span>.NeverReturnExpired)
+    .cleanupInRocksdbCompactFilter(<span class="tok-n">1000</span>)       <span class="tok-c">// compact-filter cleans lazily</span>
+    .build();
+
+<span class="tok-t">ValueStateDescriptor</span>&lt;<span class="tok-t">VelocityState</span>&gt; descriptor =
+    <span class="tok-k">new</span> ValueStateDescriptor&lt;&gt;(<span class="tok-s">"velocity"</span>, <span class="tok-t">VelocityState</span>.<span class="tok-k">class</span>);
+descriptor.enableTimeToLive(ttlConfig);</code></pre>
+          </div>
+
+          <h2 id="ha">JobManager HA</h2>
+          <p>A single JobManager pod is a single point of failure. If it dies, all running jobs halt until the pod restarts&mdash;which under default Kubernetes restart behaviour can take 30&ndash;90 seconds. With HA mode, a standby JobManager is elected leader immediately via ZooKeeper, and the running jobs resume from the last checkpoint with no operator intervention.</p>
+
+          <div class="diagram" role="img" aria-label="JobManager HA with ZooKeeper: active and standby JM, ZooKeeper quorum, and checkpoint metadata">
+            <div class="diagram__inner">
+              <svg width="780" height="240" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ha-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                </defs>
+
+                <!-- Active JM -->
+                <rect x="20" y="80" width="160" height="70" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="100" y="108" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">JobManager-0 (active)</text>
+                <text x="100" y="124" text-anchor="middle" fill="#71717a" font-size="9">leader</text>
+                <text x="100" y="138" text-anchor="middle" fill="#71717a" font-size="9">holds job graph in memory</text>
+
+                <!-- Standby JM -->
+                <rect x="20" y="170" width="160" height="55" rx="6" fill="#16161f" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="100" y="194" text-anchor="middle" fill="#71717a" font-size="10" font-weight="600">JobManager-1 (standby)</text>
+                <text x="100" y="210" text-anchor="middle" fill="#71717a" font-size="9">watching ZK ephemeral node</text>
+
+                <!-- ZooKeeper -->
+                <rect x="260" y="80" width="160" height="70" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="340" y="108" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">ZooKeeper</text>
+                <text x="340" y="124" text-anchor="middle" fill="#71717a" font-size="9">leader election</text>
+                <text x="340" y="138" text-anchor="middle" fill="#71717a" font-size="9">job metadata path</text>
+
+                <!-- S3 HA metadata -->
+                <rect x="500" y="80" width="160" height="70" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="580" y="108" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">S3 (HA metadata)</text>
+                <text x="580" y="124" text-anchor="middle" fill="#71717a" font-size="9">/ha/payment-screening/</text>
+                <text x="580" y="138" text-anchor="middle" fill="#71717a" font-size="9">job graph, checkpoint ptr</text>
+
+                <!-- Failover label -->
+                <rect x="260" y="170" width="160" height="55" rx="6" fill="#1c1c28" stroke="#ef4444" stroke-dasharray="2 2"/>
+                <text x="340" y="190" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">On JM-0 failure</text>
+                <text x="340" y="206" text-anchor="middle" fill="#71717a" font-size="9">JM-1 acquires ZK lock</text>
+                <text x="340" y="219" text-anchor="middle" fill="#71717a" font-size="9">reads job graph from S3</text>
+
+                <!-- Arrows -->
+                <line x1="180" y1="115" x2="258" y2="115" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ha-arrow)"/>
+                <line x1="420" y1="115" x2="498" y2="115" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ha-arrow)"/>
+                <line x1="100" y1="170" x2="260" y2="205" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#ha-arrow)"/>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 2 &mdash; JobManager HA: active/standby election via ZooKeeper, job graph and checkpoint pointer persisted to S3</div>
+          </div>
+
+          <p>For OpenShift deployments, run ZooKeeper in the same cluster using the Strimzi ZooKeeper component (if Kafka is already Strimzi-managed) or the Bitnami chart. In production, three ZooKeeper nodes is the minimum quorum that tolerates a single node failure.</p>
+
+          <h2 id="upgrades">Rolling upgrades and savepoints</h2>
+          <p>A Flink application upgrade&mdash;new JAR, new parallelism, changed operator logic&mdash;requires stopping the running job, taking a savepoint, and restarting from it. A savepoint is a manually-triggered consistent snapshot; unlike a checkpoint, it is retained until explicitly deleted and its format is stable across Flink minor versions.</p>
+          <p>With the operator&rsquo;s <code>upgradeMode: savepoint</code>, the upgrade workflow is fully automated: update the image tag in the <code>FlinkDeployment</code> CR, commit to Git, ArgoCD applies the change, the operator triggers a savepoint, waits for it to complete, and starts the new version from that savepoint. The pipeline is offline for 5&ndash;15 seconds (savepoint duration). For payment screening with a hard SLA, schedule upgrades during the SARIE maintenance window (daily between 00:00&ndash;05:00 AST).</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">State schema compatibility on upgrade</div>
+            <p>A savepoint stores state keyed by operator name and UID. If you rename an operator, add a new stateful operator without explicitly assigning a UID, or change the serialisation format of a state class, the restore will fail or silently lose state. Set <code>.uid("velocity-check")</code> on every stateful operator. Use Avro for state serialisation&mdash;it supports schema evolution. Never use Java serialisation for operator state in production.</p>
+          </div>
+
+          <h2 id="observability">Observability</h2>
+          <p>The most important Flink metrics for a payment screening pipeline are not the generic JVM ones. These five determine whether the pipeline is healthy:</p>
+
+          <table>
+            <thead>
+              <tr><th>Metric</th><th>Where to find it</th><th>Alert threshold</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>lastCheckpointDuration</code></td><td>JobManager REST API, Prometheus</td><td>&gt; 90 s &rarr; checkpoint at risk</td></tr>
+              <tr><td><code>lastCheckpointSize</code></td><td>JobManager REST API</td><td>Spike &gt; 2&times; average &rarr; state growth</td></tr>
+              <tr><td><code>records-lag-max</code> (Kafka source)</td><td>Kafka consumer group metrics</td><td>&gt; 50,000 &rarr; pipeline falling behind</td></tr>
+              <tr><td><code>numRecordsOutPerSecond</code></td><td>Per-subtask TaskManager metric</td><td>Drop &gt; 30% &rarr; backpressure</td></tr>
+              <tr><td><code>fullRestarts</code></td><td>JobManager metric</td><td>&gt; 0 in 5 min &rarr; job in restart loop</td></tr>
+            </tbody>
+          </table>
+
+          <p>Route these into the platform Prometheus/Grafana stack via the <code>PodMonitor</code> approach. A Grafana dashboard with one row per metric, one column per TaskManager subtask, surfaces skew (one partition lagging while others are healthy) which is otherwise invisible in aggregated views.</p>
+
+          <h2 id="pitfalls">Common pitfalls</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Checkpoint storage fills silently</div>
+            <p>With <code>state.checkpoints.num-retained: 3</code>, only the 3 most recent checkpoints are kept&mdash;but only if the checkpoint is marked &ldquo;complete&rdquo;. A checkpoint that partially uploaded and then failed may leave orphaned SST files in S3 that the cleaner never touches, because they are not in the checkpoint directory index. Run a weekly S3 lifecycle rule to expire objects older than 7 days under the checkpoint prefix. IBM COS and MinIO both support lifecycle policies on a bucket prefix.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Parallelism mismatch corrupts state</div>
+            <p>Restoring from a savepoint at a different parallelism triggers a re-partitioning of keyed state. Flink handles this correctly&mdash;but only if your key serialiser is deterministic. A <code>HashMap</code>-backed POJO field with unstable hash codes will scatter state to wrong partitions on restore. Always test a parallelism change in staging by taking a savepoint from production (or a copy of it) and restoring at the new parallelism; verify that aggregation results match before cutting over.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">OpenShift eviction kills TaskManagers mid-checkpoint</div>
+            <p>OpenShift evicts pods when node memory pressure is high. A TaskManager evicted mid-checkpoint leaves its local RocksDB in a partial state. Flink detects this and triggers a job restart from the previous complete checkpoint, but the eviction will keep repeating until the root cause is fixed. Set resource requests and limits carefully: the TaskManager heap plus the RocksDB block cache plus JVM off-heap must fit within the pod memory limit. Overcommitting memory on TaskManager pods to save cluster cost is one of the most common causes of production incidents on Flink-on-Kubernetes.</p>
+          </div>
+
+          <nav class="article-nav">
+            <a href="../data-streaming.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Data Streaming</div>
+            </a>
+            <a href="stateful-stream-processing.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Stateful Stream Processing: Interactive Queries &amp; Exactly-Once &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

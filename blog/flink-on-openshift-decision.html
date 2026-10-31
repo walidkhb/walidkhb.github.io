@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Running Flink in Production Is a Platform Commitment, Not a Developer Experiment &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Apache Flink on OpenShift crosses a line that Kafka Streams does not: it becomes a shared cluster that the platform team owns, not a library that a squad bundles. The decision to cross that line&mdash;and how to cross it without losing a payment in the process&mdash;belongs at VP level.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/flink-on-openshift-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Running Flink in Production Is a Platform Commitment &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Running Flink in Production Is a Platform Commitment, Not a Developer Experiment &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Flink on OpenShift is a shared cluster that the platform team owns. The decision to run it in production, and the governance it requires, belongs at VP level.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/flink-on-openshift-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Running Flink in Production Is a Platform Commitment, Not a Developer Experiment">
+  <meta name="twitter:description" content="The decision to run Flink as a shared cluster on OpenShift&mdash;and the governance it requires&mdash;belongs above the engineering level.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Running Flink in Production Is a Platform Commitment, Not a Developer Experiment",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-10-31",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/flink-on-openshift-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>Flink Platform Decision</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; October 31, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">Running Flink in Production Is a Platform Commitment, Not a Developer Experiment</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Every financial-services integration team eventually hits a streaming problem that Kafka Streams cannot solve cleanly: a join across two Kafka clusters owned by different domains, a multi-step correlation that requires more state than a single JVM can hold, or a fraud model that needs to run as a shared service across three payment channels rather than being embedded in each one separately. That is the moment when someone suggests Apache Flink. And that is the moment when the VP of integration needs to understand what they are agreeing to&mdash;because Flink is a different kind of infrastructure investment than Kafka Streams.</p>
+
+        <p>Kafka Streams is a library. A squad includes it as a dependency, bundles it into their microservice, and the platform team never touches it. Flink is a cluster. Someone has to deploy it, size it, upgrade it, back up its checkpoints, respond to 2 a.m. pages when the JobManager crashes, and govern who is allowed to submit jobs to it. That someone is the platform team&mdash;and the decision to create that team, and fund it, belongs at VP level.</p>
+
+        <p class="article-section">The infrastructure commitment is larger than it appears</p>
+
+        <p>A minimal production Flink cluster on OpenShift&mdash;one JobManager in HA mode (two pods), three TaskManagers, a ZooKeeper quorum, and an S3-compatible object store for checkpoints&mdash;is roughly 8 to 10 pods running continuously. The memory footprint per TaskManager for a payment screening pipeline is 8 to 16 GB, depending on state size. That is real compute budget, not a prototype. And the operational cost scales with the number of jobs: every job on the cluster adds checkpoint overhead, RocksDB disk pressure, and a blast radius when someone deploys a job with an unbounded state that fills a TaskManager&rsquo;s local disk.</p>
+
+        <p>The platform team that owns this cluster needs three capabilities: they must be able to size it correctly as new jobs are added, they must be able to isolate noisy jobs from each other, and they must be able to perform rolling upgrades of the Flink version without dropping payments in flight. None of those capabilities are free; all three require investment in tooling, runbooks, and people. A VP who approves &ldquo;let&rsquo;s run Flink&rdquo; without approving the platform team to run it is setting up a production incident.</p>
+
+        <blockquote>
+          <p>The question is not whether Flink is the right technology for the streaming problem. It usually is. The question is whether the organisation is ready to run it as a production service&mdash;not as a prototype that became permanent.</p>
+        </blockquote>
+
+        <p class="article-section">The SAMA dimension: payment processing continuity</p>
+
+        <p>SAMA&rsquo;s Technology Risk Management framework requires that Tier 1 payment processing systems maintain documented recovery procedures with tested recovery time objectives. A Flink cluster running payment screening is, in most interpretations of that framework, a Tier 1 processing system. That means the checkpoint and recovery procedures must be tested, not just documented. It means the RTO for a full cluster failure must be measured, not assumed. And it means the evidence of that testing must be available to the examination team.</p>
+
+        <p>The specific risk that Flink introduces, and that the examination team will probe, is <strong>state loss on failure</strong>. If a Flink job restarts from an old checkpoint, the payments processed between that checkpoint and the failure are reprocessed. Whether that reprocessing produces duplicate payment decisions depends entirely on whether the downstream systems&mdash;the core banking write, the SWIFT gateway submission, the notification service&mdash;are idempotent. A Flink deployment without a confirmed idempotency control on every downstream sink is a latent payment duplication risk, and SAMA will find it.</p>
+
+        <p><strong>The governance requirement is clear: before any Flink job that touches payment processing is deployed to production, the VP of integration must sign off that every downstream system the job writes to is idempotent under replay conditions.</strong> That sign-off belongs in the deployment checklist, not in the engineering wiki.</p>
+
+        <p class="article-section">What leadership needs to decide before go-live</p>
+
+        <p>Three decisions that cannot be delegated to the engineering team, because each one reflects a business risk appetite, not a technical preference:</p>
+
+        <p><strong>The checkpoint interval determines the replay window.</strong> A checkpoint every 30 seconds means that in the worst case, 30 seconds of payment data is reprocessed after a failure. A checkpoint every 5 minutes means up to 5 minutes. Shorter intervals cost more compute (incremental checkpoints still have overhead). Longer intervals extend the replay window, which matters if the downstream systems are not fully idempotent. The choice of interval is a business risk decision: how much replay can the downstream estate tolerate? That answer comes from the business, not from the engineering team alone.</p>
+
+        <p><strong>The savepoint window for upgrades determines the maintenance window requirement.</strong> A rolling upgrade of a Flink job touches the payment screening pipeline for 5 to 15 seconds&mdash;the time it takes to take a savepoint and restart the new version. During that window, events arriving from Kafka are buffered (within the consumer group lag), not dropped. But if the downstream systems have tight SLA timers that start from the Kafka timestamp, a 15-second gap in processing may breach those timers. The VP of integration needs to know whether the pipeline has latency SLAs that preclude even a 15-second maintenance window, and if so, whether the planned upgrade cadence is compatible with the SARIE maintenance window schedule.</p>
+
+        <p><strong>Multi-tenancy vs dedicated clusters is a cost and isolation trade-off.</strong> Running all Flink jobs on a single shared cluster is cheaper and simpler to operate. It is also a single point of failure for multiple business-critical flows. A sanctions-screening job sharing a cluster with a market-data enrichment job means a buggy market-data job can exhaust TaskManager memory and kill sanctions screening. Dedicated clusters per use case cost more. The right answer depends on the risk classification of each job&mdash;a decision that the VP owns, not the platform engineer who is trying to stay within budget.</p>
+
+        <p class="article-section">What the team needs from leadership to ship it</p>
+
+        <p>The engineering team needs three things that only leadership can provide: a clear architecture decision record that commits to Flink as a platform capability (not a one-off experiment), a funded platform squad to operate the cluster, and a defined process for onboarding new jobs that includes the idempotency sign-off described above. Without those three things, the Flink deployment will be run by whoever built the first job, operated as a side responsibility by people who have other primary jobs, and the first production incident will reveal that nobody owns it.</p>
+
+        <p>The pattern of underfunded shared infrastructure that becomes critical and ungoverned is not unique to Flink&mdash;it plays out with Kafka, with API gateways, with shared databases. The way to break that pattern is to make the infrastructure commitment explicit and fund it proportionally to its criticality, before the go-live rather than after the first 2 a.m. page.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the technical implementation: Flink Kubernetes Operator deployment on OpenShift, checkpoint configuration to MinIO/IBM COS, exactly-once Kafka sink with two-phase commit, RocksDB tuning, and rolling upgrade procedures &mdash; see the companion Lab article: <a href="../lab/data-streaming/flink-on-openshift-checkpointing.html" style="color:var(--color-accent);">Flink on OpenShift: Checkpointing, Exactly-Once, and Production Operations</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
