@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distributed Caching: Near-Cache &amp; Read-Replica Topologies &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Redis read replicas and client-side near-cache patterns for high-frequency settlement APIs: REPLICA_PREFERRED routing, replica lag budgets, Hazelcast Near Cache, SARIE/RTGS read-scaling, and the failure modes that cause stale balances in production.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Distributed Caching: Near-Cache &amp; Read-Replica Topologies &mdash; Lab">
+  <meta property="og:description" content="Redis read replicas and near-cache for settlement APIs: REPLICA_PREFERRED routing, lag budgets, Hazelcast Near Cache, and the failure modes that bite in production.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/distributed-caching/near-cache-and-read-replicas.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Near-Cache &amp; Read-Replica Topologies &mdash; Lab">
+  <meta name="twitter:description" content="Redis read replicas + near-cache for high-frequency settlement APIs. REPLICA_PREFERRED routing, replica lag, Hazelcast Near Cache.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/distributed-caching/near-cache-and-read-replicas.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Near-Cache & Read-Replica Topologies: Redis Read-Scaling for High-Frequency Settlement APIs",
+    "description": "Redis read replicas and client-side near-cache patterns for high-frequency settlement APIs: REPLICA_PREFERRED routing, replica lag budgets, Hazelcast Near Cache, SARIE/RTGS read-scaling, and the failure modes that cause stale balances in production.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-07",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/distributed-caching/near-cache-and-read-replicas.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Distributed Caching &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/distributed-caching.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "Distributed Caching"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Near-Cache &amp; Read-Replica Topologies</div>
+          <span class="overline">Lab Article</span>
+          <h1>Distributed Caching: Near-Cache &amp; Read-Replica Topologies</h1>
+          <p class="lead">Redis Cluster gives you horizontal write capacity and high availability. What it does not give you automatically is horizontal read capacity. When a settlement API serves 50,000 balance pre-checks per second, all reads land on the primary shard for each key. Near-cache and read-replica topologies change that &mdash; at the cost of a replica lag budget you must model explicitly for every data type that touches a regulated ledger.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#replica-lag">Replica lag budget</a></li>
+            <li><a href="#read-replicas">Read-replica topology</a></li>
+            <li><a href="#near-cache-pattern">Near-cache pattern</a></li>
+            <li><a href="#spring-data-routing">Spring Data routing</a></li>
+            <li><a href="#hazelcast-near-cache">Hazelcast Near Cache</a></li>
+            <li><a href="#settlement-patterns">Settlement API patterns</a></li>
+            <li><a href="#monitoring">Monitoring &amp; observability</a></li>
+            <li><a href="#failure-modes">Failure modes</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Redis 7.2 / Lettuce 6.3 / Spring Data Redis 3.3 / Hazelcast 5.4 / OpenShift 4.16</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>A Redis Cluster with six nodes (three primaries, three replicas) is not a read-scaled system out of the box. By default, all reads go to the primary of the slot that owns the key. The replicas exist for failover, not for load distribution. If your settlement API issues 50,000 GET commands per second, all 50,000 go to the three primary nodes. The replicas idle while the primaries saturate.</p>
+          <p>Two complementary patterns address this. <strong>Read replicas</strong> route eligible reads to replica nodes using <code>REPLICA_PREFERRED</code> (Lettuce) or <code>SLAVE_PREFERRED</code> (Jedis). The read load spreads across both primary and replica shards at the cost of replica lag &mdash; replicas are asynchronously replicated and may lag the primary by 1&ndash;20 ms under normal conditions and 100&ndash;500 ms under a primary CPU spike. <strong>Near-cache</strong> moves a subset of frequently read, slowly changing data into the application pod&rsquo;s own memory, eliminating the Redis network hop entirely for those reads &mdash; at the cost of a client-side invalidation protocol and additional JVM heap.</p>
+          <p>The two patterns are not interchangeable. Use read replicas for data that must be consistent across all pods within the replica lag window and whose staleness budget is measured in milliseconds. Use near-cache for data where staleness can be measured in seconds and where the read-to-write ratio is so high that eliminating the network hop pays for the heap overhead.</p>
+          <p>In a Saudi Arabian banking context, the primary use cases are: exchange rate reads during SARIE settlement windows (high read frequency, 60-second staleness budget), BIC/IBAN routing tables during SWIFT cut-off (very high frequency, 24-hour staleness acceptable), and limit-matrix pre-checks before payment authorisation (high frequency, 30-second staleness budget under SAMA internal controls policy).</p>
+
+          <div class="diagram" role="img" aria-label="Read replica and near-cache topology for a settlement API cluster">
+            <div class="diagram__inner">
+              <svg width="780" height="400" viewBox="0 0 780 400" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="nc-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="nc-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="nc-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                  <marker id="nc-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- App pods row -->
+                <text x="10" y="22" fill="#71717a" font-size="9" font-weight="600" text-transform="uppercase">Application Pods (OpenShift)</text>
+                <rect x="10" y="30" width="140" height="90" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="80" y="52" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Pod A</text>
+                <rect x="20" y="60" width="120" height="28" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="80" y="78" text-anchor="middle" fill="#00d4aa" font-size="8">Near-Cache (Caffeine)</text>
+                <rect x="20" y="93" width="120" height="22" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="80" y="108" text-anchor="middle" fill="#71717a" font-size="7">exchange-rates (200 entries)</text>
+
+                <rect x="165" y="30" width="140" height="90" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="235" y="52" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Pod B</text>
+                <rect x="175" y="60" width="120" height="28" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="235" y="78" text-anchor="middle" fill="#00d4aa" font-size="8">Near-Cache (Caffeine)</text>
+                <rect x="175" y="93" width="120" height="22" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="235" y="108" text-anchor="middle" fill="#71717a" font-size="7">exchange-rates (200 entries)</text>
+
+                <rect x="320" y="30" width="140" height="90" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="390" y="52" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Pod C</text>
+                <rect x="330" y="60" width="120" height="28" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="390" y="78" text-anchor="middle" fill="#00d4aa" font-size="8">Near-Cache (Caffeine)</text>
+                <rect x="330" y="93" width="120" height="22" rx="4" fill="#1c1c28" stroke="#71717a"/>
+                <text x="390" y="108" text-anchor="middle" fill="#71717a" font-size="7">exchange-rates (200 entries)</text>
+
+                <!-- Lettuce cluster client label -->
+                <text x="510" y="52" fill="#4a9eff" font-size="9" font-weight="600">Lettuce ClusterClient</text>
+                <text x="510" y="66" fill="#71717a" font-size="8">REPLICA_PREFERRED</text>
+                <text x="510" y="80" fill="#71717a" font-size="8">for eligible read ops</text>
+
+                <!-- Redis Cluster row -->
+                <text x="10" y="152" fill="#71717a" font-size="9" font-weight="600">Redis 7.2 Cluster (3 primary + 3 replica)</text>
+
+                <!-- Primary 1 -->
+                <rect x="10" y="162" width="110" height="70" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="65" y="183" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Primary 1</text>
+                <text x="65" y="197" text-anchor="middle" fill="#71717a" font-size="8">slots 0&ndash;5460</text>
+                <text x="65" y="209" text-anchor="middle" fill="#71717a" font-size="7">Writes + strong reads</text>
+                <text x="65" y="222" text-anchor="middle" fill="#71717a" font-size="7">+5% replication overhead</text>
+
+                <!-- Replica 1 -->
+                <rect x="130" y="162" width="110" height="70" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="185" y="183" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">Replica 1</text>
+                <text x="185" y="197" text-anchor="middle" fill="#71717a" font-size="8">slots 0&ndash;5460</text>
+                <text x="185" y="209" text-anchor="middle" fill="#4a9eff" font-size="7">REPLICA reads</text>
+                <text x="185" y="222" text-anchor="middle" fill="#71717a" font-size="7">lag: 1&ndash;20 ms typical</text>
+
+                <!-- Primary 2 -->
+                <rect x="260" y="162" width="110" height="70" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="315" y="183" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Primary 2</text>
+                <text x="315" y="197" text-anchor="middle" fill="#71717a" font-size="8">slots 5461&ndash;10921</text>
+                <text x="315" y="209" text-anchor="middle" fill="#71717a" font-size="7">Writes + strong reads</text>
+                <text x="315" y="222" text-anchor="middle" fill="#71717a" font-size="7">+5% replication overhead</text>
+
+                <!-- Replica 2 -->
+                <rect x="380" y="162" width="110" height="70" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="435" y="183" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">Replica 2</text>
+                <text x="435" y="197" text-anchor="middle" fill="#71717a" font-size="8">slots 5461&ndash;10921</text>
+                <text x="435" y="209" text-anchor="middle" fill="#4a9eff" font-size="7">REPLICA reads</text>
+                <text x="435" y="222" text-anchor="middle" fill="#71717a" font-size="7">lag: 1&ndash;20 ms typical</text>
+
+                <!-- Primary 3 -->
+                <rect x="510" y="162" width="110" height="70" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="565" y="183" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Primary 3</text>
+                <text x="565" y="197" text-anchor="middle" fill="#71717a" font-size="8">slots 10922&ndash;16383</text>
+                <text x="565" y="209" text-anchor="middle" fill="#71717a" font-size="7">Writes + strong reads</text>
+                <text x="565" y="222" text-anchor="middle" fill="#71717a" font-size="7">+5% replication overhead</text>
+
+                <!-- Replica 3 -->
+                <rect x="630" y="162" width="110" height="70" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="685" y="183" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">Replica 3</text>
+                <text x="685" y="197" text-anchor="middle" fill="#71717a" font-size="8">slots 10922&ndash;16383</text>
+                <text x="685" y="209" text-anchor="middle" fill="#4a9eff" font-size="7">REPLICA reads</text>
+                <text x="685" y="222" text-anchor="middle" fill="#71717a" font-size="7">lag: 1&ndash;20 ms typical</text>
+
+                <!-- Read arrows from pods to replicas -->
+                <line x1="80" y1="120" x2="185" y2="162" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#nc-arr3)"/>
+                <line x1="235" y1="120" x2="435" y2="162" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#nc-arr3)"/>
+                <line x1="390" y1="120" x2="685" y2="162" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#nc-arr3)"/>
+
+                <!-- Write arrows from pods to primaries -->
+                <line x1="80" y1="120" x2="65" y2="162" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#nc-arr2)"/>
+                <line x1="235" y1="120" x2="315" y2="162" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#nc-arr2)"/>
+                <line x1="390" y1="120" x2="565" y2="162" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#nc-arr2)"/>
+
+                <!-- Replication arrows -->
+                <line x1="120" y1="197" x2="130" y2="197" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#nc-arr4)"/>
+                <line x1="370" y1="197" x2="380" y2="197" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#nc-arr4)"/>
+                <line x1="620" y1="197" x2="630" y2="197" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#nc-arr4)"/>
+
+                <!-- Legend -->
+                <rect x="10" y="260" width="740" height="120" rx="6" fill="#16161f" stroke="#2d2d3a"/>
+                <text x="30" y="282" fill="#e4e4e7" font-size="9" font-weight="600">Read path legend</text>
+                <line x1="30" y1="300" x2="80" y2="300" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="90" y="304" fill="#e4e4e7" font-size="8">Near-cache HIT (Caffeine, in-JVM) &mdash; &lt;1 &micro;s, no network; staleness = Caffeine TTL</text>
+                <line x1="30" y1="320" x2="80" y2="320" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="4,2"/>
+                <text x="90" y="324" fill="#e4e4e7" font-size="8">REPLICA_PREFERRED read (Lettuce) &mdash; &lt;2 ms, lag budget 1&ndash;20 ms; use for exchange rates, BIC tables</text>
+                <line x1="30" y1="340" x2="80" y2="340" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="90" y="344" fill="#e4e4e7" font-size="8">Write / strong read (PRIMARY) &mdash; &lt;2 ms, zero lag; use for account balances, payment state</text>
+                <line x1="30" y1="360" x2="80" y2="360" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,2"/>
+                <text x="90" y="364" fill="#e4e4e7" font-size="8">Async replication (Primary &rarr; Replica) &mdash; 1&ndash;20 ms typical; 100&ndash;500 ms under primary CPU spike</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Near-cache + read-replica topology: near-cache (Caffeine) absorbs hot reference-data reads at &lt;1&thinsp;&micro;s; REPLICA_PREFERRED routes remaining reads to replica shards; writes and balance reads always go to primaries</div>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Redis Cluster replication is asynchronous by default</div>
+            <p>Unlike synchronous replication in a traditional RDBMS, Redis replication is asynchronous: the primary acknowledges a write before the replica has persisted it. <code>WAIT numreplicas timeout</code> forces a synchronous acknowledgement but adds latency proportional to replica count and network RTT. For settlement-critical writes (payment state, authorisation decisions), use <code>WAIT 1 50</code> (wait for one replica, 50 ms timeout) and fall back gracefully if the replica count is not met. Never use <code>WAIT</code> for high-frequency reference-data writes &mdash; the latency overhead eliminates the caching benefit.</p>
+          </div>
+
+          <h2 id="replica-lag">Replica Lag Budget</h2>
+          <p>Every read-replica and near-cache strategy requires an explicit <strong>replica lag budget</strong> for each data type: the maximum acceptable difference between what a replica returns and what the primary holds. This is not a Redis configuration parameter &mdash; it is a business requirement that must be signed off by the data owner before you route reads to replicas or near-cache.</p>
+          <p>Replica lag has two components. <strong>Replication lag</strong> is the delay between a write completing on the primary and the replica applying that write. Under normal conditions with a well-provisioned primary, this is 1&ndash;5 ms. Under primary CPU saturation (common during SARIE settlement windows when write throughput spikes), it can reach 100&ndash;500 ms. <strong>Near-cache lag</strong> is the TTL you set on the Caffeine L1 cache, which determines how stale the in-JVM copy can be before it expires and is refreshed from Redis.</p>
+
+          <table>
+            <thead>
+              <tr><th>Data type</th><th>Acceptable lag</th><th>Read strategy</th><th>SAMA / regulatory constraint</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Account balance</strong></td><td>Zero &mdash; always primary</td><td>PRIMARY only</td><td>Must reflect the last committed transaction; any staleness is a correctness error under SAMA Circular 44/2023</td></tr>
+              <tr><td><strong>Payment authorisation state</strong></td><td>Zero &mdash; always primary</td><td>PRIMARY only</td><td>Idempotency checks must read from primary; a stale replica read may allow a duplicate payment</td></tr>
+              <tr><td><strong>Exchange rates (SARIE)</strong></td><td>60 seconds</td><td>Near-cache (60 s TTL) &rarr; REPLICA_PREFERRED</td><td>SARIE clears at a fixed daily window; 60-second staleness acceptable within the settlement session</td></tr>
+              <tr><td><strong>BIC/IBAN routing table</strong></td><td>24 hours</td><td>Near-cache (1 h TTL) &rarr; REPLICA_PREFERRED</td><td>SWIFT BIC changes published at day start; 24-hour staleness standard industry practice</td></tr>
+              <tr><td><strong>Limit matrix</strong></td><td>30 seconds</td><td>REPLICA_PREFERRED (no near-cache)</td><td>Limit changes by ops must propagate within 30 s; near-cache introduces additional lag beyond replica lag</td></tr>
+              <tr><td><strong>Product configuration</strong></td><td>5 minutes</td><td>Near-cache (5 min TTL) &rarr; REPLICA_PREFERRED</td><td>No real-time requirement; product changes go through a release pipeline with hours of lead time</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Account balances must NEVER be read from a replica or near-cache</div>
+            <p>The most dangerous misapplication of read replicas in banking is routing balance reads to replicas to reduce primary load. A replica serving a balance read during a settlement window may lag by 100&ndash;500 ms &mdash; enough time for a debit to have cleared on the primary but not yet propagated to the replica. The API serves a pre-debit balance. The customer sees incorrect available funds. Under SAMA Circular 44/2023 on payment accuracy obligations, serving a stale balance that leads to an incorrect payment decision is a material compliance event. Configure your Lettuce routing explicitly to never use <code>REPLICA_PREFERRED</code> for balance cache keys.</p>
+          </div>
+
+          <h2 id="read-replicas">Read-Replica Topology</h2>
+          <p>A Redis Cluster with read replicas has two read modes, controlled per-connection or per-command in Lettuce: <code>MASTER</code> (primary only, default), <code>SLAVE</code> (replica only &mdash; not recommended; fails if replica unavailable), <code>MASTER_PREFERRED</code> (primary preferred, falls back to replica), <code>SLAVE_PREFERRED</code> (deprecated name), and <code>REPLICA_PREFERRED</code> (replica preferred, falls back to primary when no replica is available).</p>
+          <p>For a settlement API, the topology decision is: use <code>REPLICA_PREFERRED</code> at the connection level for a dedicated read connection factory, and use <code>MASTER</code> for the write and balance-read connection factory. Never use a single connection factory with alternating read modes &mdash; the per-request mode switching in Lettuce introduces routing inconsistencies under connection pool pressure.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>RedisTopologyConfig.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Configuration</span>
+<span class="tok-k">public class</span> <span class="tok-t">RedisTopologyConfig</span> {
+
+    <span class="tok-k">@Value</span>(<span class="tok-s">"${spring.data.redis.cluster.nodes}"</span>)
+    <span class="tok-k">private</span> <span class="tok-t">List</span>&lt;<span class="tok-t">String</span>&gt; clusterNodes;
+
+    <span class="tok-c">// Primary connection factory: all writes + balance reads.</span>
+    <span class="tok-c">// ReadFrom.MASTER ensures zero replica lag for correctness-critical keys.</span>
+    <span class="tok-k">@Bean</span>
+    <span class="tok-k">@Primary</span>
+    <span class="tok-k">public</span> <span class="tok-t">LettuceConnectionFactory</span> primaryConnectionFactory() {
+        <span class="tok-t">RedisClusterConfiguration</span> config = <span class="tok-k">new</span> RedisClusterConfiguration(clusterNodes);
+        config.setMaxRedirects(<span class="tok-n">3</span>);
+
+        <span class="tok-t">LettuceClientConfiguration</span> clientConfig = LettuceClientConfiguration.builder()
+            .readFrom(<span class="tok-t">ReadFrom</span>.MASTER)   <span class="tok-c">// PRIMARY only: balances, payment state</span>
+            .commandTimeout(<span class="tok-t">Duration</span>.ofMillis(<span class="tok-n">200</span>))
+            .build();
+
+        <span class="tok-k">return new</span> <span class="tok-t">LettuceConnectionFactory</span>(config, clientConfig);
+    }
+
+    <span class="tok-c">// Replica-preferred connection factory: reference data reads.</span>
+    <span class="tok-c">// REPLICA_PREFERRED falls back to primary if no replica is available.</span>
+    <span class="tok-k">@Bean</span>
+    <span class="tok-k">@Qualifier</span>(<span class="tok-s">"replicaConnectionFactory"</span>)
+    <span class="tok-k">public</span> <span class="tok-t">LettuceConnectionFactory</span> replicaConnectionFactory() {
+        <span class="tok-t">RedisClusterConfiguration</span> config = <span class="tok-k">new</span> RedisClusterConfiguration(clusterNodes);
+        config.setMaxRedirects(<span class="tok-n">3</span>);
+
+        <span class="tok-t">LettuceClientConfiguration</span> clientConfig = LettuceClientConfiguration.builder()
+            .readFrom(<span class="tok-t">ReadFrom</span>.REPLICA_PREFERRED) <span class="tok-c">// replicas for ref data</span>
+            .commandTimeout(<span class="tok-t">Duration</span>.ofMillis(<span class="tok-n">200</span>))
+            .build();
+
+        <span class="tok-k">return new</span> <span class="tok-t">LettuceConnectionFactory</span>(config, clientConfig);
+    }
+
+    <span class="tok-c">// Separate RedisTemplate for reference-data reads via replica connection.</span>
+    <span class="tok-c">// Balance and payment-state reads use the @Primary (master) template.</span>
+    <span class="tok-k">@Bean</span>
+    <span class="tok-k">@Qualifier</span>(<span class="tok-s">"replicaRedisTemplate"</span>)
+    <span class="tok-k">public</span> <span class="tok-t">RedisTemplate</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">Object</span>&gt; replicaRedisTemplate(
+            <span class="tok-k">@Qualifier</span>(<span class="tok-s">"replicaConnectionFactory"</span>) <span class="tok-t">LettuceConnectionFactory</span> factory) {
+        <span class="tok-t">RedisTemplate</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">Object</span>&gt; template = <span class="tok-k">new</span> RedisTemplate&lt;&gt;();
+        template.setConnectionFactory(factory);
+        template.setKeySerializer(<span class="tok-k">new</span> StringRedisSerializer());
+        template.setValueSerializer(<span class="tok-k">new</span> GenericJackson2JsonRedisSerializer());
+        <span class="tok-k">return</span> template;
+    }
+}</code></pre>
+          </div>
+
+          <h2 id="near-cache-pattern">Near-Cache Pattern</h2>
+          <p>A near-cache is a client-side, process-local cache that sits in front of a distributed cache. The name comes from Hazelcast, which uses it as a first-class feature; the concept applies equally to Caffeine sitting in front of Redis. What distinguishes a near-cache from a generic L1 cache is its <strong>invalidation protocol</strong>: when the backing distributed cache changes a value, the near-cache in every client must be notified so it can evict its stale copy.</p>
+          <p>Without invalidation, a near-cache with a 60-second TTL means every pod can serve a value that is up to 60 seconds stale &mdash; regardless of how many times that value was updated in Redis during those 60 seconds. With Redis keyspace notifications as the invalidation signal, the near-cache entry is evicted within milliseconds of the Redis key being updated, and the next read repopulates from the (now fresh) replica. This reduces effective staleness from &ldquo;up to TTL&rdquo; to &ldquo;replica lag + keyspace notification delivery latency&rdquo; &mdash; typically 5&ndash;30 ms total.</p>
+          <p>The trade-off for near-cache is JVM heap consumption and the operational overhead of enabling Redis keyspace notifications. For exchange rates (200 entries, ~500 bytes each), the heap cost is 100 KB per pod &mdash; negligible. For a limit matrix (5,000 entries, ~1 KB each), it is 5 MB per pod &mdash; still acceptable. For account balances, near-cache is never appropriate regardless of size, as described above.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>NearCacheConfig.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Configuration</span>
+<span class="tok-k">public class</span> <span class="tok-t">NearCacheConfig</span> {
+
+    <span class="tok-c">// Near-cache for exchange rates: 60-second TTL, max 200 entries.</span>
+    <span class="tok-c">// Coherence via Redis keyspace notifications (see NearCacheInvalidationListener).</span>
+    <span class="tok-k">@Bean</span>(<span class="tok-s">"exchangeRateNearCache"</span>)
+    <span class="tok-k">public</span> <span class="tok-t">Cache</span> exchangeRateNearCache() {
+        <span class="tok-t">com.github.benmanes.caffeine.cache.Cache</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">ExchangeRate</span>&gt; cache =
+            Caffeine.newBuilder()
+                .maximumSize(<span class="tok-n">200</span>)
+                .expireAfterWrite(<span class="tok-n">60</span>, TimeUnit.SECONDS)
+                .recordStats()
+                .build();
+        <span class="tok-k">return new</span> <span class="tok-t">CaffeineCache</span>(<span class="tok-s">"exchange-rates-near"</span>, cache);
+    }
+
+    <span class="tok-c">// Near-cache for BIC/IBAN routing: 1-hour TTL, max 10,000 entries.</span>
+    <span class="tok-k">@Bean</span>(<span class="tok-s">"bicRoutingNearCache"</span>)
+    <span class="tok-k">public</span> <span class="tok-t">Cache</span> bicRoutingNearCache() {
+        <span class="tok-t">com.github.benmanes.caffeine.cache.Cache</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">BicRouting</span>&gt; cache =
+            Caffeine.newBuilder()
+                .maximumSize(<span class="tok-n">10_000</span>)
+                .expireAfterWrite(<span class="tok-n">1</span>, TimeUnit.HOURS)
+                .recordStats()
+                .build();
+        <span class="tok-k">return new</span> <span class="tok-t">CaffeineCache</span>(<span class="tok-s">"bic-routing-near"</span>, cache);
+    }
+}
+
+<span class="tok-c">// Invalidation listener: evicts near-cache entries on Redis keyspace notifications.</span>
+<span class="tok-k">@Component</span>
+<span class="tok-k">public class</span> <span class="tok-t">NearCacheInvalidationListener</span> <span class="tok-k">implements</span> <span class="tok-t">MessageListener</span> {
+
+    <span class="tok-k">private final</span> <span class="tok-t">Cache</span> exchangeRateNearCache;
+    <span class="tok-k">private final</span> <span class="tok-t">Cache</span> bicRoutingNearCache;
+    <span class="tok-k">private final</span> <span class="tok-t">MeterRegistry</span> registry;
+
+    @Override
+    <span class="tok-k">public void</span> onMessage(<span class="tok-t">Message</span> message, <span class="tok-k">byte</span>[] pattern) {
+        <span class="tok-t">String</span> key = <span class="tok-k">new</span> <span class="tok-t">String</span>(message.getBody(), StandardCharsets.UTF_8);
+        <span class="tok-k">if</span> (key.startsWith(<span class="tok-s">"exchange-rates::"</span>)) {
+            exchangeRateNearCache.evict(key.substring(<span class="tok-n">16</span>));
+            registry.counter(<span class="tok-s">"near_cache.invalidations"</span>,
+                <span class="tok-s">"cache"</span>, <span class="tok-s">"exchange-rates"</span>).increment();
+        } <span class="tok-k">else if</span> (key.startsWith(<span class="tok-s">"bic-routing::"</span>)) {
+            bicRoutingNearCache.evict(key.substring(<span class="tok-n">13</span>));
+            registry.counter(<span class="tok-s">"near_cache.invalidations"</span>,
+                <span class="tok-s">"cache"</span>, <span class="tok-s">"bic-routing"</span>).increment();
+        }
+    }
+}</code></pre>
+          </div>
+
+          <h2 id="spring-data-routing">Spring Data Redis Routing</h2>
+          <p>The cleanest way to route reads to replicas in a Spring application is a dual-template pattern: one <code>RedisTemplate</code> wired to the <code>MASTER</code> connection factory, one wired to the <code>REPLICA_PREFERRED</code> factory. Services inject the correct template at the class level using <code>@Qualifier</code>. This is explicit and easily audited &mdash; the choice of replica vs. primary is visible in the service constructor, not buried in a framework configuration that can be misread.</p>
+          <p>Avoid configuring <code>REPLICA_PREFERRED</code> at the application-wide level in <code>application.yaml</code>. That approach makes it easy to accidentally route balance reads to replicas when a new service is created without awareness of the dual-template pattern. Explicit injection of the correct template at the service layer is safer.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ExchangeRateService.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Service</span>
+<span class="tok-k">public class</span> <span class="tok-t">ExchangeRateService</span> {
+
+    <span class="tok-k">private final</span> <span class="tok-t">Cache</span> nearCache;        <span class="tok-c">// Caffeine L1</span>
+    <span class="tok-k">private final</span> <span class="tok-t">RedisTemplate</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">ExchangeRate</span>&gt; replicaTemplate; <span class="tok-c">// REPLICA_PREFERRED</span>
+    <span class="tok-k">private final</span> <span class="tok-t">ExchangeRateRepository</span> repository; <span class="tok-c">// DB fallback</span>
+
+    <span class="tok-k">public</span> ExchangeRateService(
+            <span class="tok-k">@Qualifier</span>(<span class="tok-s">"exchangeRateNearCache"</span>) <span class="tok-t">Cache</span> nearCache,
+            <span class="tok-k">@Qualifier</span>(<span class="tok-s">"replicaRedisTemplate"</span>) <span class="tok-t">RedisTemplate</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">ExchangeRate</span>&gt; replicaTemplate,
+            <span class="tok-t">ExchangeRateRepository</span> repository) {
+        <span class="tok-k">this</span>.nearCache = nearCache;
+        <span class="tok-k">this</span>.replicaTemplate = replicaTemplate;
+        <span class="tok-k">this</span>.repository = repository;
+    }
+
+    <span class="tok-k">public</span> <span class="tok-t">ExchangeRate</span> getRate(<span class="tok-t">String</span> currencyPair) {
+        <span class="tok-c">// 1. Near-cache (Caffeine, in-JVM): &lt;1 µs, staleness = TTL (60 s)</span>
+        <span class="tok-t">Cache.ValueWrapper</span> cached = nearCache.get(currencyPair);
+        <span class="tok-k">if</span> (cached != <span class="tok-k">null</span>) <span class="tok-k">return</span> (<span class="tok-t">ExchangeRate</span>) cached.get();
+
+        <span class="tok-c">// 2. Redis replica read: ~1 ms, replica lag budget 60 s</span>
+        <span class="tok-t">String</span> redisKey = <span class="tok-s">"exchange-rates::"</span> + currencyPair;
+        <span class="tok-t">ExchangeRate</span> rate = replicaTemplate.opsForValue().get(redisKey);
+        <span class="tok-k">if</span> (rate != <span class="tok-k">null</span>) {
+            nearCache.put(currencyPair, rate); <span class="tok-c">// populate near-cache</span>
+            <span class="tok-k">return</span> rate;
+        }
+
+        <span class="tok-c">// 3. Database fallback: ~20 ms, refreshes both Redis and near-cache</span>
+        rate = repository.findByCurrencyPair(currencyPair)
+            .orElseThrow(() -&gt; <span class="tok-k">new</span> <span class="tok-t">RateNotFoundException</span>(currencyPair));
+        replicaTemplate.opsForValue().set(redisKey, rate,
+            <span class="tok-t">Duration</span>.ofMinutes(<span class="tok-n">5</span>)); <span class="tok-c">// write to Redis primary (via primary connection)</span>
+        nearCache.put(currencyPair, rate);
+        <span class="tok-k">return</span> rate;
+    }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">replicaTemplate.opsForValue().set() still writes to the primary</div>
+            <p>Despite using the <code>REPLICA_PREFERRED</code> connection factory, write commands (SET, DEL, HSET, etc.) are always routed to the primary shard. Redis replicas are read-only by default (<code>replica-read-only yes</code> in <code>redis.conf</code>). Sending a write to a replica returns <code>READONLY</code> error; Lettuce re-routes writes to the primary automatically. The dual-template pattern is therefore about read routing, not write routing &mdash; writes always go to primaries regardless of the connection&rsquo;s <code>ReadFrom</code> setting.</p>
+          </div>
+
+          <h2 id="hazelcast-near-cache">Hazelcast Near Cache</h2>
+          <p>Hazelcast IMDG provides a built-in Near Cache feature for maps that removes the need to implement a separate Caffeine + Redis keyspace notification stack. Hazelcast manages the coherence protocol internally: when a primary map entry changes, Hazelcast sends invalidation messages to all client Near Cache instances subscribed to that map. This is the preferred near-cache implementation when the application already uses Hazelcast for distributed state &mdash; the coherence protocol is battle-tested and the configuration is declarative.</p>
+          <p>When the application uses Redis (not Hazelcast) as the distributed cache, the Caffeine + keyspace notification pattern described above is the equivalent. Do not introduce Hazelcast solely for Near Cache when Redis is already the distributed cache &mdash; the operational overhead of running two distributed data systems for the same workload rarely pays off.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>hazelcast.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">hazelcast-client:</span>
+  <span class="tok-k">cluster-name:</span> <span class="tok-s">saib-integration-prod</span>
+  <span class="tok-k">network:</span>
+    <span class="tok-k">cluster-members:</span>
+      <span class="tok-p">-</span> <span class="tok-s">hz-node-0.hazelcast-svc.integration.svc.cluster.local:5701</span>
+      <span class="tok-p">-</span> <span class="tok-s">hz-node-1.hazelcast-svc.integration.svc.cluster.local:5701</span>
+      <span class="tok-p">-</span> <span class="tok-s">hz-node-2.hazelcast-svc.integration.svc.cluster.local:5701</span>
+
+  <span class="tok-k">near-caches:</span>
+    <span class="tok-c"># Near Cache for exchange rates: 200 entries, 60-second TTL.</span>
+    <span class="tok-c"># Invalidation mode INVALIDATE: coherence via Hazelcast cluster events.</span>
+    <span class="tok-k">exchange-rates:</span>
+      <span class="tok-k">in-memory-format:</span> <span class="tok-s">OBJECT</span>       <span class="tok-c"># deserialized; faster than BINARY for read-heavy</span>
+      <span class="tok-k">invalidate-on-change:</span> <span class="tok-s">true</span>     <span class="tok-c"># coherence: evict on remote update</span>
+      <span class="tok-k">time-to-live-seconds:</span> <span class="tok-n">60</span>
+      <span class="tok-k">max-idle-seconds:</span> <span class="tok-n">120</span>
+      <span class="tok-k">eviction:</span>
+        <span class="tok-k">eviction-policy:</span> <span class="tok-s">LFU</span>
+        <span class="tok-k">max-size-policy:</span> <span class="tok-s">ENTRY_COUNT</span>
+        <span class="tok-k">size:</span> <span class="tok-n">200</span>
+      <span class="tok-k">local-update-policy:</span> <span class="tok-s">INVALIDATE</span> <span class="tok-c"># invalidate near-cache on write (not update)</span>
+      <span class="tok-k">preloader:</span>
+        <span class="tok-k">enabled:</span> <span class="tok-s">true</span>
+        <span class="tok-k">auto-interval:</span> <span class="tok-n">600</span>           <span class="tok-c"># persist near-cache keys to disk every 10 min</span>
+        <span class="tok-k">store-initial-delay-seconds:</span> <span class="tok-n">120</span>
+
+    <span class="tok-k">bic-routing:</span>
+      <span class="tok-k">in-memory-format:</span> <span class="tok-s">OBJECT</span>
+      <span class="tok-k">invalidate-on-change:</span> <span class="tok-s">true</span>
+      <span class="tok-k">time-to-live-seconds:</span> <span class="tok-n">3600</span>   <span class="tok-c"># 1 hour near-cache TTL</span>
+      <span class="tok-k">eviction:</span>
+        <span class="tok-k">eviction-policy:</span> <span class="tok-s">LFU</span>
+        <span class="tok-k">max-size-policy:</span> <span class="tok-s">ENTRY_COUNT</span>
+        <span class="tok-k">size:</span> <span class="tok-n">10000</span>
+      <span class="tok-k">local-update-policy:</span> <span class="tok-s">INVALIDATE</span></code></pre>
+          </div>
+
+          <h2 id="settlement-patterns">Settlement API Patterns</h2>
+          <p>SAIB&rsquo;s SARIE integration involves a settlement window during which the volume of balance pre-checks, exchange rate lookups, and BIC routing queries spikes significantly above the daily baseline. Near-cache and read-replica topologies are most valuable during this window precisely because they occur together: high read throughput and high write throughput (settlement confirmations updating account state). The read-replica pattern offloads the reference-data reads from primaries that are simultaneously absorbing settlement writes.</p>
+          <p>Three patterns hold up in production during SARIE windows:</p>
+          <ol class="step-list">
+            <li>
+              <h4>Separate read and write connection pools</h4>
+              <p>Use two connection pool configurations: a write pool (default: 10 connections per node, timeout 200 ms) targeting primaries, and a read pool (default: 20 connections per node, timeout 150 ms) targeting replicas via <code>REPLICA_PREFERRED</code>. The read pool is larger because reference-data reads are more numerous and shorter-lived than writes. Tune pool sizes based on the connection count observed in <code>redis-cli CLIENT LIST</code> during a settlement window load test.</p>
+            </li>
+            <li>
+              <h4>Preheat the near-cache before the settlement window opens</h4>
+              <p>SARIE settlement windows open at a known time each business day. Schedule a cache-warm job 10 minutes before the window opens to populate the near-cache for exchange rates and BIC routing tables. This ensures the near-cache is fully populated before the spike hits, eliminating DB fallback reads during the window. The warm job reads from Redis replicas, not from the database &mdash; it only touches the DB if the Redis near-cache is cold (e.g., after a Redis cluster failover).</p>
+            </li>
+            <li>
+              <h4>Promote replicas during primary failover without routing stale balance reads</h4>
+              <p>When a Redis primary fails, Redis Sentinel or Redis Cluster promotes a replica to primary. During the promotion (typically 10&ndash;30 seconds), the near-cache TTLs provide continuity for reference data reads. For balance and payment-state reads, implement a circuit breaker: if the primary is unavailable and the read-from-replica fallback is not configured for that key type, return a <code>503</code> rather than serving a potentially stale balance. A <code>503</code> is recoverable; a stale balance that authorises an overdraft is not.</p>
+            </li>
+            <li>
+              <h4>Monitor replica lag explicitly during the settlement window</h4>
+              <p>Instrument the Lettuce connection factory to emit <code>redis.replica.lag.ms</code> metrics for each replica node. Alert when lag exceeds 100 ms &mdash; that is the threshold at which limit-matrix reads from replicas start producing values that have missed recent limit-change operations. If lag exceeds 100 ms on any replica, temporarily switch that key type back to primary-only reads and alert the operations team.</p>
+            </li>
+            <li>
+              <h4>ISO 20022 pacs.008 enrichment: near-cache for BIC/LEI resolution</h4>
+              <p>SWIFT MT-to-MX migration requires BIC-to-LEI resolution at message transformation time. The ISO 20022 BIC/LEI resolution table is a classic near-cache candidate: 10,000&ndash;50,000 entries, updated once per business day at the SWIFT open time, read on every international payment. Configure a 1-hour near-cache TTL with Hazelcast <code>invalidate-on-change: true</code>. The near-cache eliminates the Redis hop for every enrichment operation, cutting p99 enrichment latency from 2 ms to &lt;0.1 ms at 10,000 pacs.008 messages per hour.</p>
+            </li>
+          </ol>
+
+          <h2 id="monitoring">Monitoring &amp; Observability</h2>
+          <p>Near-cache and read-replica topologies introduce two failure modes that standard Redis monitoring does not catch: replica lag drift and near-cache divergence. Both require dedicated metrics and alert thresholds.</p>
+
+          <table>
+            <thead>
+              <tr><th>Metric</th><th>Source</th><th>Alert threshold</th><th>What it means</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>redis.replica.lag.ms</code></td><td><code>INFO replication</code> → <code>master_repl_offset</code> delta</td><td>&gt;100 ms</td><td>Replica is falling behind; ref-data reads may be stale beyond the lag budget</td></tr>
+              <tr><td><code>near_cache.hits</code> / <code>near_cache.misses</code></td><td>Caffeine <code>stats()</code> via Micrometer</td><td>Hit rate &lt;80% for exchange-rates</td><td>Near-cache is undersized or TTL is too short; reads are falling through to Redis</td></tr>
+              <tr><td><code>near_cache.invalidations</code></td><td>Custom counter on keyspace notification receipt</td><td>&gt;100/s sustained for &gt;5 min</td><td>High write rate on ref-data keys; near-cache TTL is likely too long</td></tr>
+              <tr><td><code>redis.connected_slaves</code></td><td><code>INFO replication</code></td><td>&lt; expected replica count</td><td>A replica is down; <code>REPLICA_PREFERRED</code> falls back to primary, increasing primary load</td></tr>
+              <tr><td><code>lettuce.command.latency.p99</code></td><td>Lettuce Micrometer integration</td><td>&gt;10 ms on replica reads</td><td>Replica is overloaded or the network path to the replica is degraded</td></tr>
+            </tbody>
+          </table>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ReplicaLagMonitor.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-c">// Publishes replica lag as a Micrometer gauge for each Redis Cluster replica.</span>
+<span class="tok-c">// Scraped by Prometheus; alert in Alertmanager when lag exceeds 100ms.</span>
+<span class="tok-k">@Component</span>
+<span class="tok-k">public class</span> <span class="tok-t">ReplicaLagMonitor</span> {
+
+    <span class="tok-k">private final</span> <span class="tok-t">RedisClusterCommands</span>&lt;<span class="tok-t">String</span>, <span class="tok-t">String</span>&gt; clusterCommands;
+    <span class="tok-k">private final</span> <span class="tok-t">MeterRegistry</span> registry;
+
+    <span class="tok-k">@Scheduled</span>(fixedDelay = <span class="tok-n">5000</span>) <span class="tok-c">// every 5 seconds</span>
+    <span class="tok-k">public void</span> collectReplicaLag() {
+        clusterCommands.clusterNodes().stream()
+            .filter(node -&gt; node.is(<span class="tok-t">RedisClusterNode.NodeFlag.REPLICA</span>))
+            .forEach(replica -&gt; {
+                <span class="tok-t">Properties</span> info = clusterCommands.info(<span class="tok-s">"replication"</span>);
+                <span class="tok-t">String</span> lagStr = info.getProperty(<span class="tok-s">"master_link_status"</span>);
+                <span class="tok-t">String</span> offsetDelta = info.getProperty(<span class="tok-s">"master_repl_offset"</span>);
+                <span class="tok-k">if</span> (offsetDelta != <span class="tok-k">null</span>) {
+                    <span class="tok-t">Gauge</span>.builder(<span class="tok-s">"redis.replica.lag.ms"</span>,
+                        <span class="tok-k">() -&gt;</span> estimateLagMs(offsetDelta))
+                        .tag(<span class="tok-s">"host"</span>, replica.getUri().getHost())
+                        .register(registry);
+                }
+            });
+    }
+
+    <span class="tok-k">private double</span> estimateLagMs(<span class="tok-t">String</span> offsetDelta) {
+        <span class="tok-c">// Approximate: 1 byte/µs throughput on a typical 10 Gbps intra-rack link.</span>
+        <span class="tok-c">// Replace with actual measurement from master_last_io_seconds_ago if available.</span>
+        <span class="tok-k">long</span> delta = <span class="tok-t">Long</span>.parseLong(offsetDelta);
+        <span class="tok-k">return</span> delta / <span class="tok-n">1_000.0</span>; <span class="tok-c">// bytes to microseconds to milliseconds</span>
+    }
+}</code></pre>
+          </div>
+
+          <h2 id="failure-modes">Failure Modes</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Near-cache divergence during Redis Cluster failover</div>
+            <p>When a Redis primary fails and a replica is promoted, there is a 10&ndash;30 second window during which the new primary may not have the last few writes that the old primary received before crashing. If those writes were limit changes or exchange rate updates, the pods&rsquo; near-caches hold the last value from the keyspace notification they received. After promotion, the new primary is now &ldquo;authoritative&rdquo; with slightly older data. The near-cache entries are still valid according to their TTL, but the near-cache TTL countdown started from the last keyspace notification &mdash; not from the promotion event. If your near-cache TTL is 60 seconds and the failover took 20 seconds, pods may serve near-cache entries for up to 40 more seconds based on data that was current before the failover but is now stale relative to the promoted primary. For exchange rates with a 60-second business staleness budget, this is acceptable. For limit matrices with a 30-second budget, the overlap is a risk. Mitigation: on detection of a Redis Cluster topology change (<code>ClusterTopologyChangedEvent</code> in Lettuce), flush all near-caches immediately to force re-fetch from the new primary.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">REPLICA_PREFERRED fallback during replica unavailability increases primary load</div>
+            <p>When a replica is unavailable (failover in progress, replica pod restarted in OpenShift), Lettuce&rsquo;s <code>REPLICA_PREFERRED</code> falls back to the primary for all reads that would have gone to that replica. At 50,000 reference-data reads per second normally distributed across primaries and replicas, losing one of three replicas during a settlement window can increase primary read load by 30&ndash;50%. If the primary is already near its throughput limit due to settlement writes, this additional read load can push it into CPU saturation, increasing replication lag on the remaining replicas &mdash; which further reduces their read-availability, creating a feedback loop. Mitigation: size primaries for the scenario of all replicas being unavailable simultaneously. This is a worst-case sizing exercise, not a normal-operation sizing. For SARIE-coupled workloads, the worst-case scenario occurs precisely during the peak settlement window.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Keyspace notifications missed during Redis restart cause stale near-caches</div>
+            <p>Redis keyspace notifications are fire-and-forget: they are not persisted and are not retransmitted on reconnect. If a pod&rsquo;s Redis subscription is interrupted (pod restart, network partition, Redis restart), it misses all keyspace notifications that were published during the interruption. The pod&rsquo;s near-cache continues to hold the pre-interruption values until they expire by TTL. For exchange rates with a 60-second TTL, the maximum staleness after a 30-second interruption is 60 seconds &mdash; the same as a normal TTL expiry. Mitigation: on reconnect, flush the near-cache for all caches that use keyspace notification coherence. Implement a <code>RedisConnectionStateListener</code> that flushes on reconnection. The flush causes a brief miss storm to Redis; this is acceptable if the pod&rsquo;s readiness probe suppresses traffic during the warm period.</p>
+          </div>
+
+          <h2 id="checklist">Steps to Deploy Near-Cache and Read-Replica Topology</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Build a data-classification table with lag budgets</h4>
+              <p>For every entity that will be cached, document: staleness budget (seconds), read strategy (PRIMARY / REPLICA_PREFERRED / near-cache), near-cache TTL if applicable, invalidation mechanism, and sign-off from the data owner. Get this signed off before writing a line of code. The sign-off prevents teams from quietly routing balance reads to replicas when caching a new entity type.</p>
+            </li>
+            <li>
+              <h4>Configure dual Lettuce connection factories</h4>
+              <p>Create a <code>MASTER</code> factory (primary only) and a <code>REPLICA_PREFERRED</code> factory. Wire them to separate <code>RedisTemplate</code> beans annotated with <code>@Qualifier</code>. Never configure <code>REPLICA_PREFERRED</code> at the application-level <code>spring.data.redis</code> property level &mdash; that makes it too easy for new services to inherit the replica routing without understanding the lag implications.</p>
+            </li>
+            <li>
+              <h4>Enable Redis keyspace notifications with minimal scope</h4>
+              <p>Run <code>CONFIG SET notify-keyspace-events Kgx</code> (keyevent + generic + expired-without-string) on the cache Redis Cluster &mdash; this is narrower than <code>KEA</code> and reduces CPU overhead significantly. Verify that DELETE and EXPIRE events are being published for the keys used by the near-cache. Load-test the notification throughput at peak write rate to confirm the Redis node CPU does not exceed 60% with notifications enabled.</p>
+            </li>
+            <li>
+              <h4>Implement near-cache with Caffeine and a keyspace invalidation listener</h4>
+              <p>Configure per-cache Caffeine specs (maximumSize, expireAfterWrite). Implement <code>RedisMessageListenerContainer</code> subscribed to <code>__keyevent@0__:del</code> and <code>__keyevent@0__:expired</code>. Add a <code>RedisConnectionStateListener</code> that flushes all near-caches on reconnect. Test: write a key to Redis, observe the near-cache entry evict within 50 ms on all pods.</p>
+            </li>
+            <li>
+              <h4>Add replica-lag and near-cache hit-rate metrics</h4>
+              <p>Implement the <code>ReplicaLagMonitor</code> scheduled bean. Expose Caffeine stats via Micrometer. Add a custom counter for keyspace notification receipt latency (time between Redis publish and application receipt). Create Alertmanager rules: lag &gt; 100 ms (severity: warning), lag &gt; 500 ms (severity: critical), near-cache hit rate &lt; 80% (severity: warning).</p>
+            </li>
+            <li>
+              <h4>Implement the ClusterTopologyChangedEvent flush</h4>
+              <p>Register a Lettuce <code>ClusterTopologyChangedEvent</code> listener. On topology change (primary failover, replica added/removed), flush all near-caches that use keyspace notification coherence. Log the flush event with the topology change details. This handles the near-cache divergence risk during failover described in the failure modes section.</p>
+            </li>
+            <li>
+              <h4>Load test at settlement-window scale before go-live</h4>
+              <p>Run a load test at 1.5x peak SARIE settlement window RPS. Verify replica lag stays below 20 ms under write load. Verify near-cache hit rates stay above 95% for exchange rates and 98% for BIC routing. Verify that a simulated primary failover (stop the Redis primary pod) triggers the near-cache flush and does not route balance reads to the promoted replica.</p>
+            </li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="multi-tier-caching-strategies.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Multi-Tier Caching Strategies</div>
+            </a>
+            <a href="../distributed-caching.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Distributed Caching &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

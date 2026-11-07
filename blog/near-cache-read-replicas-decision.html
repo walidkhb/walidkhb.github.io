@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cache Architecture Is a Risk Architecture: Why Read-Replica and Near-Cache Decisions Belong at VP Level &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Routing reads to Redis replicas saves money and reduces primary load. It also introduces a replica lag window during which your settlement APIs can serve stale exchange rates, limit matrices, or &mdash; in the worst case &mdash; stale balances. The decision about which data types are eligible for replica or near-cache reads is not a technical choice. It is a risk appetite decision that belongs at VP level.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/near-cache-read-replicas-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Cache Architecture Is a Risk Architecture &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Cache Architecture Is a Risk Architecture: Why Read-Replica and Near-Cache Decisions Belong at VP Level &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Routing reads to Redis replicas saves money and reduces primary load. It also introduces a replica lag window. The decision about which data types are eligible is not a technical choice &mdash; it is a risk appetite decision.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/near-cache-read-replicas-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cache Architecture Is a Risk Architecture">
+  <meta name="twitter:description" content="The decision about which data types are eligible for replica or near-cache reads is not a technical choice. It is a risk appetite decision that belongs at VP level.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Cache Architecture Is a Risk Architecture: Why Read-Replica and Near-Cache Decisions Belong at VP Level",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-07",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/near-cache-read-replicas-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>Cache Architecture Is a Risk Architecture</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; November 7, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">Cache Architecture Is a Risk Architecture: Why Read-Replica and Near-Cache Decisions Belong at VP Level</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Engineering teams frame caching decisions as performance optimisations. That framing is accurate for most of what they build &mdash; reducing latency, offloading database read pressure, keeping p99 response times below the SLA threshold. But in a financial-services context, the decision to route reads to a Redis replica or to serve values from a pod-local near-cache is not only a performance choice. It is a decision about how much staleness you are willing to tolerate in the data that drives customer-facing financial outcomes.</p>
+
+        <p>Replica lag is not a theoretical concern. During a SARIE settlement window, when write throughput to Redis spikes as settlement confirmations come in, replica lag on a loaded cluster can reach 100&ndash;500 milliseconds. If your settlement API is configured to read exchange rates from a replica with a 60-second near-cache TTL, that configuration was probably set up during a quiet afternoon in the development environment where replica lag was 2 ms. The 500 ms scenario was never tested. And the question of whether 500 ms of exchange rate staleness during a settlement window is acceptable is not a question that the engineer who configured the cache TTL is authorised to answer. It is a question for the head of operations and the VP of enterprise integration.</p>
+
+        <p class="article-section">The classification table that every bank should own but most do not</p>
+
+        <p>The right governance tool for this problem is a data classification table: a document that lists every entity type that the caching layer stores, the maximum acceptable staleness for each type, who signed off on that staleness budget, and what the consequence of exceeding it is. This table does not live in the engineering wiki. It lives in the risk and control framework, referenced by the system design document, and reviewed annually or whenever a new entity type is added to the cache.</p>
+
+        <p>Building this table forces two conversations that are almost always deferred. The first is with the business owner of each data type: &ldquo;If we serve an exchange rate that is 60 seconds old during a settlement, what is the financial and regulatory exposure?&rdquo; For most exchange rates, the answer is acceptable because SARIE settlement uses a fixed daily rate and a 60-second lag during the settlement window is well within normal market movement. For payment authorisation state, the answer is never acceptable because a stale authorisation state can produce a duplicate payment, and SAMA&rsquo;s real-time gross settlement framework does not forgive duplicate transactions.</p>
+
+        <p>The second conversation is with the technology risk and compliance function: &ldquo;Which SAMA circulars and internal control policies constrain the staleness budget for each entity type?&rdquo; The answer shapes the classification table in ways the engineering team cannot derive on their own.</p>
+
+        <blockquote>
+          <p>The most dangerous caching configuration in a bank is not a cache that is too aggressive &mdash; it is a cache that was optimised correctly for one scenario and silently became incorrect when the data type or business context changed, without anyone re-examining the staleness budget.</p>
+        </blockquote>
+
+        <p class="article-section">What the leader needs to decide that cannot be delegated</p>
+
+        <p>Three decisions sit above the engineering level in a near-cache and read-replica deployment, because each one requires a view of business risk that the engineering team does not hold.</p>
+
+        <p><strong>Which entity types are eligible for replica reads, and which must always go to the primary?</strong> Account balances and payment authorisation state must always read from the primary &mdash; zero replica lag, zero staleness. The engineering team knows this technically. But the classification of every other entity type &mdash; limit matrices, exchange rates, BIC routing tables, product configurations &mdash; requires a business owner to sign off on the staleness budget. That sign-off must be explicit and documented. Without it, engineers will make pragmatic choices based on performance profiles, and those choices will not reflect a considered view of regulatory exposure.</p>
+
+        <p><strong>What is the acceptable behaviour during a Redis primary failover?</strong> When a Redis primary fails and a replica is being promoted, there is a 10&ndash;30 second window during which the cache state is uncertain. For reference data served from the near-cache, the near-cache TTL provides continuity. For entity types that require primary reads, the application should return a service-unavailable response rather than serve a potentially stale value from the now-promoted replica. The VP of enterprise integration needs to decide whether a 503 response on balance reads for up to 30 seconds during a Redis failover is acceptable, or whether a synchronous replica acknowledgement policy (<code>WAIT 1 50</code>) is required to reduce the failover-time data exposure. This is a business continuity decision, not a Lettuce configuration decision.</p>
+
+        <p><strong>What is the near-cache invalidation SLA for limit changes?</strong> When the operations team modifies a customer&rsquo;s transaction limit &mdash; a common action after a fraud alert or a risk review &mdash; the new limit must propagate to all pods&rsquo; near-caches before it takes effect for payments. The near-cache invalidation path (Redis keyspace notification &rarr; pod listener &rarr; Caffeine eviction) typically takes 5&ndash;30 milliseconds. But if a pod&rsquo;s Redis subscription is interrupted (pod restart, brief network partition), the invalidation is missed and the pod serves the old limit for up to the near-cache TTL. The question of whether a 60-second window in which a pod might serve an old limit is acceptable is a risk decision. SAMA&rsquo;s internal controls framework expects that limit changes are effective immediately in the transaction authorisation path. &ldquo;Immediately&rdquo; means different things to different stakeholders. The VP needs to define it before the engineers set the TTL.</p>
+
+        <p class="article-section">What the team needs from leadership to get this right</p>
+
+        <p>The engineering team can implement the read-replica and near-cache topology correctly. What they cannot do without leadership is operate it safely over time. Three things need to be in place that are not engineering deliverables.</p>
+
+        <p>First, the data classification table needs to be a living document with a named owner and a review cadence. When a new entity type is added to the cache, there must be a process that requires a staleness budget sign-off before the entity goes to production. This process exists in well-governed banks; in most, it does not, and the classification table becomes stale within a quarter of its creation.</p>
+
+        <p>Second, the replica lag monitoring needs to be connected to an operational response. An alert that fires at 100 ms replica lag is only useful if someone is on call to respond, and if the response procedure specifies which read types to switch back to primary reads and which near-cache TTLs to reduce. Building the alert without the runbook is not a half-measure; it is false assurance.</p>
+
+        <p>Third, the near-cache configuration needs to be treated as a control, not a performance parameter. When an auditor from SAMA&rsquo;s Technology Supervision Department asks how limit changes propagate to the transaction authorisation path and within what timeframe, the answer must be traceable to a documented configuration, a measured propagation SLA, and a signed-off staleness budget. &ldquo;The engineer set the TTL to 30 seconds&rdquo; is not a sufficient answer. The TTL must reflect a decision, not a default.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the technical implementation: dual Lettuce connection factories, REPLICA_PREFERRED routing, Caffeine near-cache with keyspace notification coherence, Hazelcast Near Cache configuration, replica lag monitoring, and the failure-mode mitigations for Redis failover &mdash; see the companion Lab article: <a href="../lab/distributed-caching/near-cache-and-read-replicas.html" style="color:var(--color-accent);">Near-Cache &amp; Read-Replica Topologies: Redis Read-Scaling for High-Frequency Settlement APIs</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
