@@ -133,6 +133,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Resilience4j 2.2 / Spring Boot 3.3 / IBM ACE 12 / Micrometer / Prometheus</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Oct 17, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -151,7 +152,7 @@
           <ul>
             <li><strong>Slow-response amplification.</strong> Payment gateways like SARIE respond in milliseconds under normal load but degrade to 5&ndash;15 seconds under settlement pressure at end-of-day. The integration layer has no visibility into whether this is transient overload or a sustained outage. Without a circuit breaker, every active request ties up a thread waiting for the answer.</li>
             <li><strong>Partial failures in orchestrated flows.</strong> An ISO 20022 payment initiation may call fraud screening, currency conversion, beneficiary validation, and the payment gateway in sequence. If the third step starts timing out, the circuit breaker must trip on step 3 without affecting step 1, step 2, or the responses already returned. Correctly scoping the breaker to the individual downstream &mdash; not the whole flow &mdash; is the implementation detail that most first attempts get wrong.</li>
-            <li><strong>Cascading failures across domain boundaries.</strong> SAIB&rsquo;s integration estate spans domains owned by different teams. A circuit breaker that trips silently &mdash; with no metrics, no alert, and no fallback log entry &mdash; makes incident diagnosis significantly harder. The open state of a breaker must be visible in the observability stack within seconds of the trip, not discovered retroactively in a post-incident review.</li>
+            <li><strong>Cascading failures across domain boundaries.</strong> A bank&rsquo;s integration estate typically spans domains owned by different teams. A circuit breaker that trips silently &mdash; with no metrics, no alert, and no fallback log entry &mdash; makes incident diagnosis significantly harder. The open state of a breaker must be visible in the observability stack within seconds of the trip, not discovered retroactively in a post-incident review.</li>
           </ul>
 
           <h2 id="circuit-breaker">The circuit breaker pattern</h2>

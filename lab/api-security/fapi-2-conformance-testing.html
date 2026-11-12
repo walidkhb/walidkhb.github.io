@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passing FAPI 2.0 Open Banking Conformance: Architecture Choices and Test Automation &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A practical guide to passing FAPI 2.0 Open Banking conformance: single-deployable versus split authorisation and resource servers, gateway and application mTLS responsibilities, a rule-to-enforcement matrix for FAPI 2.0 and KSA-style profiles, headless conformance runs in CI, strict versus compatibility modes, common failure points and a checklist.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Passing FAPI 2.0 Open Banking Conformance: Architecture Choices and Test Automation">
+  <meta property="og:description" content="Topology trade-offs, gateway and app mTLS, a rule-to-enforcement matrix, headless conformance runs in CI, strict versus compatibility modes and the failure points that catch most teams.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/api-security/fapi-2-conformance-testing.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Passing FAPI 2.0 Open Banking Conformance">
+  <meta name="twitter:description" content="Architecture choices, a rule-to-enforcement matrix and conformance automation for FAPI 2.0 Open Banking servers.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/api-security/fapi-2-conformance-testing.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Passing FAPI 2.0 Open Banking Conformance: Architecture Choices and Test Automation",
+    "description": "A practical guide to passing FAPI 2.0 Open Banking conformance: single-deployable versus split authorisation and resource servers, gateway and application mTLS responsibilities, a rule-to-enforcement matrix for FAPI 2.0 and KSA-style profiles, headless conformance runs in CI, strict versus compatibility modes, common failure points and a checklist.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-12",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/api-security/fapi-2-conformance-testing.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "API Security &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/api-security.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "API Security"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>FAPI 2.0 Conformance Testing</div>
+          <span class="overline">Lab Article</span>
+          <h1>Passing FAPI 2.0 Open Banking Conformance: Architecture Choices and Test Automation</h1>
+          <p class="lead">Reading the FAPI 2.0 profile is the easy part. Passing a conformance suite is harder: every clause needs one place in code where it is enforced, and a test that proves it. This guide covers the deployable topology, how to split mTLS between gateway and application, a rule-to-enforcement matrix for FAPI 2.0 and KSA-style Open Banking profiles, running the conformance suite headlessly in CI, and the failure points that catch most teams.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#topology">Choosing the topology</a></li>
+            <li><a href="#mtls">mTLS: gateway and app</a></li>
+            <li><a href="#matrix">Rule &rarr; enforcement matrix</a></li>
+            <li><a href="#enforcement">Enforcement in code</a></li>
+            <li><a href="#automation">Conformance runs in CI</a></li>
+            <li><a href="#modes">Strict vs compatibility modes</a></li>
+            <li><a href="#failures">Common failure points</a></li>
+            <li><a href="#checklist">Checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Java / Spring Authorization Server / nginx / OpenID Foundation conformance suite / Playwright</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~12 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 12, 2026</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>The <a href="fapi-2-open-banking.html">previous article</a> covered what FAPI 2.0 asks for. This one covers what it takes to <em>prove</em> a platform delivers it. The scope is the bank side of an Open Banking standard: an authorisation server (AS), account information APIs and payment initiation APIs. The bar is a conformance suite &mdash; the OpenID Foundation FAPI 2.0 plans, a regulator&rsquo;s functional suite, or both &mdash; that plays the third-party provider (TPP) and probes every rule in the profile.</p>
+          <p>The examples use a KSA-style profile because it layers market-specific rules on top of FAPI 2.0: parameterised consent scopes, signed request and response bodies, refresh tokens bound to the consent lifetime. The patterns apply to any FAPI 2.0 market profile.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Conformance is a test of enforcement, not of features</div>
+            <p>Most conformance tests are negative. They send a request object with an expired <code>exp</code>, a token presented without its bound certificate, a PKCE verifier that does not match, a scope that points at another client&rsquo;s consent. A server that implements only the happy path typically passes a minority of a suite. The rest is about saying <em>no</em>, in exactly the way the standard says to.</p>
+          </div>
+
+          <h2 id="topology">Choosing the Topology</h2>
+          <p>Before writing code, decide where the authorisation server ends and the resource server begins. Two shapes cover almost every implementation.</p>
+
+          <div class="diagram" role="img" aria-label="Two FAPI 2.0 deployment topologies: a single deployable with authorisation server, resource APIs and consent store in one process, and a split topology where authorisation and resource servers are separate services sharing consent over an internal API">
+            <div class="diagram__inner">
+              <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ft-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="ft-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Single deployable -->
+                <rect x="20" y="20" width="350" height="280" rx="8" fill="none" stroke="#00d4aa" stroke-dasharray="3 2"/>
+                <text x="195" y="42" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">A. Single deployable</text>
+                <rect x="45" y="60" width="300" height="40" rx="6" fill="#16161f" stroke="#71717a"/>
+                <text x="195" y="85" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">TLS gateway (mTLS verify)</text>
+                <line x1="195" y1="100" x2="195" y2="124" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ft-arr)"/>
+                <rect x="45" y="126" width="300" height="130" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="195" y="146" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">One process</text>
+                <rect x="60" y="156" width="130" height="44" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="125" y="176" text-anchor="middle" fill="#e4e4e7" font-size="9">Authorisation</text>
+                <text x="125" y="190" text-anchor="middle" fill="#e4e4e7" font-size="9">server</text>
+                <rect x="200" y="156" width="130" height="44" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="265" y="176" text-anchor="middle" fill="#e4e4e7" font-size="9">Resource</text>
+                <text x="265" y="190" text-anchor="middle" fill="#e4e4e7" font-size="9">APIs</text>
+                <rect x="60" y="208" width="270" height="36" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="195" y="230" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Consent store (in-process)</text>
+                <text x="195" y="276" text-anchor="middle" fill="#71717a" font-size="9">no internal trust hop &middot; atomic revocation</text>
+                <text x="195" y="290" text-anchor="middle" fill="#71717a" font-size="9">scales as one unit</text>
+
+                <!-- Split -->
+                <rect x="410" y="20" width="350" height="280" rx="8" fill="none" stroke="#71717a" stroke-dasharray="3 2"/>
+                <text x="585" y="42" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">B. Split AS / RS</text>
+                <rect x="435" y="60" width="300" height="40" rx="6" fill="#16161f" stroke="#71717a"/>
+                <text x="585" y="85" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">TLS gateway (mTLS verify)</text>
+                <line x1="510" y1="100" x2="510" y2="124" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ft-arr)"/>
+                <line x1="660" y1="100" x2="660" y2="124" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ft-arr)"/>
+                <rect x="440" y="126" width="140" height="56" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="510" y="150" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">Authorisation</text>
+                <text x="510" y="164" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">server</text>
+                <rect x="590" y="126" width="140" height="56" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="660" y="150" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">Resource</text>
+                <text x="660" y="164" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">server</text>
+                <rect x="490" y="208" width="190" height="36" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="585" y="230" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Consent service</text>
+                <line x1="510" y1="182" x2="540" y2="206" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#ft-arr2)"/>
+                <line x1="660" y1="182" x2="630" y2="206" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#ft-arr2)"/>
+                <text x="585" y="276" text-anchor="middle" fill="#71717a" font-size="9">independent scaling &middot; vendor AS possible</text>
+                <text x="585" y="290" text-anchor="middle" fill="#71717a" font-size="9">every dashed hop must be secured</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Single deployable versus split authorisation and resource servers. The dashed hops in B are attack surface the standard does not specify.</div>
+          </div>
+
+          <p><strong>A. Single deployable.</strong> The AS, the resource APIs and the consent store ship as one application. In FAPI, the consent ties everything together: the PAR request references it, the scope carries its ID, the token is bound to it, and the resource API checks it on every call. In one process, a revoked consent is revoked for the token endpoint and the resource API in the same transaction, and there is no service-to-service trust to configure. Keep the packages strict inside &mdash; <code>authz</code>, <code>common</code> (signing, schema validation, error model), <code>consent</code>, one package per API family &mdash; so a later split follows existing seams.</p>
+          <p><strong>B. Split AS and RS.</strong> The AS is a separate service, often a product or an identity platform the bank already runs, and the resource APIs call a consent service or introspect tokens. This scales each side independently and lets a central identity team own the AS. The cost is every new hop: service credentials, introspection latency, and cache coherence on consent status. A resource server that caches consent status for 60 seconds will happily serve a revoked consent for 60 seconds, and some conformance tests check exactly that.</p>
+
+          <table>
+            <thead>
+              <tr><th>Concern</th><th>Single deployable</th><th>Split AS / RS</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Consent revocation</td><td>Immediate, in-process</td><td>Depends on cache TTL or introspection on every call</td></tr>
+              <tr><td>Internal trust</td><td>None beyond gateway&ndash;app</td><td>mTLS or signed tokens between every pair</td></tr>
+              <tr><td>Scaling</td><td>As one unit</td><td>Independently</td></tr>
+              <tr><td>Reuse of an existing AS</td><td>Harder</td><td>Natural fit</td></tr>
+              <tr><td>Time to first green run</td><td>Shorter</td><td>Longer: more moving parts to configure per run</td></tr>
+            </tbody>
+          </table>
+
+          <p>Neither is wrong. Choose by trust boundary, not by org chart: if you cannot name who secures each internal hop, start with one deployable and split later.</p>
+
+          <h2 id="mtls">mTLS: Split Between Gateway and App</h2>
+          <p>Certificate handling has two jobs. Give them to two layers. The <strong>gateway does cryptography</strong>: it terminates TLS with FAPI-permitted cipher suites, verifies the TPP certificate chain against the trusted CA, and forwards the verified certificate. The <strong>application does policy</strong>: it decides which endpoints require a certificate, binds tokens to its thumbprint, and authenticates <code>tls_client_auth</code> clients by subject DN.</p>
+          <p>Why not demand the certificate at the TLS layer for everything? Because the customer&rsquo;s browser reaches the same host for login and consent, and a browser has no client certificate. Either put the PSU-facing pages on a separate host, or ask for a certificate at TLS without requiring it and enforce per endpoint in the app.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>gateway.conf</span><span class="code-block__lang">nginx</span></div>
+<pre><code><span class="tok-k">server</span> {
+    <span class="tok-k">listen</span> <span class="tok-n">443</span> ssl;
+    <span class="tok-k">server_name</span> <span class="tok-s">as.bank.example</span>;
+
+    <span class="tok-k">ssl_protocols</span> TLSv1.2 TLSv1.3;
+    <span class="tok-c"># FAPI-permitted TLS 1.2 suites only</span>
+    <span class="tok-k">ssl_ciphers</span> <span class="tok-s">ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384</span>;
+
+    <span class="tok-k">ssl_client_certificate</span> <span class="tok-s">/etc/gateway/tpp-ca.pem</span>;
+    <span class="tok-k">ssl_verify_client</span>      optional;   <span class="tok-c"># browsers share this host</span>
+    <span class="tok-k">ssl_verify_depth</span>       <span class="tok-n">3</span>;
+
+    <span class="tok-k">location</span> / {
+        <span class="tok-c"># proxy_set_header replaces any inbound value: a client cannot</span>
+        <span class="tok-c"># smuggle its own certificate header past the gateway.</span>
+        <span class="tok-k">proxy_set_header</span> X-Client-Cert-Verify <span class="tok-s">$ssl_client_verify</span>;
+        <span class="tok-k">proxy_set_header</span> X-Client-Cert        <span class="tok-s">$ssl_client_escaped_cert</span>;
+        <span class="tok-k">proxy_set_header</span> X-Forwarded-Proto    https;
+        <span class="tok-k">proxy_pass</span> <span class="tok-s">http://app:8080</span>;
+    }
+}</code></pre>
+          </div>
+
+          <p>On the application side, decode the forwarded certificate once, in one filter, and expose a parsed <code>X509Certificate</code> to everything downstream. Token binding, client authentication and resource checks should never parse headers themselves.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">The forwarded certificate header is a credential</div>
+            <p>If the app trusts <code>X-Client-Cert</code> and anything other than the gateway can reach the app, anyone can claim any certificate. Overwrite the header at the gateway on every request, require <code>X-Client-Cert-Verify</code> to equal <code>SUCCESS</code> before using it, and restrict the app port to the gateway with network policy. On a Kubernetes or Red Hat OpenShift platform, a <code>NetworkPolicy</code> that admits only the gateway pods is the minimum.</p>
+          </div>
+
+          <h2 id="matrix">Rule &rarr; Enforcement Matrix</h2>
+          <p>Keep one table as the source of truth: each rule in the profile, the single place in code that enforces it, and how a violation is answered. If a rule has no row, it has no owner. If it has two enforcement points, one will drift. Add a fourth column in your own copy listing the conformance test IDs that cover each row.</p>
+
+          <table>
+            <thead>
+              <tr><th>FAPI 2.0 / KSA-style rule</th><th>Typical enforcement point</th><th>How a violation is answered</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>PAR mandatory</strong> (RFC 9126)</td><td>Filter on <code>/authorize</code> rejects any request without a <code>request_uri</code> issued by <code>/par</code></td><td><code>invalid_request</code>; loose query parameters ignored</td></tr>
+              <tr><td><strong>Signed request object</strong> (JAR, RFC 9101, <code>typ</code> <code>oauth-authz-req+jwt</code>)</td><td>PAR converter verifies the signature against the client&rsquo;s registered JWKS, then uses <em>only</em> its claims</td><td><code>invalid_request_object</code></td></tr>
+              <tr><td><strong>Request object windows</strong>: <code>aud</code> = issuer, <code>nbf</code> not too old, <code>exp &minus; nbf</code> bounded</td><td>Same converter; maximum age held in configuration</td><td><code>invalid_request_object</code></td></tr>
+              <tr><td><strong>Client authentication</strong>: <code>private_key_jwt</code> or <code>tls_client_auth</code></td><td>Assertion decoder (PS256 or ES256, <code>aud</code>, <code>exp</code>, <code>jti</code> replay cache) or certificate subject match</td><td><code>invalid_client</code>, 401</td></tr>
+              <tr><td><strong>Sender-constrained tokens</strong> (RFC 8705), short-lived</td><td>Token carries <code>cnf.x5t#S256</code>; resource filter compares it with the presented certificate</td><td>401 on mismatch or missing certificate</td></tr>
+              <tr><td><strong>PKCE S256</strong>, <code>response_type=code</code> only</td><td>Client settings require a proof key; <code>plain</code> rejected at PAR</td><td><code>invalid_request</code> / <code>invalid_grant</code></td></tr>
+              <tr><td><strong>Issuer in authorisation response</strong> (RFC 9207)</td><td>Response handler appends <code>iss</code> to every redirect, success and error</td><td>&mdash;</td></tr>
+              <tr><td><strong>Consent-parameterised scopes</strong> (e.g. <code>accounts:&lt;ConsentId&gt;</code>)</td><td>Scope validator: consent exists, is awaiting authorisation, belongs to this client</td><td><code>invalid_scope</code></td></tr>
+              <tr><td><strong>Refresh token bound to consent lifetime</strong></td><td>Refresh expiry = consent expiry; rotation per profile; revoked with the consent</td><td><code>invalid_grant</code> after consent ends</td></tr>
+              <tr><td><strong>Signed request and response bodies</strong> (JWS, <code>application/jwt</code>)</td><td>One payload codec on every resource endpoint</td><td>400 with profile error code</td></tr>
+              <tr><td><strong>Payload rules</strong></td><td>Schema validator loads the standard&rsquo;s published OpenAPI files at start-up</td><td>400 with field path</td></tr>
+              <tr><td><strong><code>x-fapi-interaction-id</code></strong></td><td>First filter in the chain echoes the inbound value or mints a UUID</td><td>Present on every response, including errors</td></tr>
+              <tr><td><strong>Error model</strong></td><td>One exception type and one handler that chooses body or header-only by status</td><td>As the profile specifies per status</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="enforcement">Enforcement in Code</h2>
+          <p>Spring Authorization Server, like most mature OAuth frameworks, gives you the OAuth core. FAPI and market-profile rules sit on top as converters, validators and filters. Four of them carry most of the weight.</p>
+
+          <h3>Request object: trust only what is signed</h3>
+          <p>At <code>/par</code>, the form may carry a <code>request</code> parameter plus loose parameters. The profile says only the signed request object counts. Verify it, check the time windows, and rebuild the authorisation request from its claims alone.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>RequestObjectValidator.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public final class</span> <span class="tok-t">RequestObjectValidator</span> {
+
+    <span class="tok-k">private final</span> <span class="tok-t">String</span> issuer;
+    <span class="tok-k">private final</span> <span class="tok-t">Duration</span> maxAge;     <span class="tok-c">// from configuration, per profile version</span>
+    <span class="tok-k">private final</span> <span class="tok-t">Clock</span> clock;
+
+    <span class="tok-t">JWTClaimsSet</span> validate(<span class="tok-t">SignedJWT</span> jwt, <span class="tok-t">RegisteredClient</span> client) <span class="tok-k">throws</span> <span class="tok-t">ParseException</span> {
+        <span class="tok-k">if</span> (!<span class="tok-s">"oauth-authz-req+jwt"</span>.equals(typ(jwt)))      fail(<span class="tok-s">"typ"</span>);
+        <span class="tok-k">if</span> (!allowedAlg(jwt.getHeader().getAlgorithm()))     fail(<span class="tok-s">"alg"</span>);
+        <span class="tok-k">if</span> (!verify(jwt, client.jwks()))                    fail(<span class="tok-s">"signature"</span>);
+
+        <span class="tok-t">JWTClaimsSet</span> c = jwt.getJWTClaimsSet();
+        <span class="tok-t">Instant</span> now = clock.instant();
+        <span class="tok-t">Instant</span> nbf = required(c.getNotBeforeTime(), <span class="tok-s">"nbf"</span>).toInstant();
+        <span class="tok-t">Instant</span> exp = required(c.getExpirationTime(), <span class="tok-s">"exp"</span>).toInstant();
+
+        <span class="tok-k">if</span> (!c.getAudience().contains(issuer))               fail(<span class="tok-s">"aud"</span>);
+        <span class="tok-k">if</span> (!client.id().equals(c.getIssuer()))               fail(<span class="tok-s">"iss"</span>);
+        <span class="tok-k">if</span> (nbf.isBefore(now.minus(maxAge)))                    fail(<span class="tok-s">"nbf too old"</span>);
+        <span class="tok-k">if</span> (<span class="tok-t">Duration</span>.between(nbf, exp).compareTo(maxAge) &gt; <span class="tok-n">0</span>)  fail(<span class="tok-s">"exp - nbf"</span>);
+        <span class="tok-k">if</span> (!exp.isAfter(now))                                fail(<span class="tok-s">"expired"</span>);
+        <span class="tok-k">return</span> c;   <span class="tok-c">// caller builds the request from these claims only</span>
+    }
+
+    <span class="tok-k">private static void</span> fail(<span class="tok-t">String</span> what) {
+        <span class="tok-k">throw new</span> <span class="tok-t">OAuth2AuthenticationException</span>(
+            <span class="tok-k">new</span> <span class="tok-t">OAuth2Error</span>(<span class="tok-s">"invalid_request_object"</span>, what, <span class="tok-k">null</span>));
+    }
+}</code></pre>
+          </div>
+
+          <h3>Certificate-bound tokens and consent-bound refresh</h3>
+          <p>Access tokens should be short-lived and carry the certificate thumbprint. Refresh tokens follow the consent: their expiry is the consent&rsquo;s expiry, and revoking the consent revokes them. Whether refresh tokens rotate is a profile decision; some Open Banking profiles forbid rotation so that a TPP holds one refresh token for the life of a long consent. Check yours and make it a setting.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>TokenPolicy.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-t">TokenSettings</span> fapiTokenSettings(<span class="tok-t">FapiProperties</span> p) {
+    <span class="tok-k">return</span> <span class="tok-t">TokenSettings</span>.builder()
+        .accessTokenFormat(<span class="tok-t">OAuth2TokenFormat</span>.SELF_CONTAINED)
+        .accessTokenTimeToLive(p.accessTokenTtl())        <span class="tok-c">// e.g. 5 minutes</span>
+        .x509CertificateBoundAccessTokens(<span class="tok-k">true</span>)          <span class="tok-c">// cnf.x5t#S256</span>
+        .reuseRefreshTokens(!p.rotateRefreshTokens())     <span class="tok-c">// profile-specific</span>
+        .build();
+}
+
+<span class="tok-c">// Refresh token expiry follows the consent, not a fixed TTL.</span>
+<span class="tok-k">final class</span> <span class="tok-t">ConsentBoundRefreshTokenGenerator</span>
+        <span class="tok-k">implements</span> <span class="tok-t">OAuth2TokenGenerator</span>&lt;<span class="tok-t">OAuth2RefreshToken</span>&gt; {
+
+    <span class="tok-k">private final</span> <span class="tok-t">ConsentStore</span> consents;
+
+    <span class="tok-k">public</span> <span class="tok-t">OAuth2RefreshToken</span> generate(<span class="tok-t">OAuth2TokenContext</span> ctx) {
+        <span class="tok-k">if</span> (!<span class="tok-t">OAuth2TokenType</span>.REFRESH_TOKEN.equals(ctx.getTokenType())) <span class="tok-k">return null</span>;
+        <span class="tok-t">Consent</span> consent = consents.fromScopes(ctx.getAuthorizedScopes());
+        <span class="tok-k">return new</span> <span class="tok-t">OAuth2RefreshToken</span>(randomToken(), <span class="tok-t">Instant</span>.now(), consent.expiresAt());
+    }
+}</code></pre>
+          </div>
+
+          <h3>Consent-parameterised scopes</h3>
+          <p>In KSA-style and several other Open Banking profiles, the scope is not just <code>accounts</code>. It is <code>accounts:&lt;ConsentId&gt;</code>. That turns the scope into a pointer, and a pointer must be checked: it exists, it is in the right state, and it is owned by the calling client. Skip the ownership check and one TPP can authorise against another TPP&rsquo;s consent.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ConsentScopeValidator.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">private static final</span> <span class="tok-t">Pattern</span> SCOPE =
+    <span class="tok-t">Pattern</span>.compile(<span class="tok-s">"^(accounts|payments):([A-Za-z0-9\\-]{1,128})$"</span>);
+
+<span class="tok-t">Consent</span> resolve(<span class="tok-t">Set</span>&lt;<span class="tok-t">String</span>&gt; scopes, <span class="tok-t">String</span> clientId) {
+    <span class="tok-t">List</span>&lt;<span class="tok-t">Matcher</span>&gt; hits = scopes.stream().map(SCOPE::matcher)
+        .filter(<span class="tok-t">Matcher</span>::matches).toList();
+    <span class="tok-k">if</span> (hits.size() != <span class="tok-n">1</span>) <span class="tok-k">throw</span> invalidScope(<span class="tok-s">"exactly one consent scope"</span>);
+
+    <span class="tok-t">Matcher</span> m = hits.get(<span class="tok-n">0</span>);
+    <span class="tok-t">Consent</span> c = consents.find(m.group(<span class="tok-n">2</span>))
+        .orElseThrow(() -&gt; invalidScope(<span class="tok-s">"unknown consent"</span>));
+
+    <span class="tok-k">if</span> (!c.family().equals(m.group(<span class="tok-n">1</span>)))      <span class="tok-k">throw</span> invalidScope(<span class="tok-s">"wrong family"</span>);
+    <span class="tok-k">if</span> (!c.clientId().equals(clientId))       <span class="tok-k">throw</span> invalidScope(<span class="tok-s">"not your consent"</span>);
+    <span class="tok-k">if</span> (c.status() != <span class="tok-t">Status</span>.AWAITING_AUTHORISATION) <span class="tok-k">throw</span> invalidScope(<span class="tok-s">"bad state"</span>);
+    <span class="tok-k">return</span> c;
+}</code></pre>
+          </div>
+
+          <h3>Schemas straight from the standard</h3>
+          <p>Do not hand-write payload rules. Most Open Banking standards publish OpenAPI files; load them at start-up and validate every request and response body against the matching operation. When the standard ships an errata, drop in the new files and let the tests show what changed. Hand-coded validation drifts within weeks.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Validate responses too, at least outside production</div>
+            <p>Conformance suites check what you send back as strictly as what you accept. Response validation in test environments catches date formats, missing mandatory links and enum casing before the suite does. Keep it on in every non-production environment; decide separately whether the latency cost is worth it in production.</p>
+          </div>
+
+          <h2 id="automation">Conformance Runs in CI</h2>
+          <p>Conformance tools are usually built for a person at a browser: create a plan, paste discovery metadata and client configuration, approve each customer consent by hand, start the run, read the verdicts. One manual pass can take hours. If it only happens before a submission, regressions accumulate silently in between.</p>
+          <p>The fix is to script the steps the tool&rsquo;s own guide describes, in the same order, without modifying the tool. The OpenID Foundation suite is open source, runs in containers and exposes a REST API, so it can be driven directly. A regulator&rsquo;s functional suite may need a headless browser to press the same buttons a person would.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Start from a clean runner</h4>
+              <p>Restart the suite (or create a fresh plan) for each test set, then wait on a health check rather than a fixed sleep. Carried-over state is the main cause of flaky runs.</p>
+            </li>
+            <li>
+              <h4>Generate configuration, never edit it</h4>
+              <p>A small tool renders discovery and client configuration from templates: issuer URLs for the target environment, client IDs, certificates and signing keys pulled from a secret store at run time. Keys never enter version control.</p>
+            </li>
+            <li>
+              <h4>Stage consents</h4>
+              <p>Creating the plan or fetching its test cases makes the suite create consents and PAR requests. Collect the authorisation URLs it produces.</p>
+            </li>
+            <li>
+              <h4>Complete each customer consent headlessly</h4>
+              <p>A headless browser opens each URL, logs in as a test customer, selects accounts and approves. Negative cases that expect rejection are left to fail as designed.</p>
+            </li>
+            <li>
+              <h4>Run and collect verdicts</h4>
+              <p>Start the run, wait for completion, and parse results into one JSON file per plan. Compare with the last green baseline: any test that flips from pass to fail breaks the build.</p>
+            </li>
+          </ol>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>run-conformance.ts</span><span class="code-block__lang">typescript</span></div>
+<pre><code><span class="tok-k">export async function</span> runPlan(plan: <span class="tok-t">Plan</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">Verdicts</span>&gt; {
+  <span class="tok-k">await</span> runner.reset();
+  <span class="tok-k">await</span> waitUntil(() =&gt; runner.healthy(), { timeoutMs: <span class="tok-n">120_000</span> });
+
+  <span class="tok-k">await</span> runner.loadDiscovery(<span class="tok-k">await</span> render(<span class="tok-s">`templates/discovery-${plan}.json`</span>, env));
+  <span class="tok-k">await</span> runner.loadConfig(<span class="tok-k">await</span> render(<span class="tok-s">"templates/config.json"</span>, env, secrets));
+
+  <span class="tok-k">const</span> cases = <span class="tok-k">await</span> runner.fetchTestCases();             <span class="tok-c">// stages consents + PAR</span>
+  <span class="tok-k">for</span> (<span class="tok-k">const</span> c <span class="tok-k">of</span> cases.filter(c =&gt; c.authorizeUrl)) {
+    <span class="tok-k">await</span> psu.completeConsent(c.authorizeUrl, testCustomerFor(c));   <span class="tok-c">// Playwright</span>
+  }
+
+  <span class="tok-k">await</span> runner.start();
+  <span class="tok-k">await</span> waitUntil(() =&gt; runner.finished(), { timeoutMs: <span class="tok-n">30</span> * <span class="tok-n">60_000</span> });
+
+  <span class="tok-k">const</span> verdicts = parseVerdicts(<span class="tok-k">await</span> runner.results());
+  <span class="tok-k">await</span> writeJson(<span class="tok-s">`out/results-${plan}.json`</span>, verdicts);
+  assertNoRegression(verdicts, <span class="tok-k">await</span> baseline(plan));       <span class="tok-c">// fails the pipeline</span>
+  <span class="tok-k">return</span> verdicts;
+}</code></pre>
+          </div>
+
+          <p>Wire this into the pipeline in two tiers. A fast subset &mdash; the request-object, client-authentication and token-binding tests &mdash; runs on every merge to the main branch. The full set of plans runs nightly against a dedicated test environment and publishes its verdict files as build artefacts. Once a full run is unattended, teams stop batching fixes for a &ldquo;conformance week&rdquo; and start treating a red conformance test like a failing unit test.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Automation is for iteration; the submission stays manual</div>
+            <p>Official evidence packages usually come from the suite&rsquo;s own interface and carry a signed declaration from the implementer. The headless runner gets you to green quickly and keeps you there. A named person still runs the final pass and signs.</p>
+          </div>
+
+          <h2 id="modes">Strict vs Compatibility Modes</h2>
+          <p>Test tools are software. Profile versions disagree on details, and a functional suite may read a clause differently from the OpenID Foundation plans. When that happens you have two bad options: fail a test you should pass, or weaken a check you should keep. The better option is a third: give each difference a <strong>named switch</strong>, a relaxed value for the suite that needs it, and a strict value everywhere else.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>application.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Base configuration: strict by default.</span>
+<span class="tok-k">fapi:</span>
+  <span class="tok-k">profile:</span>
+    <span class="tok-c"># Some profiles require aud = issuer; FAPI 2.0 also allows the</span>
+    <span class="tok-c"># token endpoint URL. Strict accepts the issuer only.</span>
+    <span class="tok-k">strict-assertion-audience:</span> <span class="tok-s">true</span>
+    <span class="tok-c"># Request-object window differs between profile versions.</span>
+    <span class="tok-k">request-object-max-age:</span> <span class="tok-s">10m</span>
+  <span class="tok-k">compat:</span>
+    <span class="tok-k">relax-test-identity-match:</span> <span class="tok-s">false</span>
+
+<span class="tok-p">---</span>
+<span class="tok-c"># Named compatibility profile, used only by the functional suite.</span>
+<span class="tok-k">spring.config.activate.on-profile:</span> <span class="tok-s">conformance-compat</span>
+<span class="tok-k">fapi:</span>
+  <span class="tok-k">profile:</span>
+    <span class="tok-k">strict-assertion-audience:</span> <span class="tok-s">false</span>
+    <span class="tok-k">request-object-max-age:</span> <span class="tok-s">60m</span>
+  <span class="tok-k">compat:</span>
+    <span class="tok-k">relax-test-identity-match:</span> <span class="tok-s">true</span>   <span class="tok-c"># logged on every use</span></code></pre>
+          </div>
+
+          <p>Three rules keep this honest. Every switch is logged at start-up with its value. Every relaxed check logs a warning each time it is exercised. And the OpenID Foundation plans run in strict mode only, against every client authentication method you support. A clean strict run is the evidence that the switches are compatibility shims, not hidden weaknesses.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>CompatGuard.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Component</span>
+<span class="tok-k">final class</span> <span class="tok-t">CompatGuard</span> <span class="tok-k">implements</span> <span class="tok-t">ApplicationRunner</span> {
+    <span class="tok-k">public void</span> run(<span class="tok-t">ApplicationArguments</span> a) {
+        log.info(<span class="tok-s">"FAPI switches: {}"</span>, props.describe());
+        <span class="tok-k">if</span> (env.acceptsProfiles(<span class="tok-t">Profiles</span>.of(<span class="tok-s">"conformance-compat"</span>))
+                &amp;&amp; env.acceptsProfiles(<span class="tok-t">Profiles</span>.of(<span class="tok-s">"production"</span>))) {
+            <span class="tok-k">throw new</span> <span class="tok-t">IllegalStateException</span>(<span class="tok-s">"compatibility profile in production"</span>);
+        }
+    }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">A compatibility switch must never reach production at its relaxed value</div>
+            <p>Make strict the default in the base configuration, relax only in a named profile, and fail start-up if that profile is active together with a production marker. A switch that &ldquo;someone will flip back later&rdquo; is an audit finding waiting to happen.</p>
+          </div>
+
+          <h2 id="failures">Common Failure Points</h2>
+          <p>Most conformance failures are not in cryptography. They are in edges: time windows, encodings, ordering, and places where two readings of the text are both reasonable.</p>
+
+          <table>
+            <thead>
+              <tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Token-binding tests fail only behind the gateway</td><td>Forwarded certificate is URL-encoded PEM; the app parses it raw</td><td>One certificate filter decodes once; downstream code reads a parsed certificate</td></tr>
+              <tr><td>Refresh tests fail after the first refresh</td><td>Framework default rotates refresh tokens where the profile forbids it (or vice versa)</td><td>Make rotation a profile setting; tie expiry to the consent</td></tr>
+              <tr><td>Error-path tests fail despite the right status</td><td>Body returned where the profile wants header-only, or the reverse</td><td>Single exception handler that chooses body or header by status</td></tr>
+              <tr><td>Request-object tests pass in one suite, fail in another</td><td>Profile versions disagree on the time window</td><td>Window in configuration; strict profile uses the tighter value</td></tr>
+              <tr><td>Client-assertion tests reject valid clients</td><td><code>aud</code> checked against one value; the tool sends another permitted value</td><td>Accept what FAPI 2.0 permits in compatibility mode; issuer-only in strict</td></tr>
+              <tr><td>Interaction-ID tests fail on error responses</td><td>Filter runs after the exception handler</td><td>Order the filter first so every response carries <code>x-fapi-interaction-id</code></td></tr>
+              <tr><td>Signed-response tests fail</td><td>JWS body returned as <code>application/json</code></td><td>Codec sets <code>application/jwt</code> and wraps the payload as the profile specifies</td></tr>
+              <tr><td>Revocation tests fail intermittently</td><td>Resource server caches consent status</td><td>Read consent status on every call, or bound the cache well below the test&rsquo;s timing</td></tr>
+              <tr><td>Flaky runs</td><td>Runner state carried over between test sets</td><td>Reset per set; wait on health, not sleep</td></tr>
+            </tbody>
+          </table>
+
+          <p>The pattern behind almost every row is the same: a rule enforced in two places, or in none. The matrix prevents more failures than any individual fix.</p>
+
+          <h2 id="checklist">Checklist</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Choose the deployable boundary by trust</h4>
+              <p>Keep AS and resource APIs together while consent is shared state, or name who secures every internal hop in a split design.</p>
+            </li>
+            <li>
+              <h4>Split mTLS: cryptography at the gateway, policy in the app</h4>
+              <p>Verify chains at the edge, overwrite the certificate header on every request, restrict the app port, and require certificates per endpoint in the app.</p>
+            </li>
+            <li>
+              <h4>Write the rule &rarr; enforcement matrix before the code</h4>
+              <p>One row per profile rule, one enforcement point per row, and the test IDs that cover it. Review it with every errata.</p>
+            </li>
+            <li>
+              <h4>Validate against the standard&rsquo;s OpenAPI</h4>
+              <p>Requests and responses, from the published files. No hand-coded payload rules.</p>
+            </li>
+            <li>
+              <h4>Make windows, lifetimes and audiences configuration</h4>
+              <p>Request-object age, <code>exp &minus; nbf</code>, token lifetime, refresh rotation and assertion audience all vary between profile versions and suites.</p>
+            </li>
+            <li>
+              <h4>Automate the conformance runner early</h4>
+              <p>Script the manual guide step by step, store verdicts per run, run a subset on every merge and the full set nightly, and fail on any regression.</p>
+            </li>
+            <li>
+              <h4>Name every compatibility switch and prove strict mode</h4>
+              <p>Strict by default, relaxed only in a named profile, logged on use, blocked in production. Run the OpenID Foundation plans in strict mode.</p>
+            </li>
+            <li>
+              <h4>Describe results precisely</h4>
+              <p>Sandbox conformance is not certification. Report it as what it is, and keep the certification evidence path separate, manual and signed.</p>
+            </li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="fapi-2-open-banking.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">FAPI 2.0 &amp; Open Banking Security</div>
+            </a>
+            <a href="../api-security.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">API Security &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2026 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

@@ -118,6 +118,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Kong Gateway 3.x / Envoy 1.30 / Istio 1.22</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> May 30, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -287,7 +288,7 @@
             </tbody>
           </table>
 
-          <p>The practical answer for a SAIB-style environment: use Kong at the network edge (external partner APIs, SAMA Open Banking endpoints) and Istio/Envoy for east-west service mesh. Kong enforces the consumer contract &mdash; auth, quota, transformations; Istio enforces the service-to-service contract &mdash; mTLS identity, circuit breaking, traffic policy.</p>
+          <p>The practical answer for a typical bank environment: use Kong at the network edge (external partner APIs, SAMA Open Banking endpoints) and Istio/Envoy for east-west service mesh. Kong enforces the consumer contract &mdash; auth, quota, transformations; Istio enforces the service-to-service contract &mdash; mTLS identity, circuit breaking, traffic policy.</p>
 
           <h2 id="security">Security configuration</h2>
           <p>Two security requirements surface in every SAMA security audit for an open-source gateway: <strong>mTLS for all external partner traffic</strong> and <strong>FAPI 2.0-compliant OAuth</strong> for open banking endpoints. Neither is configured out of the box; both require deliberate plugin or filter chain setup.</p>

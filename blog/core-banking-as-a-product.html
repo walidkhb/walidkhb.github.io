@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Core Banking as a Product: Why the Core Should Stop Being Every Project&rsquo;s Bottleneck &mdash; Waleed Albadawi</title>
-  <meta name="description" content="When every consumer talks to the core through undocumented fixed-length messages, the core becomes the bottleneck for every test cycle. Governed business APIs generated from a full message catalogue, and a simulator that speaks the core&rsquo;s wire protocol, let projects test in parallel and make the core replaceable. What leaders need to decide.">
+  <meta name="description" content="When every project reaches the core through raw message formats and a shared test environment, the core becomes every project&rsquo;s bottleneck. Why banks should run the core as a product &mdash; governed business APIs, simulators as institutional assets, replaceability as an option &mdash; and the decisions leaders own.">
   <link rel="canonical" href="https://www.wbadawi.info/blog/core-banking-as-a-product.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:image:width" content="1200">
@@ -15,12 +15,12 @@
 
   <meta property="og:type" content="article">
   <meta property="og:title" content="Core Banking as a Product: Why the Core Should Stop Being Every Project&rsquo;s Bottleneck &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Direct, undocumented access made the core the bottleneck for every test cycle. Governed business APIs and a full core simulator let projects test in parallel &mdash; and make the core replaceable.">
+  <meta property="og:description" content="Direct access to raw core messages makes the core every project&rsquo;s bottleneck. Governed business APIs and wire-protocol simulators turn it into a product the whole bank builds on.">
   <meta property="og:url" content="https://www.wbadawi.info/blog/core-banking-as-a-product.html">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Core Banking as a Product">
-  <meta name="twitter:description" content="Governed business APIs and a full core simulator turn the core from every project's bottleneck into a product with a contract.">
+  <meta name="twitter:description" content="Governed business APIs and simulators turn the core from every project's bottleneck into a product with a contract.">
 
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
@@ -56,6 +56,7 @@
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": "Core Banking as a Product: Why the Core Should Stop Being Every Project's Bottleneck",
+    "description": "When every project reaches the core through raw message formats and a shared test environment, the core becomes every project's bottleneck. Why banks should run the core as a product: governed business APIs, simulators as institutional assets, replaceability as an option, and the decisions leaders own.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-12",
     "author": {
@@ -110,63 +111,69 @@
     <div class="container container--narrow">
       <div class="article-body fade-in">
 
-        <p>Ask any delivery lead in a bank what slows their project down. The answer is rarely the new channel, the new partner or the new cloud service. It is the core. Not because the core is slow. Because everyone has to queue for it.</p>
+        <p>Ask any delivery lead in a bank what slows their project down. The answer is rarely the new channel, the new partner or the new cloud service. It is the core. Not because the core is slow, but because everyone has to queue for it.</p>
 
-        <p>At a Saudi bank, every project that touched customer accounts, payments or cards reached the core the same way: fixed-length messages over a queue, laid out byte by byte, described in long specification documents. Each team learned the format again. Each team met the same defects again. And each team waited for a slot on the one shared core test environment.</p>
+        <p>In many banks, every project that touches accounts, payments or cards reaches the core the same way: fixed-length messages over a queue, laid out byte by byte, described in long specification documents. Each team learns the format again. Each team meets the same defects again. And each team waits for a slot on a shared core test environment.</p>
 
-        <p>That is not an integration problem. It is a product problem. The core had no product &mdash; no contract, no catalogue, no test double. It only had an interface, and an interface is not the same thing.</p>
+        <p>That is not an integration problem. It is a product problem. The core has an interface, but no product around it &mdash; no published contract, no machine-readable catalogue, no test double. An interface is not the same thing as a product.</p>
 
         <p class="article-section">How direct access turns the core into a bottleneck</p>
 
         <p>Direct access feels cheap. There is no layer to build. A team reads the document, maps the fields and calls the core. The cost arrives later, and it arrives everywhere at once.</p>
 
-        <p><strong>Knowledge concentrates.</strong> The layouts were documented, but not always correctly. When the team compiled every message table into a machine-readable catalogue, the arithmetic failed in 96 places. Signed amounts carried an extra byte no table mentioned. One heavily used reply was two bytes longer than declared. Every consuming team had found some of these the hard way, and patched them in its own code. The real specification lived in a few people&rsquo;s heads.</p>
+        <p><strong>Knowledge concentrates.</strong> Interface documents for long-lived systems drift. Totals stop adding up, sign bytes go unmentioned, a reply turns out longer than declared. Each consuming team finds some of these the hard way and patches them in its own code, not always in the same way. The real specification ends up living in a few people&rsquo;s heads.</p>
 
-        <p><strong>Testing serialises.</strong> If the only way to test is against the real core, the core test environment becomes the critical path of the whole portfolio. Teams overwrite each other&rsquo;s data. A missing test account stops a cycle for days. Negative cases &mdash; a blocked account, a timeout, a duplicate payment &mdash; are hard to set up and so are rarely tested at all.</p>
+        <p><strong>Testing serialises.</strong> If the only way to test is against the real core, the core test environment becomes the critical path of the whole portfolio. Teams overwrite each other&rsquo;s data. A missing test account stops a cycle for days. Negative cases &mdash; a blocked account, a timeout, a duplicate payment &mdash; are hard to set up, so they are rarely tested at all.</p>
 
-        <p><strong>Change becomes impossible.</strong> When dozens of consumers depend on the core&rsquo;s field names, codes and byte offsets, the core cannot change without changing all of them. The bank has quietly signed a contract it never wrote down.</p>
+        <p><strong>Change becomes expensive.</strong> When dozens of consumers depend on the core&rsquo;s field names, codes and byte offsets, the core cannot change without changing all of them. The bank has quietly signed a contract it never wrote down.</p>
 
         <blockquote>
           <p>A core that every project must queue for is not a platform. It is a dependency with a waiting list.</p>
         </blockquote>
 
-        <p class="article-section">What changed: a contract, a catalogue and a stand-in</p>
+        <p class="article-section">The operating-model shift: from interface to product</p>
 
-        <p>The answer was to treat the core as a product with a published contract. Three things made that real.</p>
+        <p>Treating the core as a product does not mean changing the core. It means changing what sits around it, and who owns that.</p>
 
-        <p><strong>A catalogue of everything.</strong> All 934 core transaction codes, every request and response layout, checked against the documents. Where a document was wrong, the correction was recorded with its reasoning and sent back to the core owner.</p>
+        <p><strong>The message estate becomes data.</strong> Every request and response layout is held in a machine-readable catalogue, checked against its own arithmetic. Where a document is wrong, the correction is recorded with its reasoning and sent back to the core owner. Knowledge stops living in people and starts living in a reviewed artefact.</p>
 
-        <p><strong>Fourteen governed business APIs, generated.</strong> One API per business domain &mdash; payments, accounts, cards, lending and so on &mdash; with about 1,280 operations in plain business English and standard formats. The contracts are generated from the catalogue plus a small, reviewed design layer. Nobody hand-writes them, and nobody hand-edits them. The public contracts name no core field and no core code. That mapping exists only in an internal design document. A thin adapter translates between the two and adds no business rules of its own.</p>
+        <p><strong>Consumers get business APIs, not message formats.</strong> One API per business domain &mdash; payments, accounts, cards, lending &mdash; in plain business language and standard formats. The contracts are generated from the catalogue and a small, reviewed set of design decisions, not hand-written. They name no core field and no core code. A thin adapter translates between the two and adds no business rules; the core keeps every rule it has today.</p>
 
-        <p><strong>A full core simulator.</strong> A stand-in that speaks the core&rsquo;s real wire protocol for all 934 codes, with a small ledger behind it: holds, postings, reversals, duplicate detection, accounts in every awkward state, and injectable timeouts. On top of it, a test generator produced 6,256 contract test cases from the contracts and the test data, with a coverage matrix showing every code exercised.</p>
+        <p><strong>Teams test against a stand-in by default.</strong> A simulator that speaks the core&rsquo;s real wire protocol, with a small ledger behind it, lets every team run its own core at any hour, with its own data. Holds, postings, reversals, duplicates, blocked accounts and timeouts become cheap to test, so they get tested. The shared core environment is kept for what only it can do: acceptance on real business rules.</p>
 
-        <p>The effect on delivery was immediate. Projects stopped queuing. Each team can run its own simulator, with its own data, at any hour. Negative and failure cases are now cheap to test, so they are tested. The shared core environment is kept for what only it can do: final acceptance on real business rules.</p>
+        <p>The engineering for this is well understood. What changes is the operating model: the core team, the integration team and the delivery teams stop negotiating byte offsets project by project, and start working against one governed contract.</p>
+
+        <p class="article-section">Business APIs and simulators are institutional assets</p>
+
+        <p>Most integration spend is project spend. A team builds what its project needs and moves on. The catalogue, the generated contracts and the simulator are different. They are built once and used by every project that follows, and each project makes them better &mdash; a new edge case becomes a new test, a surprise in production becomes a catalogue fix.</p>
+
+        <p>That changes how they should be funded and measured. They belong on the platform budget, not on the first project that happens to need them. Their value shows up in other teams&rsquo; plans: shorter test cycles, fewer environment conflicts, fewer late integration defects. A leader who measures them only by the project that paid for them will always find them too expensive.</p>
 
         <p class="article-section">Replaceability is a by-product, not a programme</p>
 
         <p>There is a second benefit that matters more over ten years than over one release. When consumers call business APIs that never mention the core&rsquo;s internals, the core stops being a fixed point in the architecture.</p>
 
-        <p>That does not mean a bank should plan to replace its core. Most should not. It means the option exists. Upgrades, a split by product line, a new ledger for a new business &mdash; each becomes a change behind a contract rather than a change in every consumer. Options like that are cheap to keep and very expensive to buy back later.</p>
+        <p>That is not a reason to plan a core change. It is an option. Upgrades, a split by product line, a new ledger for a new business &mdash; each becomes a change behind a contract rather than a change in every consumer. Options like that are cheap to keep and very expensive to buy back later.</p>
 
-        <p>The four designs on the table were honest about this. Letting consumers call the core directly gives no replaceability. A generic pass-through API that just wraps core field names in JSON gives none either &mdash; the contract is still the core. Building full domain services with their own logic gives replaceability but duplicates the bank&rsquo;s most sensitive rules in a second place. Generated business APIs over a thin adapter give replaceability while the core keeps every rule. That was the trade worth making.</p>
+        <p>The design choice decides whether the option exists. Letting consumers call the core directly gives none. A generic pass-through API that wraps core field names in JSON gives none either; the contract is still the core. Building full domain services with their own logic gives replaceability but duplicates the bank&rsquo;s most sensitive rules in a second place. Generated business APIs over a thin adapter give replaceability while the core keeps every rule. For most banks, that is the trade worth making.</p>
 
         <p class="article-section">What leaders need to decide</p>
 
         <p>The engineering is the easy part. A few decisions belong above it.</p>
 
-        <p><strong>Is the core contract a product with an owner?</strong> Someone must own the catalogue, the design layer and the defect register &mdash; with authority to say no to a consumer that wants to bypass the APIs. Without an owner, the bank ends up with fourteen APIs plus the old direct access, which is worse than either.</p>
+        <p><strong>Is the core contract a product with an owner?</strong> Someone must own the catalogue, the design decisions and the defect register &mdash; with authority to say no to a consumer that wants to bypass the APIs. Without an owner, the bank ends up with business APIs plus the old direct access, which is worse than either.</p>
 
-        <p><strong>What is a decline, and what is an error?</strong> The contract treats a bank decline &mdash; insufficient funds, a blocked account &mdash; as a successful call with a failed business outcome. Only transport problems are errors. That one rule changes how every dashboard, alert and retry policy behaves. It needs agreement from operations, not only from engineering.</p>
+        <p><strong>What is a decline, and what is an error?</strong> A well-designed contract treats a business decline &mdash; insufficient funds, a blocked account &mdash; as a successful call with a failed business outcome. Only transport problems are errors. That one rule changes how every dashboard, alert and retry policy behaves. It needs agreement from operations, not only from engineering.</p>
 
-        <p><strong>Where must new consumers connect?</strong> The simplest control is architectural: new projects reach the core only through the business APIs. Existing consumers migrate domain by domain, as they change anyway. This is a governance decision, and it only works if it is enforced at the gateway rather than in a policy document.</p>
+        <p><strong>Where must new consumers connect?</strong> The simplest control is architectural: new projects reach the core only through the business APIs. Existing consumers migrate domain by domain, as they change anyway. This only works if it is enforced at the gateway rather than in a policy document.</p>
 
-        <p><strong>Who closes the gaps with the core team?</strong> Building the catalogue and the simulator surfaced defects in the specifications and situations with no documented result code. Each one is a question only the core owner can answer. Leaders need to fund that conversation and track it to closure, or the contracts will carry open assumptions indefinitely.</p>
+        <p><strong>Who closes the gaps with the core owner?</strong> Building a catalogue and a simulator always surfaces specification defects and situations with no documented outcome. Each one is a question only the core owner can answer. Leaders need to fund that conversation and track it to closure, or the contracts will carry open assumptions indefinitely.</p>
 
-        <p><strong>What is the simulator allowed to replace?</strong> The simulator proves the integration and the contract. It does not prove the core&rsquo;s business rules. Decide up front which tests run against the simulator, which run against the real core, and what evidence each release needs. Otherwise the simulator becomes either an unused toy or an over-trusted one.</p>
+        <p><strong>What is the simulator allowed to replace?</strong> A simulator proves the integration and the contract. It does not prove the core&rsquo;s business rules. Decide up front which tests run against the simulator, which run against the real core, and what evidence each release needs. Otherwise the simulator becomes either an unused toy or an over-trusted one.</p>
 
         <p>None of these decisions is technical. All of them decide whether the investment pays back. When they are made, the core stops being the thing every project waits for. It becomes a product the whole bank builds on.</p>
 
-        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the technical implementation: the message catalogue, the design layer and generator, the outcome model, the IBM ACE core simulator with encoding detection and a stateful ledger, and the data-driven contract tests &mdash; see the companion Lab article: <a href="../lab/legacy-integration/core-banking-business-apis-and-simulator.html" style="color:var(--color-accent);">Generated Business APIs &amp; a Wire-Protocol Core Simulator</a>.</p>
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the technical implementation: the message catalogue, the design layer and code generator, the outcome model, a wire-protocol simulator on IBM ACE with encoding detection and a stateful ledger, and data-driven contract tests &mdash; see the companion Lab article: <a href="../lab/legacy-integration/legacy-message-apis-and-simulators.html" style="color:var(--color-accent);">From Fixed-Length Core Messages to Business APIs: Catalogue-Driven Generation and Wire-Protocol Simulators</a>.</p>
 
       </div>
     </div>

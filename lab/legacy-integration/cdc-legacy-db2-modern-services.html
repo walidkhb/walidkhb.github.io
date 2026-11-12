@@ -124,6 +124,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> IBM IIDR 11.4 &middot; Debezium 2.7 &middot; Apache Kafka &middot; DB2 z/OS &middot; DB2 for i</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Aug 15, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -231,10 +232,10 @@
           <div class="code-block">
             <div class="code-block__header"><span>iidr-replication.json</span><span class="code-block__lang">json</span></div>
 <pre><code>{
-  <span class="tok-k">"subscriptionName"</span>: <span class="tok-s">"SAIB_ACCOUNTS_TO_KAFKA"</span>,
+  <span class="tok-k">"subscriptionName"</span>: <span class="tok-s">"CORE_ACCOUNTS_TO_KAFKA"</span>,
   <span class="tok-k">"source"</span>: {
     <span class="tok-k">"type"</span>: <span class="tok-s">"DB2ZOS"</span>,
-    <span class="tok-k">"database"</span>: <span class="tok-s">"SAIBPROD"</span>,
+    <span class="tok-k">"database"</span>: <span class="tok-s">"COREPROD"</span>,
     <span class="tok-k">"schema"</span>: <span class="tok-s">"ACCTDB"</span>,
     <span class="tok-k">"tables"</span>: [<span class="tok-s">"ACCOUNTS"</span>, <span class="tok-s">"LEDGER_ENTRIES"</span>, <span class="tok-s">"HOLD_ORDERS"</span>],
     <span class="tok-k">"captureMode"</span>: <span class="tok-s">"LOG_BASED"</span>,        <span class="tok-c">// never TRIGGER</span>
@@ -243,13 +244,13 @@
   },
   <span class="tok-k">"target"</span>: {
     <span class="tok-k">"type"</span>: <span class="tok-s">"KAFKA"</span>,
-    <span class="tok-k">"bootstrapServers"</span>: <span class="tok-s">"kafka-1.saib.internal:9093,kafka-2.saib.internal:9093"</span>,
-    <span class="tok-k">"schemaRegistry"</span>: <span class="tok-s">"https://schema-registry.saib.internal"</span>,
+    <span class="tok-k">"bootstrapServers"</span>: <span class="tok-s">"kafka-1.bank.internal:9093,kafka-2.bank.internal:9093"</span>,
+    <span class="tok-k">"schemaRegistry"</span>: <span class="tok-s">"https://schema-registry.bank.internal"</span>,
     <span class="tok-k">"serializationFormat"</span>: <span class="tok-s">"AVRO"</span>,
     <span class="tok-k">"topicMapping"</span>: {
-      <span class="tok-k">"ACCOUNTS"</span>: <span class="tok-s">"saib.legacy.accounts.cdc"</span>,
-      <span class="tok-k">"LEDGER_ENTRIES"</span>: <span class="tok-s">"saib.legacy.ledger.cdc"</span>,
-      <span class="tok-k">"HOLD_ORDERS"</span>: <span class="tok-s">"saib.legacy.holds.cdc"</span>
+      <span class="tok-k">"ACCOUNTS"</span>: <span class="tok-s">"core.legacy.accounts.cdc"</span>,
+      <span class="tok-k">"LEDGER_ENTRIES"</span>: <span class="tok-s">"core.legacy.ledger.cdc"</span>,
+      <span class="tok-k">"HOLD_ORDERS"</span>: <span class="tok-s">"core.legacy.holds.cdc"</span>
     },
     <span class="tok-k">"partitionKey"</span>: <span class="tok-s">"ACCOUNT_NBR"</span>,    <span class="tok-c">// ordering guaranteed per account</span>
     <span class="tok-k">"security"</span>: {
@@ -279,20 +280,20 @@
           <div class="code-block">
             <div class="code-block__header"><span>debezium-ibmi-connector.json</span><span class="code-block__lang">json</span></div>
 <pre><code>{
-  <span class="tok-k">"name"</span>: <span class="tok-s">"saib-ibmi-customers"</span>,
+  <span class="tok-k">"name"</span>: <span class="tok-s">"core-ibmi-customers"</span>,
   <span class="tok-k">"config"</span>: {
     <span class="tok-k">"connector.class"</span>: <span class="tok-s">"io.debezium.connector.db2i.Db2iConnector"</span>,
-    <span class="tok-k">"database.hostname"</span>: <span class="tok-s">"as400-prod.saib.internal"</span>,
+    <span class="tok-k">"database.hostname"</span>: <span class="tok-s">"as400-prod.bank.internal"</span>,
     <span class="tok-k">"database.port"</span>: <span class="tok-s">"8471"</span>,
     <span class="tok-k">"database.user"</span>: <span class="tok-s">"CDCUSER"</span>,
     <span class="tok-k">"database.password"</span>: <span class="tok-s">"${file:/opt/kafka/secrets/ibmi.properties:db.password}"</span>,
     <span class="tok-k">"database.dbname"</span>: <span class="tok-s">"*LOCAL"</span>,
     <span class="tok-k">"schema.include.list"</span>: <span class="tok-s">"CUSTLIB"</span>,
     <span class="tok-k">"table.include.list"</span>: <span class="tok-s">"CUSTLIB.CUSTOMERS,CUSTLIB.LOANS,CUSTLIB.COLLATERAL"</span>,
-    <span class="tok-k">"topic.prefix"</span>: <span class="tok-s">"saib.legacy.ibmi"</span>,
+    <span class="tok-k">"topic.prefix"</span>: <span class="tok-s">"core.legacy.ibmi"</span>,
     <span class="tok-k">"key.converter"</span>: <span class="tok-s">"io.confluent.kafka.serializers.KafkaAvroSerializer"</span>,
     <span class="tok-k">"value.converter"</span>: <span class="tok-s">"io.confluent.kafka.serializers.KafkaAvroSerializer"</span>,
-    <span class="tok-k">"value.converter.schema.registry.url"</span>: <span class="tok-s">"https://schema-registry.saib.internal"</span>,
+    <span class="tok-k">"value.converter.schema.registry.url"</span>: <span class="tok-s">"https://schema-registry.bank.internal"</span>,
     <span class="tok-k">"journal.name"</span>: <span class="tok-s">"CUSTLIB/CUSTJRN"</span>,
     <span class="tok-k">"snapshot.mode"</span>: <span class="tok-s">"initial"</span>,            <span class="tok-c">// full snapshot on first run</span>
     <span class="tok-k">"snapshot.isolation.mode"</span>: <span class="tok-s">"read_committed"</span>,
@@ -325,7 +326,7 @@
 <pre><code>{
   <span class="tok-k">"type"</span>: <span class="tok-s">"record"</span>,
   <span class="tok-k">"name"</span>: <span class="tok-s">"AccountCdcEvent"</span>,
-  <span class="tok-k">"namespace"</span>: <span class="tok-s">"info.wbadawi.saib.legacy.accounts"</span>,
+  <span class="tok-k">"namespace"</span>: <span class="tok-s">"info.wbadawi.core.legacy.accounts"</span>,
   <span class="tok-k">"fields"</span>: [
     { <span class="tok-k">"name"</span>: <span class="tok-s">"eventType"</span>,         <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"enum"</span>, <span class="tok-k">"name"</span>: <span class="tok-s">"CdcOp"</span>, <span class="tok-k">"symbols"</span>: [<span class="tok-s">"INSERT"</span>,<span class="tok-s">"UPDATE"</span>,<span class="tok-s">"DELETE"</span>] }},
     { <span class="tok-k">"name"</span>: <span class="tok-s">"capturedAt"</span>,        <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },    <span class="tok-c">// ISO 8601 from DB2 log timestamp</span>

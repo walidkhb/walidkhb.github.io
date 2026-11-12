@@ -112,6 +112,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Keycloak 24 &middot; Spring Authorization Server &middot; FAPI 2.0 &middot; CIBA &middot; DCR</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> May 17, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -275,7 +276,7 @@
   <span class="tok-k">"client_id"</span>: <span class="tok-s">"tpp-acme-finance"</span>,
   <span class="tok-k">"client_id_issued_at"</span>: <span class="tok-n">1747476600</span>,
   <span class="tok-k">"registration_access_token"</span>: <span class="tok-s">"rat-..."</span>,
-  <span class="tok-k">"registration_client_uri"</span>: <span class="tok-s">"https://as.saib.com.sa/register/tpp-acme-finance"</span>
+  <span class="tok-k">"registration_client_uri"</span>: <span class="tok-s">"https://as.bank.example/register/tpp-acme-finance"</span>
 }</code></pre>
           </div>
 
@@ -292,7 +293,7 @@
           <div class="code-block">
             <div class="code-block__header"><span>create-consent.sh</span><span class="code-block__lang">bash</span></div>
 <pre><code><span class="tok-c"># Step 1: TPP creates consent resource (server-to-server, not user-facing)</span>
-curl -sS <span class="tok-s">https://api.saib.com.sa/open-banking/v3/aisp/consents</span> \
+curl -sS <span class="tok-s">https://api.bank.example/open-banking/v3/aisp/consents</span> \
   --cert <span class="tok-s">$TPP_CERT</span> --key <span class="tok-s">$TPP_KEY</span> \                 <span class="tok-c"># mTLS: client auth + token binding</span>
   -H <span class="tok-s">"Authorization: Bearer $CCG_TOKEN"</span> \
   -H <span class="tok-s">"Content-Type: application/json"</span> \
@@ -310,7 +311,7 @@ curl -sS <span class="tok-s">https://api.saib.com.sa/open-banking/v3/aisp/consen
 <span class="tok-c"># Returns: { "Data": { "ConsentId": "csnt-0e4f1a2b", "Status": "AwaitingAuthorisation" } }</span>
 
 <span class="tok-c"># Step 2: TPP submits PAR to get request_uri, then initiates CIBA with login_hint + consent id</span>
-curl -sS <span class="tok-s">https://as.saib.com.sa/par</span> \
+curl -sS <span class="tok-s">https://as.bank.example/par</span> \
   -d <span class="tok-s">"response_type=code"</span> \
   -d <span class="tok-s">"client_id=$CLIENT_ID"</span> \
   -d <span class="tok-s">"scope=openid accounts"</span> \

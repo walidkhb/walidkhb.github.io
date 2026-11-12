@@ -122,6 +122,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Backstage 1.x / OpenShift 4.x / Tekton / Crossplane / Helm</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Jun 20, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -237,11 +238,11 @@
           <div class="code-block">
             <div class="code-block__header"><span>app-config.yaml</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-k">app</span>:
-  <span class="tok-k">title</span>: <span class="tok-s">SAIB Integration Platform</span>
-  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.saib.internal</span>
+  <span class="tok-k">title</span>: <span class="tok-s">Bank Integration Platform</span>
+  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.bank.internal</span>
 
 <span class="tok-k">backend</span>:
-  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.saib.internal</span>
+  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.bank.internal</span>
   <span class="tok-k">database</span>:
     <span class="tok-k">client</span>: <span class="tok-s">pg</span>
     <span class="tok-k">connection</span>:
@@ -263,7 +264,7 @@
   <span class="tok-k">providers</span>:
     <span class="tok-k">github</span>:
       <span class="tok-k">integrationOrg</span>:
-        <span class="tok-k">organization</span>: <span class="tok-s">saib-integration</span>
+        <span class="tok-k">organization</span>: <span class="tok-s">bank-integration</span>
         <span class="tok-k">catalogPath</span>: <span class="tok-s">/catalog-info.yaml</span>
         <span class="tok-k">filters</span>:
           <span class="tok-k">branch</span>: <span class="tok-s">main</span>
@@ -326,7 +327,7 @@
       <span class="tok-k">name</span>: <span class="tok-s">Create repository</span>
       <span class="tok-k">action</span>: <span class="tok-s">publish:github</span>
       <span class="tok-k">input</span>:
-        <span class="tok-k">repoUrl</span>: <span class="tok-s">github.com?owner=saib-integration&repo=${{ parameters.name }}-integration</span>
+        <span class="tok-k">repoUrl</span>: <span class="tok-s">github.com?owner=bank-integration&repo=${{ parameters.name }}-integration</span>
         <span class="tok-k">defaultBranch</span>: <span class="tok-s">main</span>
         <span class="tok-k">repoVisibility</span>: <span class="tok-s">private</span>
         <span class="tok-k">topics</span>: [<span class="tok-s">integration</span>, <span class="tok-s">${{ parameters.domain }}</span>, <span class="tok-s">ace</span>]
@@ -383,14 +384,14 @@
   <span class="tok-k">description</span>: <span class="tok-s">IPS payment instruction adapter — ISO 20022 to ACH transform</span>
   <span class="tok-k">annotations</span>:
     <span class="tok-k">backstage.io/techdocs-ref</span>: <span class="tok-s">dir:.</span>
-    <span class="tok-k">github.com/project-slug</span>: <span class="tok-s">saib-integration/payments-ips-adapter-integration</span>
+    <span class="tok-k">github.com/project-slug</span>: <span class="tok-s">bank-integration/payments-ips-adapter-integration</span>
     <span class="tok-k">argocd/app-name</span>: <span class="tok-s">payments-ips-adapter-prod</span>
   <span class="tok-k">tags</span>: [<span class="tok-s">payments</span>, <span class="tok-s">iso20022</span>, <span class="tok-s">ace</span>, <span class="tok-s">ips</span>]
   <span class="tok-k">links</span>:
-    - <span class="tok-k">url</span>: <span class="tok-s">https://wiki.saib.internal/runbooks/payments-ips-adapter</span>
+    - <span class="tok-k">url</span>: <span class="tok-s">https://wiki.bank.internal/runbooks/payments-ips-adapter</span>
       <span class="tok-k">title</span>: <span class="tok-s">Runbook</span>
       <span class="tok-k">icon</span>: <span class="tok-s">docs</span>
-    - <span class="tok-k">url</span>: <span class="tok-s">https://monitoring.saib.internal/d/payments-ips</span>
+    - <span class="tok-k">url</span>: <span class="tok-s">https://monitoring.bank.internal/d/payments-ips</span>
       <span class="tok-k">title</span>: <span class="tok-s">Dashboard</span>
       <span class="tok-k">icon</span>: <span class="tok-s">dashboard</span>
 <span class="tok-k">spec</span>:
@@ -417,9 +418,9 @@
 <span class="tok-k">apiVersion</span>: <span class="tok-s">apiextensions.crossplane.io/v1</span>
 <span class="tok-k">kind</span>: <span class="tok-s">CompositeResourceDefinition</span>
 <span class="tok-k">metadata</span>:
-  <span class="tok-k">name</span>: <span class="tok-s">xintegrationenvironments.platform.saib.internal</span>
+  <span class="tok-k">name</span>: <span class="tok-s">xintegrationenvironments.platform.bank.internal</span>
 <span class="tok-k">spec</span>:
-  <span class="tok-k">group</span>: <span class="tok-s">platform.saib.internal</span>
+  <span class="tok-k">group</span>: <span class="tok-s">platform.bank.internal</span>
   <span class="tok-k">names</span>:
     <span class="tok-k">kind</span>: <span class="tok-s">XIntegrationEnvironment</span>
     <span class="tok-k">plural</span>: <span class="tok-s">xintegrationenvironments</span>

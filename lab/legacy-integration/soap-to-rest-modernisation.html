@@ -123,6 +123,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> IBM ACE 12.0.10 &middot; IBM API Connect 10.0.7 &middot; Java 21 &middot; OpenAPI 3.1</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~16 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -158,12 +159,12 @@
 
     <span class="tok-c">-- Propagate the REST JSON body to SOAP XML</span>
     <span class="tok-k">DECLARE</span> soapNS  <span class="tok-s">NAMESPACE</span> <span class="tok-s">'http://schemas.xmlsoap.org/soap/envelope/'</span>;
-    <span class="tok-k">DECLARE</span> payNS   <span class="tok-s">NAMESPACE</span> <span class="tok-s">'http://saib.internal/payments/v2'</span>;
+    <span class="tok-k">DECLARE</span> payNS   <span class="tok-s">NAMESPACE</span> <span class="tok-s">'http://bank.internal/payments/v2'</span>;
     <span class="tok-k">DECLARE</span> secNS   <span class="tok-s">NAMESPACE</span> <span class="tok-s">'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd'</span>;
 
     <span class="tok-c">-- HTTP SOAPAction header (required for SOAP 1.1 routing)</span>
     <span class="tok-k">SET</span> OutputRoot.HTTPRequestHeader.<span class="tok-s">"SOAPAction"</span> =
-        <span class="tok-s">'"http://saib.internal/payments/v2/InitiatePayment"'</span>;
+        <span class="tok-s">'"http://bank.internal/payments/v2/InitiatePayment"'</span>;
     <span class="tok-k">SET</span> OutputRoot.HTTPRequestHeader.<span class="tok-s">"Content-Type"</span> = <span class="tok-s">'text/xml;charset=UTF-8'</span>;
 
     <span class="tok-c">-- WS-Security UsernameToken from ACE credentials store</span>
@@ -387,12 +388,12 @@
   <span class="tok-k">title</span>: <span class="tok-s">Payment Initiation API</span>
   <span class="tok-k">version</span>: <span class="tok-s">'1.0.0'</span>
   <span class="tok-k">description</span>: |
-    REST facade for the SAIB core payment initiation SOAP service.
+    REST facade for the core-banking payment initiation SOAP service.
     Backed by InitiatePayment SOAP operation (WSDL v2.4).
     All monetary amounts are strings in decimal notation (e.g. "12345.67").
 
 <span class="tok-k">servers</span>:
-  - <span class="tok-k">url</span>: <span class="tok-s">https://api.saib.com.sa/v1</span>
+  - <span class="tok-k">url</span>: <span class="tok-s">https://api.bank.example/v1</span>
 
 <span class="tok-k">security</span>:
   - <span class="tok-k">FAPI2Bearer</span>: []
@@ -451,8 +452,8 @@
       <span class="tok-k">type</span>: <span class="tok-s">oauth2</span>
       <span class="tok-k">flows</span>:
         <span class="tok-k">authorizationCode</span>:
-          <span class="tok-k">authorizationUrl</span>: <span class="tok-s">https://auth.saib.com.sa/oauth2/authorize</span>
-          <span class="tok-k">tokenUrl</span>:         <span class="tok-s">https://auth.saib.com.sa/oauth2/token</span>
+          <span class="tok-k">authorizationUrl</span>: <span class="tok-s">https://auth.bank.example/oauth2/authorize</span>
+          <span class="tok-k">tokenUrl</span>:         <span class="tok-s">https://auth.bank.example/oauth2/token</span>
           <span class="tok-k">scopes</span>:
             <span class="tok-k">payments:initiate</span>: <span class="tok-s">Initiate a payment on behalf of the account holder</span></code></pre>
           </div>

@@ -108,6 +108,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> AsyncAPI 3.0 &middot; Confluent Schema Registry 7.6 &middot; Apache Avro 1.11 &middot; Spring Cloud Stream 4.1 &middot; asyncapi-generator 2.4</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Oct 10, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -635,7 +636,7 @@
             <div class="diagram__caption">Figure 3 &mdash; Channel governance flow: domain squad proposes, architecture reviews with consumer TL sign-off, CI checks consumer impact before merge</div>
           </div>
 
-          <p>Channel ownership rules at SAIB&rsquo;s integration programme:</p>
+          <p>Channel ownership rules for a typical bank integration programme:</p>
           <ul>
             <li><strong>One squad owns each channel</strong>, identified by <code>x-channel-owner</code> in the spec. The owning squad is responsible for the channel contract, the PDPL annotations, and the consumer migration when the channel changes. Consumers do not own channels they consume.</li>
             <li><strong>New channels require architecture sign-off</strong>. A squad cannot create a new Kafka topic by pushing YAML &mdash; every new channel spec requires a PR reviewed by the integration architecture group. This prevents topic sprawl: the architecture team can reject a proposed channel if the same event is already published on an existing topic under a different name.</li>

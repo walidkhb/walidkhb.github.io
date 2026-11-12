@@ -122,6 +122,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Apache Flink 1.19 / Debezium 2.x / Kafka / PostgreSQL / Spark (batch) / Grafana</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Aug 29, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -274,7 +275,7 @@
           </div>
 
           <h2 id="fingerprinting">Fingerprinting &amp; hash comparison</h2>
-          <p>The core technique is row fingerprinting: for each row in the source and downstream, compute a deterministic hash of the business-significant columns; compare hashes by primary key. A mismatch on the hash means a break; matching hashes mean the row is in sync. At SAIB&rsquo;s scale (tens of millions of payment records), hashing allows the comparison to run in minutes rather than column-by-column SQL joins that would take hours.</p>
+          <p>The core technique is row fingerprinting: for each row in the source and downstream, compute a deterministic hash of the business-significant columns; compare hashes by primary key. A mismatch on the hash means a break; matching hashes mean the row is in sync. At a mid-sized bank&rsquo;s scale (tens of millions of payment records), hashing allows the comparison to run in minutes rather than column-by-column SQL joins that would take hours.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Which columns to hash</div>

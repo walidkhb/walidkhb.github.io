@@ -5,21 +5,21 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Legacy Integration: Generated Business APIs &amp; a Wire-Protocol Core Simulator &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Turning 934 fixed-length core banking messages into 14 governed OpenAPI 3.1 business APIs: a machine-readable message catalogue, a reviewed design layer, a code generator for contracts, flows, mappings and DFDL models, a wire-protocol core simulator on IBM ACE, and data-driven contract tests.">
+  <title>Legacy Integration &mdash; From Fixed-Length Core Messages to Business APIs &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Catalogue-driven generation of business APIs from fixed-length core messages: a machine-readable message catalogue, a reviewed design layer, generated OpenAPI contracts, mappings and DFDL models, an outcome model, a wire-protocol simulator on IBM ACE, and data-driven contract tests.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Legacy Integration: Generated Business APIs &amp; a Wire-Protocol Core Simulator &mdash; Lab">
-  <meta property="og:description" content="From 934 fixed-length core messages to 14 governed business APIs, a core simulator that speaks the wire protocol, and 6,256 generated contract tests.">
+  <meta property="og:title" content="Legacy Integration &mdash; From Fixed-Length Core Messages to Business APIs &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Message catalogue, design layer, code generator, wire-protocol simulator and contract tests &mdash; turning fixed-length core messages into governed business APIs.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://www.wbadawi.info/lab/legacy-integration/core-banking-business-apis-and-simulator.html">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/legacy-integration/legacy-message-apis-and-simulators.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Generated Business APIs &amp; a Wire-Protocol Core Simulator &mdash; Lab">
-  <meta name="twitter:description" content="Catalogue, design layer, generator, simulator and contract tests: core banking exposed as governed business APIs.">
+  <meta name="twitter:title" content="From Fixed-Length Core Messages to Business APIs &mdash; Lab">
+  <meta name="twitter:description" content="Catalogue-driven generation and wire-protocol simulators: legacy core messages exposed as governed business APIs.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
-  <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration/core-banking-business-apis-and-simulator.html">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration/legacy-message-apis-and-simulators.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -37,8 +37,8 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Generated Business APIs & a Wire-Protocol Core Simulator: Core Banking as a Product",
-    "description": "Turning 934 fixed-length core banking messages into 14 governed OpenAPI 3.1 business APIs: a machine-readable message catalogue, a reviewed design layer, a code generator for contracts, flows, mappings and DFDL models, a wire-protocol core simulator on IBM ACE, and data-driven contract tests.",
+    "headline": "From Fixed-Length Core Messages to Business APIs: Catalogue-Driven Generation and Wire-Protocol Simulators",
+    "description": "Catalogue-driven generation of business APIs from fixed-length core messages: a machine-readable message catalogue, a reviewed design layer, generated OpenAPI contracts, mappings and DFDL models, an outcome model, a wire-protocol simulator on IBM ACE, and data-driven contract tests.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-12",
     "author": {
@@ -51,7 +51,7 @@
       "name": "Waleed Albadawi",
       "url": "https://www.wbadawi.info/"
     },
-    "url": "https://www.wbadawi.info/lab/legacy-integration/core-banking-business-apis-and-simulator.html",
+    "url": "https://www.wbadawi.info/lab/legacy-integration/legacy-message-apis-and-simulators.html",
     "isPartOf": {
       "@type": "WebPage",
       "name": "Legacy Integration &mdash; Lab",
@@ -88,10 +88,10 @@
       <div class="lab-article__layout">
         <div></div>
         <div>
-          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../legacy-integration.html">Legacy Integration</a><span>/</span>Generated Business APIs &amp; Core Simulator</div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../legacy-integration.html">Legacy Integration</a><span>/</span>Core Messages to Business APIs</div>
           <span class="overline">Lab Article</span>
-          <h1>Legacy Integration: Generated Business APIs &amp; a Wire-Protocol Core Simulator</h1>
-          <p class="lead">A core banking system exposed as 934 fixed-length messages is not an interface. It is a puzzle every consumer solves again. This article shows how to turn those messages into 14 governed business APIs by generation, not by hand &mdash; and how a simulator that speaks the real wire protocol, plus data-driven contract tests, removed the core as the bottleneck for every test cycle.</p>
+          <h1>From Fixed-Length Core Messages to Business APIs: Catalogue-Driven Generation and Wire-Protocol Simulators</h1>
+          <p class="lead">A core system exposed only as hundreds of fixed-length messages is not an interface &mdash; it is a puzzle every consumer solves again. This article shows how to treat the whole message estate as data: compile it into a catalogue, generate governed business APIs from it, and build a simulator that speaks the real wire protocol so integration and contract testing no longer queue for the core.</p>
         </div>
       </div>
     </div>
@@ -106,12 +106,11 @@
           <ul class="lab-article__toc-list">
             <li><a href="#overview">Overview</a></li>
             <li><a href="#catalogue">The message catalogue</a></li>
-            <li><a href="#spec-defects">What compiling the specs found</a></li>
             <li><a href="#options">Options compared</a></li>
             <li><a href="#design-layer">The design layer</a></li>
             <li><a href="#generator">The generator</a></li>
             <li><a href="#outcome-model">Contract &amp; outcome model</a></li>
-            <li><a href="#simulator">The core simulator</a></li>
+            <li><a href="#simulator">The wire-protocol simulator</a></li>
             <li><a href="#contract-tests">Data-driven contract tests</a></li>
             <li><a href="#masking">Production traffic as test data</a></li>
             <li><a href="#pitfalls">Pitfalls</a></li>
@@ -122,22 +121,23 @@
         <article class="lab-article__body">
 
           <div class="article-meta">
-            <span class="article-meta__item"><strong>Stack:</strong> IBM ACE 12 / DFDL / ESQL / IBM MQ 9.4 / OpenAPI 3.1 / Python 3</span>
+            <span class="article-meta__item"><strong>Stack:</strong> IBM ACE 12 &middot; DFDL &middot; ESQL &middot; IBM MQ &middot; OpenAPI 3.1 &middot; Python 3</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~12 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 12, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Many banks still reach their core through fixed-length messages over IBM MQ. A fixed header. A body laid out byte by byte. Amounts in the lowest currency unit. Field names abbreviated to six or eight characters. Result codes in two parts. Bodies in EBCDIC or ASCII depending on who sent them.</p>
-          <p>At a Saudi bank, every consumer had learned this format on its own. Each one re-implemented the same layouts. Each one hit the same defects. The knowledge sat with a handful of people. And every test cycle queued for the one shared core test environment.</p>
-          <p>The fix had three parts:</p>
+          <p>Many core systems are still reached through fixed-length messages over IBM MQ. A fixed header. A body laid out byte by byte. Amounts in the lowest currency unit. Field names abbreviated to six or eight characters. Result codes in two parts. Bodies in EBCDIC or ASCII depending on the sender.</p>
+          <p>When every consumer calls these messages directly, every consumer learns the format on its own. Each one re-implements the same layouts and meets the same specification defects. The knowledge concentrates in a few people, and every test cycle queues for a shared core test environment.</p>
+          <p>The pattern in this article has three parts:</p>
           <ul>
-            <li><strong>A machine-readable catalogue</strong> of every request and response layout &mdash; 934 transaction codes, 1,866 layouts.</li>
-            <li><strong>A generator</strong> that combines the catalogue with a reviewed design layer and emits 14 OpenAPI 3.1 contracts (about 1,280 operations), 96 business flows, internal field mappings and DFDL models. A thin adapter on IBM ACE runs them.</li>
-            <li><strong>A core simulator</strong> on the same runtime that speaks the real wire protocol for all 934 codes, plus a deterministic test generator that produced 6,256 contract test cases.</li>
+            <li><strong>A machine-readable catalogue</strong> of every request and response layout, checked against its own arithmetic.</li>
+            <li><strong>A code generator</strong> that combines the catalogue with a reviewed design layer and emits OpenAPI 3.1 contracts, business flows, internal field mappings and DFDL models. A thin adapter on IBM ACE runs them.</li>
+            <li><strong>A wire-protocol simulator</strong> on the same runtime that answers every transaction code in the real format, plus a deterministic generator of data-driven contract tests.</li>
           </ul>
-          <p>The <a href="cobol-data-mapping.html">COBOL data mapping article</a> covers how DFDL parses one copybook. This article is about the step above: treating the whole message estate as data, and generating everything else from it.</p>
+          <p>The <a href="cobol-data-mapping.html">COBOL data mapping article</a> covers how DFDL parses one layout. This article is about the step above: treating the whole message estate as data, and generating everything else from it.</p>
 
           <div class="diagram" role="img" aria-label="Pipeline from message catalogue through design layer and generator to contracts, flows, mappings and DFDL models; adapter, simulator and test harness">
             <div class="diagram__inner">
@@ -157,41 +157,35 @@
                   </marker>
                 </defs>
 
-                <!-- Row labels -->
                 <text x="10" y="20" fill="#71717a" font-size="9" font-weight="600">BUILD TIME (governed inputs &rarr; generated outputs)</text>
 
-                <!-- Specs -->
                 <rect x="10" y="32" width="120" height="64" rx="6" fill="#16161f" stroke="#71717a" stroke-width="1.5"/>
                 <text x="70" y="54" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">Interface specs</text>
                 <text x="70" y="70" text-anchor="middle" fill="#71717a" font-size="8">documents, tables</text>
                 <text x="70" y="84" text-anchor="middle" fill="#71717a" font-size="8">declared lengths</text>
 
-                <!-- Catalogue -->
                 <rect x="10" y="118" width="120" height="78" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
                 <text x="70" y="140" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Catalogue</text>
-                <text x="70" y="156" text-anchor="middle" fill="#71717a" font-size="8">934 codes</text>
-                <text x="70" y="170" text-anchor="middle" fill="#71717a" font-size="8">1,866 layouts</text>
+                <text x="70" y="156" text-anchor="middle" fill="#71717a" font-size="8">every code</text>
+                <text x="70" y="170" text-anchor="middle" fill="#71717a" font-size="8">every layout</text>
                 <text x="70" y="184" text-anchor="middle" fill="#71717a" font-size="8">+ overrides</text>
 
-                <!-- Design layer -->
                 <rect x="160" y="118" width="130" height="78" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
                 <text x="225" y="140" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Design layer</text>
                 <text x="225" y="156" text-anchor="middle" fill="#71717a" font-size="8">operation per code</text>
                 <text x="225" y="170" text-anchor="middle" fill="#71717a" font-size="8">resource paths</text>
                 <text x="225" y="184" text-anchor="middle" fill="#71717a" font-size="8">vocabulary (reviewed)</text>
 
-                <!-- Generator -->
                 <rect x="320" y="118" width="120" height="78" rx="6" fill="#1c1c28" stroke="#00d4aa" stroke-width="2"/>
                 <text x="380" y="146" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Generator</text>
                 <text x="380" y="163" text-anchor="middle" fill="#71717a" font-size="8">deterministic</text>
                 <text x="380" y="177" text-anchor="middle" fill="#71717a" font-size="8">+ leak check</text>
 
-                <!-- Outputs -->
                 <rect x="480" y="32" width="135" height="44" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
-                <text x="547" y="51" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">14 OpenAPI 3.1</text>
-                <text x="547" y="66" text-anchor="middle" fill="#71717a" font-size="8">~1,280 operations</text>
+                <text x="547" y="51" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">OpenAPI 3.1</text>
+                <text x="547" y="66" text-anchor="middle" fill="#71717a" font-size="8">one per domain</text>
                 <rect x="480" y="86" width="135" height="44" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
-                <text x="547" y="105" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">96 business flows</text>
+                <text x="547" y="105" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">Business flows</text>
                 <text x="547" y="120" text-anchor="middle" fill="#71717a" font-size="8">sequence diagrams</text>
                 <rect x="480" y="140" width="135" height="44" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
                 <text x="547" y="159" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">Mappings (internal)</text>
@@ -200,7 +194,6 @@
                 <text x="547" y="213" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">DFDL models</text>
                 <text x="547" y="228" text-anchor="middle" fill="#71717a" font-size="8">one library per domain</text>
 
-                <!-- Arrows build time -->
                 <line x1="70" y1="96" x2="70" y2="118" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cb-arr)"/>
                 <line x1="130" y1="157" x2="160" y2="157" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cb-arr)"/>
                 <line x1="290" y1="157" x2="320" y2="157" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#cb-arr2)"/>
@@ -209,11 +202,10 @@
                 <line x1="440" y1="162" x2="480" y2="162" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#cb-arr4)"/>
                 <line x1="440" y1="174" x2="480" y2="216" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#cb-arr4)"/>
 
-                <!-- Runtime row -->
                 <text x="10" y="276" fill="#71717a" font-size="9" font-weight="600">RUN TIME &amp; TEST TIME</text>
 
                 <rect x="10" y="288" width="120" height="60" rx="6" fill="#16161f" stroke="#71717a" stroke-width="1.5"/>
-                <text x="70" y="312" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">Channels</text>
+                <text x="70" y="312" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">Consumers</text>
                 <text x="70" y="328" text-anchor="middle" fill="#71717a" font-size="8">JSON over HTTPS</text>
 
                 <rect x="160" y="288" width="130" height="60" rx="6" fill="#1c1c28" stroke="#4a9eff" stroke-width="1.5"/>
@@ -226,15 +218,15 @@
                 <text x="385" y="328" text-anchor="middle" fill="#71717a" font-size="8">fixed-length frames</text>
 
                 <rect x="480" y="262" width="135" height="48" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
-                <text x="547" y="282" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Core banking</text>
+                <text x="547" y="282" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Core system</text>
                 <text x="547" y="298" text-anchor="middle" fill="#71717a" font-size="8">production / shared test</text>
                 <rect x="480" y="322" width="135" height="48" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
-                <text x="547" y="342" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Core simulator</text>
-                <text x="547" y="358" text-anchor="middle" fill="#71717a" font-size="8">934 codes, stateful</text>
+                <text x="547" y="342" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Simulator</text>
+                <text x="547" y="358" text-anchor="middle" fill="#71717a" font-size="8">every code, stateful</text>
 
                 <rect x="640" y="288" width="130" height="60" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
                 <text x="705" y="309" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">Test harness</text>
-                <text x="705" y="324" text-anchor="middle" fill="#71717a" font-size="8">6,256 cases</text>
+                <text x="705" y="324" text-anchor="middle" fill="#71717a" font-size="8">generated cases</text>
                 <text x="705" y="338" text-anchor="middle" fill="#71717a" font-size="8">coverage matrix</text>
 
                 <line x1="130" y1="318" x2="160" y2="318" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#cb-arr3)"/>
@@ -243,7 +235,6 @@
                 <line x1="440" y1="326" x2="480" y2="344" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cb-arr)"/>
                 <line x1="640" y1="300" x2="290" y2="300" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#cb-arr4)"/>
                 <line x1="705" y1="348" x2="615" y2="356" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#cb-arr4)"/>
-                <!-- generated artefacts feed the adapter and simulator -->
                 <line x1="547" y1="238" x2="250" y2="288" stroke="#fbbf24" stroke-width="1" stroke-dasharray="2,3" marker-end="url(#cb-arr4)"/>
                 <line x1="70" y1="196" x2="70" y2="400" stroke="#00d4aa" stroke-width="1" stroke-dasharray="2,3"/>
                 <line x1="70" y1="400" x2="547" y2="400" stroke="#00d4aa" stroke-width="1" stroke-dasharray="2,3"/>
@@ -255,8 +246,8 @@
           </div>
 
           <h2 id="catalogue">The Message Catalogue</h2>
-          <p>Everything starts with one decision: layouts are data, not documents. The interface specifications describe each message as a table. A parser reads the tables and writes one JSON catalogue. Each entry holds the code, the title, the direction, every field with its type and length, and the declared total.</p>
-          <p>Repeating groups, shared structures and the header become references, not copies. A layout is only accepted when the computed length matches a declared length. Anything else needs a recorded decision.</p>
+          <p>Everything starts with one decision: layouts are data, not documents. Interface specifications usually describe each message as a table. A parser reads the tables and writes one JSON catalogue. Each entry holds the transaction code, title, direction, every field with its type and length, and the declared total.</p>
+          <p>Repeating groups, shared structures and the common header become references, not copies. A layout is accepted only when its computed length matches the declared length. Anything else needs a recorded decision.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>catalogue.json (excerpt, illustrative names)</span><span class="code-block__lang">json</span></div>
@@ -280,50 +271,50 @@
 }</code></pre>
           </div>
 
-          <p>The status field is the important one. A layout is <strong>length-validated</strong>, a <strong>hand-verified override</strong>, or a <strong>documented spec error</strong>. Nothing is left unresolved. The rule is simple: if the field list is internally consistent and the declared total is wrong, the field list wins and the defect is recorded.</p>
+          <p>The status field matters most. Every layout ends up <strong>length-validated</strong>, a <strong>hand-verified override</strong>, or a <strong>documented spec error</strong>. Nothing stays unresolved. A useful rule: if the field list is internally consistent and the declared total is wrong, the field list wins and the defect is recorded.</p>
 
-          <h2 id="spec-defects">What Compiling the Specs Found</h2>
-          <p>Nobody had ever checked every table against its own arithmetic. A compiler does that on day one. Across 1,866 layouts, the check surfaced:</p>
+          <h3>What compiling the specifications typically finds</h3>
+          <p>Specification tables are rarely checked against their own arithmetic. A compiler does it on the first run. Expect findings like these:</p>
           <table>
             <thead>
-              <tr><th>Finding</th><th>Scale</th><th>Effect on a consumer built from the document</th></tr>
+              <tr><th>Finding</th><th>Effect on a consumer built from the document</th></tr>
             </thead>
             <tbody>
-              <tr><td><strong>Wrong declared totals</strong></td><td>96 layouts</td><td>Fields added or widened, total row never updated. A buffer sized from the total truncates or pads.</td></tr>
-              <tr><td><strong>Undocumented trailing sign byte</strong></td><td>Every signed numeric field</td><td>A signed field of N digits occupies N + 1 bytes. The tables never say so; only the totals prove it. Every field after it shifts by one.</td></tr>
-              <tr><td><strong>Reply length off by two bytes</strong></td><td>One high-volume reply</td><td>Fields sum to two bytes more than declared. A consumer reading by declared offsets reads the wrong bytes.</td></tr>
-              <tr><td><strong>Wrong codes in headings</strong></td><td>A handful</td><td>A table labelled with the code of a different message.</td></tr>
-              <tr><td><strong>Hand corrections needed</strong></td><td>About 30</td><td>Draft tables, duplicated fields, impossible structures.</td></tr>
+              <tr><td><strong>Wrong declared totals</strong></td><td>Fields were added or widened and the total row never updated. A buffer sized from the total truncates or pads.</td></tr>
+              <tr><td><strong>Undocumented sign bytes</strong></td><td>A signed numeric field of N digits occupies N + 1 bytes, and the table does not say so. Every field after it shifts by one.</td></tr>
+              <tr><td><strong>Reply longer than declared</strong></td><td>A consumer reading by declared offsets reads the wrong bytes.</td></tr>
+              <tr><td><strong>Wrong codes in headings</strong></td><td>A table labelled with the code of a different message.</td></tr>
+              <tr><td><strong>Draft or duplicated content</strong></td><td>Duplicated fields or impossible structures that need a hand correction.</td></tr>
             </tbody>
           </table>
 
           <div class="callout callout--warn">
-            <div class="callout__title">The defects were already in production &mdash; in every consumer</div>
-            <p>Each consumer had met these defects separately and patched around them. Some patches disagreed. That is the real cost of undocumented direct access: the same bug, fixed differently, in many places. A defect register sent to the core team, plus overrides recorded with their reasoning, turns tribal knowledge into one reviewed source. Every override stays open until the core owner confirms the reading.</p>
+            <div class="callout__title">These defects are usually already in production &mdash; in every consumer</div>
+            <p>Each consumer meets them separately and patches around them, and the patches do not always agree. That is the hidden cost of undocumented direct access: the same bug, fixed differently, in many places. A defect register sent to the core owner, plus overrides recorded with their reasoning, turns tribal knowledge into one reviewed source. Keep every override open until the core owner confirms the reading.</p>
           </div>
 
           <h2 id="options">Options Compared</h2>
-          <p>With a full catalogue, four ways to expose the core were on the table.</p>
+          <p>With a full catalogue in hand, there are four realistic ways to expose the core.</p>
           <table>
             <thead>
               <tr><th></th><th>A. Direct calls</th><th>B. Generic pass-through</th><th>C. Generated domain APIs, thin adapter</th><th>D. Full domain services</th></tr>
             </thead>
             <tbody>
               <tr><td><strong>Consumer effort</strong></td><td>High, repeated</td><td>Medium &mdash; still core semantics</td><td>Low</td><td>Low</td></tr>
-              <tr><td><strong>Contract quality</strong></td><td>None</td><td>Core field names leak into every consumer</td><td>Business English, ISO formats, one outcome model</td><td>Best</td></tr>
+              <tr><td><strong>Contract quality</strong></td><td>None</td><td>Core field names leak into every consumer</td><td>Business language, ISO formats, one outcome model</td><td>Best</td></tr>
               <tr><td><strong>Replaceability</strong></td><td>None</td><td>None &mdash; the contract is the core</td><td>High &mdash; the contract is independent</td><td>High</td></tr>
               <tr><td><strong>Build effort</strong></td><td>&mdash;</td><td>Low</td><td>Medium &mdash; generator plus review</td><td>Very high</td></tr>
               <tr><td><strong>Where logic lives</strong></td><td>Consumers</td><td>Consumers</td><td>Core, unchanged</td><td>New services &mdash; duplicates the core</td></tr>
             </tbody>
           </table>
-          <p>Option C won. One API per business domain. The adapter maps names and formats, builds the header, does request&ndash;reply over MQ, maps outcomes and keeps an idempotency store. Balances, limits, eligibility and pricing stay in the core. The adapter adds no rules.</p>
-          <p>That gives replaceability without duplicating logic. The contract never names a core field, code or format. Any system that can answer the same operations can sit behind the same APIs.</p>
+          <p>For most estates, option C is the right trade. One API per business domain. The adapter maps names and formats, builds the header, does request&ndash;reply over MQ, maps outcomes and keeps an idempotency store. Balances, limits, eligibility and pricing stay in the core. The adapter adds no rules.</p>
+          <p>That buys replaceability without duplicating logic. The contract never names a core field, code or format, so any system that can answer the same operations can sit behind the same APIs.</p>
 
           <h2 id="design-layer">The Design Layer</h2>
-          <p>A catalogue alone produces mechanical APIs. <code>POST /t41200</code> with a body of abbreviations helps nobody. The design layer is the small, reviewed set of decisions a person must make:</p>
+          <p>A catalogue alone produces mechanical APIs. <code>POST /t41200</code> with a body of abbreviations helps nobody. The design layer is the small, reviewed set of decisions a person has to make:</p>
           <ul>
-            <li><strong>Operation per code</strong> &mdash; name, HTTP method, resource path, audience (public or internal), or exclusion with a reason.</li>
-            <li><strong>Vocabulary</strong> &mdash; abbreviation fragments to English words, with per-field overrides where the mechanical result reads badly.</li>
+            <li><strong>Operation per code</strong> &mdash; name, HTTP method, resource path, audience (public or internal), or exclusion with a written reason.</li>
+            <li><strong>Vocabulary</strong> &mdash; abbreviation fragments to plain words, with per-field overrides where the mechanical result reads badly.</li>
             <li><strong>Flows</strong> &mdash; which operations chain into a business flow, such as verify &rarr; post &rarr; reverse.</li>
           </ul>
 
@@ -350,23 +341,23 @@
 }</code></pre>
           </div>
 
-          <p>Of the 934 codes, 705 became public operations and 155 internal ones. 74 technical codes were excluded, each with a written reason. The design files are the governed source. They go through review per domain, like any other architecture artefact.</p>
+          <p>Every code gets exactly one decision: public operation, internal operation, or excluded with a reason. Technical codes &mdash; heartbeats, sign-on, batch control &mdash; are typical exclusions. The design files are the governed source, reviewed per domain like any other architecture artefact, ideally with the consuming teams in the room.</p>
 
           <h2 id="generator">The Generator</h2>
-          <p>The generator is deterministic. Same inputs, same bytes out. It produces four artefact families from the catalogue plus the design layer:</p>
+          <p>The generator must be deterministic: same inputs, same bytes out. From the catalogue plus the design layer it produces four artefact families:</p>
           <table>
             <thead>
               <tr><th>Artefact</th><th>Audience</th><th>Content</th></tr>
             </thead>
             <tbody>
-              <tr><td><strong>14 OpenAPI 3.1 contracts</strong></td><td>Public / consumers</td><td>About 1,280 HTTP operations, schemas, examples, headers, outcome envelope. Validated on every run.</td></tr>
-              <tr><td><strong>96 business flows</strong></td><td>Public / consumers</td><td>Sequence diagrams of operations; six also published as single-call composite operations.</td></tr>
-              <tr><td><strong>Field mappings</strong></td><td>Internal low-level design only</td><td>Business field &harr; core field, type, length, conversion, per operation. Readable and machine-loadable.</td></tr>
-              <tr><td><strong>DFDL models</strong></td><td>Adapter and simulator</td><td>One static library per business domain plus a core library for the header, so a flow references only what it uses.</td></tr>
+              <tr><td><strong>OpenAPI 3.1 contracts</strong></td><td>Consumers</td><td>One per domain: operations, schemas, examples, headers and the outcome envelope. Validated on every run.</td></tr>
+              <tr><td><strong>Business flows</strong></td><td>Consumers</td><td>Sequence diagrams of chained operations; a few may also be published as single-call composite operations.</td></tr>
+              <tr><td><strong>Field mappings</strong></td><td>Internal low-level design only</td><td>Business field &harr; core field, type, length and conversion, per operation. Readable and machine-loadable.</td></tr>
+              <tr><td><strong>DFDL models</strong></td><td>Adapter and simulator</td><td>One static library per business domain plus a shared library for the header, so a flow references only what it uses.</td></tr>
             </tbody>
           </table>
 
-          <p>The last step of every run is a leak check. Public contracts must carry no core field names, no transaction codes, no document references. The check fails the build if any appear.</p>
+          <p>The last step of every run is a leak check. Public contracts must carry no core field names, no transaction codes and no specification references. The build fails if any appear.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>generate.py (sketch)</span><span class="code-block__lang">python</span></div>
@@ -396,54 +387,53 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">Generated files are never hand-edited</div>
-            <p>The day someone fixes a contract by hand, the generator and the contract disagree. The next run silently reverts the fix, or someone stops running the generator. Both end the same way: 14 contracts drifting apart. Make the rule mechanical. A pipeline step regenerates and diffs; any difference fails the build. If a contract is wrong, fix the catalogue, an override or the design layer.</p>
+            <p>The day someone fixes a contract by hand, the generator and the contract disagree. The next run silently reverts the fix, or people stop running the generator. Both end the same way: contracts drifting apart. Make the rule mechanical. A pipeline step regenerates and diffs; any difference fails the build. If a contract is wrong, fix the catalogue, an override or the design layer.</p>
           </div>
 
           <h2 id="outcome-model">Contract &amp; Outcome Model</h2>
-          <p>The conventions are few and strict. Base path <code>/{domain}/v1</code>. Plural kebab-case resources. Commands take an idempotency key. Amounts are decimal strings with 0&ndash;3 decimals by ISO 4217 currency. Dates are ISO dates. Y/N flags become booleans. A count plus a repeating group becomes a JSON array.</p>
-          <p>The most debated rule was the outcome model. A core that answers &ldquo;insufficient funds&rdquo; has worked correctly. That is a business outcome, not an error. So:</p>
+          <p>Keep the conventions few and strict. Base path <code>/{domain}/v1</code>. Plural kebab-case resources. Commands take an idempotency key. Amounts are decimal strings with the number of decimals set by the ISO 4217 currency. Dates are ISO dates. Y/N flags become booleans. A count plus a repeating group becomes a JSON array.</p>
+          <p>The rule that needs the most agreement is the outcome model. A core that answers &ldquo;insufficient funds&rdquo; has worked correctly. That is a business outcome, not an error. So:</p>
           <ul>
-            <li><strong>Bank declines are HTTP 2xx</strong> with <code>status: FAILED</code> and a <code>failureDetails</code> category.</li>
-            <li><strong>RFC 7807 problem details are only for protocol failures</strong> &mdash; validation (400), auth (401/403), conflicts (409), throttling (429), and upstream trouble (502/503/504).</li>
+            <li><strong>Business declines are HTTP 2xx</strong> with <code>status: FAILED</code> and a <code>failureDetails</code> category.</li>
+            <li><strong>RFC 7807 problem details are only for protocol failures</strong> &mdash; validation (400), auth (401/403), conflicts (409), throttling (429) and upstream trouble (502/503/504).</li>
           </ul>
 
           <div class="code-block">
             <div class="code-block__header"><span>business decline vs protocol failure</span><span class="code-block__lang">json</span></div>
-<pre><code><span class="tok-c">// 201 Created — the bank declined; the call itself succeeded</span>
+<pre><code><span class="tok-c">// 201 Created — the core declined; the call itself succeeded</span>
 {
   <span class="tok-s">"status"</span>: <span class="tok-s">"FAILED"</span>,
   <span class="tok-s">"failureDetails"</span>: {
     <span class="tok-s">"category"</span>: <span class="tok-s">"INSUFFICIENT_FUNDS"</span>,
     <span class="tok-s">"message"</span>: <span class="tok-s">"Available balance is lower than the transfer amount."</span>,
-    <span class="tok-s">"backendSystem"</span>: <span class="tok-s">"CORE_BANKING"</span>,
     <span class="tok-s">"retryable"</span>: <span class="tok-k">false</span>
   },
   <span class="tok-s">"data"</span>: { <span class="tok-s">"accountTransferId"</span>: <span class="tok-s">"5b0e…"</span> },
-  <span class="tok-s">"meta"</span>: { <span class="tok-s">"bankReference"</span>: <span class="tok-s">"…"</span> }
+  <span class="tok-s">"meta"</span>: { <span class="tok-s">"coreReference"</span>: <span class="tok-s">"…"</span> }
 }
 
 <span class="tok-c">// 504 Gateway Timeout — application/problem+json; outcome unknown</span>
 {
   <span class="tok-s">"type"</span>: <span class="tok-s">"https://api.example.test/problems/backend-timeout"</span>,
-  <span class="tok-s">"title"</span>: <span class="tok-s">"No reply from core banking within the operation timeout"</span>,
+  <span class="tok-s">"title"</span>: <span class="tok-s">"No reply from the core within the operation timeout"</span>,
   <span class="tok-s">"status"</span>: <span class="tok-n">504</span>,
   <span class="tok-s">"detail"</span>: <span class="tok-s">"Retry with the same X-Idempotency-Key."</span>
 }</code></pre>
           </div>
 
-          <p>The mapping from core result codes to outcomes is itself generated from the documented codes into a versioned table. A partial-success action maps to <code>COMPLETED</code> with warnings. Any undocumented code falls to a generic decline and is logged for review. A 504 means the outcome is unknown: the caller retries with the same key, and the adapter resends with the core&rsquo;s possible-duplicate flag set so the core replays rather than re-posts.</p>
+          <p>Generate the mapping from core result codes to outcomes from the documented codes, into a versioned table. A partial success maps to <code>COMPLETED</code> with warnings. Any undocumented code falls to a generic decline and is logged for review. A 504 means the outcome is unknown: the caller retries with the same key, and if the core supports a possible-duplicate flag, the adapter sets it on the resend so the core replays rather than re-posts.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Why declines are not errors</div>
-            <p>If a decline is a 4xx, every gateway, retry policy and dashboard treats it as a fault. Circuit breakers open on a run of insufficient-funds replies. Error-rate alerts fire on payday. Keep the transport signal and the business signal apart. Breakers count timeouts and unreadable replies, never <code>FAILED</code> outcomes.</p>
+            <p>If a decline is a 4xx, every gateway, retry policy and dashboard treats it as a fault. Circuit breakers open on a run of insufficient-funds replies. Error-rate alerts fire on salary day. Keep the transport signal and the business signal apart. Breakers count timeouts and unreadable replies, never <code>FAILED</code> outcomes.</p>
           </div>
 
-          <h2 id="simulator">The Core Simulator</h2>
-          <p>Contracts are only half the story. Testing them needed the core, and the core had one shared test environment. Every project queued for it. Data was overwritten between teams. A missing seed account could stop a test cycle for days.</p>
-          <p>The simulator removed that queue. It runs on IBM ACE, the same runtime as the adapter, and is built only from DFDL models and ESQL. It listens on MQ and HTTP. It answers all 934 codes with the real wire format. The adapter cannot tell the difference, which is the point.</p>
+          <h2 id="simulator">The Wire-Protocol Simulator</h2>
+          <p>Contracts are half the story. Testing them needs the core, and most organisations have one or two shared core test environments. Projects queue for them, overwrite each other&rsquo;s data, and lose days to a missing seed account.</p>
+          <p>A simulator removes the queue. Build it on the same runtime as the adapter &mdash; here IBM ACE, from the generated DFDL models and ESQL. It listens on MQ (and HTTP if useful) and answers every catalogued code in the real wire format. The adapter should not be able to tell the difference; that is the point.</p>
 
           <h3>Encoding from the bytes</h3>
-          <p>Some consumers send EBCDIC, others ASCII. The simulator does not trust headers or configuration. The transaction code is numeric, and numeric digits look different in each encoding. One byte decides. The reply uses the same code page, and the MQ descriptor is set to match.</p>
+          <p>When some senders use EBCDIC and others ASCII, do not trust headers or configuration. If the transaction code is numeric, one byte decides: digits are <code>X'F0'</code>&ndash;<code>X'F9'</code> in EBCDIC and <code>X'30'</code>&ndash;<code>X'39'</code> in ASCII. Reply in the same code page and set the MQ descriptor to match.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>SimCore.esql (sketch)</span><span class="code-block__lang">esql</span></div>
@@ -452,20 +442,20 @@
   <span class="tok-c">-- Digits are X'F0'..X'F9' in EBCDIC and X'30'..X'39' in ASCII.</span>
   <span class="tok-k">DECLARE</span> b <span class="tok-t">BLOB</span> <span class="tok-k">SUBSTRING</span>(frame <span class="tok-k">FROM</span> CODE_OFFSET <span class="tok-k">FOR</span> <span class="tok-n">1</span>);
   <span class="tok-k">IF</span> b &gt;= X<span class="tok-s">'F0'</span> <span class="tok-k">AND</span> b &lt;= X<span class="tok-s">'F9'</span> <span class="tok-k">THEN</span>
-    <span class="tok-k">RETURN</span> <span class="tok-n">37</span>;              <span class="tok-c">-- EBCDIC</span>
+    <span class="tok-k">RETURN</span> EBCDIC_CCSID;       <span class="tok-c">-- e.g. 37 or 500</span>
   <span class="tok-k">END IF</span>;
-  <span class="tok-k">RETURN</span> ASCII_CCSID;        <span class="tok-c">-- the bank's ASCII code page</span>
+  <span class="tok-k">RETURN</span> ASCII_CCSID;          <span class="tok-c">-- the estate's ASCII code page</span>
 <span class="tok-k">END</span>;</code></pre>
           </div>
 
           <h3>Generic reply construction</h3>
-          <p>Writing 934 handlers was never an option. Instead, every reply is built the same way. The simulator serialises an empty reply from the DFDL model, parses it back so every field exists with a default, then fills each field by a fixed precedence:</p>
+          <p>Writing a handler per code does not scale past a few dozen. Build every reply the same way instead. Serialise an empty reply from the DFDL model, parse it back so every field exists with a default, then fill each field by a fixed precedence:</p>
           <ol>
             <li><strong>Echo</strong> &mdash; if the request has a field with the same name, copy it.</li>
             <li><strong>Naming convention</strong> &mdash; for the customer, account or posting the request refers to, take the value the field name implies: available balance, currency, IBAN, name.</li>
             <li><strong>Default</strong> &mdash; today&rsquo;s date or timestamp, otherwise blank or zero.</li>
           </ol>
-          <p>Repeating groups expand from the matching entity list &mdash; a customer&rsquo;s accounts, an account&rsquo;s postings. This gives a well-formed, ledger-consistent reply for every code with no per-code logic.</p>
+          <p>Repeating groups expand from the matching entity list &mdash; a customer&rsquo;s accounts, an account&rsquo;s postings. The result is a well-formed, ledger-consistent reply for every code with no per-code logic.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>SimResponder.esql (sketch)</span><span class="code-block__lang">esql</span></div>
@@ -488,7 +478,7 @@
           </div>
 
           <h3>A ledger, not canned replies</h3>
-          <p>Canned replies pass a happy-path test and nothing else. The simulator keeps a small stateful ledger seeded with fictitious customers and accounts in every interesting state &mdash; active, blocked, dormant, closed, debit-frozen, low balance, overdraft.</p>
+          <p>Canned replies pass a happy-path test and nothing else. Give the simulator a small stateful ledger, seeded with fictitious customers and accounts in every interesting state &mdash; active, blocked, dormant, closed, debit-frozen, low balance, overdrawn.</p>
           <table>
             <thead>
               <tr><th>Behaviour</th><th>What the simulator does</th></tr>
@@ -497,8 +487,8 @@
               <tr><td><strong>Verify</strong></td><td>Checks status and available balance, places a hold for the amount.</td></tr>
               <tr><td><strong>Post</strong></td><td>Releases the hold and posts principal, charge and tax legs.</td></tr>
               <tr><td><strong>Reverse</strong></td><td>Finds the original by reference and posts the opposite entries. Rejects if not found or already reversed.</td></tr>
-              <tr><td><strong>Repeat request</strong></td><td>Key = code + channel reference. A plain repeat is rejected as a duplicate.</td></tr>
-              <tr><td><strong>Possible-duplicate flag</strong></td><td>The original reply is replayed, byte for byte. Nothing is posted twice.</td></tr>
+              <tr><td><strong>Repeat request</strong></td><td>Idempotency key = code + channel reference. A plain repeat is rejected as a duplicate.</td></tr>
+              <tr><td><strong>Possible-duplicate flag</strong></td><td>The original reply is replayed byte for byte. Nothing is posted twice.</td></tr>
               <tr><td><strong>Maintenance</strong></td><td>Add, modify and delete answer OK and are stored for inspection.</td></tr>
               <tr><td><strong>Fault rules</strong></td><td>Timeouts, delays, forced rejections and field overrides, matched on code and field value.</td></tr>
             </tbody>
@@ -506,13 +496,13 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">Do not invent result codes silently</div>
-            <p>Some situations had no documented result code &mdash; hold not found, already reversed, duplicate reference. The simulator answers these in a reserved range that appears in no specification. The adapter maps that range to &ldquo;pending core confirmation&rdquo;, and each item sits on a review list for the core owner. Inventing plausible codes would have baked guesses into every consumer.</p>
+            <p>Some situations have no documented result code &mdash; hold not found, already reversed, duplicate reference. Answer these from a reserved range that appears in no specification. Map that range in the adapter to &ldquo;pending core confirmation&rdquo;, and put each item on a review list for the core owner. Inventing plausible codes bakes guesses into every consumer.</p>
           </div>
 
-          <p>One honest limit: the simulator is consistent with its own ledger. It does not reproduce every business rule of the real core. It replaces the core for integration and contract testing. It does not replace end-to-end acceptance on the real core before go-live.</p>
+          <p>Be clear about the limit. The simulator is consistent with its own ledger; it does not reproduce every business rule of the real core. It replaces the core for integration and contract testing. It does not replace acceptance testing on the real core before release.</p>
 
           <h2 id="contract-tests">Data-Driven Contract Tests</h2>
-          <p>Writing tests by hand for 1,280 operations does not scale. The test cases are generated, deterministically, from three inputs: the contracts, the internal mappings and the simulator seed. A filler knows how to build a valid request for any operation from a profile &mdash; a customer, their accounts, a card, a loan, a beneficiary.</p>
+          <p>Hand-written tests do not scale to hundreds of operations. Generate the cases deterministically from three inputs: the contracts, the internal mappings and the simulator seed. A request filler builds a valid body for any operation from a profile &mdash; a customer with accounts, a card, a loan, a beneficiary.</p>
 
           <table>
             <thead>
@@ -523,10 +513,10 @@
               <tr><td><strong>Negative</strong></td><td>Unknown account, inactive account, insufficient funds &mdash; the right <code>FAILED</code> category.</td></tr>
               <tr><td><strong>Protocol</strong></td><td>Missing headers, invalid body, wrong types &mdash; 400 problem details, nothing sent to the core.</td></tr>
               <tr><td><strong>Flow</strong></td><td>Verify &rarr; post &rarr; reverse, with balances checked before and after.</td></tr>
-              <tr><td><strong>Idempotency</strong></td><td>Same key and body replays; same key and different body is 409.</td></tr>
+              <tr><td><strong>Idempotency</strong></td><td>Same key and body replays; same key with a different body is 409.</td></tr>
               <tr><td><strong>Outcome</strong></td><td>A stored outcome is retrievable later by its id.</td></tr>
-              <tr><td><strong>Language</strong></td><td><code>Accept-Language: ar</code> returns Arabic text, correctly encoded.</td></tr>
-              <tr><td><strong>Timeout &amp; forced reject</strong></td><td>Fault rules on the simulator: 504 with unknown outcome; a forced decline mapped correctly.</td></tr>
+              <tr><td><strong>Localisation</strong></td><td>A second <code>Accept-Language</code> returns translated text, correctly encoded.</td></tr>
+              <tr><td><strong>Timeout &amp; forced reject</strong></td><td>Simulator fault rules: 504 with unknown outcome; a forced decline mapped correctly.</td></tr>
             </tbody>
           </table>
 
@@ -546,45 +536,45 @@
 }</code></pre>
           </div>
 
-          <p>The run has three phases. <strong>Main</strong> runs in parallel. <strong>Serial</strong> runs the balance-checked flows one at a time, because they assert exact balances. <strong>Scenario</strong> runs last: timeouts and forced rejections through simulator fault rules, each on a distinct code so it cannot disturb another case.</p>
-          <p>Schema mismatches are reported as <strong>findings</strong>, not failures. A mismatch usually means the catalogue, an override or the core disagree. That needs a decision, not a red build that people learn to ignore.</p>
-          <p>The total was 6,256 cases. A separate pass calls every one of the 934 codes raw on the simulator, then joins the results into a coverage matrix: reached through a business API, reached raw only, or not covered.</p>
+          <p>Run in three phases. <strong>Main</strong> runs in parallel. <strong>Serial</strong> runs the balance-checked flows one at a time, because they assert exact balances. <strong>Scenario</strong> runs last: timeouts and forced rejections through simulator fault rules, each on a distinct code so it cannot disturb another case.</p>
+          <p>Report schema mismatches as <strong>findings</strong>, not failures. A mismatch usually means the catalogue, an override or the core disagree. That needs a decision, not a red build people learn to ignore.</p>
+          <p>Finally, call every catalogued code raw on the simulator and join the results into a coverage matrix: reached through a business API, reached raw only, or not covered.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>coverage summary</span><span class="code-block__lang">text</span></div>
+            <div class="code-block__header"><span>coverage summary (illustrative)</span><span class="code-block__lang">text</span></div>
 <pre><code>Coverage                                  Codes
-Via business API (&gt;=1 case reached core)    860
-Via raw simulator call only                  74   <span class="tok-c"># the excluded technical codes</span>
+Via business API (&gt;=1 case reached core)    410
+Via raw simulator call only                  38   <span class="tok-c"># the excluded technical codes</span>
 Not covered                                   0
-Total                                       934</code></pre>
+Total                                       448</code></pre>
           </div>
 
           <h2 id="masking">Production Traffic as Test Data</h2>
-          <p>Seed data proves the mappings. Real traffic proves the edge cases nobody wrote down. A small masking tool takes exported channel logs that contain raw core messages and turns them into test data, inside the bank network only.</p>
+          <p>Seed data proves the mappings. Real traffic proves the edge cases nobody wrote down. A small masking tool can turn exported logs that contain raw core messages into test data &mdash; run inside the production security zone only.</p>
           <ul>
-            <li>Each message is split into fields using its layout from the catalogue. Each field is classified by name and description.</li>
-            <li>Replacements keep length and format, and are deterministic under a key. The same customer maps to the same test customer everywhere, so linked flows stay linked.</li>
-            <li>Card numbers move to a test range with valid check digits. Identity numbers keep their structure and check digit. Names stay in their script.</li>
-            <li>Anything the layout does not cover is masked as free text. Deny by default.</li>
-            <li>A leak check fails the run if any original value survives, or if anything looks like a live card number. The report shows counts and locations, never values.</li>
+            <li>Split each message into fields using its catalogue layout. Classify each field by name and description.</li>
+            <li>Replace values deterministically under a key, keeping length and format. The same customer maps to the same test customer everywhere, so linked flows stay linked.</li>
+            <li>Move card numbers to a test range with valid check digits. Keep the structure and check digit of identity numbers. Keep names in their original script.</li>
+            <li>Mask anything the layout does not cover as free text. Deny by default.</li>
+            <li>Fail the run if any original value survives, or if anything looks like a live card number. Report counts and locations, never values.</li>
           </ul>
-          <p>The leak check proves the classified values are gone. It cannot prove the classification is complete. A security sample review of the output is part of the procedure.</p>
+          <p>The leak check proves the classified values are gone. It cannot prove the classification is complete, so a security sample review of the output belongs in the procedure.</p>
 
           <h2 id="pitfalls">Pitfalls</h2>
 
           <div class="callout callout--danger">
             <div class="callout__title">Trusting declared lengths</div>
-            <p>Most fixed-length integration bugs start with a buffer sized from a total row. Compute lengths from the field list, compare with every declared figure, and refuse to generate anything until the difference has a recorded decision.</p>
+            <p>Most fixed-length integration bugs start with a buffer sized from a total row. Compute lengths from the field list, compare with every declared figure, and refuse to generate anything until each difference has a recorded decision.</p>
           </div>
 
           <div class="callout callout--warn">
             <div class="callout__title">Letting core vocabulary into the contract</div>
-            <p>One abbreviation in a public schema becomes a dependency for every consumer. It survives any core change. The leak check is cheap; run it on every build, including descriptions and examples.</p>
+            <p>One abbreviation in a public schema becomes a dependency for every consumer, and it survives any core change. The leak check is cheap; run it on every build, including descriptions and examples.</p>
           </div>
 
           <div class="callout callout--warn">
             <div class="callout__title">Putting rules in the adapter</div>
-            <p>A thin adapter becomes a fat one one &ldquo;small rule&rdquo; at a time. Then the bank has two places that decide eligibility. Composite operations may sequence steps and stop at the first failure. They may not decide anything the core decides.</p>
+            <p>A thin adapter becomes a fat one, one &ldquo;small rule&rdquo; at a time. Then two places decide eligibility. Composite operations may sequence steps and stop at the first failure. They may not decide anything the core decides.</p>
           </div>
 
           <div class="callout callout--warn">
@@ -597,19 +587,19 @@ Total                                       934</code></pre>
           <ol class="step-list">
             <li>
               <h4>Compile the specifications into a catalogue</h4>
-              <p>Parse every message table into one JSON catalogue. Check every layout against its declared lengths. Record overrides and spec errors with their reasoning. Send the defect register to the core owner.</p>
+              <p>Parse every message table into one JSON catalogue. Check every layout against its declared lengths. Record overrides and spec errors with their reasoning, and send the defect register to the core owner.</p>
             </li>
             <li>
               <h4>Split codes into business domains</h4>
-              <p>Assign each code to a domain by code range, then title keywords. One domain becomes one API, one DFDL library and one adapter application &mdash; also a natural bulkhead.</p>
+              <p>Assign each code to a domain by code range, then by title keywords. One domain becomes one API, one DFDL library and one adapter application &mdash; also a natural bulkhead.</p>
             </li>
             <li>
               <h4>Write and review the design layer</h4>
-              <p>Operation per code, resource paths, audience, exclusions with reasons, vocabulary and flows. Review it per domain, with the consumers in the room.</p>
+              <p>Operation per code, resource paths, audience, exclusions with reasons, vocabulary and flows. Review it per domain, with consumers in the room.</p>
             </li>
             <li>
               <h4>Build the generator with a leak check and a drift check</h4>
-              <p>Emit contracts, flows, internal mappings and DFDL models. Validate every contract. Fail on any core name in public output. Fail on any difference between committed and regenerated files.</p>
+              <p>Emit contracts, flows, internal mappings and DFDL models. Validate every contract. Fail on any core name in public output, and on any difference between committed and regenerated files.</p>
             </li>
             <li>
               <h4>Fix the outcome model before the first consumer</h4>
@@ -617,7 +607,7 @@ Total                                       934</code></pre>
             </li>
             <li>
               <h4>Build the simulator on the adapter&rsquo;s runtime</h4>
-              <p>Same DFDL models, real wire format, encoding detected from bytes, generic reply construction, a stateful ledger, idempotency and fault rules. Sweep every code with a default request.</p>
+              <p>Same DFDL models, real wire format, encoding detected from bytes, generic reply construction, a stateful ledger, idempotency, fault rules and a reserved range for undocumented outcomes. Sweep every code with a default request.</p>
             </li>
             <li>
               <h4>Generate the contract tests and publish coverage</h4>
@@ -625,7 +615,7 @@ Total                                       934</code></pre>
             </li>
             <li>
               <h4>Feed real traffic back in, safely</h4>
-              <p>Mask production exports inside the bank, leak-check them, and turn them into seed data and replay cases. Every surprise becomes a catalogue fix or a new case.</p>
+              <p>Mask production exports inside the production zone, leak-check them, and turn them into seed data and replay cases. Every surprise becomes a catalogue fix or a new case.</p>
             </li>
           </ol>
 

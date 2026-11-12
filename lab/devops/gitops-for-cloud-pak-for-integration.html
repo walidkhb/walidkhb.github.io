@@ -5,10 +5,10 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitOps for Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Moving IBM App Connect Enterprise, IBM MQ and API Connect delivery from push pipelines to pull-based GitOps on OpenShift: GitLab CI that never touches a cluster, one Argo CD per cluster, one application per platform per environment, layered configuration with content hashes, pre-sync MQSC Jobs, compliance as shared CI includes and an API registry.">
+  <title>GitOps for IBM Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A practical guide to moving IBM App Connect Enterprise, IBM MQ and API Connect delivery from push pipelines to pull-based GitOps on OpenShift: GitLab CI that never touches a cluster, one Argo CD per cluster, one application per platform per environment, layered configuration with content hashes, pre-sync MQSC Jobs, compliance as shared CI includes and an API registry.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="GitOps for Cloud Pak for Integration &mdash; Lab">
+  <meta property="og:title" content="GitOps for IBM Cloud Pak for Integration &mdash; Lab">
   <meta property="og:description" content="Ten rules for moving ACE, MQ and API Connect delivery to pull-based GitOps with GitLab CI and Argo CD, with compliance built into shared CI templates.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/devops/gitops-for-cloud-pak-for-integration.html">
@@ -16,7 +16,7 @@
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="GitOps for Cloud Pak for Integration &mdash; Lab">
+  <meta name="twitter:title" content="GitOps for IBM Cloud Pak for Integration &mdash; Lab">
   <meta name="twitter:description" content="From push pipelines to pull-based GitOps for ACE, MQ and API Connect on OpenShift. GitLab CI + Argo CD, ten rules, compliance as CI includes.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/devops/gitops-for-cloud-pak-for-integration.html">
@@ -37,8 +37,8 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "GitOps for Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery",
-    "description": "Moving IBM App Connect Enterprise, IBM MQ and API Connect delivery from push pipelines to pull-based GitOps on OpenShift: GitLab CI that never touches a cluster, one Argo CD per cluster, one application per platform per environment, layered configuration with content hashes, pre-sync MQSC Jobs, compliance as shared CI includes and an API registry.",
+    "headline": "GitOps for IBM Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery",
+    "description": "A practical guide to moving IBM App Connect Enterprise, IBM MQ and API Connect delivery from push pipelines to pull-based GitOps on OpenShift: GitLab CI that never touches a cluster, one Argo CD per cluster, one application per platform per environment, layered configuration with content hashes, pre-sync MQSC Jobs, compliance as shared CI includes and an API registry.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-12",
     "author": {
@@ -90,8 +90,8 @@
         <div>
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform</a><span>/</span>GitOps for Cloud Pak for Integration</div>
           <span class="overline">Lab Article</span>
-          <h1>GitOps for Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery</h1>
-          <p class="lead">Most integration estates still deploy the way the ESB era taught them: a pipeline pushes to a server, or a person does. Moving IBM App Connect Enterprise, IBM MQ and API Connect onto OpenShift does not fix that by itself. This article covers the defects of a push model, the ten rules we replaced it with, and the YAML that makes those rules stick &mdash; including compliance checks that teams get by including one file.</p>
+          <h1>GitOps for IBM Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery</h1>
+          <p class="lead">Most integration estates still deploy the way the ESB era taught them: a pipeline pushes to a server, or a person does. Moving IBM App Connect Enterprise, IBM MQ and API Connect onto OpenShift does not fix that by itself. This guide covers the typical defects of a push model, ten rules that replace it, and the YAML that makes those rules stick &mdash; including compliance checks that teams get by including one file.</p>
         </div>
       </div>
     </div>
@@ -105,7 +105,7 @@
           <div class="lab-article__toc-title">On this page</div>
           <ul class="lab-article__toc-list">
             <li><a href="#overview">Overview</a></li>
-            <li><a href="#push-defects">What the push model got wrong</a></li>
+            <li><a href="#push-defects">What a push model gets wrong</a></li>
             <li><a href="#rules">Ten rules</a></li>
             <li><a href="#topology">Repositories, environments, Argo CD</a></li>
             <li><a href="#applications">One application per platform</a></li>
@@ -126,29 +126,30 @@
             <span class="article-meta__item"><strong>Stack:</strong> IBM Cloud Pak for Integration / App Connect Enterprise 12 / IBM MQ / API Connect / Red Hat OpenShift GitOps (Argo CD) / GitLab CI / Helm</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~13 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 12, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
           <p>Cloud Pak for Integration puts integration runtimes on Kubernetes. The ACE operator runs integration servers as custom resources. The MQ operator runs queue managers. API Connect publishes products to catalogs. All of it is declarative. That makes GitOps possible. It does not make it happen.</p>
-          <p>At a Saudi bank, the first move to OpenShift kept the old habits. A pipeline watched one repository. On every push it rendered the configuration and applied it to the cluster. Other pipelines were started by hand. API products were published by a separate manual run. It worked most days. On the other days it was hard to say what was running, or why.</p>
-          <p>We replaced it with a pull model. GitLab CI builds and tests. Argo CD, one instance per cluster, reconciles each cluster to its own environment repository. Compliance checks live in shared CI templates. An API registry records every API, its consumers and its SLA. The rest of this article is the detail.</p>
+          <p>A common first move to OpenShift keeps the old habits. A pipeline watches one repository. On every push it renders the configuration and applies it to the cluster. Other pipelines are started by hand. API products are published by a separate manual run. It works most days. On the other days it is hard to say what is running, or why.</p>
+          <p>The alternative is a pull model. CI (GitLab CI in the examples) builds and tests. Argo CD, one instance per cluster, reconciles each cluster to its own environment repository. Compliance checks live in shared CI templates. An API registry records every API, its consumers and its SLA. The rest of this article is the detail.</p>
           <p>Two neighbouring articles cover adjacent ground. <a href="tekton-and-argocd.html">Tekton &amp; ArgoCD</a> covers the generic pipeline shape, secrets and image signing. <a href="multi-cluster-gitops.html">Multi-Cluster GitOps</a> covers hub-spoke fleets with ApplicationSet generators. This one is specific to integration runtimes, and it deliberately does <em>not</em> use a hub.</p>
 
-          <h2 id="push-defects">What the Push Model Got Wrong</h2>
-          <p>Start with an honest defect list. Ours came from reading the pipeline code and comparing it with what was on the cluster. Every item below was observed, not assumed.</p>
+          <h2 id="push-defects">What a Push Model Gets Wrong</h2>
+          <p>Start with an honest defect list. Build it by reading the pipeline code and comparing it with what is actually on the cluster, not from what the pipeline is supposed to do. The items below are the defects that appear most often in push-based integration pipelines.</p>
 
           <table>
             <thead>
-              <tr><th>Defect</th><th>What happened</th><th>Consequence</th></tr>
+              <tr><th>Defect</th><th>What happens</th><th>Consequence</th></tr>
             </thead>
             <tbody>
-              <tr><td><strong>Whole-environment apply</strong></td><td>Every push to the main branch re-rendered and re-applied the entire environment: MQ, API Connect, every integration server</td><td>One team&rsquo;s change redeployed every team. One broken file blocked all deployments.</td></tr>
-              <tr><td><strong>Wrong revision</strong></td><td>The trigger passed the commit SHA. The pipeline ignored it and cloned the branch head.</td><td>A run deployed whatever the branch held at run time, not the commit that triggered it. No traceability.</td></tr>
-              <tr><td><strong>No prune</strong></td><td>Resources were applied, never pruned</td><td>Deleting a file in Git changed nothing. Orphans accumulated. Rollback was manual.</td></tr>
-              <tr><td><strong>Mutable builds</strong></td><td>BAR files were published as <code>latest</code>, followed by a rollout restart</td><td>The tested build could not be promoted unchanged. There was no known version to roll back to.</td></tr>
-              <tr><td><strong>Manual side doors</strong></td><td>Per-platform pipelines accepted any branch and any path</td><td>Unreviewed code could reach a cluster. The cluster drifted from Git.</td></tr>
-              <tr><td><strong>Manual API publishing</strong></td><td>API products were published by a separate, hand-started run</td><td>APIs were not promoted with the integrations behind them</td></tr>
+              <tr><td><strong>Whole-environment apply</strong></td><td>Every push to the main branch re-renders and re-applies the entire environment: MQ, API Connect, every integration server</td><td>One team&rsquo;s change redeploys every team. One broken file blocks all deployments.</td></tr>
+              <tr><td><strong>Wrong revision</strong></td><td>The trigger passes the commit SHA. The pipeline ignores it and clones the branch head.</td><td>A run deploys whatever the branch holds at run time, not the commit that triggered it. No traceability.</td></tr>
+              <tr><td><strong>No prune</strong></td><td>Resources are applied, never pruned</td><td>Deleting a file in Git changes nothing. Orphans accumulate. Rollback is manual.</td></tr>
+              <tr><td><strong>Mutable builds</strong></td><td>BAR files are published as <code>latest</code>, followed by a rollout restart</td><td>The tested build cannot be promoted unchanged. There is no known version to roll back to.</td></tr>
+              <tr><td><strong>Manual side doors</strong></td><td>Per-platform pipelines accept any branch and any path</td><td>Unreviewed code can reach a cluster. The cluster drifts from Git.</td></tr>
+              <tr><td><strong>Manual API publishing</strong></td><td>API products are published by a separate, hand-started run</td><td>APIs are not promoted with the integrations behind them</td></tr>
             </tbody>
           </table>
 
@@ -158,10 +159,10 @@
           </div>
 
           <h2 id="rules">Ten Rules</h2>
-          <p>We wrote the target as ten normative rules. Each one closes a defect or a class of defects. Short rules are easier to enforce in code and easier to defend in review.</p>
+          <p>Write the target as ten normative rules. Each one closes a defect or a class of defects. Short rules are easier to enforce in code and easier to defend in review.</p>
 
           <ol class="step-list">
-            <li><h4>CI never touches a cluster</h4><p>GitLab CI builds, tests, publishes immutable artefacts and opens merge requests. It holds no cluster credentials. Only Argo CD changes platform namespaces.</p></li>
+            <li><h4>CI never touches a cluster</h4><p>CI builds, tests, publishes immutable artefacts and opens merge requests. It holds no cluster credentials. Only Argo CD changes platform namespaces.</p></li>
             <li><h4>One Argo CD per cluster, one configuration repository per environment</h4><p>Each cluster&rsquo;s Argo CD reads only its own environment repository. Environments never share a repository or a branch.</p></li>
             <li><h4>One Argo application per platform per environment</h4><p>The blast radius of any change is one platform in one environment. Each platform has its own AppProject and namespace.</p></li>
             <li><h4>No floating versions</h4><p>Runtime, BAR, chart and image versions are pinned. The chart and the tooling reject <code>latest</code>, ranges and empty values.</p></li>
@@ -170,11 +171,11 @@
             <li><h4>Configuration is readable, layered and hashed</h4><p>Three layers of readable sources, packaged with content hashes so a configuration change restarts exactly the servers that use it.</p></li>
             <li><h4>MQ objects are applied by an idempotent pre-sync Job</h4><p>Queues and channels belong to the platform that uses them and change with it.</p></li>
             <li><h4>API products publish after servers are healthy</h4><p>An API is never live in front of an integration that is not.</p></li>
-            <li><h4>Secrets sit behind a provider switch</h4><p>Credentials stay where they are today, but the chart reads them through a <code>secrets.provider</code> switch. Moving to Vault later changes one value, not the layout.</p></li>
+            <li><h4>Secrets sit behind a provider switch</h4><p>Credentials can stay in their current store, but the chart reads them through a <code>secrets.provider</code> switch. Moving to Vault later changes one value, not the layout.</p></li>
           </ol>
 
           <h2 id="topology">Repositories, Environments, Argo CD</h2>
-          <p>The repository model is the architecture. Get it wrong and every rule above becomes a convention rather than a fact. We use five kinds of repository, each with one owner.</p>
+          <p>The repository model is the architecture. Get it wrong and every rule above becomes a convention rather than a fact. Five kinds of repository are enough, each with one owner.</p>
 
           <table>
             <thead>
@@ -326,7 +327,7 @@
             <div class="diagram__caption">Figure 1 &mdash; Pull-based delivery topology: CI builds and opens merge requests; each cluster&rsquo;s Argo CD pulls only its own environment repository; integration servers download pinned BAR versions from the artefact repository at start-up</div>
           </div>
 
-          <p>Why one Argo CD per cluster rather than a hub? Two reasons. First, environment isolation becomes physical. The prod Argo CD has no credentials for dev, and the dev Argo CD has none for prod. Second, a hub is a shared failure domain and a shared approval surface. For a regulated bank, a separate production control plane is easier to explain than a hub with careful RBAC. The trade-off is more Argo CD instances to upgrade. Red Hat OpenShift GitOps makes that an operator upgrade, not a project.</p>
+          <p>Why one Argo CD per cluster rather than a hub? Two reasons. First, environment isolation becomes physical. The prod Argo CD has no credentials for dev, and the dev Argo CD has none for prod. Second, a hub is a shared failure domain and a shared approval surface. In a regulated environment, a separate production control plane is easier to explain than a hub with careful RBAC. The trade-off is more Argo CD instances to upgrade. Red Hat OpenShift GitOps makes that an operator upgrade, not a project.</p>
 
           <h2 id="applications">One Application per Platform per Environment</h2>
           <p>A &ldquo;platform&rdquo; here is a business-aligned group of integration servers, their configurations, their MQ objects and their API products. Each platform gets one folder in each environment repository. An ApplicationSet in that cluster turns each folder into exactly one Argo CD Application.</p>
@@ -392,7 +393,7 @@
 
           <h2 id="config-layers">Configuration in Three Layers</h2>
           <p>ACE configuration is the hard part. Policy projects, server configuration, generic files and credentials all become operator <code>Configuration</code> resources. Many teams commit them as opaque base64 zips. Nobody can review a zip in a merge request.</p>
-          <p>We keep configuration as readable sources in three layers:</p>
+          <p>Keep configuration as readable sources in three layers:</p>
           <ul>
             <li><strong>Environment-shared</strong> (<code>shared/</code>) &mdash; runtime version, common policies, defaults. Owned by the platform team.</li>
             <li><strong>Platform</strong> (<code>platforms/&lt;name&gt;/config/</code>) &mdash; policy projects and server configuration for that platform. Owned by the delivery team.</li>
@@ -413,7 +414,7 @@
       <span class="tok-p">-</span> <span class="tok-s">orders-server-conf</span>
       <span class="tok-p">-</span> <span class="tok-s">common-policies</span>                 <span class="tok-c"># referenced, owned by shared/</span>
 <span class="tok-k">secrets:</span>
-  <span class="tok-k">provider:</span> <span class="tok-s">repo</span>                         <span class="tok-c"># today's mechanism; later: vault, same layout</span></code></pre>
+  <span class="tok-k">provider:</span> <span class="tok-s">repo</span>                         <span class="tok-c"># current store; later: vault, same layout</span></code></pre>
           </div>
 
           <p>The hash does the restart work. A <code>Configuration</code> name includes the first characters of its content hash. Change one policy file and the name changes. The integration server&rsquo;s <code>configurations</code> list changes with it. The operator rolls only the servers that reference it. No manual rollout restart. No restarting servers whose configuration did not change.</p>
@@ -440,7 +441,7 @@
 
           <div class="callout callout--note">
             <div class="callout__title">Why not a config-management plugin?</div>
-            <p>Argo CD can run custom plugins to render manifests. We avoided them. A plugin is code inside the repo server that nobody reviews with the change, and it makes local rendering differ from cluster rendering. Plain Helm plus a checked, generated directory renders the same everywhere. The pipeline can run <code>helm template</code> on every merge request and show the diff.</p>
+            <p>Argo CD can run custom plugins to render manifests. Avoid them here. A plugin is code inside the repo server that nobody reviews with the change, and it makes local rendering differ from cluster rendering. Plain Helm plus a checked, generated directory renders the same everywhere. The pipeline can run <code>helm template</code> on every merge request and show the diff.</p>
           </div>
 
           <h2 id="mq-and-apis">MQ Objects and API Products</h2>
@@ -533,7 +534,7 @@
           </div>
 
           <h2 id="compliance">Compliance as a CI Include</h2>
-          <p>Delivery is only half the story. The other half is what must be true before a version is allowed to move. We do not ask each team to build that. We ship it as shared, versioned CI templates. A delivery project includes them and sets a handful of variables &mdash; five to ten, typically.</p>
+          <p>Delivery is only half the story. The other half is what must be true before a version is allowed to move. Do not ask each team to build that. Ship it as shared, versioned CI templates owned by the platform team. A delivery project includes them and sets a handful of variables &mdash; five to ten, typically.</p>
 
           <table>
             <thead>
@@ -583,7 +584,7 @@
 
           <h2 id="api-registry">The API Registry</h2>
           <p>Auditors and partners ask the same question in different forms: every API you publish, to whom, under what SLA. Without a registry, answering takes days of spreadsheets and email. With one, it takes minutes.</p>
-          <p>Ours is a Git repository of YAML files, one per API, validated against a JSON Schema on every commit. CI also checks uniqueness of IDs and that active entries point to something that exists. Retired APIs move to a <code>deprecated/</code> folder with a sunset date. They are never deleted.</p>
+          <p>The registry does not need a product. A Git repository of YAML files works well: one file per API, validated against a JSON Schema on every commit. CI also checks uniqueness of IDs and that active entries point to something that exists. Retired APIs move to a <code>deprecated/</code> folder with a sunset date. They are never deleted.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>registry/active/API-PAYMENTS-014.yaml</span><span class="code-block__lang">yaml</span></div>
@@ -607,10 +608,10 @@
 <span class="tok-k">sunset_date:</span> <span class="tok-n">null</span></code></pre>
           </div>
 
-          <p>The registry is wired into governance, not beside it. Our lifecycle has five stages and four governance gates. A draft entry with status <code>planned</code> is created when the design is approved. The entry must exist and validate before the pre-production gate will pass. The CI template checks that <code>API_REGISTRY_ID</code> points to a valid entry, and that the SLO the k6 job enforces is the SLO the registry promises. One number, two uses.</p>
+          <p>Wire the registry into governance, not beside it. Create a draft entry with status <code>planned</code> when the design is approved at the first review gate. Require the entry to exist and validate before the pre-production review gate will pass. The CI template checks that <code>API_REGISTRY_ID</code> points to a valid entry, and that the SLO the k6 job enforces is the SLO the registry promises. One number, two uses.</p>
 
           <h2 id="migration">Migrating Beside the Old System</h2>
-          <p>We did not modify the old push repository. Every team depended on it, and changing it under them was the riskiest option on the table. The new platform was built beside it and platforms moved one at a time.</p>
+          <p>Do not rewrite the old push repository in place. Every team depends on it, and changing it under them is the riskiest option on the table. Build the new platform beside it and move platforms one at a time.</p>
           <ol class="step-list">
             <li><h4>Bootstrap once per cluster</h4><p>Install the OpenShift GitOps operator and the first Argo CD instance from the console. That is the last cluster-admin action. Everything after is Git.</p></li>
             <li><h4>Prove an empty platform syncs green</h4><p>An ApplicationSet over an empty <code>platforms/</code> folder, AppProjects and namespaces. Boring is the goal.</p></li>

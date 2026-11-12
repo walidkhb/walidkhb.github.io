@@ -107,11 +107,12 @@
             <span class="article-meta__item"><strong>Stack:</strong> Axon Framework 4.9 / Spring Boot 3.3 / Kafka 3.7 / PostgreSQL 15 / Testcontainers 1.19</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Aug 8, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="why-sagas">Why sagas, not 2PC</h2>
-          <p>A payment initiation at SAIB crosses at least four bounded contexts before it settles: fraud screening, liquidity reservation, IPS network submission, and notification delivery. Each context has its own database, its own team, and its own deployment cadence. They cannot share a transaction boundary.</p>
+          <p>A payment initiation at a bank typically crosses at least four bounded contexts before it settles: fraud screening, liquidity reservation, IPS network submission, and notification delivery. Each context has its own database, its own team, and its own deployment cadence. They cannot share a transaction boundary.</p>
           <p>Two-phase commit (2PC) was the industry answer to this problem for two decades. The XA protocol locks resources across participants during the prepare phase and releases them on commit or rollback. At the scale and latency profile of a modern payment system, 2PC has two fatal problems. First, it holds locks across network calls &mdash; if the IPS network submission times out at 800ms, every row touched in the fraud and liquidity contexts is locked for those 800ms, blocking concurrent payments. Second, XA requires all participants to implement the XA protocol, which eliminates Kafka, most REST services, and any external party. In practice, IPS is a SAMA-operated network with a SWIFT-style asynchronous API. It cannot participate in a synchronous XA commit.</p>
           <p>The saga pattern replaces the distributed transaction with a sequence of local transactions, each of which publishes an event or sends a command that triggers the next step. Failures are handled by compensating transactions &mdash; explicit, designed rollback actions for each step. The trade-off is clear: you give up atomicity and get availability and decoupling in return. For a payment system, that is the right trade-off. A payment that partially fails and rolls back cleanly is better than a payment system that deadlocks under load.</p>
 
@@ -322,7 +323,7 @@
             </li>
             <li>
               <h4>Order compensations in reverse saga order</h4>
-              <p>If steps A &rarr; B &rarr; C all succeeded and step D failed, compensate in the order C&prime; &rarr; B&prime; &rarr; A&prime;. Do not compensate A before compensating C &mdash; earlier steps may have created dependencies that the later steps rely on. At SAIB, the IPS submission acknowledgement contains the IPS reference number that the liquidity compensation uses; releasing liquidity before the IPS rejection is confirmed loses that reference.</p>
+              <p>If steps A &rarr; B &rarr; C all succeeded and step D failed, compensate in the order C&prime; &rarr; B&prime; &rarr; A&prime;. Do not compensate A before compensating C &mdash; earlier steps may have created dependencies that the later steps rely on. In a typical IPS integration, the IPS submission acknowledgement contains the IPS reference number that the liquidity compensation uses; releasing liquidity before the IPS rejection is confirmed loses that reference.</p>
             </li>
             <li>
               <h4>Compensations are business events, not technical housekeeping</h4>
@@ -340,7 +341,7 @@
           </div>
 
           <h2 id="ips-example">IPS payment saga end-to-end</h2>
-          <p>A concrete walkthrough of the happy path and the two most common failure paths for an outbound IPS credit transfer at SAIB.</p>
+          <p>A concrete walkthrough of the happy path and the two most common failure paths for an outbound IPS credit transfer.</p>
 
           <div class="diagram" role="img" aria-label="Orchestration saga state machine for IPS payment: PaymentInitiated → FraudCheckPassed → LiquidityReserved → IPSSubmitted → PaymentSettled with failure paths to compensation states">
             <div class="diagram__inner">
@@ -467,7 +468,7 @@
 
           <div class="callout callout--note">
             <div class="callout__title">The dead-letter queue is a design requirement, not a failure mode</div>
-            <p>Every saga implementation that touches an external network must design for the <code>UNKNOWN</code> state. Build the dead-letter queue, the operational dashboard, and the resolution workflow before the system goes live. At SAIB, the IPS operations team has a reconciliation SLA of 15 minutes for unknown-state payments during business hours. That SLA is achievable only if the tooling was built ahead of go-live.</p>
+            <p>Every saga implementation that touches an external network must design for the <code>UNKNOWN</code> state. Build the dead-letter queue, the operational dashboard, and the resolution workflow before the system goes live. A typical target: the IPS operations team has a reconciliation SLA of 15 minutes for unknown-state payments during business hours. That SLA is achievable only if the tooling was built ahead of go-live.</p>
           </div>
 
           <h2 id="idempotency">Idempotency in saga steps</h2>

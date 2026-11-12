@@ -121,6 +121,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Keycloak 24 / Kong 3.7 / Spring Security 6.3 / IBM API Connect 10.0.7 / SAMA Open Banking Phase 2</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~16 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -167,7 +168,7 @@
             <div class="code-block__header"><span>par-pis-request.http</span><span class="code-block__lang">http</span></div>
 <pre><code><span class="tok-c"># Step 1: POST authorization_details to PAR endpoint</span>
 POST /par HTTP/1.1
-Host: auth.openbanking.saib.sa
+Host: auth.openbanking.bank.example
 Content-Type: application/x-www-form-urlencoded
 Authorization: Basic dHBwLWNsaWVudC1pZDpjbGllbnQtc2VjcmV0
 
@@ -180,7 +181,7 @@ Authorization: Basic dHBwLWNsaWVudC1pZDpjbGllbnQtc2VjcmV0
 &amp;<span class="tok-k">authorization_details</span>=%5B%7B
   <span class="tok-s">"type"</span>%3A<span class="tok-s">"sama_payment_initiation"</span>%2C
   <span class="tok-s">"actions"</span>%3A%5B<span class="tok-s">"initiate"</span>%5D%2C
-  <span class="tok-s">"locations"</span>%3A%5B<span class="tok-s">"https%3A%2F%2Fapi.openbanking.saib.sa%2Fpis"</span>%5D%2C
+  <span class="tok-s">"locations"</span>%3A%5B<span class="tok-s">"https%3A%2F%2Fapi.openbanking.bank.example%2Fpis"</span>%5D%2C
   <span class="tok-s">"instructedAmount"</span>%3A%7B
     <span class="tok-s">"amount"</span>%3A<span class="tok-s">"500.00"</span>%2C
     <span class="tok-s">"currency"</span>%3A<span class="tok-s">"SAR"</span>
@@ -206,7 +207,7 @@ Content-Type: application/json
 GET /authorize?client_id=tpp-client-id
   &amp;request_uri=urn%3Aietf%3Aparams%3Aoauth%3Arequest_uri%3Abwc4JQ-ESc0w8wM7M9K7w5sNe3vh
   HTTP/1.1
-Host: auth.openbanking.saib.sa</code></pre>
+Host: auth.openbanking.bank.example</code></pre>
           </div>
 
           <div class="diagram" role="img" aria-label="FAPI 2.0 authorization flow: PAR, consent, JARM, DPoP token, resource access">
@@ -323,7 +324,7 @@ Host: auth.openbanking.saib.sa</code></pre>
 {
   <span class="tok-s">"jti"</span>: <span class="tok-s">"e1e24b80-7d1d-4f6a-9cb0-2a5b3c1d4e5f"</span>,  <span class="tok-c">// unique nonce; must be cached + rejected if replayed</span>
   <span class="tok-s">"htm"</span>: <span class="tok-s">"GET"</span>,                                   <span class="tok-c">// must match actual HTTP method</span>
-  <span class="tok-s">"htu"</span>: <span class="tok-s">"https://api.openbanking.saib.sa/pis/v1/payment-consents"</span>,  <span class="tok-c">// no query string</span>
+  <span class="tok-s">"htu"</span>: <span class="tok-s">"https://api.openbanking.bank.example/pis/v1/payment-consents"</span>,  <span class="tok-c">// no query string</span>
   <span class="tok-s">"iat"</span>: <span class="tok-n">1725494400</span>,                              <span class="tok-c">// issued-at; server rejects if skew > 60s</span>
   <span class="tok-s">"ath"</span>: <span class="tok-s">"base64url(sha256(access_token_bytes))"</span>   <span class="tok-c">// RFC 9449 §4.3: bind proof to specific token</span>
 }
@@ -336,7 +337,7 @@ http
       .decoder(NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build())
     )
     .opaqueToken(opaque -&gt; opaque
-      .introspectionUri(<span class="tok-s">"https://auth.openbanking.saib.sa/realms/openbanking/protocol/openid-connect/token/introspect"</span>)
+      .introspectionUri(<span class="tok-s">"https://auth.openbanking.bank.example/realms/openbanking/protocol/openid-connect/token/introspect"</span>)
       .introspectionClientCredentials(clientId, clientSecret)
     )
   )

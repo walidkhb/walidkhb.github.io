@@ -128,6 +128,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> ISO 20022 / SWIFT MT / IBM ACE 12 / Apache Camel 4 / Symitar / SAMA</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Jul 25, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -292,7 +293,7 @@
 
           <h2 id="canonical-pivot">Canonical pivot model</h2>
           <p>The safest architecture for a bank that speaks multiple message formats &mdash; MT inbound from SWIFT, pacs.008 outbound to IPS, pain.001 inbound from corporate channels &mdash; is a <strong>canonical pivot</strong>: all messages are translated to a single internal representation at the integration boundary, and all outbound translation happens from the canonical form. This avoids N&times;M mappings (where N is the number of input formats and M is the number of output schemes).</p>
-          <p>The canonical form for a payment at SAIB is richer than any single ISO 20022 message type because it carries fields needed by the internal audit trail, risk scoring, and sanctions screening that no external message format requires. Keep the canonical form internal &mdash; it is never serialised to disk as-is, only as the source of outbound message generation.</p>
+          <p>The canonical form for a payment inside a bank is richer than any single ISO 20022 message type because it carries fields needed by the internal audit trail, risk scoring, and sanctions screening that no external message format requires. Keep the canonical form internal &mdash; it is never serialised to disk as-is, only as the source of outbound message generation.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>canonical-payment-v2.xsd (key elements)</span><span class="code-block__lang">xsd</span></div>

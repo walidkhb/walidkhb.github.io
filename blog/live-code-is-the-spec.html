@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Live Code Is the Spec: Recovering Business Rules from a Legacy ESB Before You Rewrite It &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Rewrites of legacy integration platforms fail because the specification everyone trusts is not what runs in production. Before rewriting an ESB, recover its live behaviour as numbered business rules, rule on every difference, and make parity the cut-over criterion.">
+  <title>The Live Code Is the Spec: Recover Business Rules Before You Rewrite Legacy Integration &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Rewrites of legacy integration fail because the specification everyone trusts is not what runs in production. Before rewriting, recover live behaviour as numbered business rules, rule on every difference, and make parity the cut-over criterion. A guide to the decisions leaders own.">
   <link rel="canonical" href="https://www.wbadawi.info/blog/live-code-is-the-spec.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:image:width" content="1200">
@@ -14,8 +14,8 @@
   <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
 
   <meta property="og:type" content="article">
-  <meta property="og:title" content="The Live Code Is the Spec: Recovering Business Rules from a Legacy ESB Before You Rewrite It &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Before rewriting an ESB, recover its live behaviour as numbered business rules, rule on every difference, and make parity the cut-over criterion.">
+  <meta property="og:title" content="The Live Code Is the Spec: Recover Business Rules Before You Rewrite Legacy Integration &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Before rewriting legacy integration, recover its live behaviour as numbered business rules, rule on every difference, and make parity the cut-over criterion.">
   <meta property="og:url" content="https://www.wbadawi.info/blog/live-code-is-the-spec.html">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
@@ -55,7 +55,8 @@
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": "The Live Code Is the Spec: Recovering Business Rules from a Legacy ESB Before You Rewrite It",
+    "headline": "The Live Code Is the Spec: Recover Business Rules Before You Rewrite Legacy Integration",
+    "description": "Rewrites of legacy integration fail because the specification everyone trusts is not what runs in production. Before rewriting, recover live behaviour as numbered business rules, rule on every difference, and make parity the cut-over criterion.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-12",
     "author": {
@@ -102,7 +103,7 @@
     <div class="container">
       <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="digital-transformation.html">Digital Transformation</a><span>/</span>The Live Code Is the Spec</div>
       <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Digital Transformation &middot; November 12, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
-      <h1 style="max-width:820px;">The Live Code Is the Spec: Recovering Business Rules from a Legacy ESB Before You Rewrite It</h1>
+      <h1 style="max-width:820px;">The Live Code Is the Spec: Recover Business Rules Before You Rewrite Legacy Integration</h1>
     </div>
   </section>
 
@@ -110,17 +111,17 @@
     <div class="container container--narrow">
       <div class="article-body fade-in">
 
-        <p>Most rewrites of a legacy integration platform start with a document. A requirements pack, a design from the original project, a set of rulings someone senior made years ago. The new team builds to that document. Testing passes against that document. Then the new platform goes live, and the counterparties on the other end of the wire notice that something is different.</p>
+        <p>Most rewrites of a legacy integration platform start with a document: a requirements pack, a design from the original project, a set of rulings someone senior made years ago. The new team builds to that document. Testing passes against that document. Then the new platform goes live, and the counterparties on the other end of the wire notice that something is different.</p>
 
-        <p>The document was never the specification. The specification is the code that runs in production today. It has been the specification since the day it went live, and every hotfix, every configuration change and every quietly commented-out line has amended it since. Nobody updated the document. Nobody had to. The system worked.</p>
+        <p>The document was never the specification. The specification is the code that runs in production today. It has been the specification since the day it went live, and every hotfix, every configuration change and every quietly disabled branch has amended it since. Nobody updated the document. Nobody had to. The system worked.</p>
 
-        <p>I recently led the rebuild of a regulated, externally facing integration service at a Saudi bank, replacing flows that had lived on a legacy enterprise service bus for years. This essay is about the method we used before writing the new platform, and about the decisions it pushed up to leadership. The method is not clever. It is just rarely done.</p>
+        <p>For any institution replacing an enterprise service bus, a message broker estate or a generation of point-to-point adapters, this is the single most underestimated risk in the programme. The remedy is not clever. It is a method, and a handful of decisions that only leadership can make. It is just rarely done.</p>
 
         <p class="article-section">Why rewrites fail</p>
 
         <p>Rewrites rarely fail because the new technology is wrong. They fail because the new system faithfully implements what everyone <em>believes</em> the old system does. The gap between belief and behaviour is invisible until cut-over, and by then it is a production incident with an external party watching.</p>
 
-        <p>The gap comes from three places. Source control does not always match what is deployed. Design documents describe intent, not the compromises made under deadline. And the people who made those compromises have often moved on. The result is a platform whose real rules exist in exactly one place: the running code.</p>
+        <p>The gap comes from three places. Source control does not always match what is deployed. Design documents describe intent, not the compromises made under deadline. And the people who made those compromises have often moved on. The result is an estate whose real rules exist in exactly one place: the running code.</p>
 
         <blockquote>
           <p>If the old system and the new one disagree on the day of cut-over, the old one is not wrong. It is the baseline your counterparties have been reconciling against for years.</p>
@@ -128,61 +129,65 @@
 
         <p class="article-section">Archaeology before architecture</p>
 
-        <p>The first step was not design. It was an inventory. We catalogued the ESB estate: several hundred repositories across two generations of the platform, each classified by domain, technology and whether it still ran. Integration flows, API definitions, rules projects, scripts, configuration. Some repositories were dead. Some were alive but unowned. A few were the only surviving source for behaviour that mattered.</p>
+        <p>The first step is not design. It is an inventory of the estate: every repository, integration flow, API definition, rules project, script and configuration set, classified by domain, technology and whether it still runs. In a mature institution this is typically hundreds of artefacts across more than one generation of platform. Some are dead. Some are alive but unowned. A few are the only surviving source for behaviour that matters.</p>
 
-        <p>The inventory is unglamorous and it pays for itself many times over. It tells you where to dig. It tells you which flows touch the service you are replacing, including the ones nobody listed. And it surfaces the uncomfortable cases early: a rule engine whose deployed ruleset is not the one in source control, or a component whose source is simply missing.</p>
+        <p>The inventory is unglamorous and it pays for itself many times over. It tells the team where to dig. It reveals which flows touch the service being replaced, including the ones nobody listed. And it surfaces the uncomfortable cases early: a rules engine whose deployed ruleset is not the one in source control, or a component whose source is simply missing.</p>
 
-        <p>Then we compared against what was actually deployed. Not the repository. The deployed artefacts and the exported rules from the production rule server. Where those differed from source control, the deployed version won. That single discipline changed more conclusions than any design workshop.</p>
+        <p>Then compare against what is actually deployed. Not the repository: the deployed artefacts, the exported production configuration, the rules as the production engine holds them. Where those differ from source control, the deployed version wins. That single discipline changes more conclusions than any design workshop.</p>
 
         <p class="article-section">Numbered rules, not prose</p>
 
-        <p>From the live code we extracted every behaviour that a counterparty or an auditor could observe, and wrote each one down as a numbered business rule. One rule, one behaviour. Each rule pointed to the exact place in the legacy code where it lived. Each was grouped by service family and tagged with whether it had been verified against the deployed artefact or only against source.</p>
+        <p>From the live code, extract every behaviour that a counterparty, a customer or an auditor could observe, and write each one down as a numbered business rule. One rule, one behaviour. Each rule points to the exact place in the legacy code where it lives, is grouped by service family, and is tagged with whether it was verified against the deployed artefact or only against source.</p>
 
-        <p>Numbering matters more than it sounds. A numbered rule can be tested, cited in a decision, tracked in a gap matrix and closed. Prose cannot. Within weeks, the conversation shifted from &ldquo;I think the old system does&hellip;&rdquo; to &ldquo;rule 41 says it does this, here is the line.&rdquo; Arguments got shorter.</p>
+        <p>Numbering matters more than it sounds. A numbered rule can be tested, cited in a decision, tracked and closed. Prose cannot. Once a catalogue exists, the conversation shifts from &ldquo;I think the old system does&hellip;&rdquo; to &ldquo;this rule says it does this, and here is the line.&rdquo; Arguments get shorter, and they end with evidence rather than seniority.</p>
 
-        <p>The catalogue then became the backbone of a gap matrix. For each rule: does the new platform match, partially match, differ, or not implement it yet? Or is the rule a defect that should not be carried forward? Parity became a number the steering committee could read every week, and the remaining gaps became a list with names on it.</p>
+        <p>The catalogue then becomes the backbone of a gap matrix. For each rule: does the new platform match, partially match, differ, or not yet implement it? Or is the rule a defect that should not be carried forward? Parity becomes a number a steering committee can read every week, and the remaining gaps become a list with owners.</p>
 
-        <p class="article-section">Ruling against the live code</p>
+        <p class="article-section">Rule on every difference</p>
 
-        <p>The hardest part was not extraction. It was confronting earlier decisions. Over the years, the business and architecture had made rulings about how the service <em>should</em> behave. Some of those rulings had never been implemented. Some had been implemented and later reversed in production. A few described behaviour that had never existed.</p>
+        <p>The hardest part is not extraction. It is confronting earlier decisions. Over the years, business and architecture functions make rulings about how a service <em>should</em> behave. Some are never implemented. Some are implemented and later reversed in production. A few describe behaviour that never existed.</p>
 
-        <p>So we took every earlier ruling and set it next to what the live code does, with the rule numbers as evidence. For each, we wrote down the earlier ruling, the live behaviour, what the new platform did at that moment, and a recommendation. Then leadership ruled on each item, in writing.</p>
+        <p>So every earlier ruling is set next to what the live code does, with rule numbers as evidence. For each difference, record the earlier ruling, the live behaviour, what the new platform currently does, and a recommendation. Then the accountable owner rules on each item, in writing.</p>
 
-        <p>The default policy was simple: <strong>follow live, unless the live behaviour is a defect or an earlier ruling encodes a legal obligation the bank must meet anyway.</strong> Live behaviour is what the counterparty receives today. Changing it during a platform migration means changing two things at once, and when results differ after cut-over, nobody can tell whether the migration or the change caused it.</p>
+        <p>The default policy should be simple: <strong>follow live, unless the live behaviour is a defect or an earlier ruling encodes a legal or regulatory obligation the institution must meet anyway.</strong> Live behaviour is what counterparties receive today. Changing it during a platform migration means changing two things at once, and when results differ after cut-over, nobody can tell whether the migration or the change caused it.</p>
 
-        <p>That policy did not mean copying every flaw. Where live behaviour was clearly broken, we fixed it and recorded the fix as a deliberate, signed deviation. Where a legal obligation was missing, we built the capability and shipped it switched off by configuration, to be enabled after legal sign-off and after cut-over had settled. Parity first, improvement second, each with its own approval.</p>
+        <p>That policy does not mean copying every flaw. Where live behaviour is clearly broken, fix it and record the fix as a deliberate, signed deviation. Where a legal obligation is missing, build the capability and ship it switched off by configuration, to be enabled after legal sign-off and after cut-over has settled. Parity first, improvement second, each with its own approval.</p>
 
         <p class="article-section">What drift looks like</p>
 
-        <p>Every legacy estate drifts in its own way, but the categories repeat. These are the kinds of things a rule-recovery exercise tends to surface. Expect to find each of them somewhere.</p>
+        <p>Every legacy estate drifts in its own way, but the categories repeat. These are the patterns a rule-recovery exercise tends to surface. Expect to find each of them somewhere.</p>
 
-        <p><strong>Deployed rules that differ from source control.</strong> A rules engine or a configuration store is updated directly in production, or a build is promoted from a branch that was never merged. The repository describes a system that no longer runs.</p>
+        <p><strong>Deployed rules that differ from source control.</strong> A rules engine or configuration store is updated directly in production, or a build is promoted from a branch that was never merged. The repository describes a system that no longer runs.</p>
 
-        <p><strong>Fail-open on a dependency error.</strong> When a downstream check times out, the flow proceeds as if the check had passed. Sometimes this is a deliberate business choice. Sometimes it is an accident in an exception handler. The rewrite must know which, because a &ldquo;cleaner&rdquo; fail-closed design changes what counterparties see during every outage.</p>
+        <p><strong>Fail-open on a dependency error.</strong> When a downstream check times out, the flow proceeds as if the check had passed. Sometimes this is a deliberate business choice; sometimes it is an accident in an exception handler. The rewrite must know which, because a &ldquo;cleaner&rdquo; fail-closed design changes what counterparties see during every outage.</p>
 
-        <p><strong>Retries that re-mint identifiers.</strong> A retry loop generates a new message or correlation identifier on each attempt. Anything downstream that correlates on that identifier silently loses track. The new platform should usually fix this, and the fix must be recorded as a deviation, because the counterparty will see different identifiers.</p>
+        <p><strong>Retries that re-mint identifiers.</strong> A retry loop generates a new message or correlation identifier on each attempt, and anything downstream that correlates on it silently loses track. The new platform should usually fix this, and the fix must be recorded as a deviation, because the counterparty will see different identifiers.</p>
 
-        <p><strong>Logic disabled in production.</strong> A filter, validation or branch is commented out or switched off in every live build, while the documentation still describes it as active. The data the counterparty receives today reflects its absence.</p>
+        <p><strong>Logic disabled in production.</strong> A filter, validation or branch is switched off in every live build while the documentation still describes it as active. The data counterparties receive today reflects its absence.</p>
 
-        <p><strong>Designed but never running.</strong> A path exists in the code, appears in the design, and cannot actually execute because of a defect nobody noticed, since the path is rarely triggered. Reproducing it faithfully means reproducing nothing.</p>
+        <p><strong>Designed but never running.</strong> A path exists in the code and in the design, yet cannot execute because of a defect nobody noticed, since the path is rarely triggered. Reproducing it faithfully means reproducing nothing.</p>
 
-        <p>None of these show up in a requirements workshop. All of them show up in production after cut-over if nobody looks first.</p>
+        <p>None of these surface in a requirements workshop. All of them surface in production after cut-over if nobody looks first.</p>
+
+        <p class="article-section">Parity is the cut-over criterion</p>
+
+        <p>Go-live readiness should be measured against the rule catalogue, not against test cases written from the old document. The most reliable evidence is side-by-side: replay real, sanitised traffic through both platforms and compare outputs rule by rule. Every difference is either a gap to close or a deviation that someone has already signed. If the gap matrix is not green, or every remaining gap is not covered by a written ruling, the platform is not ready, however well it performs.</p>
 
         <p class="article-section">What leaders must decide</p>
 
-        <p>Rule recovery is engineering work. The decisions it forces are not. Four belong above the team.</p>
+        <p>Rule recovery is engineering work. The decisions it forces are not. Four belong above the delivery team.</p>
 
         <p><strong>The default policy.</strong> &ldquo;Follow live unless defect or legal obligation&rdquo; is a leadership statement. Without it, every engineer applies their own taste, and the new platform becomes a blend of the old system and a dozen private opinions about how it should have been.</p>
 
         <p><strong>Who signs a deviation.</strong> Every intentional difference from live behaviour changes what an external party receives. That needs an owner, a reason and, where relevant, the counterparty&rsquo;s agreement. A deviation without a signature is just a regression with a good story.</p>
 
-        <p><strong>Parity as the cut-over criterion.</strong> Go-live readiness should be measured against the rule catalogue, not against test cases written from the old document. If the gap matrix is not green, or every remaining gap is not covered by a signed ruling, the platform is not ready, however well it performs.</p>
+        <p><strong>Parity as the gate.</strong> The steering committee should approve cut-over on the parity number and the list of signed deviations, not on a delivery date. Dates slip quietly; a red rule does not.</p>
 
-        <p><strong>Funding the archaeology.</strong> The inventory and the rule extraction take weeks of senior time before a single line of the new platform is written. They look like delay. They are the cheapest insurance in the programme. The alternative is to discover the same rules one production incident at a time.</p>
+        <p><strong>Funding the archaeology.</strong> The inventory and rule extraction take weeks of senior time before a single line of the new platform is written. They look like delay. They are the cheapest insurance in the programme. The alternative is to discover the same rules one production incident at a time.</p>
 
-        <p>A rewrite is a promise that the bank will keep doing what it does today, on a better foundation. You cannot keep that promise without first finding out, precisely, what it does today. The live code is the only honest witness. Interview it first.</p>
+        <p>A rewrite is a promise that the institution will keep doing what it does today, on a better foundation. That promise cannot be kept without first finding out, precisely, what it does today. The live code is the only honest witness. Interview it first.</p>
 
-        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For a related deep-dive on the platform side of the same kind of rebuild &mdash; a typed obligation ledger, a reconciled core-hold projection, hash-chained order streams, signed content packs and certified connectors &mdash; see the companion Lab article: <a href="../lab/event-driven/enforcement-obligation-ledger.html" style="color:var(--color-accent);">Judicial Enforcement as an Obligation Ledger, Not Stacked Holds</a>.</p>
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">Related reading in the Lab &mdash; a design pattern for rebuilding one of the most rule-dense integration domains, legal orders against customer assets, with a typed obligation ledger, a reconciled core-hold projection, hash-chained order streams and certified connectors: <a href="../lab/event-driven/obligation-ledger-pattern.html" style="color:var(--color-accent);">The Obligation Ledger Pattern: Modelling Court and Regulatory Holds Without Stacking Core Holds</a>.</p>
 
       </div>
     </div>

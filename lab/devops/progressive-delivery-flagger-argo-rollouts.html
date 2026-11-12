@@ -121,6 +121,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Argo Rollouts 1.7 / Flagger 1.38 / Istio 1.22 / Unleash 6.x / OpenFeature Java SDK 1.x</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Sep 19, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -258,7 +259,7 @@
     <span class="tok-k">spec</span>:
       <span class="tok-k">containers</span>:
         - <span class="tok-k">name</span>: <span class="tok-s">payments-api</span>
-          <span class="tok-k">image</span>: <span class="tok-s">registry.saib.com/payments/payments-api:$(IMAGE_TAG)</span>
+          <span class="tok-k">image</span>: <span class="tok-s">registry.example.com/payments/payments-api:$(IMAGE_TAG)</span>
   <span class="tok-k">strategy</span>:
     <span class="tok-k">canary</span>:
       <span class="tok-c"># Traffic routing via Istio VirtualService + DestinationRule</span>
@@ -478,7 +479,7 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>PaymentFeatureConfig.java &mdash; OpenFeature SDK with Unleash provider</span><span class="code-block__lang">java</span></div>
-<pre><code><span class="tok-k">package</span> info.saib.payments.config;
+<pre><code><span class="tok-k">package</span> com.example.payments.config;
 
 <span class="tok-k">import</span> dev.openfeature.sdk.OpenFeatureAPI;
 <span class="tok-k">import</span> dev.openfeature.contrib.providers.unleash.UnleashProvider;

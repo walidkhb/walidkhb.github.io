@@ -121,6 +121,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Apollo Federation 2 &middot; Apollo Router 1.50 &middot; Kong Gateway 3.7 &middot; OpenShift 4.15</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -146,7 +147,7 @@
             <li><code>@requires(fields: "...")</code> &mdash; the inverse: declares that a resolver for a given field requires specific fields from the entity (potentially owned by another subgraph) to be fetched first.</li>
             <li><code>@shareable</code> &mdash; marks a non-entity type as resolvable by multiple subgraphs. Useful for value types shared between domain teams (e.g. a <code>Money</code> scalar or a <code>Currency</code> enum used by both payments and accounts).</li>
           </ul>
-          <p>Query planning is deterministic given the same supergraph schema and operation. The Router computes a plan, executes fetch operations against subgraphs in parallel where there are no dependencies, and sequences them where <code>@requires</code> chains create a dependency order. At SAIB scale &mdash; &lt;500 rps on the internal GraphQL surface &mdash; plan computation adds under 2 ms of overhead per request; this becomes relevant at 5&ndash;10K rps if plan caching is not enabled.</p>
+          <p>Query planning is deterministic given the same supergraph schema and operation. The Router computes a plan, executes fetch operations against subgraphs in parallel where there are no dependencies, and sequences them where <code>@requires</code> chains create a dependency order. At typical bank-internal scale &mdash; &lt;500 rps on the internal GraphQL surface &mdash; plan computation adds under 2 ms of overhead per request; this becomes relevant at 5&ndash;10K rps if plan caching is not enabled.</p>
 
           <div class="diagram" role="img" aria-label="Client sends GraphQL operation to Apollo Router; Router plans and fans out to three subgraphs: Accounts, Payments, Notifications; each subgraph resolves its own types and returns data to the Router, which stitches and returns a unified response">
             <div class="diagram__inner">
@@ -316,8 +317,8 @@
   <span class="tok-k">router</span>:
     <span class="tok-k">jwt</span>:
       <span class="tok-k">jwks</span>:
-        - <span class="tok-k">url</span>: <span class="tok-s">"https://idp.internal.saib.com.sa/.well-known/jwks.json"</span>
-          <span class="tok-k">issuer</span>: <span class="tok-s">"https://idp.internal.saib.com.sa"</span>
+        - <span class="tok-k">url</span>: <span class="tok-s">"https://idp.internal.bank.example/.well-known/jwks.json"</span>
+          <span class="tok-k">issuer</span>: <span class="tok-s">"https://idp.internal.bank.example"</span>
       <span class="tok-k">header_name</span>: <span class="tok-s">"Authorization"</span>
       <span class="tok-k">header_value_prefix</span>: <span class="tok-s">"Bearer "</span>
 

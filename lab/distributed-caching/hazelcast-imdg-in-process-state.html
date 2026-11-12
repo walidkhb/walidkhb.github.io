@@ -124,6 +124,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Hazelcast 5.4 / Spring Boot 3.2 / Kubernetes / OCP 4.14</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Jul 11, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -405,7 +406,7 @@
           <div class="code-block">
             <div class="code-block__header"><span>hazelcast.yaml</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-k">hazelcast</span><span class="tok-p">:</span>
-  <span class="tok-k">cluster-name</span><span class="tok-p">:</span> <span class="tok-s">saib-payment-grid</span>
+  <span class="tok-k">cluster-name</span><span class="tok-p">:</span> <span class="tok-s">bank-payment-grid</span>
 
   <span class="tok-k">network</span><span class="tok-p">:</span>
     <span class="tok-k">join</span><span class="tok-p">:</span>
@@ -552,7 +553,7 @@
           <h2 id="when-hazelcast">When Hazelcast wins</h2>
           <p>Three situations in KSA financial services where Hazelcast consistently outperforms a Redis-based architecture:</p>
 
-          <p><strong>1. Risk computation with large object graphs.</strong> A risk engine that loads a portfolio of 500 instruments, computes VaR using Monte Carlo, and returns a scalar might read 500 Redis keys, deserialise each object, build the graph in Java, compute, and discard. With embedded Hazelcast, the portfolio objects are already in the JVM heap. The computation runs on the data in place. At SAIB scale &mdash; hundreds of portfolios evaluated per minute at batch cut-off &mdash; the serialisation/network overhead in Redis is a measurable share of processing time.</p>
+          <p><strong>1. Risk computation with large object graphs.</strong> A risk engine that loads a portfolio of 500 instruments, computes VaR using Monte Carlo, and returns a scalar might read 500 Redis keys, deserialise each object, build the graph in Java, compute, and discard. With embedded Hazelcast, the portfolio objects are already in the JVM heap. The computation runs on the data in place. At a mid-sized bank&rsquo;s scale &mdash; hundreds of portfolios evaluated per minute at batch cut-off &mdash; the serialisation/network overhead in Redis is a measurable share of processing time.</p>
 
           <p><strong>2. Stateful payment routing with limit enforcement.</strong> A payment router that must check 4 limit counters (daily, weekly, monthly, per-beneficiary) before authorising a payment can do so with a single <code>executeOnKey</code> call if the counters are co-located on the same Hazelcast partition via <code>PartitionAware</code>. The atomic EntryProcessor gives linearizable read-modify-write semantics without distributed locking. The same pattern in Redis requires a Lua script with 4 HINCRBY calls and a transaction, and the network round trip is unavoidable.</p>
 

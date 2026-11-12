@@ -5,21 +5,21 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Judicial Enforcement as an Obligation Ledger, Not Stacked Holds &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Designing a judicial-enforcement order platform as a typed obligation ledger: money stays in core, core holds become an idempotent reconciled projection, every order is a hash-chained event stream, services ship as signed content packs, and connectors are certified against reversal storms.">
+  <title>The Obligation Ledger Pattern: Modelling Court and Regulatory Holds Without Stacking Core Holds &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A design pattern for banks that execute court and regulatory orders (block, garnish, lift, deny, ban): record obligations rather than money, project one reconciled core hold per asset, keep every order as a hash-chained event stream, pin in-flight orders to versioned service definitions, and certify connectors against duplicate delivery and reversal storms.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Judicial Enforcement as an Obligation Ledger, Not Stacked Holds &mdash; Lab">
-  <meta property="og:description" content="Typed obligation ledger, reconciled core-hold projection, hash-chained order streams, signed content packs and certified connectors for judicial-enforcement orders.">
+  <meta property="og:title" content="The Obligation Ledger Pattern &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Model court and regulatory holds as a typed obligation ledger with one reconciled core hold per asset, instead of stacking one hold per order.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/enforcement-obligation-ledger.html">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/obligation-ledger-pattern.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Enforcement as an Obligation Ledger &mdash; Lab">
-  <meta name="twitter:description" content="Stop stacking one core hold per order. Keep a typed obligation ledger and reconcile one hold per asset to it.">
+  <meta name="twitter:title" content="The Obligation Ledger Pattern &mdash; Lab">
+  <meta name="twitter:description" content="Stop stacking one core hold per legal order. Record obligations, then reconcile one hold per asset to them.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
-  <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/enforcement-obligation-ledger.html">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/obligation-ledger-pattern.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -37,8 +37,8 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Judicial Enforcement as an Obligation Ledger, Not Stacked Holds",
-    "description": "Designing a judicial-enforcement order platform as a typed obligation ledger: money stays in core, core holds become an idempotent reconciled projection, every order is a hash-chained event stream, services ship as signed content packs, and connectors are certified against reversal storms.",
+    "headline": "The Obligation Ledger Pattern: Modelling Court and Regulatory Holds Without Stacking Core Holds",
+    "description": "A design pattern for banks that execute court and regulatory orders (block, garnish, lift, deny, ban): record obligations rather than money, project one reconciled core hold per asset, keep every order as a hash-chained event stream, pin in-flight orders to versioned service definitions, and certify connectors against duplicate delivery and reversal storms.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-12",
     "author": {
@@ -51,7 +51,7 @@
       "name": "Waleed Albadawi",
       "url": "https://www.wbadawi.info/"
     },
-    "url": "https://www.wbadawi.info/lab/event-driven/enforcement-obligation-ledger.html",
+    "url": "https://www.wbadawi.info/lab/event-driven/obligation-ledger-pattern.html",
     "isPartOf": {
       "@type": "WebPage",
       "name": "Event-Driven Architecture &mdash; Lab",
@@ -88,10 +88,10 @@
       <div class="lab-article__layout">
         <div></div>
         <div>
-          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Enforcement Obligation Ledger</div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Obligation Ledger Pattern</div>
           <span class="overline">Lab Article</span>
-          <h1>Judicial Enforcement as an Obligation Ledger, Not Stacked Holds</h1>
-          <p class="lead">A court order arrives. The bank must block, garnish, deny, ban or lift. The obvious design places one core hold per order and lets the core banking system be the record. It works for the first order. It breaks on the third order against the same account, on the first partial lift, and on every card or wallet that cannot carry a reference. The alternative is to make the platform the record of <em>obligations</em>, keep the money in core, and treat every core hold as a reconciled projection.</p>
+          <h1>The Obligation Ledger Pattern: Modelling Court and Regulatory Holds Without Stacking Core Holds</h1>
+          <p class="lead">Every bank receives legal orders: block an amount, garnish a balance, deny a service, ban a customer from an activity, lift what an earlier order imposed. The obvious design places one core hold per order and lets the core banking system be the record. It works for the first order and breaks on the third against the same account. This guide covers the alternative: record <em>obligations</em>, keep the money in core, and treat the core hold as an idempotent, reconciled projection.</p>
         </div>
       </div>
     </div>
@@ -105,16 +105,16 @@
           <div class="lab-article__toc-title">On this page</div>
           <ul class="lab-article__toc-list">
             <li><a href="#overview">Overview</a></li>
-            <li><a href="#options">Stacked holds vs a ledger</a></li>
-            <li><a href="#ledger">The obligation ledger</a></li>
-            <li><a href="#reconciler">The reconciler</a></li>
-            <li><a href="#protected-share">Protected share</a></li>
+            <li><a href="#stacking">Why stacking holds fails</a></li>
+            <li><a href="#ledger">Record obligations, not money</a></li>
+            <li><a href="#reconciler">The hold as a projection</a></li>
+            <li><a href="#protected-share">Protected income share</a></li>
             <li><a href="#order-stream">Hash-chained order streams</a></li>
             <li><a href="#lifecycle">Lifecycle &amp; reversal</a></li>
-            <li><a href="#content-packs">Signed content packs</a></li>
-            <li><a href="#connectors">Connector SDK</a></li>
+            <li><a href="#service-definitions">Versioned service definitions</a></li>
+            <li><a href="#connectors">Connector contracts</a></li>
             <li><a href="#failure-modes">Failure modes</a></li>
-            <li><a href="#checklist">Delivery checklist</a></li>
+            <li><a href="#checklist">Implementation checklist</a></li>
           </ul>
         </aside>
 
@@ -123,14 +123,15 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Java 21 / Spring Boot / PostgreSQL / Apache Kafka / Red Hat OpenShift</span>
             <span class="article-meta__item"><strong>Audience:</strong> Architects &amp; engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~13 min</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~12 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 12, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Judicial enforcement looks simple from a distance. An authority sends an order. The bank finds the subject&rsquo;s assets and acts. There are five verbs. <strong>Block</strong> reserves an amount. <strong>Garnish</strong> reserves an amount, or freezes when no amount is given. <strong>Deny</strong> and <strong>ban</strong> restrict what the subject can do, not how much is held. <strong>Lift</strong> releases what an earlier order imposed, in full or in part.</p>
-          <p>The difficulty is not any single verb. It is the combination. Several orders from different authorities can target the same account at the same time. Each can be lifted, reduced or reversed independently. A reversal can arrive while the original order is still executing. The bank must be able to answer, at any moment and for an auditor: <em>what is held, on which asset, because of which order, of which type, and how much was left untouched by law?</em></p>
-          <p>That question has one architectural fork. Either the core banking system is the record of what is held, or the enforcement platform is. This article takes the second path and walks through what it costs: a ledger, a reconciler, an event store, a content model and a connector contract. It builds on the patterns in <a href="event-sourcing-and-cqrs.html">Event Sourcing &amp; CQRS in Payments</a> and does not repeat them. Here the focus is on what changes when the aggregate is a legal obligation rather than a payment.</p>
+          <p>Judicial enforcement looks simple from a distance. A court or a competent authority sends an order. The bank locates the subject&rsquo;s assets and acts. There are five verbs. <strong>Block</strong> reserves an amount. <strong>Garnish</strong> reserves an amount, or freezes the asset when no amount is given. <strong>Deny</strong> and <strong>ban</strong> restrict what the subject can do, not how much is held. <strong>Lift</strong> releases what an earlier order imposed, in full or in part.</p>
+          <p>The difficulty is never a single verb. It is the combination. Several orders from different issuers can target the same account at the same time. Each can be lifted, reduced or reversed independently. A reversal can arrive while the original order is still executing. And the bank must be able to answer, at any moment and for any auditor: <em>what is held, on which asset, because of which order, of which type, and how much was left untouched by law?</em></p>
+          <p>That question has one architectural fork. Either the core banking system is the record of what is held, or the enforcement platform is. This guide takes the second path and walks through what it costs: a ledger, a reconciler, an event store, a service-definition model and a connector contract. It builds on <a href="event-sourcing-and-cqrs.html">Event Sourcing &amp; CQRS in Payments</a> and does not repeat those basics. The focus here is on what changes when the aggregate is a legal obligation rather than a payment.</p>
 
           <div class="diagram" role="img" aria-label="Orders write typed obligations to a ledger; a reconciler computes one target hold per asset and drives the core hold projection through connectors">
             <div class="diagram__inner">
@@ -222,7 +223,7 @@
                 <line x1="30" y1="326" x2="80" y2="326" stroke="#00d4aa" stroke-width="1.5"/>
                 <text x="90" y="330" fill="#e4e4e7" font-size="8">Orders append typed obligations; a lift edits obligations, it never touches a core hold directly</text>
                 <line x1="30" y1="344" x2="80" y2="344" stroke="#4a9eff" stroke-width="1.5"/>
-                <text x="90" y="348" fill="#e4e4e7" font-size="8">The reconciler drives each asset to one target hold, idempotently, through the connector SDK</text>
+                <text x="90" y="348" fill="#e4e4e7" font-size="8">The reconciler drives each asset to one target hold, idempotently, through a connector</text>
                 <line x1="30" y1="362" x2="80" y2="362" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="4,2"/>
                 <text x="90" y="366" fill="#e4e4e7" font-size="8">Balance changes, pay-cycle rollover and periodic drift scans re-trigger reconciliation</text>
               </svg>
@@ -230,35 +231,38 @@
             <div class="diagram__caption">Figure 1 &mdash; Orders write to the obligation ledger; the reconciler projects one hold per asset into core. Money stays in core. The ledger is the record of why it is held.</div>
           </div>
 
-          <h2 id="options">Stacked holds vs an obligation ledger</h2>
-          <p>Two options were on the table.</p>
-          <p><strong>Option 1: delegate to core.</strong> Each order places its own hold, tagged with the order reference. A lift removes that order&rsquo;s holds. The core is the record. The platform is stateless. This is the simplest design and the one most banks start with.</p>
-          <p><strong>Option 2: a typed obligation ledger.</strong> The platform records obligations per party, per asset and per type, accumulated across every active order. The funds stay in core. The hold in core is a projection that a reconciler drives to a computed target.</p>
-          <p>Option 1 fails in ways that only show up in production. Three orders on one account mean three holds, each sized without knowledge of the others. A partial lift must find the right hold and resize it, which many core primitives cannot do. Cards and wallets often have a hold primitive with no reference field at all. Totals across orders must be recomputed by scanning core each time. And no one can answer &ldquo;why is this money held?&rdquo; without stitching core records back to orders by hand.</p>
+          <h2 id="stacking">Why stacking one hold per order fails</h2>
+          <p>The default design delegates everything to core. Each order places its own hold, tagged with the order reference. A lift removes that order&rsquo;s holds. Core is the record and the integration layer is stateless. It is the simplest design, it passes the first round of testing, and it fails in ways that only appear in production:</p>
+          <ul>
+            <li><strong>Holds are sized blind.</strong> Three orders on one account produce three holds, each sized without knowledge of the others. When the balance cannot cover all three, which one is short is decided by arrival order, not by law or policy.</li>
+            <li><strong>Partial lifts need surgery.</strong> A partial lift must find the right hold and resize it. Many core hold primitives support only place and remove, so a partial lift becomes &ldquo;remove and re-place&rdquo;, with a window in which the money is free.</li>
+            <li><strong>Some assets cannot carry a reference.</strong> Cards and wallets often expose a hold primitive with no reference field at all. Once two orders touch a prepaid card, nobody can tell which hold belongs to which.</li>
+            <li><strong>Totals are reconstructed by scanning.</strong> &ldquo;How much is held across all orders for this customer?&rdquo; requires walking every core system and stitching records back to orders by hand.</li>
+            <li><strong>Reversal is choreography.</strong> Undoing an order mid-execution means knowing which holds exist at this instant and which calls are in flight, then compensating each one.</li>
+          </ul>
 
           <table>
             <thead>
-              <tr><th>Criterion (weight)</th><th>Option 1 &mdash; stacked core holds</th><th>Option 2 &mdash; obligation ledger</th></tr>
+              <tr><th>Concern</th><th>Stacked core holds</th><th>Obligation ledger</th></tr>
             </thead>
             <tbody>
-              <tr><td><strong>Domain ownership clarity</strong> (20%)</td><td>3</td><td>5</td></tr>
-              <tr><td><strong>Correct accumulation &amp; partial lift</strong> (25%)</td><td>1</td><td>5</td></tr>
-              <tr><td><strong>Works over crude core primitives</strong> (15%)</td><td>2</td><td>5</td></tr>
-              <tr><td><strong>Auditability</strong> (15%)</td><td>2</td><td>5</td></tr>
-              <tr><td><strong>Operational simplicity</strong> (15%)</td><td>5</td><td>3</td></tr>
-              <tr><td><strong>Cards &amp; wallets as first-class assets</strong> (10%)</td><td>2</td><td>5</td></tr>
-              <tr><td><strong>Weighted score</strong></td><td><strong>2.4</strong></td><td><strong>4.6</strong></td></tr>
+              <tr><td>Accumulation across orders</td><td>Implicit; first-come, first-held</td><td>Explicit sum per asset, by type</td></tr>
+              <tr><td>Partial lift</td><td>Find and resize a specific hold</td><td>Append a release; target recomputes</td></tr>
+              <tr><td>Crude core primitives</td><td>Leaks into every service</td><td>Absorbed by the reconciler and connector</td></tr>
+              <tr><td>&ldquo;Why is this held?&rdquo;</td><td>Manual stitching</td><td>One query against the ledger</td></tr>
+              <tr><td>Cards and wallets</td><td>Second-class, often unreferenceable</td><td>Same obligation model as accounts</td></tr>
+              <tr><td>Operational simplicity</td><td>High: no extra state</td><td>Lower: drift must be detected and healed</td></tr>
             </tbody>
           </table>
 
-          <p>The one criterion where Option 1 wins is operational simplicity. That is honest. Option 2 introduces a reconciliation obligation: drift between the ledger and core must be detected and healed. The decision was to accept that cost, because it is bounded and testable. The correctness cost of Option 1 is neither.</p>
+          <p>The ledger loses on exactly one row, and it is worth being honest about it. It introduces a reconciliation obligation: drift between the ledger and core must be detected and healed. That cost is bounded and testable. The correctness cost of stacking is neither.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">The split that makes this acceptable</div>
-            <p>The platform owns <em>obligations</em>. Core owns <em>money</em>. The ledger never holds a balance, never posts an entry and never moves funds. That keeps the platform out of the money-ledger business, and keeps the regulator&rsquo;s view of balances exactly where it was. What changes is that &ldquo;why is this held&rdquo; now has one authoritative answer.</p>
+            <p>The platform owns <em>obligations</em>. Core owns <em>money</em>. The ledger never holds a balance, never posts an entry and never moves funds. That keeps the enforcement platform out of the money-ledger business and leaves the regulator&rsquo;s view of balances exactly where it was. What changes is that &ldquo;why is this held?&rdquo; has one authoritative answer.</p>
           </div>
 
-          <h2 id="ledger">The obligation ledger</h2>
+          <h2 id="ledger">Record obligations, not money</h2>
           <p>An obligation is a typed claim that an order places on one asset. Types matter because they behave differently. An amount hold accumulates. A restriction does not. A protected allowance subtracts. Types also let different measures coexist on one account and be lifted independently: lifting a ban must not release a garnish.</p>
 
           <table>
@@ -268,13 +272,13 @@
             <tbody>
               <tr><td><code>AMOUNT_HOLD</code></td><td>Block, garnish with an amount</td><td>Yes &mdash; summed per asset</td><td>One hold sized by the reconciler</td></tr>
               <tr><td><code>FREEZE</code></td><td>Garnish without an amount</td><td>No &mdash; boolean per asset</td><td>Freeze flag or full hold, per connector capability</td></tr>
-              <tr><td><code>RESTRICTION</code></td><td>Deny, ban</td><td>No &mdash; set of kinds per party or asset</td><td>Restriction applied once, removed when the set is empty</td></tr>
+              <tr><td><code>RESTRICTION</code></td><td>Deny, ban</td><td>No &mdash; set of kinds per party or asset</td><td>Applied once, removed when the set is empty</td></tr>
               <tr><td><code>PROTECTED_ALLOWANCE</code></td><td>Policy, per pay cycle</td><td>Renews once per cycle</td><td>Reduces the target; never projected on its own</td></tr>
             </tbody>
           </table>
 
-          <p>Lift is not an obligation type. A lift is an event that releases, fully or partly, the obligations an earlier order created. The ledger records the release; the reconciler does the rest. This is the core simplification. Nobody ever writes code that says &ldquo;find hold X in core and reduce it by Y&rdquo;.</p>
-          <p>Obligations are allocated per asset. When an order targets a party, allocation decides which accounts carry how much: transactional accounts first, a currency order, eligibility rules from the asset taxonomy. Allocation is policy, so it lives in versioned configuration, not in connector code.</p>
+          <p>Lift is not an obligation type. A lift is an event that releases, fully or partly, the obligations an earlier order created. The ledger records the release and the reconciler does the rest. This is the central simplification: nobody ever writes code that says &ldquo;find hold X in core and reduce it by Y&rdquo;.</p>
+          <p>Obligations are allocated per asset. When an order targets a party rather than an account, an allocation policy decides which assets carry how much: transactional accounts first, a currency preference, eligibility rules per asset class. Allocation is policy, so it lives in versioned configuration, not in connector code.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>obligation-entry.schema.json</span><span class="code-block__lang">json</span></div>
@@ -309,9 +313,9 @@
 }</code></pre>
           </div>
 
-          <p>Every row carries <code>sourceEvent</code>. The ledger is itself a projection of the order streams described below. You can drop it and rebuild it. That property is what lets you trust it as the record.</p>
+          <p>Every row carries <code>sourceEvent</code>. The ledger is itself a projection of the order streams described below: you can drop it and rebuild it. That property is what lets you trust it as the record.</p>
 
-          <h2 id="reconciler">The reconciler</h2>
+          <h2 id="reconciler">The core hold as a reconciled projection</h2>
           <p>The reconciler has one job: for each asset, compute the hold that should exist and make core agree. The target is one line:</p>
 
           <div class="code-block">
@@ -319,8 +323,8 @@
 <pre><code>heldTarget = min( netObligation, max(0, balance &minus; protectedAllowance) )</code></pre>
           </div>
 
-          <p><code>netObligation</code> is the sum of active amount holds on the asset, minus releases. <code>protectedAllowance</code> is the part of salary the law leaves with the customer, or zero when core protects it natively or the order waives it. <code>balance</code> is the balance <em>before</em> the platform&rsquo;s own hold. Get that last detail wrong and the reconciler chases its own tail: it sees the hold it placed as missing money and shrinks the hold on every run.</p>
-          <p>The reconciler runs on four triggers. An obligation changes. A balance-changing event lands on the asset, such as a credit that makes more money available to hold. A pay cycle rolls over and the allowance renews. A periodic sweep checks for drift. All four call the same function. There is one path, so there is one thing to test.</p>
+          <p><code>netObligation</code> is the sum of active amount holds on the asset, minus releases. <code>protectedAllowance</code> is the part of income the law leaves with the customer, or zero when core protects it natively or the order waives it. <code>balance</code> is the balance <em>before</em> the platform&rsquo;s own hold. Get that last detail wrong and the reconciler chases its own tail: it sees the hold it placed as missing money and shrinks the hold on every run.</p>
+          <p>The reconciler runs on four triggers: an obligation changes; a balance-changing event lands on the asset, such as a credit that makes more money available to hold; a pay cycle rolls over and the allowance renews; a periodic sweep checks for drift. All four call the same function. One path means one thing to test.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>HoldReconciler.java</span><span class="code-block__lang">java</span></div>
@@ -328,7 +332,7 @@
 
     <span class="tok-k">private final</span> <span class="tok-t">ObligationLedger</span> ledger;
     <span class="tok-k">private final</span> <span class="tok-t">ConnectorRuntime</span> connectors;
-    <span class="tok-k">private final</span> <span class="tok-t">ProjectionStore</span> projections;   <span class="tok-c">// last hold we placed, per asset</span>
+    <span class="tok-k">private final</span> <span class="tok-t">ProjectionStore</span> projections;   <span class="tok-c">// last hold placed by the platform, per asset</span>
     <span class="tok-k">private final</span> <span class="tok-t">DriftReporter</span> drift;
 
     <span class="tok-k">public</span> <span class="tok-t">Outcome</span> reconcile(<span class="tok-t">AssetRef</span> asset, <span class="tok-t">Trigger</span> trigger) {
@@ -337,7 +341,7 @@
         <span class="tok-t">Money</span> protectedAl = view.protectedAllowance();         <span class="tok-c">// ZERO if delegated or waived</span>
 
         <span class="tok-t">HoldState</span> core   = connectors.holdState(asset);          <span class="tok-c">// what core says exists</span>
-        <span class="tok-t">Money</span> balance    = core.availableExcludingOwnHold();    <span class="tok-c">// never count our own hold</span>
+        <span class="tok-t">Money</span> balance    = core.availableExcludingOwnHold();    <span class="tok-c">// never count the platform's own hold</span>
 
         <span class="tok-t">Money</span> target = <span class="tok-t">Money</span>.min(net,
                 <span class="tok-t">Money</span>.max(<span class="tok-t">Money</span>.ZERO, balance.minus(protectedAl)));
@@ -370,16 +374,16 @@
 }</code></pre>
           </div>
 
-          <p>Two properties matter more than the code. First, the key is the <em>ledger version</em>, not the order. Ten orders on one asset produce one hold, resized ten times, not ten holds. Second, the reconciler is convergent. Run it twice, run it after a crash, run it from two pods at once with an advisory lock per asset: the end state is the same.</p>
+          <p>Two properties matter more than the code. First, the idempotency key is the <em>ledger version</em>, not the order. Ten orders on one asset produce one hold, resized ten times, not ten holds. Second, the reconciler is convergent. Run it twice, run it after a crash, run it from two pods at once behind an advisory lock per asset: the end state is the same.</p>
 
           <div class="callout callout--warn">
             <div class="callout__title">Drift is a signal, not something to fight</div>
-            <p>The ledger is authoritative, so the reconciler drives core back to target when it finds drift. But if the same asset drifts on every sweep, something outside the platform keeps changing it: a manual release, a core expiry date, a batch job. Re-applying forever hides that. Cap automatic re-application per asset per day, then raise a human task with the before and after. Drift that repeats is a process problem, not a reconciliation problem.</p>
+            <p>The ledger is authoritative, so the reconciler drives core back to target when it finds drift. But if the same asset drifts on every sweep, something outside the platform keeps changing it: a manual release, a hold expiry date in core, a batch job. Re-applying forever hides that. Cap automatic re-application per asset per day, then raise a human task with the before and after. Drift that repeats is a process problem, not a reconciliation problem.</p>
           </div>
 
-          <h2 id="protected-share">Protected share where the channel cannot compute it</h2>
-          <p>Enforcement law commonly leaves part of a salary untouchable. Core banking systems often implement this natively. Prepaid cards, payroll cards and wallets that receive salary usually do not. The obligation is uniform; the substrate is not. The platform has to make the protection uniform anyway.</p>
-          <p>The answer is three tiers, chosen per asset from what the connector declares it can do.</p>
+          <h2 id="protected-share">Protected income share, computed centrally</h2>
+          <p>Enforcement law commonly leaves part of a salary or benefit untouchable. Core banking systems often implement this natively. Prepaid cards, payroll cards and wallets that receive salary usually do not. The obligation is uniform; the substrate is not. The platform has to make the protection uniform anyway, which means the allowance is computed in one place and applied through the same target formula on every asset class.</p>
+          <p>Choose one of three tiers per asset, based on what its connector declares it can do.</p>
 
           <table>
             <thead>
@@ -387,23 +391,23 @@
             </thead>
             <tbody>
               <tr><td><strong>Delegate</strong></td><td>Connector declares <code>nativeProtectedShare</code></td><td>Pass the flag; core computes and enforces. The ledger allowance is zero for that asset.</td></tr>
-              <tr><td><strong>Synthesize</strong></td><td>No native protection, but <code>partialHold</code> is supported</td><td>Platform computes the allowance centrally and the reconciler holds the net amount, renewing every pay cycle.</td></tr>
-              <tr><td><strong>Gap</strong></td><td>No partial hold, or no reliable salary signal</td><td>Never over-hold silently. Detect, escalate to a human carve-out, or mark the asset ineligible for amount holds while protection applies.</td></tr>
+              <tr><td><strong>Compute centrally</strong></td><td>No native protection, but <code>partialHold</code> is supported</td><td>The platform computes the allowance and the reconciler holds the net amount, renewing every pay cycle.</td></tr>
+              <tr><td><strong>Gap</strong></td><td>No partial hold, or no reliable income signal</td><td>Never over-hold silently. Detect, escalate to a human carve-out, or mark the asset ineligible for amount holds while protection applies.</td></tr>
             </tbody>
           </table>
 
-          <p>One guardrail binds all three: exactly one layer protects each asset. Native where it exists, synthesized only where it does not. Two layers would carve the allowance out twice and under-enforce the order.</p>
-          <p>Synthesis needs to know when salary arrives. Two sources usually exist: a payroll file that says who was paid how much for which period, and a per-account credit notification that arrives faster but cannot tell salary from any other credit. Treat the file as the authority and the notification as a latency shortcut. Normalize both to one event and deduplicate on <code>(party, asset, period)</code>. The allowance then renews exactly once per cycle, whatever order the two sources arrive in, and even if one never arrives.</p>
+          <p>One guardrail binds all three: exactly one layer protects each asset. Native where it exists, central only where it does not. Two layers would carve the allowance out twice and under-enforce the order.</p>
+          <p>Central computation needs to know when income arrives. Two sources usually exist: a payroll file that states who was paid how much for which period, and a per-account credit notification that arrives faster but cannot tell salary from any other credit. Treat the file as the authority and the notification as a latency shortcut. Normalize both to one event and deduplicate on <code>(party, asset, period)</code>. The allowance then renews exactly once per cycle, whatever order the two sources arrive in, and even if one never arrives.</p>
 
           <div class="callout callout--danger">
-            <div class="callout__title">Ship the gap tier before the synthesize tier</div>
-            <p>The compliance-critical failure is holding money the law protects. Under-enforcement is a finding; illegal over-holding of a salary is harm to a customer. Ship delegate and gap first: they guarantee no silent over-hold. Synthesis is the harder engineering and can follow once the reconciler has run in production for a few pay cycles.</p>
+            <div class="callout__title">Ship the gap tier before central computation</div>
+            <p>The compliance-critical failure is holding money the law protects. Under-enforcement is an audit finding; over-holding a protected salary is harm to a customer. Ship delegate and gap first: together they guarantee no silent over-hold. Central computation is the harder engineering and can follow once the reconciler has run in production for a few pay cycles.</p>
           </div>
 
           <h2 id="order-stream">Every order is a hash-chained stream</h2>
           <p>Each order is an event-sourced aggregate with its own stream. Two properties go beyond a standard event store.</p>
           <p><strong>Gap-free sequence per order.</strong> Each event carries a sequence number that starts at 1 and increments by exactly 1. An append succeeds only if the expected previous sequence matches, enforced by a unique constraint on <code>(order_id, sequence)</code>. A missing number is detectable without any other source of truth.</p>
-          <p><strong>Hash chain.</strong> Each event stores <code>hash = H(prevHash || canonical(event))</code>. Altering or deleting any event breaks every hash after it. The chain head is anchored periodically to write-once storage. An auditor can verify an order&rsquo;s full history with nothing but the stream and the anchor.</p>
+          <p><strong>Hash chain.</strong> Each event stores <code>hash = H(prevHash || canonical(event))</code>. Altering or deleting any event breaks every hash after it. Anchor the chain head periodically to write-once storage, and an auditor can verify an order&rsquo;s full history with nothing but the stream and the anchor.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>order-event.json</span><span class="code-block__lang">json</span></div>
@@ -412,7 +416,7 @@
   <span class="tok-s">"sequence"</span>: <span class="tok-n">6</span>,
   <span class="tok-s">"type"</span>: <span class="tok-s">"ObligationReleased"</span>,
   <span class="tok-s">"occurredAt"</span>: <span class="tok-s">"2026-11-12T09:41:07.312Z"</span>,
-  <span class="tok-s">"descriptor"</span>: { <span class="tok-s">"service"</span>: <span class="tok-s">"lift"</span>, <span class="tok-s">"version"</span>: <span class="tok-s">"3.2.0"</span> },
+  <span class="tok-s">"definition"</span>: { <span class="tok-s">"service"</span>: <span class="tok-s">"lift"</span>, <span class="tok-s">"version"</span>: <span class="tok-s">"3.2.0"</span> },
   <span class="tok-s">"payload"</span>: {
     <span class="tok-s">"releasesOrder"</span>: <span class="tok-s">"order:block:a"</span>,
     <span class="tok-s">"assetRef"</span>: <span class="tok-s">"asset:opaque:01"</span>,
@@ -425,7 +429,7 @@
 }</code></pre>
           </div>
 
-          <p>Note the <code>decision</code> block. Every event that reflects a choice records the rule, the rule version and a digest of the inputs. Replaying the same inputs against the same version gives the same outcome. That turns &ldquo;why did the bank do this?&rdquo; from an investigation into a lookup. Personal data inside payloads is field-encrypted, and identity keys are hashed; the chain covers the ciphertext, so a key rotation does not break verification.</p>
+          <p>Note the <code>decision</code> block. Every event that reflects a choice records the rule, the rule version and a digest of the inputs. Replaying the same inputs against the same version gives the same outcome, which turns &ldquo;why did the bank do this?&rdquo; from an investigation into a lookup. Encrypt personal data inside payloads at field level and hash identity keys; the chain covers the ciphertext, so a key rotation does not break verification.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>ChainVerifier.java</span><span class="code-block__lang">java</span></div>
@@ -443,8 +447,8 @@
 }</code></pre>
           </div>
 
-          <h2 id="lifecycle">Lifecycle and reversal from any state</h2>
-          <p>Orders follow an explicit state machine. The states are the same vocabulary used in dashboards and alerts, so nobody reconstructs status from logs.</p>
+          <h2 id="lifecycle">Lifecycle and reversal from pre-terminal states</h2>
+          <p>Orders follow an explicit state machine. Use the same state names in dashboards and alerts, so nobody has to reconstruct status from logs.</p>
 
           <table>
             <thead>
@@ -457,26 +461,26 @@
               <tr><td><code>AWAITING_APPROVAL</code></td><td>Maker-checker required by policy</td><td>Yes</td></tr>
               <tr><td><code>COMPOSING_OUTCOME</code> / <code>CALLBACK_PENDING</code></td><td>Result assembled; reply queued in an outbox</td><td>Yes</td></tr>
               <tr><td><code>COMPLETED</code>, <code>REJECTED</code>, <code>DECLINED</code></td><td>Terminal</td><td>No &mdash; a later lift is a new order</td></tr>
-              <tr><td><code>REVERSING</code> &rarr; <code>REVERSAL_COMPLETED</code></td><td>Compensation per the service descriptor</td><td>&mdash;</td></tr>
+              <tr><td><code>REVERSING</code> &rarr; <code>REVERSAL_COMPLETED</code></td><td>Compensation per the service definition</td><td>&mdash;</td></tr>
             </tbody>
           </table>
 
-          <p>A reversal can arrive at any pre-terminal state. In a stacked-hold design that is painful: you must know which holds exist at this instant, which calls are mid-flight, and undo each one. With the ledger it is short. The reversal appends <code>ObligationReleased</code> for every active obligation of the order and moves to <code>REVERSING</code>. The reconciler recomputes the asset targets. If a capability call was mid-flight, its late reply is applied under an older ledger version and is superseded on the next run. Compensation becomes data, not choreography.</p>
+          <p>A reversal can arrive at any pre-terminal state. With stacked holds that is painful. With the ledger it is short: the reversal appends <code>ObligationReleased</code> for every active obligation of the order and moves to <code>REVERSING</code>; the reconciler recomputes the asset targets. If a capability call was mid-flight, its late reply is applied under an older ledger version and superseded on the next run. Compensation becomes data, not choreography.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">A reversal that arrives before the order</div>
-            <p>Messages can arrive out of order. Store a reversal for an unknown order as a <em>tombstone</em> keyed by the order reference, with a time-to-live. When the original order arrives, it is born reversed: it is recorded, audited and closed without ever creating an obligation. Rejecting the early reversal instead leaves an order that executes and is never undone.</p>
+            <p>Messages arrive out of order. Store a reversal for an unknown order as a <em>tombstone</em> keyed by the order reference, with a time-to-live. When the original order arrives, it is born reversed: recorded, audited and closed without ever creating an obligation. Rejecting the early reversal instead leaves an order that executes and is never undone.</p>
           </div>
 
-          <h2 id="content-packs">Services as signed, versioned content packs</h2>
-          <p>Block, garnish, lift, deny and ban are not five code paths. They are five descriptors executed by one engine. The engine knows a small number of choreography templates: two-leg request and callback, two-leg with approval, synchronous inquiry, and reversal compensation. A descriptor picks a template and parameterizes it. A new service adds a descriptor; only a genuinely new shape needs a release.</p>
+          <h2 id="service-definitions">Versioned service definitions, in-flight orders pinned</h2>
+          <p>Block, garnish, lift, deny and ban should not be five code paths. They are five definitions executed by one engine. The engine knows a small number of choreography templates &mdash; request with callback, request with approval, synchronous inquiry, reversal compensation &mdash; and a definition picks a template and parameterizes it. A new service adds a definition; only a genuinely new shape needs a code release.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>services/garnish.yaml</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-k">service:</span>
   <span class="tok-k">id:</span> <span class="tok-s">garnish</span>
   <span class="tok-k">version:</span> <span class="tok-s">2.4.0</span>
-  <span class="tok-k">choreography:</span> <span class="tok-s">two-leg-approval</span>
+  <span class="tok-k">choreography:</span> <span class="tok-s">request-with-approval</span>
   <span class="tok-k">reversal:</span> { <span class="tok-k">supported:</span> <span class="tok-s">true</span>, <span class="tok-k">compensation:</span> <span class="tok-s">obligations.releaseAll</span> }
   <span class="tok-k">sla:</span> { <span class="tok-k">replyWithin:</span> <span class="tok-s">PT15M</span> }
 
@@ -491,7 +495,7 @@
     <span class="tok-p">-</span> <span class="tok-k">when:</span> <span class="tok-s">"request.amount == null"</span>
       <span class="tok-k">type:</span> <span class="tok-s">FREEZE</span>
 
-  <span class="tok-k">capabilities:</span>                    <span class="tok-c"># tenant connectors must provide these</span>
+  <span class="tok-k">capabilities:</span>                    <span class="tok-c"># bound connectors must provide these</span>
     <span class="tok-p">-</span> <span class="tok-s">party.resolve</span>
     <span class="tok-p">-</span> <span class="tok-s">account.list</span>
     <span class="tok-p">-</span> <span class="tok-s">balance.inquire</span>
@@ -501,14 +505,14 @@
   <span class="tok-k">regression:</span> <span class="tok-s">scenarios/garnish/*.replay</span></code></pre>
           </div>
 
-          <p>A <strong>content pack</strong> bundles descriptors, schemas, outcome tables, bilingual labels and regression scenarios. It is signed at build time and verified on import. It is immutable and promoted through environments like an image. Each order records the descriptor version it started on and stays pinned to it. A new pack changes new orders only. That removes a whole class of incident: the rule that changed under an order already half-way through execution.</p>
+          <p>Package definitions together with their schemas, outcome tables and regression scenarios into one immutable release unit. Sign it at build time, verify it on import, and promote it through environments the way you promote a container image. Most important: each order records the definition version it started on and stays <strong>pinned</strong> to it until it reaches a terminal state. A new version changes new orders only. That removes a whole class of incident &mdash; the rule that changed under an order already half-way through execution &mdash; and it makes every historical decision reproducible against the exact rules in force at the time.</p>
 
-          <h2 id="connectors">Connector SDK: contracts, taxonomy, certification</h2>
-          <p>The engine never talks to a bank system directly. It calls <em>capabilities</em>, and a per-tenant connector translates each capability to one system: core, card platform, wallet. Connectors are thin and stateless. All order state, and all audit, lives in the platform.</p>
+          <h2 id="connectors">Connector contracts, error taxonomy and certification</h2>
+          <p>The engine never talks to a banking system directly. It calls <em>capabilities</em>, and a connector translates each capability for one system: core banking, the card platform, a wallet. Connectors are thin and stateless. All order state, and all audit, lives in the platform. Whether a connector runs as a flow on an integration server such as IBM App Connect Enterprise or as a small service on Red Hat OpenShift matters less than the contract it honours.</p>
 
           <table>
             <thead>
-              <tr><th>Capability</th><th>Shape</th><th>Rule</th></tr>
+              <tr><th>Capability</th><th>Shape</th><th>Contract rule</th></tr>
             </thead>
             <tbody>
               <tr><td><code>party.resolve</code></td><td>identity &rarr; partyRef</td><td>The only place identity is translated</td></tr>
@@ -520,14 +524,14 @@
             </tbody>
           </table>
 
-          <p>Connectors return capability results, never system status codes. The error taxonomy is fixed by the SDK: <code>NOT_FOUND</code>, <code>INSUFFICIENT_FUNDS</code>, <code>ALREADY_APPLIED</code>, <code>TEMPORARY</code>, <code>PERMANENT</code>. Five values, each with one engine reaction. A connector that cannot map an error to one of them has not understood the system it wraps.</p>
-          <p>Each connector ships a <strong>manifest</strong> declaring its capabilities, versions and flags such as <code>partialHold</code> and <code>nativeProtectedShare</code>. Before a service is switched on for a tenant, the console checks that bound connectors cover every capability the descriptor needs. A gap blocks activation. It never surfaces as a runtime failure on a live order.</p>
-          <p><strong>Certification</strong> is a contract-test suite plus a simulator scenario pack, and it must run green before a connector binds. The scenarios that catch real defects are not the happy paths:</p>
+          <p>Connectors return capability results, never raw system status codes. Fix the error taxonomy in the contract: <code>NOT_FOUND</code>, <code>INSUFFICIENT_FUNDS</code>, <code>ALREADY_APPLIED</code>, <code>TEMPORARY</code>, <code>PERMANENT</code>. Five values, each with exactly one engine reaction. A connector that cannot map an error to one of them has not understood the system it wraps.</p>
+          <p>Each connector ships a <strong>manifest</strong> declaring its capabilities, versions and behaviour flags such as <code>partialHold</code> and <code>nativeProtectedShare</code>. Before a service is enabled, check that the bound connectors cover every capability its definition needs. A gap blocks activation; it never surfaces as a runtime failure on a live order.</p>
+          <p><strong>Certification</strong> is a contract-test suite plus a simulator scenario pack, and it must run green before a connector is bound. The scenarios that catch real defects are not the happy paths:</p>
 
           <ol class="step-list">
             <li>
               <h4>Duplicate delivery</h4>
-              <p>The same <code>hold.set</code> with the same key arrives twice, ten milliseconds apart, and again an hour later. The second and third must return <code>ALREADY_APPLIED</code> and leave exactly one hold.</p>
+              <p>The same <code>hold.set</code> with the same key arrives twice, ten milliseconds apart, and again an hour later. The second and third calls must return <code>ALREADY_APPLIED</code> and leave exactly one hold.</p>
             </li>
             <li>
               <h4>Reversal storms</h4>
@@ -539,20 +543,20 @@
             </li>
             <li>
               <h4>Timeouts with unknown outcome</h4>
-              <p>The connector times out after core applied the hold. The retry with the same key must converge, not double.</p>
+              <p>The connector times out after core has applied the hold. The retry with the same key must converge, not double.</p>
             </li>
           </ol>
 
           <h2 id="failure-modes">Failure modes</h2>
 
           <div class="callout callout--danger">
-            <div class="callout__title">Two layers protecting the same salary</div>
-            <p>A core is upgraded and starts enforcing protected share natively, but its connector manifest still says it does not. The platform synthesizes an allowance on top of the native one, and the order is under-enforced by the full allowance. Mitigation: the manifest is versioned and tied to the connector release, and certification includes a scenario that fails if both layers protect the same asset.</p>
+            <div class="callout__title">Two layers protecting the same income</div>
+            <p>A core system is upgraded and starts enforcing the protected share natively, but its connector manifest still says it does not. The platform computes an allowance on top of the native one and the order is under-enforced by the full allowance. Mitigation: version the manifest with the connector release, and include a certification scenario that fails if both layers protect the same asset.</p>
           </div>
 
           <div class="callout callout--warn">
             <div class="callout__title">Reconciler hammering a degraded core</div>
-            <p>A balance event storm during a payroll run triggers a reconcile per credit. If core is already slow, the reconciler adds load at the worst time. Mitigation: coalesce triggers per asset over a short window, keep a circuit breaker per connector, and let <code>TEMPORARY</code> back off. The target is a function of state, not of the trigger, so coalescing loses nothing.</p>
+            <p>A balance-event storm during a payroll run triggers a reconcile per credit. If core is already slow, the reconciler adds load at the worst moment. Mitigation: coalesce triggers per asset over a short window, keep a circuit breaker per connector, and let <code>TEMPORARY</code> back off. The target is a function of state, not of the trigger, so coalescing loses nothing.</p>
           </div>
 
           <div class="callout callout--warn">
@@ -560,16 +564,21 @@
             <p>If a projection rebuild silently skips an event, the ledger under-states obligations and the reconciler releases money it should hold. Mitigation: rebuilds verify every chain first and refuse to publish a ledger version derived from a stream with a gap or a broken hash.</p>
           </div>
 
-          <h2 id="checklist">Delivery checklist</h2>
+          <div class="callout callout--warn">
+            <div class="callout__title">Hold expiry configured in core</div>
+            <p>Some core hold primitives require an expiry date. If the connector sets one, the hold silently disappears while the obligation is still active, and the reconciler sees drift every time it expires. Mitigation: use the longest expiry the primitive allows, declare it in the manifest, and let the reconciler re-place before expiry rather than after.</p>
+          </div>
+
+          <h2 id="checklist">Implementation checklist</h2>
 
           <ol class="step-list">
             <li>
-              <h4>Get the ownership split signed</h4>
-              <p>Platform owns obligations; core owns money. Write it as a decision record and get legal, compliance and core banking to sign it. Every later argument resolves against this line.</p>
+              <h4>Agree the ownership split in writing</h4>
+              <p>The platform owns obligations; core owns money. Record it as an architecture decision and have legal, compliance and core banking owners sign it. Every later argument resolves against this line.</p>
             </li>
             <li>
               <h4>Define obligation types before services</h4>
-              <p>Types, accumulation rules and how each projects to each asset class. Services are then just descriptors that emit typed obligations.</p>
+              <p>Types, accumulation rules and how each projects to each asset class. Services are then definitions that emit typed obligations.</p>
             </li>
             <li>
               <h4>Build the reconciler as a first-class component</h4>
@@ -577,15 +586,15 @@
             </li>
             <li>
               <h4>Make every order stream gap-free and chained</h4>
-              <p>Unique constraint on sequence, hash per event, periodic anchors, and a verifier the auditors can run themselves.</p>
+              <p>Unique constraint on sequence, a hash per event, periodic anchors, and a verifier auditors can run themselves.</p>
             </li>
             <li>
               <h4>Ship the protected-share gap tier first</h4>
-              <p>Delegate where core can, escalate where nothing can, and only then synthesize. Never ship a path that can silently over-hold.</p>
+              <p>Delegate where core can, escalate where nothing can, and only then compute centrally. Never ship a path that can silently over-hold.</p>
             </li>
             <li>
-              <h4>Package services as signed packs with pinning</h4>
-              <p>Sign, verify, promote, pin. Regression scenarios travel inside the pack, so a pack cannot be promoted without its own tests.</p>
+              <h4>Version service definitions and pin in-flight orders</h4>
+              <p>Sign, verify, promote, pin. Regression scenarios travel inside the release unit, so a definition cannot be promoted without its own tests.</p>
             </li>
             <li>
               <h4>Certify connectors on the hard scenarios</h4>

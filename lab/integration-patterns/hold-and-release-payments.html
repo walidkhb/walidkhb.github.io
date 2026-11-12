@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hold-and-Release: A Two-Phase Pattern for Integrating Payment Hubs with Core Banking &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A generic guide to integrating a payment hub with core banking using two phases: verify-and-hold, then post-and-release or release-only. Covers the payment lifecycle state machine, deriving an accounting-event catalogue, idempotent channel API design, idempotency store trade-offs, resilience settings, per-scheme routing and failure modes.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Hold-and-Release: A Two-Phase Pattern for Integrating Payment Hubs with Core Banking">
+  <meta property="og:description" content="Verify-and-hold, then post-and-release: the state machine, accounting-event method, idempotent channel API and failure modes for putting a payment hub in front of core banking.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/hold-and-release-payments.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Hold-and-Release: A Two-Phase Payment Integration Pattern">
+  <meta name="twitter:description" content="A two-phase hold-and-release state machine, an idempotent channel API, and the failure modes of putting a payment hub in front of core banking.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/hold-and-release-payments.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Hold-and-Release: A Two-Phase Pattern for Integrating Payment Hubs with Core Banking",
+    "description": "A generic guide to integrating a payment hub with core banking using two phases: verify-and-hold, then post-and-release or release-only. Covers the payment lifecycle state machine, deriving an accounting-event catalogue, idempotent channel API design, idempotency store trade-offs, resilience settings, per-scheme routing and failure modes.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-12",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/integration-patterns/hold-and-release-payments.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Integration Patterns &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/integration-patterns.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "Integration Patterns"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Patterns</a><span>/</span>Hold-and-Release Payments</div>
+          <span class="overline">Lab Article</span>
+          <h1>Hold-and-Release: A Two-Phase Pattern for Integrating Payment Hubs with Core Banking</h1>
+          <p class="lead">A payment hub knows the schemes. Core banking knows the money. The cleanest integration between them is two calls &mdash; verify-and-hold, then post-and-release or release-only &mdash; driven by an explicit state machine, an accounting-event catalogue derived by method, and an idempotent channel API that never changes when the routing behind it does.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#why-two-phase">Why two phases</a></li>
+            <li><a href="#core-contract">The core banking contract</a></li>
+            <li><a href="#state-machine">The payment state machine</a></li>
+            <li><a href="#accounting-events">Deriving accounting events</a></li>
+            <li><a href="#channel-api">The idempotent channel API</a></li>
+            <li><a href="#idempotency-store">Choosing the idempotency store</a></li>
+            <li><a href="#resilience">Resilience settings</a></li>
+            <li><a href="#routing">Per-scheme routing</a></li>
+            <li><a href="#failure-modes">Failure modes</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM App Connect Enterprise / IBM MQ / ISO 20022 / Resilience4j / relational state store</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~12 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 12, 2026</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Most banks that modernise payments end up with the same topology. A <strong>payment hub</strong> runs the rails: instant payments, high-value RTGS, bill payments, bulk files, request-to-pay. It builds and parses ISO 20022 messages, talks to the schemes and tracks scheme status. It does not hold accounts. <strong>Core banking</strong> holds the accounts, balances, holds and the ledger, and knows nothing about schemes. In the Saudi market that means a hub speaking to SARIE, the instant payment rail and SADAD, while the core remains the book of record.</p>
+          <p>Between the two sits an <strong>integration layer</strong>. Its job is narrow and should stay narrow: translate protocols, correlate requests and replies, enforce idempotency, route, and protect core banking with circuit breakers and retries. It holds no payment business logic and no accounting rules.</p>
+          <p>This article describes a pattern for the money-movement part of that integration: how a scheme-bound payment reserves, books or releases funds in core banking, and how to keep that safe under retries, timeouts and late scheme replies. The organisational side &mdash; moving schemes onto a hub one at a time without a big-bang cutover &mdash; is covered in the companion essay <a href="../../blog/payment-rail-migration-decision.html">Strangle the Rails, Not the Channels</a>.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Three owners, three domains</div>
+            <p>The hub owns the payment lifecycle and scheme messaging. Core banking owns account state, holds and posting. The integration layer owns translation, correlation, idempotency, resilience and routing. If a design review cannot say in one sentence which of the three owns a field or a decision, fix that first. Ambiguous ownership turns into duplicated logic, and duplicated logic turns into reconciliation breaks.</p>
+          </div>
+
+          <h2 id="why-two-phase">Why Two Phases</h2>
+          <p>The tempting design is a single call: when a customer sends money, debit the account in core banking, then submit to the scheme. It is simple and it works on the happy path. It fails badly on every other path.</p>
+          <ul>
+            <li><strong>The scheme rejects after the debit.</strong> The customer has been debited for a payment that never left the bank. You now need a compensating credit, a customer notification and an explanation on the statement &mdash; for what should have been a non-event.</li>
+            <li><strong>The scheme times out.</strong> You do not know whether the money moved. With a booked debit, the only safe options are to leave it and investigate, or to reverse it and risk a double payment if the scheme later confirms.</li>
+            <li><strong>Submit first, debit later</strong> is worse. If the scheme accepts and the debit then fails on insufficient funds, the bank has paid out money it cannot collect.</li>
+          </ul>
+          <p>The two-phase pattern separates the <em>reservation</em> of funds from the <em>booking</em> of the debit. Phase one validates the debit and places a hold, so the money cannot be spent elsewhere while the scheme decides. Phase two either books the debit and lifts the hold together, or lifts the hold and books nothing. A rejected or timed-out payment leaves no entry on the statement, only a hold that existed for a few seconds. This is the same idea as card authorisation and capture, applied to account-to-account payments.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Two phases is not a distributed transaction</div>
+            <p>The hold and the post are separate commits in core banking. Nothing rolls back automatically if the second call never arrives. The pattern is safe only if every hold has an owner that is guaranteed to issue the second call, and a sweeper that catches the cases where it did not. Both are covered below.</p>
+          </div>
+
+          <h2 id="core-contract">The Core Banking Contract</h2>
+          <p>Core banking needs to expose two operations for hub-driven payments.</p>
+          <ul>
+            <li><strong>Verify-and-hold.</strong> One synchronous call that validates the debit (account status, restrictions, limits, available balance) and places a hold for the amount. On success it returns a <strong>hold reference</strong>. Validation and reservation happen atomically, so there is no window in which funds were checked but not yet reserved.</li>
+            <li><strong>Post</strong>, with two modes, both keyed on the hold reference. <em>Post-and-release</em> books the debit and lifts the hold in one step. <em>Release-only</em> lifts the hold and books nothing.</li>
+          </ul>
+          <p>Not every flow has a customer debit to reserve. Inbound credits, scheme-initiated settlement and bulk file postings have nothing to hold. Mapping the full surface as four routes keeps the contract small:</p>
+
+          <table>
+            <thead>
+              <tr><th>Route</th><th>Calls</th><th>Hold reference</th><th>Typical use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>A &mdash; hold then post</strong></td><td>verify-and-hold, then post-and-release</td><td>Real</td><td>Customer-initiated debit that must be reserved before scheme submission</td></tr>
+              <tr><td><strong>B &mdash; verify then post</strong></td><td>verify (no reservation), then post</td><td>None</td><td>Eligibility or compliance check without reserving funds: an inbound credit, or a payment funded outside the deposit account</td></tr>
+              <tr><td><strong>C &mdash; direct post</strong></td><td>post only</td><td>None</td><td>Scheme-initiated entries: inbound files, returns, refunds, reversals after posting</td></tr>
+              <tr><td><strong>D &mdash; release only</strong></td><td>post in release-only mode</td><td>Released</td><td>Hold placed, but the payment will not complete: scheme reject, timeout, cancellation</td></tr>
+            </tbody>
+          </table>
+
+          <p>Exposed as REST by the integration layer, the shape looks like this. Paths and field names are illustrative.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>core-payments.http</span><span class="code-block__lang">http</span></div>
+<pre><code><span class="tok-c"># 1. Verify and hold</span>
+<span class="tok-k">POST</span> /core/v1/payments/verify HTTP/1.1
+<span class="tok-k">Idempotency-Key</span>: <span class="tok-s">pay-7d1c0a52e9b84f3a</span>
+<span class="tok-k">Content-Type</span>: application/json
+
+{ <span class="tok-k">"paymentId"</span>: <span class="tok-s">"P-000184223"</span>, <span class="tok-k">"debtorAccount"</span>: <span class="tok-s">"SA44..."</span>,
+  <span class="tok-k">"amount"</span>: <span class="tok-s">"2500.00"</span>, <span class="tok-k">"currency"</span>: <span class="tok-s">"SAR"</span>, <span class="tok-k">"paymentType"</span>: <span class="tok-s">"INSTANT_OUTBOUND"</span> }
+
+<span class="tok-c"># 200 OK</span>
+{ <span class="tok-k">"status"</span>: <span class="tok-s">"HELD"</span>, <span class="tok-k">"holdReference"</span>: <span class="tok-s">"H-90311475"</span> }
+
+<span class="tok-c"># 2a. Scheme accepted: post and release</span>
+<span class="tok-k">POST</span> /core/v1/payments/P-000184223/post HTTP/1.1
+{ <span class="tok-k">"holdReference"</span>: <span class="tok-s">"H-90311475"</span>, <span class="tok-k">"mode"</span>: <span class="tok-s">"POST_AND_RELEASE"</span>,
+  <span class="tok-k">"accountingEvent"</span>: <span class="tok-s">"OUTBOUND_INSTANT_DEBIT"</span>, <span class="tok-k">"postingItems"</span>: [ ... ] }
+
+<span class="tok-c"># 2b. Scheme rejected or timed out: release only</span>
+<span class="tok-k">POST</span> /core/v1/payments/P-000184223/post HTTP/1.1
+{ <span class="tok-k">"holdReference"</span>: <span class="tok-s">"H-90311475"</span>, <span class="tok-k">"mode"</span>: <span class="tok-s">"RELEASE_ONLY"</span>,
+  <span class="tok-k">"releaseReason"</span>: <span class="tok-s">"SCHEME_REJECTED"</span> }</code></pre>
+          </div>
+
+          <p>One property of this contract is non-negotiable: <strong>the post must be idempotent on the hold reference.</strong> A second post against a hold that has already been consumed returns the original result; it never books again. Without that, every timeout on the post call becomes a potential double debit.</p>
+
+          <h2 id="state-machine">The Payment State Machine</h2>
+          <p>Every scheme-bound payment moves through the same states. Internal transfers that never leave the bank can collapse to a single posted state, because there is no scheme leg to wait for. The status codes on the transitions use ISO 20022 as the example: a <code>pacs.002</code> status report carries acceptance (<code>ACCP</code>) or rejection (<code>RJCT</code>), and a <code>camt.056</code> carries a recall request.</p>
+
+          <div class="diagram" role="img" aria-label="Payment state machine: RECEIVED to VALIDATING to HELD to SUBMITTED to SCHEME_PENDING, ending in POSTED, RELEASED, REJECTED or REVERSED">
+            <div class="diagram__inner">
+              <svg width="780" height="420" viewBox="0 0 780 420" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="hr-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="hr-rel" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="hr-rev" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Transition labels, row 1 -->
+                <text x="157" y="40" text-anchor="middle" fill="#71717a" font-size="8">auth + key claimed</text>
+                <text x="312" y="40" text-anchor="middle" fill="#71717a" font-size="8">verify+hold OK</text>
+                <text x="467" y="40" text-anchor="middle" fill="#71717a" font-size="8">hub accepts</text>
+                <text x="622" y="40" text-anchor="middle" fill="#71717a" font-size="8">pacs.008 sent</text>
+
+                <!-- Row 1 states -->
+                <rect x="20" y="50" width="120" height="44" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="80" y="68" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">RECEIVED</text>
+                <text x="80" y="84" text-anchor="middle" fill="#71717a" font-size="8">channel call</text>
+
+                <rect x="175" y="50" width="120" height="44" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="235" y="68" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">VALIDATING</text>
+                <text x="235" y="84" text-anchor="middle" fill="#71717a" font-size="8">checks running</text>
+
+                <rect x="330" y="50" width="120" height="44" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="390" y="68" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">HELD</text>
+                <text x="390" y="84" text-anchor="middle" fill="#71717a" font-size="8">funds reserved</text>
+
+                <rect x="485" y="50" width="120" height="44" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="545" y="68" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">SUBMITTED</text>
+                <text x="545" y="84" text-anchor="middle" fill="#71717a" font-size="8">with the hub</text>
+
+                <rect x="640" y="50" width="120" height="44" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="700" y="68" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">SCHEME_PENDING</text>
+                <text x="700" y="84" text-anchor="middle" fill="#71717a" font-size="8">awaiting pacs.002</text>
+
+                <!-- Row 1 arrows -->
+                <line x1="140" y1="72" x2="173" y2="72" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#hr-ok)"/>
+                <line x1="295" y1="72" x2="328" y2="72" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#hr-ok)"/>
+                <line x1="450" y1="72" x2="483" y2="72" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#hr-ok)"/>
+                <line x1="605" y1="72" x2="638" y2="72" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#hr-ok)"/>
+
+                <!-- Row 2 states -->
+                <rect x="95" y="200" width="120" height="44" rx="6" fill="#16161f" stroke="#71717a" stroke-width="1.5"/>
+                <text x="155" y="218" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">REJECTED</text>
+                <text x="155" y="234" text-anchor="middle" fill="#71717a" font-size="8">nothing reserved</text>
+
+                <rect x="405" y="200" width="120" height="44" rx="6" fill="#16161f" stroke="#ef4444" stroke-width="1.5"/>
+                <text x="465" y="218" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">RELEASED</text>
+                <text x="465" y="234" text-anchor="middle" fill="#71717a" font-size="8">hold lifted, no entry</text>
+
+                <rect x="640" y="200" width="120" height="44" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="700" y="218" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">POSTED</text>
+                <text x="700" y="234" text-anchor="middle" fill="#71717a" font-size="8">debit booked</text>
+
+                <!-- Row 3 state -->
+                <rect x="640" y="320" width="120" height="44" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="700" y="338" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">REVERSED</text>
+                <text x="700" y="354" text-anchor="middle" fill="#71717a" font-size="8">compensating entry</text>
+
+                <!-- Rejection arrows -->
+                <line x1="80" y1="94" x2="140" y2="198" stroke="#71717a" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#hr-rel)"/>
+                <line x1="235" y1="94" x2="170" y2="198" stroke="#71717a" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#hr-rel)"/>
+                <text x="155" y="262" text-anchor="middle" fill="#71717a" font-size="8">bad input / funds / limit</text>
+
+                <!-- Release arrows -->
+                <line x1="390" y1="94" x2="440" y2="198" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#hr-rel)"/>
+                <text x="404" y="150" text-anchor="end" fill="#71717a" font-size="8">submit timeout</text>
+                <line x1="660" y1="94" x2="527" y2="212" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#hr-rel)"/>
+                <text x="560" y="125" text-anchor="middle" fill="#71717a" font-size="8">RJCT / timer expired</text>
+                <text x="465" y="262" text-anchor="middle" fill="#71717a" font-size="8">post: RELEASE_ONLY</text>
+
+                <!-- Post arrow -->
+                <line x1="700" y1="94" x2="700" y2="198" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#hr-ok)"/>
+                <text x="694" y="160" text-anchor="end" fill="#71717a" font-size="8">ACCP</text>
+                <text x="694" y="172" text-anchor="end" fill="#71717a" font-size="8">post: POST_AND_RELEASE</text>
+
+                <!-- Reversal arrow -->
+                <line x1="700" y1="244" x2="700" y2="318" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#hr-rev)"/>
+                <text x="694" y="285" text-anchor="end" fill="#71717a" font-size="8">camt.056 after posting</text>
+                <text x="694" y="297" text-anchor="end" fill="#71717a" font-size="8">direct post, reverse entry</text>
+
+                <!-- Core calls note -->
+                <rect x="20" y="300" width="360" height="64" rx="6" fill="#1c1c28" stroke="#2d2d3a"/>
+                <text x="35" y="320" fill="#e4e4e7" font-size="9" font-weight="600">Core calls on this path</text>
+                <text x="35" y="337" fill="#71717a" font-size="8">VALIDATING &rarr; HELD : verify-and-hold &rarr; hold reference</text>
+                <text x="35" y="352" fill="#71717a" font-size="8">exit from HELD / SCHEME_PENDING : post (one of two modes)</text>
+
+                <!-- Legend -->
+                <line x1="20" y1="396" x2="55" y2="396" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="62" y="399" fill="#e4e4e7" font-size="8">happy path</text>
+                <line x1="170" y1="396" x2="205" y2="396" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2"/>
+                <text x="212" y="399" fill="#e4e4e7" font-size="8">hold released, nothing booked</text>
+                <line x1="420" y1="396" x2="455" y2="396" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="462" y="399" fill="#e4e4e7" font-size="8">compensation after a booked debit</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Payment lifecycle. Every path out of HELD ends in exactly one core post call: post-and-release on acceptance, release-only on rejection or timeout. A reversal after posting is a new, compensating entry, not an undo.</div>
+          </div>
+
+          <p>Three rules make the machine safe.</p>
+          <ol class="step-list">
+            <li>
+              <h4>Terminal states are final</h4>
+              <p>POSTED, RELEASED, REJECTED and REVERSED accept no further transitions, except POSTED &rarr; REVERSED. A late scheme message for a RELEASED payment does not move it back; it raises an exception case (see <a href="#failure-modes">failure modes</a>).</p>
+            </li>
+            <li>
+              <h4>One trigger, one core side effect per transition</h4>
+              <p>HELD is entered only by a successful verify-and-hold. RELEASED is entered only after release-only has succeeded. If the core call fails, the state does not move; the retry policy decides what happens next.</p>
+            </li>
+            <li>
+              <h4>Reversal is a new entry</h4>
+              <p>When a recall is accepted after posting, nothing is undone. A compensating entry is booked through the direct-post route. Both the original posting and the reversal stay on the ledger, which is exactly what auditors expect to see.</p>
+            </li>
+          </ol>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentState.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public enum</span> <span class="tok-t">PaymentState</span> {
+    RECEIVED, VALIDATING, HELD, SUBMITTED, SCHEME_PENDING,
+    POSTED, RELEASED, REJECTED, REVERSED;
+
+    <span class="tok-k">private static final</span> <span class="tok-t">Map</span>&lt;<span class="tok-t">PaymentState</span>, <span class="tok-t">Set</span>&lt;<span class="tok-t">PaymentState</span>&gt;&gt; ALLOWED = <span class="tok-t">Map</span>.of(
+        RECEIVED,       <span class="tok-t">Set</span>.of(VALIDATING, REJECTED),
+        VALIDATING,     <span class="tok-t">Set</span>.of(HELD, REJECTED),
+        HELD,           <span class="tok-t">Set</span>.of(SUBMITTED, RELEASED),
+        SUBMITTED,      <span class="tok-t">Set</span>.of(SCHEME_PENDING, RELEASED),
+        SCHEME_PENDING, <span class="tok-t">Set</span>.of(POSTED, RELEASED),
+        POSTED,         <span class="tok-t">Set</span>.of(REVERSED),
+        RELEASED,       <span class="tok-t">Set</span>.of(),
+        REJECTED,       <span class="tok-t">Set</span>.of(),
+        REVERSED,       <span class="tok-t">Set</span>.of());
+
+    <span class="tok-k">public</span> <span class="tok-t">PaymentState</span> to(<span class="tok-t">PaymentState</span> next) {
+        <span class="tok-k">if</span> (!ALLOWED.get(<span class="tok-k">this</span>).contains(next)) {
+            <span class="tok-c">// Never "fix" an illegal transition in code. Raise a case for operations.</span>
+            <span class="tok-k">throw new</span> <span class="tok-t">IllegalTransitionException</span>(<span class="tok-k">this</span>, next);
+        }
+        <span class="tok-k">return</span> next;
+    }
+}</code></pre>
+          </div>
+
+          <h2 id="accounting-events">Deriving the Accounting-Event Catalogue</h2>
+          <p>Every post call carries an accounting event that tells core banking which accounts to debit and credit. The catalogue of events is a contract between the integration team and finance operations, and it is where payment programmes quietly lose months.</p>
+          <p>The usual way to build the catalogue is a walkthrough: list the flows the team knows best and write an event for each. That produces a catalogue that looks complete and is not. The gaps surface one at a time during testing &mdash; an outbound flow with no customer-debit event, a funding source nobody listed, a refund leg with no settlement entry &mdash; and each one costs a round trip with operations and a configuration change in the core.</p>
+          <p><strong>Derive the catalogue from a matrix instead.</strong> The axes are payment type, funding source and lifecycle outcome. Every cell needs either an event or an explicit &ldquo;not applicable&rdquo; with a reason. An illustrative excerpt:</p>
+
+          <table>
+            <thead>
+              <tr><th>Payment type</th><th>Funding source</th><th>Post (accepted)</th><th>Release</th><th>Reverse / refund</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Instant, outbound</td><td>Deposit account</td><td>Debit customer, credit outgoing suspense</td><td>Hold-release audit marker</td><td>Recall after posting</td></tr>
+              <tr><td>Instant, inbound</td><td>&mdash; (scheme)</td><td>Debit scheme suspense, credit beneficiary</td><td>n/a (no hold)</td><td>Debit on accepted recall</td></tr>
+              <tr><td>Request-to-pay</td><td>Deposit account</td><td>Debit payer, credit outgoing suspense</td><td>Hold-release audit marker</td><td>Recall after posting</td></tr>
+              <tr><td>Bill payment</td><td>Deposit account</td><td>Debit customer, credit biller</td><td>Hold-release audit marker</td><td>Mirror entry if advice fails after posting</td></tr>
+              <tr><td>Bill payment</td><td>Card</td><td>Debit card settlement pool, credit biller</td><td>n/a (verify only)</td><td>Mirror entry, funding-aware</td></tr>
+              <tr><td>Bulk, outbound</td><td>Deposit account</td><td>File, batch or item-level debit</td><td>n/a (direct post)</td><td>Item-level credit-back</td></tr>
+              <tr><td>Interbank refund</td><td>&mdash; (scheme)</td><td>Settlement and refund legs</td><td>n/a</td><td>n/a</td></tr>
+            </tbody>
+          </table>
+
+          <p>The method takes an afternoon with finance operations and saves weeks later. Three practices make it stick.</p>
+          <ul>
+            <li><strong>Make the matrix additive.</strong> New payment types and funding sources add rows; existing event codes are never renamed or repurposed. Renaming an event breaks historical reporting and reconciliation.</li>
+            <li><strong>Keep funding source out of the hub.</strong> Schemes do not care whether a customer paid from an account or a card. The integration layer carries the funding source from the channel session to the verify call, and core banking selects the event. Adding a funding type later becomes a core and integration change with no hub scope.</li>
+            <li><strong>Pair two-system postings with a daily control.</strong> When a card platform books the customer-level debit and core banking books against a settlement pool, the two totals must match every day. A gap is either a duplicate or a fraud signal, and it belongs in an operations queue.</li>
+          </ul>
+
+          <h2 id="channel-api">The Idempotent Channel API</h2>
+          <p>Channels &mdash; mobile, internet banking, corporate portals, branch systems &mdash; should call <strong>one</strong> transfer API. They should not know whether a payment is processed by the hub or by the core. That single property is what makes it possible to change routing later without touching a channel.</p>
+          <p>The general mechanics of idempotency keys are covered in <a href="idempotency-keys.html">Idempotency Keys at Scale</a>. A channel API in front of two engines adds a few specific decisions.</p>
+
+          <ul>
+            <li><strong>Namespace the key to the authenticated customer.</strong> Store <code>customerId + ":" + clientKey</code>, with <code>customerId</code> taken from the verified token and never from the request body. Two customers who generate the same key never collide, and one customer cannot probe for another&rsquo;s cached response.</li>
+            <li><strong>Store a payload hash, not the payload.</strong> A SHA-256 of the canonicalised body detects a key reused with different inputs, without retaining sensitive data in the idempotency record.</li>
+            <li><strong>Check before routing.</strong> The idempotency check runs before the router decides which engine to call. A replay returns the cached response regardless of where the original went, so a routing change mid-migration cannot create a duplicate.</li>
+            <li><strong>Two record states.</strong> A new key is written as <code>IN_FLIGHT</code>, the request is forwarded, and the record becomes <code>DONE</code> with the response stored. A retry against <code>IN_FLIGHT</code> gets <code>409</code> with <code>Retry-After</code>.</li>
+            <li><strong>Derive keys for channels that cannot send one.</strong> Legacy channels that speak fixed-length records over IBM MQ cannot add a header. Their adapter derives the key deterministically, for example a SHA-256 of the channel identifier and the channel&rsquo;s own message id. Use one derivation rule for every legacy channel; per-channel variants fork the replay semantics.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>idempotency-decision.txt</span><span class="code-block__lang">text</span></div>
+<pre><code>lookup(customerId:key)
+  absent                        -&gt; write IN_FLIGHT (ttl 24h) -&gt; route -&gt; write DONE + response
+  present, same hash, DONE      -&gt; return cached status + body
+  present, same hash, IN_FLIGHT -&gt; 409 + Retry-After        (original still running)
+  present, different hash       -&gt; 409/422 DUPLICATE_TRANSACTION (key reused)
+  store unavailable             -&gt; 503, do NOT forward       (fail closed)</code></pre>
+          </div>
+
+          <p>Whether a mismatched payload returns <code>409</code> or <code>422</code> matters less than the error code in the body. Channels should map on a stable code such as <code>DUPLICATE_TRANSACTION</code>, not on the HTTP status.</p>
+
+          <h2 id="idempotency-store">Choosing the Idempotency Store</h2>
+          <p>A distributed cache such as Redis is the obvious first choice for idempotency records: sub-millisecond, native TTLs, and an atomic claim with <code>SET NX</code>. For APIs that reserve and move money, a relational store replicated with synchronous commit is usually the safer choice. The trade-off is worth spelling out, because it comes up on every payment programme.</p>
+
+          <table>
+            <thead>
+              <tr><th>Concern</th><th>Cache, asynchronous replication</th><th>Relational store, synchronous commit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Recovery point on failover</strong></td><td>A write acknowledged by the primary can be lost if the primary fails before replicating. An <code>IN_FLIGHT</code> marker can vanish.</td><td>RPO 0. The commit is acknowledged only after a secondary has hardened it.</td></tr>
+              <tr><td><strong>Read-modify-write</strong></td><td>Check, claim and update are separate commands or a script. Correct, but easy to get subtly wrong.</td><td>Check-or-reserve and finalise are each one transaction with row locks.</td></tr>
+              <tr><td><strong>Related state</strong></td><td>Hold reference and lifecycle state live elsewhere.</td><td>Idempotency record, hold reference and payment state can commit together.</td></tr>
+              <tr><td><strong>Latency</strong></td><td>Sub-millisecond.</td><td>Single-digit milliseconds. Budget it explicitly, e.g. &le;10 ms p95 for the check.</td></tr>
+              <tr><td><strong>Audit</strong></td><td>Needs a separate durable trail.</td><td>The table is the trail.</td></tr>
+            </tbody>
+          </table>
+
+          <p>The deciding scenario is a failover in the middle of a payment. The integration layer claims the key, calls verify-and-hold, the hold succeeds &mdash; and the cache primary fails before the claim replicates. The channel retries. The new primary has no record of the key, a second hold is placed, and later possibly a second debit. A few milliseconds per request is a cheap price for removing that path. A cache in front of the relational store, as in the hybrid design from the idempotency article, can still serve fast replays; the relational row remains the authority.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>check_or_reserve.sql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-c">-- Claim the key atomically, or learn what is already there.</span>
+<span class="tok-k">INSERT INTO</span> idempotency_record
+       (scoped_key, payload_hash, state, created_at, expires_at)
+<span class="tok-k">VALUES</span> (:scoped_key, :payload_hash, <span class="tok-s">'IN_FLIGHT'</span>, now(), now() + <span class="tok-k">interval</span> <span class="tok-s">'24 hours'</span>)
+<span class="tok-k">ON CONFLICT</span> (scoped_key) <span class="tok-k">DO NOTHING</span>
+<span class="tok-k">RETURNING</span> scoped_key;               <span class="tok-c">-- no row returned = key already exists</span>
+
+<span class="tok-c">-- If not claimed: read the existing record and apply the decision table.</span>
+<span class="tok-k">SELECT</span> state, payload_hash, response_code, response_body
+  <span class="tok-k">FROM</span> idempotency_record
+ <span class="tok-k">WHERE</span> scoped_key = :scoped_key;
+
+<span class="tok-c">-- After the upstream call: finalise in a second short transaction.</span>
+<span class="tok-k">UPDATE</span> idempotency_record
+   <span class="tok-k">SET</span> state = <span class="tok-s">'DONE'</span>, response_code = :code, response_body = :body,
+       hold_reference = :hold_ref, completed_at = now()
+ <span class="tok-k">WHERE</span> scoped_key = :scoped_key <span class="tok-k">AND</span> state = <span class="tok-s">'IN_FLIGHT'</span>;</code></pre>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Fail closed when the store is down</div>
+            <p>If the idempotency store cannot be reached, reject the write with <code>503</code> and alert. Do not &ldquo;degrade gracefully&rdquo; by skipping the check. A declined payment is an inconvenience the customer can retry; a duplicate debit is an incident, a complaint and a reconciliation task. The cost is an availability dependency on the store, which is why it should run with synchronous secondaries, automatic failover, and readiness probes that take the integration pods out of rotation while it recovers.</p>
+          </div>
+
+          <h2 id="resilience">Resilience Settings</h2>
+          <p>Two upstreams, two sets of limits. A typical arrangement reaches core banking over IBM MQ with request/reply correlation and the hub over REST with mutual TLS. The values below are a starting point for illustration; tune them against measured latency, not intuition.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>resilience.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">resilience4j:</span>
+  <span class="tok-k">circuitbreaker:</span>
+    <span class="tok-k">instances:</span>
+      <span class="tok-k">core-banking:</span>
+        <span class="tok-k">sliding-window-type:</span> <span class="tok-s">COUNT_BASED</span>
+        <span class="tok-k">sliding-window-size:</span> <span class="tok-n">20</span>            <span class="tok-c"># last 20 calls</span>
+        <span class="tok-k">failure-rate-threshold:</span> <span class="tok-n">50</span>         <span class="tok-c"># open at 50% failures</span>
+        <span class="tok-k">wait-duration-in-open-state:</span> <span class="tok-s">30s</span>
+        <span class="tok-k">permitted-number-of-calls-in-half-open-state:</span> <span class="tok-n">3</span>
+      <span class="tok-k">payment-hub:</span>
+        <span class="tok-k">base-config:</span> <span class="tok-s">core-banking</span>
+  <span class="tok-k">timelimiter:</span>
+    <span class="tok-k">instances:</span>
+      <span class="tok-k">core-banking:</span> { <span class="tok-k">timeout-duration:</span> <span class="tok-s">8s</span> }    <span class="tok-c"># MQ request/reply</span>
+      <span class="tok-k">payment-hub:</span>  { <span class="tok-k">timeout-duration:</span> <span class="tok-s">10s</span> }
+  <span class="tok-k">retry:</span>
+    <span class="tok-k">instances:</span>
+      <span class="tok-k">idempotent-only:</span>
+        <span class="tok-k">max-attempts:</span> <span class="tok-n">3</span>
+        <span class="tok-k">wait-duration:</span> <span class="tok-s">1s</span>
+        <span class="tok-k">exponential-backoff-multiplier:</span> <span class="tok-n">2</span>  <span class="tok-c"># 1s, 2s, 4s</span>
+        <span class="tok-k">randomized-wait-factor:</span> <span class="tok-n">0.25</span>      <span class="tok-c"># jitter</span></code></pre>
+          </div>
+
+          <ul>
+            <li><strong>Retry only what is idempotent end to end.</strong> Verify-and-hold carries an idempotency key the core honours, and the post is keyed on the hold reference. Anything that is not idempotent end to end gets no automatic retry.</li>
+            <li><strong>One breaker per upstream.</strong> A slow hub must not trip the breaker that protects core banking, and the other way round.</li>
+            <li><strong>Timeouts are state transitions.</strong> If the hub does not accept a submission within its timeout, the integration layer issues release-only with reason <code>TIMEOUT</code>. Funds are never left reserved behind an unknown outcome.</li>
+            <li><strong>An open breaker is an answer.</strong> Channels get <code>503 UPSTREAM_UNAVAILABLE</code> quickly, which beats holding a connection for eight seconds to learn the same thing.</li>
+          </ul>
+
+          <h2 id="routing">Per-Scheme Routing</h2>
+          <p>Behind the unchanged channel contract, a single router decides per call which engine handles a payment. REST and MQ ingress adapters both normalise to one canonical payload, so the router has exactly one implementation. The routing table is configuration, not code.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>scheme-routing.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">routing:</span>
+  <span class="tok-k">default:</span> <span class="tok-s">core</span>                    <span class="tok-c"># anything unlisted stays on the existing path</span>
+  <span class="tok-k">schemes:</span>
+    <span class="tok-k">instant:</span>        { <span class="tok-k">route:</span> <span class="tok-s">hub</span>,  <span class="tok-k">shadow:</span> <span class="tok-s">none</span> }   <span class="tok-c"># cut over</span>
+    <span class="tok-k">bill-payment:</span>   { <span class="tok-k">route:</span> <span class="tok-s">hub</span>,  <span class="tok-k">shadow:</span> <span class="tok-s">core</span> }   <span class="tok-c"># soaking: old path kept as shadow</span>
+    <span class="tok-k">rtgs:</span>           { <span class="tok-k">route:</span> <span class="tok-s">core</span>, <span class="tok-k">shadow:</span> <span class="tok-s">hub</span>  }   <span class="tok-c"># dark launch: hub compared, not trusted</span>
+  <span class="tok-k">dark-launch:</span>
+    <span class="tok-k">compare-fields:</span> [<span class="tok-s">decision</span>, <span class="tok-s">amount</span>, <span class="tok-s">accountingEvent</span>, <span class="tok-s">postingItems</span>, <span class="tok-s">errorCode</span>]
+    <span class="tok-k">shadow-side-effects:</span> <span class="tok-s">forbidden</span>   <span class="tok-c"># shadow path never holds or posts</span>
+    <span class="tok-k">cutover-threshold:</span> <span class="tok-n">0.001</span>        <span class="tok-c"># example: &lt; 0.1% discrepancies over the window</span></code></pre>
+          </div>
+
+          <p>Three rules keep routing honest.</p>
+          <ul>
+            <li><strong>Pin the route per payment.</strong> Resolve it once, at RECEIVED, and store it on the payment. An in-flight payment finishes on the engine it started on, even if the flag changes mid-flight.</li>
+            <li><strong>Shadow without side effects.</strong> The shadow path computes what it <em>would</em> hold and post; the comparison runs on those outputs. Enforce this in the router, not by convention in each flow.</li>
+            <li><strong>A flag off is the rollback &mdash; for new payments only.</strong> Rehearse it under load before relying on it.</li>
+          </ul>
+
+          <h2 id="failure-modes">Failure Modes</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Late acceptance after the hold was released</div>
+            <p>The outbound timer expires, the hold is released and the payment is RELEASED. Then a delayed <code>pacs.002</code> arrives with ACCP: the scheme has settled, the customer has not been debited. Do not resurrect the payment. Route the late status to an exception queue, book the debit through the direct-post route under a dedicated event, and notify the customer. Size the outbound timer from the scheme&rsquo;s documented maximum response time, not from your own SLA, and measure how often this case occurs.</p>
+          </div>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Post succeeded, reply lost</div>
+            <p>Core banking books the debit and releases the hold, but the MQ reply misses the timeout. A naive retry could book twice. Two defences: the post is idempotent on the hold reference, and the retry path first queries the hold&rsquo;s status. Test this deliberately by dropping replies in a non-production environment.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Keys stuck IN_FLIGHT</div>
+            <p>If an integration pod dies between claiming a key and finalising it, the record stays <code>IN_FLIGHT</code> and every retry gets <code>409</code> until the TTL expires. A recovery job should find <code>IN_FLIGHT</code> records older than the maximum end-to-end timeout, resolve the true outcome from the payment state and the core hold status, and finalise them. Never just delete them.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Orphaned holds</div>
+            <p>A hold that is neither posted nor released reduces the customer&rsquo;s available balance for no reason. Typical causes are a crash between HELD and SUBMITTED, or an unhandled hub error. A sweeper compares open holds against payment states every few minutes and resolves any hold whose payment is terminal or older than the scheme window. Alert on the count of open holds, not only on errors.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Shadow path with side effects</div>
+            <p>The most expensive dark-launch mistake is a shadow call that places a real hold or books a real entry. The customer sees two reservations; the ledger may see two debits. Test it with a balance check before and after a shadowed payment.</p>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Missing accounting event for a new combination</div>
+            <p>A new funding source or payment type is enabled without its event, and posts fail with a configuration error in the core. Make the matrix a release gate: a combination cannot be enabled in routing until every cell has a configured and tested event.</p>
+          </div>
+
+          <h2 id="checklist">Production Checklist</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Write down the three owners</h4>
+              <p>Hub: lifecycle and scheme messaging. Core: accounts, holds, posting. Integration layer: translation, correlation, idempotency, resilience, routing. Review every new field against that list.</p>
+            </li>
+            <li>
+              <h4>Agree the two-phase core contract</h4>
+              <p>Verify-and-hold returns a hold reference. Post has two modes and is idempotent on that reference. Map every flow to one of the four routes.</p>
+            </li>
+            <li>
+              <h4>Encode the state machine as an allowed-transition table</h4>
+              <p>Reject illegal transitions loudly. Every exit from HELD ends in exactly one post call, in one of its two modes.</p>
+            </li>
+            <li>
+              <h4>Build the accounting matrix before the flows</h4>
+              <p>Payment type &times; funding source &times; outcome. Every cell has an event or a documented &ldquo;not applicable&rdquo;. Treat the matrix as a release gate.</p>
+            </li>
+            <li>
+              <h4>Make idempotency durable and fail closed</h4>
+              <p>Namespace keys to the authenticated customer, store a payload hash, check before routing, and keep the authoritative record in a synchronous-commit store. Rehearse a store failover under load and confirm no duplicates.</p>
+            </li>
+            <li>
+              <h4>One breaker and one timeout per upstream</h4>
+              <p>Retry only idempotent calls, with backoff and jitter. On hub submission timeout, release the hold.</p>
+            </li>
+            <li>
+              <h4>Run the sweepers</h4>
+              <p>One for orphaned holds, one for stuck <code>IN_FLIGHT</code> keys, one exception queue for late scheme statuses. Each has an owner and a runbook.</p>
+            </li>
+            <li>
+              <h4>Reconcile daily</h4>
+              <p>Hub payment states against core postings, open holds against non-terminal payments, and any two-system postings against each other. A clean reconciliation is the only real proof that the state machine works.</p>
+            </li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="idempotency-keys.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Idempotency Keys at Scale</div>
+            </a>
+            <a href="../integration-patterns.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Integration Patterns &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2026 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

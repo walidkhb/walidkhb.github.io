@@ -121,6 +121,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Kafka 3.7 / IBM MQ 9.3 / Strimzi / Spring Boot 3.3</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -158,7 +159,7 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>PaymentEventConsumer.java &mdash; @RetryableTopic with DLT</span><span class="code-block__lang">java</span></div>
-<pre><code><span class="tok-k">package</span> info.saib.payments.consumer;
+<pre><code><span class="tok-k">package</span> info.bank.payments.consumer;
 
 <span class="tok-k">import</span> org.springframework.kafka.annotation.KafkaListener;
 <span class="tok-k">import</span> org.springframework.kafka.annotation.RetryableTopic;
@@ -231,11 +232,11 @@
           <div class="code-block">
             <div class="code-block__header"><span>AMQMDLQ.conf &mdash; MQ DLQ handler configuration</span><span class="code-block__lang">properties</span></div>
 <pre><code><span class="tok-c"># IBM MQ Dead Letter Queue Handler (AMQMDLQ) configuration</span>
-<span class="tok-c"># Run as: runmqdlq SAIB.DEAD.LETTER.QUEUE SAIBQM1 < AMQMDLQ.conf</span>
+<span class="tok-c"># Run as: runmqdlq BANK.DEAD.LETTER.QUEUE BANKQM1 < AMQMDLQ.conf</span>
 
 <span class="tok-c"># --- Global parameters ---</span>
-<span class="tok-k">INPUTQ</span>(<span class="tok-s">SAIB.DEAD.LETTER.QUEUE</span>)          <span class="tok-c"># DLQ name, must match ALTER QMGR DEADQ()</span>
-<span class="tok-k">INPUTQM</span>(<span class="tok-s">SAIBQM1</span>)                         <span class="tok-c"># queue manager name</span>
+<span class="tok-k">INPUTQ</span>(<span class="tok-s">BANK.DEAD.LETTER.QUEUE</span>)          <span class="tok-c"># DLQ name, must match ALTER QMGR DEADQ()</span>
+<span class="tok-k">INPUTQM</span>(<span class="tok-s">BANKQM1</span>)                         <span class="tok-c"># queue manager name</span>
 <span class="tok-k">WAIT</span>(<span class="tok-s">YES</span>)                                <span class="tok-c"># wait for new messages; don't exit when queue empty</span>
 <span class="tok-k">RETRYINT</span>(<span class="tok-s">60</span>)                             <span class="tok-c"># retry interval in seconds for action(retry)</span>
 
@@ -246,8 +247,8 @@
 <span class="tok-k">FORMAT</span>(<span class="tok-s">MQSTR</span>)
 <span class="tok-k">APPLNAME</span>(<span class="tok-s">IPS*</span>)
 <span class="tok-k">ACTION</span>(<span class="tok-s">FWD</span>)                              <span class="tok-c"># forward — do not discard</span>
-<span class="tok-k">FWDQ</span>(<span class="tok-s">SAIB.PAYMENT.REGULATORY.HOLD</span>)
-<span class="tok-k">FWDQM</span>(<span class="tok-s">SAIBQM1</span>)
+<span class="tok-k">FWDQ</span>(<span class="tok-s">BANK.PAYMENT.REGULATORY.HOLD</span>)
+<span class="tok-k">FWDQM</span>(<span class="tok-s">BANKQM1</span>)
 
 <span class="tok-c"># Rule 2: Queue-full condition — retry up to 5 times before forwarding to ops queue</span>
 <span class="tok-k">REASON</span>(<span class="tok-s">MQRC_Q_FULL</span>)
@@ -261,8 +262,8 @@
 <span class="tok-c"># Rule 4: All other reasons → forward to ops monitoring queue</span>
 <span class="tok-k">REASON</span>(<span class="tok-s">*</span>)
 <span class="tok-k">ACTION</span>(<span class="tok-s">FWD</span>)
-<span class="tok-k">FWDQ</span>(<span class="tok-s">SAIB.OPS.DEAD.MESSAGES</span>)
-<span class="tok-k">FWDQM</span>(<span class="tok-s">SAIBQM1</span>)</code></pre>
+<span class="tok-k">FWDQ</span>(<span class="tok-s">BANK.OPS.DEAD.MESSAGES</span>)
+<span class="tok-k">FWDQM</span>(<span class="tok-s">BANKQM1</span>)</code></pre>
           </div>
 
           <p>MQ DLQ reason codes to monitor explicitly: <code>MQRC_Q_FULL</code> (2053) indicates a backed-up destination; <code>MQRC_NOT_AUTHORIZED</code> (2035) indicates an ACL misconfiguration; <code>MQRC_MSG_TOO_BIG_FOR_Q</code> (2030) indicates a message size limit violation that requires a schema or application change. Each reason code has a different remediation path and should trigger a different alert severity.</p>
@@ -361,7 +362,7 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>DlqReplayService.java &mdash; DLT consumer republishing to source topic</span><span class="code-block__lang">java</span></div>
-<pre><code><span class="tok-k">package</span> info.saib.integration.dlq;
+<pre><code><span class="tok-k">package</span> info.bank.integration.dlq;
 
 <span class="tok-k">import</span> org.apache.kafka.clients.consumer.ConsumerRecord;
 <span class="tok-k">import</span> org.apache.kafka.common.header.Headers;
@@ -436,7 +437,7 @@
           <ul>
             <li><strong>DLT consumer lag growing.</strong> If the DLT consumer group is falling behind &mdash; consumer lag on <code>payments.events.v1-dlt</code> is increasing &mdash; the DLQ handler itself is failing to process dead letters. Alert immediately; this means the safety valve is blocked. Use <code>kafka_consumer_group_lag{group="payments-processor-dlt"} &gt; 50</code> with a 1-minute evaluation window.</li>
             <li><strong>DLT write rate spike.</strong> A sudden increase in the rate of messages being published to the DLT indicates a consumer has started failing rapidly. Alert on <code>rate(kafka_topic_messages_in_total{topic="payments.events.v1-dlt"}[5m]) &gt; 5</code>. More than 5 messages per second arriving in the DLT warrants an immediate investigation of the source topic consumer.</li>
-            <li><strong>MQ DLQ depth growing.</strong> For IBM MQ, alert when <code>ibmmq_queue_depth{queue="SAIB.DEAD.LETTER.QUEUE"} &gt; 100</code> sustained for 5 minutes. A depth spike followed by a plateau indicates a batch of failures that the AMQMDLQ handler is not clearing.</li>
+            <li><strong>MQ DLQ depth growing.</strong> For IBM MQ, alert when <code>ibmmq_queue_depth{queue="BANK.DEAD.LETTER.QUEUE"} &gt; 100</code> sustained for 5 minutes. A depth spike followed by a plateau indicates a batch of failures that the AMQMDLQ handler is not clearing.</li>
           </ul>
           <p>The Grafana dashboard should show, per topic or per queue: DLT message rate (messages/min), DLT consumer lag, time-since-last-DLT-consumer-commit, and a table of the last 20 DLT messages with their reason codes. This is the first screen the on-call engineer opens when a DLQ alert fires.</p>
 

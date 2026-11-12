@@ -124,12 +124,13 @@
             <span class="article-meta__item"><strong>Stack:</strong> Apache Flink 1.19 &middot; Flink Kubernetes Operator 1.9 &middot; OpenShift 4.15 &middot; MinIO / IBM COS &middot; Kafka 3.x</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Oct 31, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
           <p>Deploying Flink is easy. Running it in production on a regulated financial platform is not. The stream-processing logic articles in this Lab series cover windowing, joins, and state semantics; this article covers the operational layer that keeps those pipelines alive: how the cluster is structured on OpenShift, how checkpoints are persisted safely so a pod restart does not reprocess hours of payment data, and what exactly-once end-to-end really costs in latency and throughput.</p>
-          <p>The context is a payment screening and fraud-detection platform at SAIB: roughly 150,000 payment messages per day across SARIE, SWIFT, and internal transfers, with a hard requirement that duplicate payment execution is a production incident, not a tolerated edge case. That constraint drives every configuration choice here.</p>
+          <p>The context is a payment screening and fraud-detection platform at a mid-sized bank: roughly 150,000 payment messages per day across SARIE, SWIFT, and internal transfers, with a hard requirement that duplicate payment execution is a production incident, not a tolerated edge case. That constraint drives every configuration choice here.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Flink vs Kafka Streams for this use case</div>
@@ -308,7 +309,7 @@
     <span class="tok-k">replicas</span>: <span class="tok-n">3</span>
   <span class="tok-k">job</span>:
     <span class="tok-k">jarURI</span>: <span class="tok-s">local:///opt/flink/usrlib/payment-screening-1.4.2-fat.jar</span>
-    <span class="tok-k">entryClass</span>: <span class="tok-s">com.saib.streaming.PaymentScreeningJob</span>
+    <span class="tok-k">entryClass</span>: <span class="tok-s">com.example.streaming.PaymentScreeningJob</span>
     <span class="tok-k">parallelism</span>: <span class="tok-n">12</span>
     <span class="tok-k">upgradeMode</span>: <span class="tok-s">savepoint</span></code></pre>
           </div>
@@ -407,7 +408,7 @@
 }</code></pre>
           </div>
 
-          <p>Register in <code>flinkConfiguration</code>: <code>state.backend.rocksdb.options-factory: com.saib.streaming.RocksDBTuner</code>.</p>
+          <p>Register in <code>flinkConfiguration</code>: <code>state.backend.rocksdb.options-factory: com.example.streaming.RocksDBTuner</code>.</p>
 
           <p>State TTL is also configured in the operator code, not in RocksDB. For velocity counters (how many transactions in the last 5 minutes), set a TTL on the state descriptor so RocksDB does not accumulate per-customer rows indefinitely:</p>
 

@@ -12,11 +12,11 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enterprise Transformation Initiatives, KSA — Waleed Albadawi</title>
-  <meta name="description" content="Strategic transformation: enterprise platform modernisation, open banking implementation, real-time payment infrastructure (IPS), and government digitisation at national scale in Saudi Arabia.">
+  <meta name="description" content="Strategic initiatives in Saudi banking: an in-house Open Banking platform passing every SAMA conformance test in sandbox, a payment hub across five rails, core banking as governed APIs, GitOps delivery and a bank-wide Integration Framework.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://www.wbadawi.info/projects.html">
   <meta property="og:title" content="Initiatives — Waleed Albadawi">
-  <meta property="og:description" content="Strategic case studies: enterprise platform modernization, digital banking, API economy, open banking, fraud prevention, and national-scale government platforms.">
+  <meta property="og:description" content="Strategic case studies: in-house Open Banking (130/130 SAMA conformance tests in sandbox), payment hub integration, core banking as a product, GitOps delivery, integration governance, digital banking and national-scale platforms.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.wbadawi.info/projects.html">
   <meta property="og:site_name" content="Waleed Albadawi">
@@ -24,7 +24,7 @@
   <meta property="og:locale" content="en_US">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Initiatives — Waleed Albadawi">
-  <meta name="twitter:description" content="Strategic case studies in enterprise transformation, digital banking, and organizational design.">
+  <meta name="twitter:description" content="Strategic case studies: in-house Open Banking, payment hub integration, core banking as a product, GitOps delivery and integration governance in Saudi banking.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,13 +48,29 @@
     .case-study__tech-tags { margin-bottom: 1rem; }
     .case-study__tech-links { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 0.5rem; }
     .case-study__tech-links .btn--ghost { font-size: 0.75rem; }
+    .before-today { margin-bottom: 4.5rem; padding-bottom: 4.5rem; border-bottom: 1px solid var(--color-border); }
+    .before-today__table { width: 100%; border-collapse: collapse; margin: 1.5rem 0 0; font-size: 0.875rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
+    .before-today__table th { font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); background: var(--color-bg-alt); text-align: left; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); }
+    .before-today__table td { padding: 0.75rem 1rem; color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+    .before-today__table tr:last-child td { border-bottom: none; }
+    .before-today__table td:first-child { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text); white-space: nowrap; }
+    .before-today__table td:last-child { color: var(--color-text); }
+    @media (max-width: 640px) {
+      .before-today__table, .before-today__table tbody, .before-today__table tr, .before-today__table td { display: block; width: 100%; }
+      .before-today__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      .before-today__table tr { padding: 1rem; border-bottom: 1px solid var(--color-border); }
+      .before-today__table tr:last-child { border-bottom: none; }
+      .before-today__table td { padding: 0.25rem 0; border-bottom: none; white-space: normal; }
+      .before-today__table td:first-child { color: var(--color-accent); margin-bottom: 0.25rem; white-space: normal; }
+      .before-today__table td[data-label]::before { content: attr(data-label); display: block; font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); margin-top: 0.5rem; }
+    }
   </style>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": "Initiatives — Waleed Albadawi",
-    "description": "Strategic initiatives: enterprise platform modernization, digital banking transformation, API economy, open banking, fraud prevention, and national-scale government digitization in KSA.",
+    "description": "Strategic initiatives in KSA: in-house Open Banking passing SAMA conformance in sandbox, payment hub integration, core banking as a product, container-native GitOps delivery, a bank-wide Integration Framework, enterprise platform modernization, API economy, fraud prevention and national-scale government digitization.",
     "url": "https://www.wbadawi.info/projects.html",
     "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"}
   }
@@ -92,7 +108,294 @@
   <section>
     <div class="container container--narrow">
 
-      <!-- 01: Enterprise Platform Transformation -->
+      <!-- Before and today -->
+      <div class="before-today fade-in" id="before-and-today">
+        <span class="overline">Before and Today</span>
+        <h2 class="mb-3">What is permanently different</h2>
+        <p class="lead">The initiatives below add up to a different bank. This is the shift, dimension by dimension.</p>
+        <table class="before-today__table">
+          <thead>
+            <tr><th scope="col">Dimension</th><th scope="col">Before</th><th scope="col">Today</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ownership</td><td data-label="Before">Integration ran as a service-request queue and a cost centre.</td><td data-label="Today">A funded platform capability with its own strategy, roadmap, governance and a 40+ organisation.</td></tr>
+            <tr><td>Speed</td><td data-label="Before">Point-to-point builds, quarterly releases, manual deployments.</td><td data-label="Today">Reusable services and continuous delivery: 70% faster time-to-market across 50+ systems.</td></tr>
+            <tr><td>Governance</td><td data-label="Before">Every project and vendor designed integration its own way.</td><td data-label="Today">One Integration Framework: ten standards, four review gates, recorded architecture decisions, mandatory in every RFP.</td></tr>
+            <tr><td>Regulatory readiness</td><td data-label="Before">Each mandate handled as a separate compliance project.</td><td data-label="Today">Regulatory interfaces are platform services: Open Banking stack passing 130/130 SAMA conformance tests in sandbox.</td></tr>
+            <tr><td>Risk and control</td><td data-label="Before">Overnight fraud detection; releases that depended on people.</td><td data-label="Today">Real-time fraud decisions (35% risk reduction); every release traceable with automated security and compliance checks.</td></tr>
+            <tr><td>Core banking</td><td data-label="Before">Direct, undocumented access; the core was the bottleneck for every test cycle.</td><td data-label="Today">14 governed business APIs and a full simulator: projects test in parallel without waiting for the core.</td></tr>
+            <tr><td>Knowledge</td><td data-label="Before">Critical know-how held by a few individuals and in legacy documents.</td><td data-label="Today">An engineering handbook and searchable knowledge base: onboarding, standards and core specifications owned by the institution.</td></tr>
+            <tr><td>Operations</td><td data-label="Before">Limited visibility of integration health for the operations centre.</td><td data-label="Today">Service dashboards, baselines, vendor SLA views and one-page escalation playbooks.</td></tr>
+            <tr><td>Vendors</td><td data-label="Before">Vendors set their own delivery standards and service levels.</td><td data-label="Today">Bank-defined standards and integration service levels written into sourcing and managed-services contracts.</td></tr>
+            <tr><td>Revenue</td><td data-label="Before">Banking services locked behind internal systems.</td><td data-label="Today">An API business with a partner ecosystem contributing 8% to annual profit.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 01: Open Banking, Built In-House -->
+      <div class="case-study fade-in">
+        <span class="overline">Open Banking &amp; Regulatory Platforms</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2024&ndash;2026 &middot; Riyadh</div>
+        <h3 class="mb-3">Open Banking, Built In-House</h3>
+        <hr class="divider">
+        <p>The bank needed an Open Banking platform it could own, change and take through certification on its own terms. I led the decision to build rather than buy, and the delivery of an in-house authorisation server with account-information and payment-initiation services.</p>
+        <p>The platform passes every test in SAMA&rsquo;s functional conformance suites in sandbox, across account information and both payment-initiation suites. The certification programme is under way. The bank now owns the security model, the release cadence and the expertise behind its most regulated interface.</p>
+
+        <div class="case-metrics">
+          <div class="case-metric">
+            <div class="case-metric__value">130/130</div>
+            <div class="case-metric__label">Conformance in Sandbox</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">In-house</div>
+            <div class="case-metric__label">Built, Not Bought</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">FAPI 2.0</div>
+            <div class="case-metric__label">Security Profile</div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> Open Banking stopped being a dependency on a product roadmap the bank does not control. The bank holds the capability and the knowledge to meet each next phase of the mandate itself.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">FAPI 2.0</span>
+            <span class="skill-tag">PAR</span>
+            <span class="skill-tag">mTLS</span>
+            <span class="skill-tag">OAuth 2.1</span>
+            <span class="skill-tag">OIDC</span>
+            <span class="skill-tag">SAMA Open Banking</span>
+            <span class="skill-tag">Account Information 67/67</span>
+            <span class="skill-tag">Payment Initiation 32/32 &middot; 31/31</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/api-security/fapi-2-conformance-testing.html" class="btn btn--ghost">Lab: FAPI 2.0 Conformance Testing <span class="arrow">&rarr;</span></a>
+            <a href="lab/api-security.html" class="btn btn--ghost">Lab: API Security <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 02: Payment Hub Integration -->
+      <div class="case-study fade-in">
+        <span class="overline">Payments Infrastructure</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2024&ndash;2026 &middot; Riyadh</div>
+        <h3 class="mb-3">Payment Hub Integration</h3>
+        <hr class="divider">
+        <p>The bank&rsquo;s new payment hub needed one dependable path into core banking. I led the core-banking layer behind it. Instant payments, SARIE, SADAD, bulk payments and request-to-pay now reach the core through a single interface that is safe to retry.</p>
+        <p>Funds are verified and held before a payment goes out, then posted and released when it completes. Every movement maps to a defined accounting event. A retried payment is never paid twice, and every held amount has a defined path to post or release.</p>
+
+        <div class="case-metrics">
+          <div class="case-metric">
+            <div class="case-metric__value">5</div>
+            <div class="case-metric__label">Payment Rails</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">1</div>
+            <div class="case-metric__label">Idempotent API</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">28</div>
+            <div class="case-metric__label">Accounting Events</div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> Adding a payment rail is now work on a known pattern, not a new project against the core. Finance, operations and audit read every payment through the same accounting model.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">Instant Payments</span>
+            <span class="skill-tag">SARIE</span>
+            <span class="skill-tag">SADAD</span>
+            <span class="skill-tag">Bulk Payments</span>
+            <span class="skill-tag">Request-to-Pay</span>
+            <span class="skill-tag">Idempotent API</span>
+            <span class="skill-tag">Verify-and-Hold</span>
+            <span class="skill-tag">Post-and-Release</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/integration-patterns/hold-and-release-payments.html" class="btn btn--ghost">Lab: Hold-and-Release Payments <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03: Core Banking as a Product -->
+      <div class="case-study fade-in">
+        <span class="overline">Core Banking Access</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2024&ndash;2026 &middot; Riyadh</div>
+        <h3 class="mb-3">Core Banking as a Product</h3>
+        <hr class="divider">
+        <p>Every project reached into the core banking system its own way, and every test cycle queued behind it. I turned the core into a product. Direct access gave way to a small catalogue of governed business APIs, each with an owner, a contract and documentation.</p>
+        <p>A simulator now reproduces the core&rsquo;s transaction behaviour. Projects test in parallel without waiting for the core, and the core is no longer the bottleneck for delivery.</p>
+
+        <div class="case-metrics">
+          <div class="case-metric">
+            <div class="case-metric__value">14</div>
+            <div class="case-metric__label">Business APIs</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">934</div>
+            <div class="case-metric__label">Codes Simulated</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">Parallel</div>
+            <div class="case-metric__label">Testing</div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> The core banking system has a governed front door. Projects consume business capabilities instead of internal message formats, and knowledge of how the core behaves lives in the simulator rather than with a few individuals.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">Governed Business APIs</span>
+            <span class="skill-tag">Legacy Message APIs</span>
+            <span class="skill-tag">Core Simulator</span>
+            <span class="skill-tag">934 Transaction Codes</span>
+            <span class="skill-tag">Contract-First</span>
+            <span class="skill-tag">Parallel Testing</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/legacy-integration/legacy-message-apis-and-simulators.html" class="btn btn--ghost">Lab: Legacy Message APIs &amp; Simulators <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 04: Container-Native Delivery & GitOps -->
+      <div class="case-study fade-in">
+        <span class="overline">Delivery &amp; Platform Engineering</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2024&ndash;2026 &middot; Riyadh</div>
+        <h3 class="mb-3">Container-Native Delivery &amp; GitOps</h3>
+        <hr class="divider">
+        <p>Integration ran on a legacy service bus, deployed by hand one environment at a time. I moved it to a container platform with Git as the single source of truth. Every release is versioned, each environment&rsquo;s configuration has its own repository, and API publishing is automated.</p>
+        <p>Every change passes compliance checks before it can deploy. Releases are repeatable and traceable end to end, and they no longer depend on the person who knows the steps.</p>
+
+        <div class="case-metrics">
+          <div class="case-metric">
+            <div class="case-metric__value">Versioned</div>
+            <div class="case-metric__label">Every Release</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">Automated</div>
+            <div class="case-metric__label">API Publishing</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">Every Change</div>
+            <div class="case-metric__label">Compliance Checked</div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> Delivery became a property of the platform rather than of individuals. Operations, audit and vendors all see the same record of what changed, when and why.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">IBM Cloud Pak for Integration</span>
+            <span class="skill-tag">OpenShift</span>
+            <span class="skill-tag">GitLab CI</span>
+            <span class="skill-tag">Argo CD</span>
+            <span class="skill-tag">GitOps</span>
+            <span class="skill-tag">Per-Environment Config Repos</span>
+            <span class="skill-tag">Automated API Publishing</span>
+            <span class="skill-tag">Compliance Checks</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/devops/gitops-for-cloud-pak-for-integration.html" class="btn btn--ghost">Lab: GitOps for Cloud Pak for Integration <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 05: Integration Framework & Governance -->
+      <div class="case-study fade-in">
+        <span class="overline">Architecture Governance</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2024&ndash;2026 &middot; Riyadh</div>
+        <h3 class="mb-3">Integration Framework &amp; Governance</h3>
+        <hr class="divider">
+        <p>Every project and vendor designed integration its own way. I authored the bank&rsquo;s Integration Framework: ten standards from principles and security to testing and governance, a four-gate review model across the delivery lifecycle, and recorded architecture decisions.</p>
+        <p>The Framework is the mandatory reference for every project and vendor, and an annex to downstream technology RFPs. Vendors now build to the bank&rsquo;s standards rather than their own.</p>
+
+        <div class="case-metrics">
+          <div class="case-metric">
+            <div class="case-metric__value">10</div>
+            <div class="case-metric__label">Standards</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">4</div>
+            <div class="case-metric__label">Review Gates</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">Mandatory</div>
+            <div class="case-metric__label">In Every RFP</div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> Integration quality no longer depends on which team or vendor delivers. The bank sets the rules once, and every sourcing decision inherits them.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">Integration Principles</span>
+            <span class="skill-tag">API Standards</span>
+            <span class="skill-tag">Security Standards</span>
+            <span class="skill-tag">Integration Patterns</span>
+            <span class="skill-tag">Observability</span>
+            <span class="skill-tag">Error Handling</span>
+            <span class="skill-tag">Architecture Decision Records</span>
+            <span class="skill-tag">Four-Gate Review</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/integration-patterns.html" class="btn btn--ghost">Lab: Integration Patterns <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 06: Regulatory, Partner & Vendor Delivery -->
+      <div class="case-study fade-in">
+        <span class="overline">Regulatory, Partner &amp; Vendor Delivery</span>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2024&ndash;2026 &middot; Riyadh</div>
+        <h3 class="mb-3">Regulatory &amp; Partner Programmes</h3>
+        <hr class="divider">
+        <p>New mandates and partners arrive every year. I led integration for more than twelve regulatory and partner programmes on the shared platform: judicial enforcement, treasury, credit-bureau data sharing, escrow, family banking, card operations and biometric verification.</p>
+        <p>I also led an architecture and security assessment of the corporate internet banking estate, ending in a prioritised remediation register. And I set the integration position in the managed-services contract and transformation RFPs, so integration service levels are defined by the bank.</p>
+
+        <div class="case-metrics">
+          <div class="case-metric">
+            <div class="case-metric__value">12+</div>
+            <div class="case-metric__label">Programmes Delivered</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">9</div>
+            <div class="case-metric__label">Treasury Interfaces</div>
+          </div>
+          <div class="case-metric">
+            <div class="case-metric__value">21</div>
+            <div class="case-metric__label">Services Assessed</div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> A new mandate lands on a platform that already exists. The bank, not its suppliers, defines the integration service levels it buys.</p>
+
+        <div class="case-study__tech">
+          <div class="case-study__tech-label">Technical foundation</div>
+          <div class="case-study__tech-tags">
+            <span class="skill-tag">Block &middot; Garnish &middot; Lift &middot; Deny &middot; Ban</span>
+            <span class="skill-tag">Murex MX.3</span>
+            <span class="skill-tag">SWIFT</span>
+            <span class="skill-tag">SARIE</span>
+            <span class="skill-tag">Credit Bureau</span>
+            <span class="skill-tag">Biometric Verification</span>
+            <span class="skill-tag">SOW / SLA Catalogue</span>
+          </div>
+          <div class="case-study__tech-links">
+            <a href="lab/integration-patterns.html" class="btn btn--ghost">Lab: Integration Patterns <span class="arrow">&rarr;</span></a>
+            <a href="lab/event-driven.html" class="btn btn--ghost">Lab: Event-Driven <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 07: Enterprise Platform Transformation -->
       <div class="case-study fade-in">
         <span class="overline">Enterprise Transformation</span>
         <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2019&ndash;Present &middot; Riyadh</div>
@@ -139,7 +442,7 @@
         </div>
       </div>
 
-      <!-- 02: Digital Factory & Engineering Culture -->
+      <!-- 08: Digital Factory & Engineering Culture -->
       <div class="case-study fade-in">
         <span class="overline">Innovation &amp; Culture Change</span>
         <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2021&ndash;2023 &middot; Riyadh</div>
@@ -183,7 +486,7 @@
         </div>
       </div>
 
-      <!-- 03: API Economy & Revenue Creation -->
+      <!-- 09: API Economy & Revenue Creation -->
       <div class="case-study fade-in">
         <span class="overline">Revenue &amp; Growth</span>
         <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2019&ndash;2021 &middot; Riyadh</div>
@@ -227,7 +530,7 @@
         </div>
       </div>
 
-      <!-- 04: Real-Time Fraud Prevention -->
+      <!-- 10: Real-Time Fraud Prevention -->
       <div class="case-study fade-in">
         <span class="overline">Risk &amp; Compliance</span>
         <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2023&ndash;2025 &middot; Riyadh</div>
@@ -267,7 +570,7 @@
         </div>
       </div>
 
-      <!-- 05: Digital Banking Products -->
+      <!-- 11: Digital Banking Products -->
       <div class="case-study fade-in">
         <span class="overline">Digital Product Leadership</span>
         <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2023&ndash;2025 &middot; Riyadh</div>
@@ -311,16 +614,16 @@
         </div>
       </div>
 
-      <!-- 06: Open Banking & Ecosystem Strategy -->
+      <!-- 12: Open Banking & Ecosystem Strategy -->
       <div class="case-study fade-in">
         <span class="overline">Regulatory Strategy &amp; Ecosystem</span>
-        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2023&ndash;2025 &middot; Riyadh</div>
+        <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2023&ndash;2024 &middot; Riyadh</div>
         <h3 class="mb-3">Open Banking &amp; Ecosystem Strategy</h3>
         <hr class="divider">
         <p>SAMA mandated Open Banking across Saudi banks. Most treated it as a compliance checkbox. I positioned it as the foundation for ecosystem banking&mdash;the same regulatory APIs that satisfy SAMA also enable fintech partnerships, Banking-as-a-Service, and embedded finance.</p>
-        <p>The bank achieved full SAMA compliance while simultaneously building the organizational readiness, partner governance, and consent management frameworks required for ecosystem-scale operations.</p>
+        <p>That positioning set the direction for what followed. The bank chose to build its own Open Banking platform, which now passes SAMA&rsquo;s functional conformance tests in sandbox, with certification under way. Alongside it, I built the organizational readiness, partner governance, and consent management frameworks required for ecosystem-scale operations.</p>
 
-        <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> Regulatory compliance became a competitive advantage. The bank is now positioned as a platform for third-party innovation, with a BaaS foundation that competitors who treated Open Banking as a checkbox do not have.</p>
+        <p style="font-size: 0.9375rem; color: var(--color-text-secondary);"><strong style="color: var(--color-text);">Institutional significance:</strong> A regulatory mandate became a strategic asset. The bank is now positioned as a platform for third-party innovation, with a BaaS foundation that competitors who treated Open Banking as a checkbox do not have.</p>
 
         <div class="case-study__tech">
           <div class="case-study__tech-label">Technical foundation</div>
@@ -341,7 +644,7 @@
         </div>
       </div>
 
-      <!-- 07: Zero-Downtime Legacy Modernization -->
+      <!-- 13: Zero-Downtime Legacy Modernization -->
       <div class="case-study fade-in">
         <span class="overline">Operational Excellence</span>
         <div class="case-study__institution"><strong>Saudi Investment Bank</strong> &middot; 2018&ndash;2019 &middot; Riyadh</div>
@@ -381,7 +684,7 @@
         </div>
       </div>
 
-      <!-- 08: Absher National Platform -->
+      <!-- 14: Absher National Platform -->
       <div class="case-study fade-in">
         <span class="overline">National Digital Infrastructure</span>
         <div class="case-study__institution"><strong>ELM</strong> &middot; 2014&ndash;2017 &middot; Riyadh</div>
@@ -440,7 +743,7 @@
   <footer class="site-footer">
     <div class="container">
       <div class="site-footer__inner">
-        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <div>&copy; 2026 Waleed Albadawi. All rights reserved.</div>
         <ul class="footer-links">
           <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
           <li><a href="contact.html">Contact</a></li>
