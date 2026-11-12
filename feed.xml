@@ -8,12 +8,340 @@
     <language>en</language>
     <copyright>© Waleed Albadawi</copyright>
     <managingEditor>noreply@wbadawi.info (Waleed Albadawi)</managingEditor>
-    <lastBuildDate>Tue, 30 Jun 2026 09:00:00 +0300</lastBuildDate>
+    <lastBuildDate>Thu, 12 Nov 2026 09:00:00 +0300</lastBuildDate>
     <image>
       <url>https://www.wbadawi.info/assets/img/favicon-192.png</url>
       <title>Waleed Albadawi — Insights</title>
       <link>https://www.wbadawi.info/blog.html</link>
     </image>
+    <item>
+      <title>Strangle the Rails, Not the Channels: How to Migrate Payment Schemes Without a Big-Bang Cutover</title>
+      <link>https://www.wbadawi.info/blog/payment-rail-migration-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/payment-rail-migration-decision.html</guid>
+      <pubDate>Thu, 12 Nov 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Payment scheme migrations do not need a cutover weekend or a rewrite of every channel. Keep the channel contract fixed, move one scheme at a time behind its own flag, dark-launch against the existing path with agreed discrepancy thresholds, and let evidence — not the programme calendar — decide each cutover.]]></description>
+    </item>
+    <item>
+      <title>Open Banking Conformance Is a Capability, Not a Certificate</title>
+      <link>https://www.wbadawi.info/blog/open-banking-conformance-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/open-banking-conformance-decision.html</guid>
+      <pubDate>Thu, 12 Nov 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Banks tend to treat Open Banking conformance as a one-time certificate earned at go-live. It is better understood as a capability: the ability to prove, on every change, that regulatory interfaces still behave as the standard requires. What that means for build-versus-buy, for how readiness is reported, and for what leaders must own.]]></description>
+    </item>
+    <item>
+      <title>The Live Code Is the Spec: Recover Business Rules Before You Rewrite Legacy Integration</title>
+      <link>https://www.wbadawi.info/blog/live-code-is-the-spec.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/live-code-is-the-spec.html</guid>
+      <pubDate>Thu, 12 Nov 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Rewrites of legacy integration fail because the specification everyone trusts is not what runs in production. Before rewriting, recover live behaviour as numbered business rules, rule on every difference, and make parity the cut-over criterion. A guide to the decisions leaders own.]]></description>
+    </item>
+    <item>
+      <title>Core Banking as a Product: Why the Core Should Stop Being Every Project&#x27;s Bottleneck</title>
+      <link>https://www.wbadawi.info/blog/core-banking-as-a-product.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/core-banking-as-a-product.html</guid>
+      <pubDate>Thu, 12 Nov 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[When every project reaches the core through raw message formats and a shared test environment, the core becomes every project’s bottleneck. Why banks should run the core as a product — governed business APIs, simulators as institutional assets, replaceability as an option — and the decisions leaders own.]]></description>
+    </item>
+    <item>
+      <title>Audit-Ready Releases: Replacing People-Dependent Deployments with Traceable Delivery</title>
+      <link>https://www.wbadawi.info/blog/audit-ready-releases-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/audit-ready-releases-decision.html</guid>
+      <pubDate>Thu, 12 Nov 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Most releases still depend on the people who know the steps, and audit evidence is assembled after the fact. Traceable delivery makes the release a reviewed merge and the evidence a by-product. What auditors and boards actually get, what it does not fix, and the four decisions only leaders can make: freeze windows, who can merge to production, who owns shared standards, and when the old path closes.]]></description>
+    </item>
+    <item>
+      <title>Cache Architecture Is a Risk Architecture: Why Read-Replica and Near-Cache Decisions Belong at VP Level</title>
+      <link>https://www.wbadawi.info/blog/near-cache-read-replicas-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/near-cache-read-replicas-decision.html</guid>
+      <pubDate>Sat, 07 Nov 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Routing reads to Redis replicas saves money and reduces primary load. It also introduces a replica lag window during which your settlement APIs can serve stale exchange rates, limit matrices, or — in the worst case — stale balances. The decision about which data types are eligible for replica or near-cache reads is not a technical choice. It is a risk appetite decision that belongs at VP level.]]></description>
+    </item>
+    <item>
+      <title>Running Flink in Production Is a Platform Commitment, Not a Developer Experiment</title>
+      <link>https://www.wbadawi.info/blog/flink-on-openshift-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/flink-on-openshift-decision.html</guid>
+      <pubDate>Sat, 31 Oct 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Apache Flink on OpenShift crosses a line that Kafka Streams does not: it becomes a shared cluster that the platform team owns, not a library that a squad bundles. The decision to cross that line—and how to cross it without losing a payment in the process—belongs at VP level.]]></description>
+    </item>
+    <item>
+      <title>Idempotency Is a Business Decision: Why Payment Deduplication Requires VP-Level Commitment</title>
+      <link>https://www.wbadawi.info/blog/idempotent-consumer-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/idempotent-consumer-decision.html</guid>
+      <pubDate>Sat, 24 Oct 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Duplicate payment processing is not a developer oversight. It is a consequence of business decisions about retry policies, deployment topology, and incident response. The VP who understands that owns the control; the one who doesn’t finds out in a regulator examination.]]></description>
+    </item>
+    <item>
+      <title>Circuit Breakers Are Not Optional: The Resilience Decision Every Integration Leader Defers Until Something Falls Over</title>
+      <link>https://www.wbadawi.info/blog/circuit-breaker-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/circuit-breaker-decision.html</guid>
+      <pubDate>Sat, 17 Oct 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Banks consistently under-invest in fault isolation until the first cascade failure. The circuit breaker and bulkhead decision is a leadership call, not an engineering detail — and the cost of deferring it is always higher than the cost of building it upfront.]]></description>
+    </item>
+    <item>
+      <title>Event Contracts Are Governance, Not Documentation: The AsyncAPI Decision Every VP Defers Too Long</title>
+      <link>https://www.wbadawi.info/blog/asyncapi-event-contracts-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/asyncapi-event-contracts-decision.html</guid>
+      <pubDate>Sat, 10 Oct 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Most banks treat AsyncAPI specs as documentation added after the fact. The ones who get event-driven architecture right treat them as governance instruments that precede the code. The decision a VP needs to make — and why deferring it costs more than the tooling ever will.]]></description>
+    </item>
+    <item>
+      <title>The Migration Risk No One Models: Why Banks Need Dual-Write Before They Need a New Database</title>
+      <link>https://www.wbadawi.info/blog/dual-write-shadow-mode-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/dual-write-shadow-mode-decision.html</guid>
+      <pubDate>Sat, 03 Oct 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Database migrations fail because they are treated as a one-time event rather than a state synchronisation problem. The dual-write and shadow mode decision is not a technical choice — it is the risk governance decision that determines whether your bank can recover if the migration goes wrong.]]></description>
+    </item>
+    <item>
+      <title>The Certificate Lifecycle Debt Every KSA Bank Carries — And How to Pay It Off</title>
+      <link>https://www.wbadawi.info/blog/vault-pki-cert-lifecycle-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/vault-pki-cert-lifecycle-decision.html</guid>
+      <pubDate>Sat, 26 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Manual certificate spreadsheets are a SAMA audit finding waiting to happen. The decision to automate certificate lifecycle with Vault PKI and cert-manager is not technical — it is about operational accountability and what the bank owes its regulators when a cert expires unexpectedly.]]></description>
+    </item>
+    <item>
+      <title>Progressive Delivery: The Release Strategy Decision That Separates Platform Builders from Project Runners</title>
+      <link>https://www.wbadawi.info/blog/progressive-delivery-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/progressive-delivery-decision.html</guid>
+      <pubDate>Sat, 19 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Most KSA banks still deploy in binary steps — zero to one hundred percent in a single change window. Progressive delivery changes the risk model. The question for leadership is not whether canary deployments are technically possible, but whether the organisation is structured to act on what they reveal.]]></description>
+    </item>
+    <item>
+      <title>Canonical Data Model: The Integration Decision That Outlives Every Platform Change</title>
+      <link>https://www.wbadawi.info/blog/canonical-data-model-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/canonical-data-model-decision.html</guid>
+      <pubDate>Sun, 13 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Most KSA banks keep rebuilding format mappings because they never made one architectural commitment: a governed canonical data model. The CDM is not an engineering exercise; it is a leadership decision about who owns the integration estate long-term.]]></description>
+    </item>
+    <item>
+      <title>Vault Secrets Management: The Infrastructure Decision That Determines Whether Your Secrets Governance Survives a SAMA Examination</title>
+      <link>https://www.wbadawi.info/blog/vault-secrets-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/vault-secrets-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Centralising secrets in HashiCorp Vault is not a DevOps tooling upgrade. It is a leadership decision about who is accountable for secret lifecycle governance, how your bank will satisfy annual key rotation requirements, and whether your integration platform can demonstrate dynamic credential issuance to a regulator.]]></description>
+    </item>
+    <item>
+      <title>Stateful Stream Processing: The Infrastructure Decision Your Fraud and Risk Teams Cannot Afford to Get Wrong</title>
+      <link>https://www.wbadawi.info/blog/stateful-stream-processing-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/stateful-stream-processing-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Exactly-once stream processing is an architecture commitment, not a configuration flag. Why the latency, consistency, and state management decisions your teams make on Flink and Kafka Streams determine whether your real-time fraud controls are defensible to SAMA.]]></description>
+    </item>
+    <item>
+      <title>SOAP-to-REST Modernisation: The API Architecture Decision That Lets You Retire the WSDL Without Rewriting the Backend</title>
+      <link>https://www.wbadawi.info/blog/soap-to-rest-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/soap-to-rest-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Wrap versus rewrite versus expose as-is: the SOAP-to-REST decision carries different risk and cost profiles. SAMA Open Banking requires FAPI 2.0 on the facade even if the backend uses WS-Security BasicAuth. A well-designed wrapper extends the life of a proven backend by 5-10 years.]]></description>
+    </item>
+    <item>
+      <title>Schema Registry: The Data Contract Decision That Prevents Breaking Every Consumer When a Team Changes a Field</title>
+      <link>https://www.wbadawi.info/blog/schema-registry-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/schema-registry-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Schema governance is a team coordination decision, not just a technical one. Why the compatibility policy you set on your event schemas determines whether your Kafka-based architecture holds together at scale — and what the regulator will ask about it.]]></description>
+    </item>
+    <item>
+      <title>Rate Limiting at Scale: The Infrastructure Decision That Protects Revenue While Satisfying SAMA</title>
+      <link>https://www.wbadawi.info/blog/rate-limiting-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/rate-limiting-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Rate limiting defines your service tiers, protects your payment infrastructure, and determines whether SAMA finds your Open Banking quota controls adequate. A VP-level read on the decisions that matter before the engineers configure Redis.]]></description>
+    </item>
+    <item>
+      <title>Observability at Scale: The Platform Decision That Determines Whether Your Integration Estate Runs or Hides</title>
+      <link>https://www.wbadawi.info/blog/observability-pipeline-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/observability-pipeline-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Building an end-to-end observability platform is not a monitoring upgrade. It is a leadership decision about who is accountable for system health, what the regulator can see on demand, and whether your integration estate can diagnose its own failures before customers notice.]]></description>
+    </item>
+    <item>
+      <title>Multi-Tier Caching: The Platform Decision That Determines Your API Latency Floor</title>
+      <link>https://www.wbadawi.info/blog/multi-tier-caching-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/multi-tier-caching-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[L1 + L2 caching is an architecture commitment with coherence implications, not just adding a cache. The tier you miss on under load determines your p99. Leadership must own which data goes in which tier, what staleness is acceptable, and who is on-call when Redis fails at peak hours.]]></description>
+    </item>
+    <item>
+      <title>Multi-Cluster GitOps: The Platform Decision That Determines Whether Your Deployment Governance Scales</title>
+      <link>https://www.wbadawi.info/blog/multi-cluster-gitops-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/multi-cluster-gitops-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Running ArgoCD ApplicationSets across multiple OpenShift clusters is not a CI/CD optimisation. It is a leadership decision about deployment governance, cluster promotion policies, and whether your platform team can manage regulatory separation between environments without manual intervention.]]></description>
+    </item>
+    <item>
+      <title>GraphQL Federation: The API Architecture Decision That Determines Whether Your Domain Teams Stay Autonomous</title>
+      <link>https://www.wbadawi.info/blog/graphql-federation-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/graphql-federation-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[GraphQL federation is not a routing optimisation. It is a domain ownership decision that determines whether your teams can ship independently or wait on a schema review board they never control. A VP-level read on the real trade-offs.]]></description>
+    </item>
+    <item>
+      <title>FAPI 2.0: The Security Architecture Decision That Determines Whether Your Open Banking APIs Satisfy SAMA Phase 2</title>
+      <link>https://www.wbadawi.info/blog/fapi-2-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/fapi-2-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[FAPI 2.0 is not optional for SAMA-regulated Open Banking — it is the baseline profile. The implementation choices within it have significant cost and UX implications that leadership must own before TPP onboarding can proceed.]]></description>
+    </item>
+    <item>
+      <title>Data Mesh: The Architecture Decision That Shifts Data Ownership Back to the Domains That Understand It</title>
+      <link>https://www.wbadawi.info/blog/event-driven-data-mesh-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/event-driven-data-mesh-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[A data mesh is an organisational model, not a technology choice. In a regulated Saudi bank, it means every domain team becomes a data controller under PDPL, and federated governance must enforce compliance that central integration never had to own.]]></description>
+    </item>
+    <item>
+      <title>Session Management: The Security Decision That Determines Whether Your Banking App Passes a SAMA Examination</title>
+      <link>https://www.wbadawi.info/blog/distributed-session-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/distributed-session-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Sticky sessions are a technical debt choice that fails silently on pod restart. Distributed Redis sessions are an infrastructure investment that satisfies SAMA session timeout requirements and survives examination — if leadership owns the policy decisions that make it work.]]></description>
+    </item>
+    <item>
+      <title>Dead Letter Queues: The Messaging Decision That Separates Resilient Platforms from Brittle Ones</title>
+      <link>https://www.wbadawi.info/blog/dead-letter-queue-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/dead-letter-queue-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[What happens when a message cannot be processed? The DLQ decision is not a technical detail — it is the difference between a messaging platform that fails gracefully and one that blocks silently under the regulator's eye.]]></description>
+    </item>
+    <item>
+      <title>Multi-Master Replication: The Business Continuity Decision That Determines Whether Your Bank Can Write to Both Data Centers Simultaneously</title>
+      <link>https://www.wbadawi.info/blog/conflict-resolution-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/conflict-resolution-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Active-active is a SAMA BCP requirement for Tier 1 systems, but active-active and conflict-free are not synonymous. The architecture you choose determines which. The examination tests your actual recovery capability, not your DR plan document.]]></description>
+    </item>
+    <item>
+      <title>COBOL Data Mapping: The Mainframe Integration Decision That Determines Whether Modern Services Can Read 40-Year-Old Data</title>
+      <link>https://www.wbadawi.info/blog/cobol-data-mapping-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/cobol-data-mapping-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[DFDL versus bespoke Java parsers versus mainframe retirement: the COBOL data mapping decision is a risk and longevity question, not a technical one. Mapping errors produce incorrect balances under SAMA supervision — a regulatory incident, not a bug.]]></description>
+    </item>
+    <item>
+      <title>Cache Invalidation via CDC: The Architecture Decision That Eliminates Stale Balances Without DBA Coordination</title>
+      <link>https://www.wbadawi.info/blog/cache-invalidation-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/cache-invalidation-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[CDC-driven cache invalidation is a platform commitment, not an application feature. It requires Debezium infrastructure and Kafka — and it is the only invalidation strategy that satisfies SAMA's real-time balance display requirement without DBA coordination on every batch window.]]></description>
+    </item>
+    <item>
+      <title>API WAF and the OWASP API Top 10: The Security Decision Your CISO and CTO Both Have to Own</title>
+      <link>https://www.wbadawi.info/blog/api-waf-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/api-waf-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Deploying a web application firewall in front of your API gateway is not a perimeter security upgrade. It is a leadership decision about which OWASP API Top 10 risks your bank is willing to accept at the platform layer, and which require application-level remediation.]]></description>
+    </item>
+    <item>
+      <title>API Composition: The Architecture Decision That Determines Whether Your Channels Own Their Experience</title>
+      <link>https://www.wbadawi.info/blog/api-composition-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/api-composition-decision.html</guid>
+      <pubDate>Sat, 05 Sep 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[One generic API for all channels versus a dedicated Backend-for-Frontend per channel — it is a decision about team autonomy, channel experience quality, and whether your FAPI 2.0 compliance posture holds under examination.]]></description>
+    </item>
+    <item>
+      <title>Reconciliation Pipelines: The Data Integrity Decision That Regulators Actually Examine</title>
+      <link>https://www.wbadawi.info/blog/reconciliation-pipelines-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/reconciliation-pipelines-decision.html</guid>
+      <pubDate>Sat, 29 Aug 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Automated reconciliation is not a data engineering project. It is a risk control decision about what happens when your CDC pipeline silently diverges from the source of truth — and what the regulator finds when they look.]]></description>
+    </item>
+    <item>
+      <title>Service Mesh mTLS: The Infrastructure Decision That Determines Whether Zero-Trust Is Real or Theoretical</title>
+      <link>https://www.wbadawi.info/blog/service-mesh-mtls-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/service-mesh-mtls-decision.html</guid>
+      <pubDate>Sat, 22 Aug 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Deploying a service mesh for east-west mTLS is not a platform team project. It is a leadership decision that determines whether your bank's zero-trust posture survives a SAMA examination — and what it costs the teams that have to live with it.]]></description>
+    </item>
+    <item>
+      <title>CDC from Legacy DB2: The Architecture Decision That Shifts Who Owns the Mainframe Data Contract</title>
+      <link>https://www.wbadawi.info/blog/cdc-legacy-db2-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/cdc-legacy-db2-decision.html</guid>
+      <pubDate>Sat, 15 Aug 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Change Data Capture from DB2 on z/OS and IBM i is not a technical nicety — it is the decision that determines whether your integration team can decouple from the mainframe release cycle or stays permanently coupled to it.]]></description>
+    </item>
+    <item>
+      <title>Saga Patterns: The Distributed Transaction Decision Leaders Have to Own Before Engineering Writes a Line of Code</title>
+      <link>https://www.wbadawi.info/blog/saga-patterns-distributed-transactions-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/saga-patterns-distributed-transactions-decision.html</guid>
+      <pubDate>Sat, 08 Aug 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Distributed transactions in a multi-step payment workflow are not an engineering problem. The decisions around consistency boundaries, compensation authority, and operational runbooks for stuck sagas sit above the engineering team — and must be made first.]]></description>
+    </item>
+    <item>
+      <title>Real-Time Fraud Detection: The Infrastructure Decision Your Risk and Technology Leaders Both Have to Own</title>
+      <link>https://www.wbadawi.info/blog/real-time-fraud-detection-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/real-time-fraud-detection-decision.html</guid>
+      <pubDate>Sat, 01 Aug 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[A real-time fraud detection pipeline for card and IPS payments is not a data science project. The decisions that determine whether it works in production — feature ownership, model threshold governance, latency SLA accountability, and the feedback loop that prevents model drift — sit above the engineering team.]]></description>
+    </item>
+    <item>
+      <title>ISO 20022 Migration: The Strategic Decision Your Bank Can&#x27;t Delegate to the Integration Team</title>
+      <link>https://www.wbadawi.info/blog/iso-20022-migration-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/iso-20022-migration-decision.html</guid>
+      <pubDate>Sat, 25 Jul 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[ISO 20022 is not an integration project. The translation layer is the easy part. The hard decisions — coexistence strategy, purpose code governance, testing mandates — are leadership decisions that determine whether the migration lands cleanly or becomes a long-tail support problem.]]></description>
+    </item>
+    <item>
+      <title>Multi-Region Data: The Architecture Decision That Exposes Your Bank&#x27;s Continuity Strategy</title>
+      <link>https://www.wbadawi.info/blog/cross-region-data-replication-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/cross-region-data-replication-decision.html</guid>
+      <pubDate>Sat, 18 Jul 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Active/active is not a higher ambition than active/passive — it is a different risk profile. The VP decision is whether your write ownership model is mature enough to carry the operational complexity, and whether SAMA’s RTO requirements actually demand it.]]></description>
+    </item>
+    <item>
+      <title>In-Process Caching: The Infrastructure Decision That Lives Beneath Your Latency SLA</title>
+      <link>https://www.wbadawi.info/blog/hazelcast-in-process-caching-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/hazelcast-in-process-caching-decision.html</guid>
+      <pubDate>Sat, 11 Jul 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Embedding state inside application pods with Hazelcast IMDG eliminates the network hop that limits Redis in compute-intensive financial workloads. The VP decision is whether the GC pressure, serialisation versioning risk, and tighter coupling are acceptable for the latency gains on offer.]]></description>
+    </item>
+    <item>
+      <title>Event Sourcing in Payments: The Architecture Decision Your CTO and Compliance Team Both Own</title>
+      <link>https://www.wbadawi.info/blog/event-sourcing-cqrs-payments-decision.html</link>
+      <guid isPermaLink="true">https://www.wbadawi.info/blog/event-sourcing-cqrs-payments-decision.html</guid>
+      <pubDate>Sat, 04 Jul 2026 09:00:00 +0300</pubDate>
+      <dc:creator>Waleed Albadawi</dc:creator>
+      <description><![CDATA[Event sourcing is an audit trail architecture, not just an engineering pattern. The business decision is whether the regulator's evidence requirements, the fraud team's temporal queries, and the reversibility demands of payment flows are worth the write complexity and eventual-consistency trade-offs it introduces.]]></description>
+    </item>
     <item>
       <title>The Automation Trap: Why Banking AI Optimizes Tasks but Rarely Transforms Operations</title>
       <link>https://www.wbadawi.info/blog/automation-trap-banking-operations.html</link>
@@ -199,7 +527,7 @@
       <pubDate>Thu, 02 Apr 2026 09:00:00 +0300</pubDate>
       <dc:creator>Waleed Albadawi</dc:creator>
       <category>Governance &amp; Leadership</category>
-      <description><![CDATA[The best governance makes the right thing the easy thing. Not a gate — a ramp. How enterprise integration governance at SAIB was embedded in the platform rather than the process.]]></description>
+      <description><![CDATA[The best governance makes the right thing the easy thing. Not a gate — a ramp. Why enterprise integration governance belongs in the platform rather than the process.]]></description>
     </item>
     <item>
       <title>AI Without Infrastructure: Why Most Banking AI Projects Are Set Up to Fail</title>

@@ -107,11 +107,12 @@
             <span class="article-meta__item"><strong>Stack:</strong> Axon Framework 4.9 / Spring Boot 3.3 / Kafka 3.7 / PostgreSQL 15 / Testcontainers 1.19</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Aug 8, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="why-sagas">Why sagas, not 2PC</h2>
-          <p>A payment initiation at SAIB crosses at least four bounded contexts before it settles: fraud screening, liquidity reservation, IPS network submission, and notification delivery. Each context has its own database, its own team, and its own deployment cadence. They cannot share a transaction boundary.</p>
+          <p>A payment initiation at a bank typically crosses at least four bounded contexts before it settles: fraud screening, liquidity reservation, IPS network submission, and notification delivery. Each context has its own database, its own team, and its own deployment cadence. They cannot share a transaction boundary.</p>
           <p>Two-phase commit (2PC) was the industry answer to this problem for two decades. The XA protocol locks resources across participants during the prepare phase and releases them on commit or rollback. At the scale and latency profile of a modern payment system, 2PC has two fatal problems. First, it holds locks across network calls &mdash; if the IPS network submission times out at 800ms, every row touched in the fraud and liquidity contexts is locked for those 800ms, blocking concurrent payments. Second, XA requires all participants to implement the XA protocol, which eliminates Kafka, most REST services, and any external party. In practice, IPS is a SAMA-operated network with a SWIFT-style asynchronous API. It cannot participate in a synchronous XA commit.</p>
           <p>The saga pattern replaces the distributed transaction with a sequence of local transactions, each of which publishes an event or sends a command that triggers the next step. Failures are handled by compensating transactions &mdash; explicit, designed rollback actions for each step. The trade-off is clear: you give up atomicity and get availability and decoupling in return. For a payment system, that is the right trade-off. A payment that partially fails and rolls back cleanly is better than a payment system that deadlocks under load.</p>
 
@@ -128,7 +129,7 @@
               <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="ch1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="ch2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
@@ -136,8 +137,8 @@
                 </defs>
 
                 <!-- Kafka bus -->
-                <rect x="20" y="155" width="740" height="50" rx="6" fill="#0f0f16" stroke="#00d4aa" stroke-width="1.5"/>
-                <text x="390" y="177" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Kafka Topic: payments.events.v1</text>
+                <rect x="20" y="155" width="740" height="50" rx="6" fill="#0f0f16" stroke="#c8a660" stroke-width="1.5"/>
+                <text x="390" y="177" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">Kafka Topic: payments.events.v1</text>
                 <text x="390" y="193" text-anchor="middle" fill="#71717a" font-size="8">partitioned by paymentId &middot; log-retained 7 days</text>
 
                 <!-- Services row -->
@@ -156,8 +157,8 @@
                 <text x="380" y="62" text-anchor="middle" fill="#71717a" font-size="8">reserves funds</text>
                 <text x="380" y="74" text-anchor="middle" fill="#71717a" font-size="8">from nostro</text>
 
-                <rect x="470" y="20" width="120" height="60" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="530" y="45" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">ips-svc</text>
+                <rect x="470" y="20" width="120" height="60" rx="4" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="530" y="45" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">ips-svc</text>
                 <text x="530" y="62" text-anchor="middle" fill="#71717a" font-size="8">submits pacs.008</text>
                 <text x="530" y="74" text-anchor="middle" fill="#71717a" font-size="8">to SAMA IPS</text>
 
@@ -170,12 +171,12 @@
                 <line x1="80" y1="80" x2="80" y2="153" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ch1)"/>
                 <line x1="230" y1="80" x2="230" y2="153" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ch1)"/>
                 <line x1="380" y1="80" x2="380" y2="153" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ch1)"/>
-                <line x1="530" y1="80" x2="530" y2="153" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ch1)"/>
+                <line x1="530" y1="80" x2="530" y2="153" stroke="#c8a660" stroke-width="1.5" marker-end="url(#ch1)"/>
 
                 <!-- Services consume from bus -->
                 <line x1="230" y1="207" x2="230" y2="280" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ch1)"/>
                 <line x1="380" y1="207" x2="380" y2="280" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ch1)"/>
-                <line x1="530" y1="207" x2="530" y2="280" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ch1)"/>
+                <line x1="530" y1="207" x2="530" y2="280" stroke="#c8a660" stroke-width="1.5" marker-end="url(#ch1)"/>
                 <line x1="680" y1="207" x2="680" y2="280" stroke="#ef4444" stroke-width="1.5" marker-end="url(#ch2)"/>
 
                 <!-- Event labels below bus -->
@@ -192,8 +193,8 @@
                 <text x="380" y="314" text-anchor="middle" fill="#e4e4e7" font-size="7.5">emits: LiquidityReserved</text>
                 <text x="380" y="328" text-anchor="middle" fill="#ef4444" font-size="7.5">or: LiquidityInsufficient</text>
 
-                <rect x="455" y="280" width="150" height="55" rx="4" fill="#0f0f16" stroke="#00d4aa" stroke-dasharray="3 2"/>
-                <text x="530" y="300" text-anchor="middle" fill="#00d4aa" font-size="8" font-weight="600">listens: LiquidityReserved</text>
+                <rect x="455" y="280" width="150" height="55" rx="4" fill="#0f0f16" stroke="#c8a660" stroke-dasharray="3 2"/>
+                <text x="530" y="300" text-anchor="middle" fill="#c8a660" font-size="8" font-weight="600">listens: LiquidityReserved</text>
                 <text x="530" y="314" text-anchor="middle" fill="#e4e4e7" font-size="7.5">emits: IPSSubmitted</text>
                 <text x="530" y="328" text-anchor="middle" fill="#ef4444" font-size="7.5">or: IPSRejected</text>
 
@@ -322,7 +323,7 @@
             </li>
             <li>
               <h4>Order compensations in reverse saga order</h4>
-              <p>If steps A &rarr; B &rarr; C all succeeded and step D failed, compensate in the order C&prime; &rarr; B&prime; &rarr; A&prime;. Do not compensate A before compensating C &mdash; earlier steps may have created dependencies that the later steps rely on. At SAIB, the IPS submission acknowledgement contains the IPS reference number that the liquidity compensation uses; releasing liquidity before the IPS rejection is confirmed loses that reference.</p>
+              <p>If steps A &rarr; B &rarr; C all succeeded and step D failed, compensate in the order C&prime; &rarr; B&prime; &rarr; A&prime;. Do not compensate A before compensating C &mdash; earlier steps may have created dependencies that the later steps rely on. In a typical IPS integration, the IPS submission acknowledgement contains the IPS reference number that the liquidity compensation uses; releasing liquidity before the IPS rejection is confirmed loses that reference.</p>
             </li>
             <li>
               <h4>Compensations are business events, not technical housekeeping</h4>
@@ -340,14 +341,14 @@
           </div>
 
           <h2 id="ips-example">IPS payment saga end-to-end</h2>
-          <p>A concrete walkthrough of the happy path and the two most common failure paths for an outbound IPS credit transfer at SAIB.</p>
+          <p>A concrete walkthrough of the happy path and the two most common failure paths for an outbound IPS credit transfer.</p>
 
           <div class="diagram" role="img" aria-label="Orchestration saga state machine for IPS payment: PaymentInitiated → FraudCheckPassed → LiquidityReserved → IPSSubmitted → PaymentSettled with failure paths to compensation states">
             <div class="diagram__inner">
               <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="sm1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="sm2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
@@ -370,19 +371,19 @@
                 <text x="387" y="70" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">LIQ_RESERVED</text>
                 <text x="387" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">LiquidityReserved</text>
 
-                <rect x="493" y="50" width="110" height="48" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="548" y="70" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">IPS_SUBMITTED</text>
+                <rect x="493" y="50" width="110" height="48" rx="6" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="548" y="70" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">IPS_SUBMITTED</text>
                 <text x="548" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">IPSSubmitted</text>
 
-                <rect x="650" y="50" width="110" height="48" rx="6" fill="#1c1c28" stroke="#00d4aa" stroke-width="2"/>
-                <text x="705" y="70" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">SETTLED ✓</text>
+                <rect x="650" y="50" width="110" height="48" rx="6" fill="#1c1c28" stroke="#c8a660" stroke-width="2"/>
+                <text x="705" y="70" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">SETTLED ✓</text>
                 <text x="705" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">PaymentSettled</text>
 
                 <!-- Happy path arrows -->
-                <line x1="130" y1="74" x2="173" y2="74" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sm1)"/>
-                <line x1="285" y1="74" x2="328" y2="74" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sm1)"/>
-                <line x1="445" y1="74" x2="491" y2="74" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sm1)"/>
-                <line x1="603" y1="74" x2="648" y2="74" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sm1)"/>
+                <line x1="130" y1="74" x2="173" y2="74" stroke="#c8a660" stroke-width="1.5" marker-end="url(#sm1)"/>
+                <line x1="285" y1="74" x2="328" y2="74" stroke="#c8a660" stroke-width="1.5" marker-end="url(#sm1)"/>
+                <line x1="445" y1="74" x2="491" y2="74" stroke="#c8a660" stroke-width="1.5" marker-end="url(#sm1)"/>
+                <line x1="603" y1="74" x2="648" y2="74" stroke="#c8a660" stroke-width="1.5" marker-end="url(#sm1)"/>
 
                 <!-- Failure paths: vertical drops -->
                 <!-- Fraud failure -->
@@ -467,7 +468,7 @@
 
           <div class="callout callout--note">
             <div class="callout__title">The dead-letter queue is a design requirement, not a failure mode</div>
-            <p>Every saga implementation that touches an external network must design for the <code>UNKNOWN</code> state. Build the dead-letter queue, the operational dashboard, and the resolution workflow before the system goes live. At SAIB, the IPS operations team has a reconciliation SLA of 15 minutes for unknown-state payments during business hours. That SLA is achievable only if the tooling was built ahead of go-live.</p>
+            <p>Every saga implementation that touches an external network must design for the <code>UNKNOWN</code> state. Build the dead-letter queue, the operational dashboard, and the resolution workflow before the system goes live. A typical target: the IPS operations team has a reconciliation SLA of 15 minutes for unknown-state payments during business hours. That SLA is achievable only if the tooling was built ahead of go-live.</p>
           </div>
 
           <h2 id="idempotency">Idempotency in saga steps</h2>

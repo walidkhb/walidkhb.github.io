@@ -121,6 +121,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Apollo Federation 2 &middot; Apollo Router 1.50 &middot; Kong Gateway 3.7 &middot; OpenShift 4.15</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -146,14 +147,14 @@
             <li><code>@requires(fields: "...")</code> &mdash; the inverse: declares that a resolver for a given field requires specific fields from the entity (potentially owned by another subgraph) to be fetched first.</li>
             <li><code>@shareable</code> &mdash; marks a non-entity type as resolvable by multiple subgraphs. Useful for value types shared between domain teams (e.g. a <code>Money</code> scalar or a <code>Currency</code> enum used by both payments and accounts).</li>
           </ul>
-          <p>Query planning is deterministic given the same supergraph schema and operation. The Router computes a plan, executes fetch operations against subgraphs in parallel where there are no dependencies, and sequences them where <code>@requires</code> chains create a dependency order. At SAIB scale &mdash; &lt;500 rps on the internal GraphQL surface &mdash; plan computation adds under 2 ms of overhead per request; this becomes relevant at 5&ndash;10K rps if plan caching is not enabled.</p>
+          <p>Query planning is deterministic given the same supergraph schema and operation. The Router computes a plan, executes fetch operations against subgraphs in parallel where there are no dependencies, and sequences them where <code>@requires</code> chains create a dependency order. At typical bank-internal scale &mdash; &lt;500 rps on the internal GraphQL surface &mdash; plan computation adds under 2 ms of overhead per request; this becomes relevant at 5&ndash;10K rps if plan caching is not enabled.</p>
 
           <div class="diagram" role="img" aria-label="Client sends GraphQL operation to Apollo Router; Router plans and fans out to three subgraphs: Accounts, Payments, Notifications; each subgraph resolves its own types and returns data to the Router, which stitches and returns a unified response">
             <div class="diagram__inner">
               <svg width="780" height="300" viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="gf-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="gf-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
@@ -170,16 +171,16 @@
                 <text x="75" y="164" text-anchor="middle" fill="#71717a" font-size="8">GraphQL operation</text>
 
                 <!-- Arrow client -> router -->
-                <line x1="140" y1="140" x2="198" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#gf-arr)"/>
-                <text x="169" y="133" text-anchor="middle" fill="#00d4aa" font-size="8">query</text>
+                <line x1="140" y1="140" x2="198" y2="140" stroke="#c8a660" stroke-width="1.5" marker-end="url(#gf-arr)"/>
+                <text x="169" y="133" text-anchor="middle" fill="#c8a660" font-size="8">query</text>
 
                 <!-- Kong at edge label -->
                 <rect x="148" y="106" width="46" height="16" rx="3" fill="#16161f" stroke="#4a9eff" stroke-width="1"/>
                 <text x="171" y="118" text-anchor="middle" fill="#4a9eff" font-size="7">Kong edge</text>
 
                 <!-- Apollo Router -->
-                <rect x="200" y="90" width="200" height="100" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="2"/>
-                <text x="300" y="115" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Apollo Router</text>
+                <rect x="200" y="90" width="200" height="100" rx="6" fill="#16161f" stroke="#c8a660" stroke-width="2"/>
+                <text x="300" y="115" text-anchor="middle" fill="#c8a660" font-size="11" font-weight="600">Apollo Router</text>
                 <text x="300" y="132" text-anchor="middle" fill="#71717a" font-size="9">supergraph schema</text>
                 <text x="300" y="147" text-anchor="middle" fill="#71717a" font-size="8">query planner &middot; JWT plugin</text>
                 <text x="300" y="160" text-anchor="middle" fill="#71717a" font-size="8">OTel trace propagation</text>
@@ -191,8 +192,8 @@
                 <line x1="400" y1="162" x2="490" y2="210" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#gf-arr2)"/>
 
                 <!-- Subgraph: Accounts -->
-                <rect x="492" y="30" width="190" height="68" rx="6" fill="#1c1c28" stroke="#00d4aa" stroke-width="1.5"/>
-                <text x="587" y="54" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Accounts Subgraph</text>
+                <rect x="492" y="30" width="190" height="68" rx="6" fill="#1c1c28" stroke="#c8a660" stroke-width="1.5"/>
+                <text x="587" y="54" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">Accounts Subgraph</text>
                 <text x="587" y="69" text-anchor="middle" fill="#71717a" font-size="9">Account &middot; Balance &middot; Statement</text>
                 <text x="587" y="83" text-anchor="middle" fill="#71717a" font-size="8">@key(fields: &ldquo;iban&rdquo;)</text>
 
@@ -225,7 +226,7 @@
                 <text x="45" y="274" fill="#71717a" font-size="8">fetch plan</text>
                 <line x1="110" y1="270" x2="140" y2="270" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4 3"/>
                 <text x="145" y="274" fill="#71717a" font-size="8">subgraph response</text>
-                <line x1="240" y1="270" x2="270" y2="270" stroke="#00d4aa" stroke-width="1.5"/>
+                <line x1="240" y1="270" x2="270" y2="270" stroke="#c8a660" stroke-width="1.5"/>
                 <text x="275" y="274" fill="#71717a" font-size="8">client &harr; router</text>
               </svg>
             </div>
@@ -316,8 +317,8 @@
   <span class="tok-k">router</span>:
     <span class="tok-k">jwt</span>:
       <span class="tok-k">jwks</span>:
-        - <span class="tok-k">url</span>: <span class="tok-s">"https://idp.internal.saib.com.sa/.well-known/jwks.json"</span>
-          <span class="tok-k">issuer</span>: <span class="tok-s">"https://idp.internal.saib.com.sa"</span>
+        - <span class="tok-k">url</span>: <span class="tok-s">"https://idp.internal.bank.example/.well-known/jwks.json"</span>
+          <span class="tok-k">issuer</span>: <span class="tok-s">"https://idp.internal.bank.example"</span>
       <span class="tok-k">header_name</span>: <span class="tok-s">"Authorization"</span>
       <span class="tok-k">header_value_prefix</span>: <span class="tok-s">"Bearer "</span>
 

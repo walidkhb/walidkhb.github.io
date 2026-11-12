@@ -96,6 +96,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Keycloak / OAuth 2.1 / OIDC / FAPI 2.0</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> May 3, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -115,12 +116,12 @@
               <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="as1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                 </defs>
 
-                <rect x="40" y="40" width="700" height="50" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="60" y="60" fill="#00d4aa" font-size="11" font-weight="600">L1 NETWORK</text>
+                <rect x="40" y="40" width="700" height="50" rx="6" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="60" y="60" fill="#c8a660" font-size="11" font-weight="600">L1 NETWORK</text>
                 <text x="60" y="78" fill="#71717a" font-size="9">WAF &middot; DDoS scrubbing &middot; IP allow-list (partners)</text>
 
                 <rect x="40" y="100" width="700" height="50" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
@@ -135,9 +136,9 @@
                 <text x="60" y="240" fill="#4a9eff" font-size="11" font-weight="600">L4 AUTHORIZATION</text>
                 <text x="60" y="258" fill="#71717a" font-size="9">scopes &middot; claims-based policies &middot; per-resource ABAC &middot; rate limit + quotas</text>
 
-                <line x1="390" y1="90" x2="390" y2="98" stroke="#00d4aa" stroke-width="1" marker-end="url(#as1)"/>
-                <line x1="390" y1="150" x2="390" y2="158" stroke="#00d4aa" stroke-width="1" marker-end="url(#as1)"/>
-                <line x1="390" y1="210" x2="390" y2="218" stroke="#00d4aa" stroke-width="1" marker-end="url(#as1)"/>
+                <line x1="390" y1="90" x2="390" y2="98" stroke="#c8a660" stroke-width="1" marker-end="url(#as1)"/>
+                <line x1="390" y1="150" x2="390" y2="158" stroke="#c8a660" stroke-width="1" marker-end="url(#as1)"/>
+                <line x1="390" y1="210" x2="390" y2="218" stroke="#c8a660" stroke-width="1" marker-end="url(#as1)"/>
               </svg>
             </div>
             <div class="diagram__caption">Figure 1 &mdash; Layered defence stack &mdash; each layer addresses a different attacker class</div>
@@ -168,11 +169,11 @@
               <svg width="780" height="200" viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="as2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                 </defs>
 
-                <rect x="20" y="80" width="120" height="60" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <rect x="20" y="80" width="120" height="60" rx="6" fill="#16161f" stroke="#c8a660"/>
                 <text x="80" y="105" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Service A</text>
                 <text x="80" y="123" text-anchor="middle" fill="#71717a" font-size="9">caller</text>
 
@@ -184,18 +185,18 @@
                 <text x="700" y="105" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Service B</text>
                 <text x="700" y="123" text-anchor="middle" fill="#71717a" font-size="9">resource</text>
 
-                <line x1="140" y1="100" x2="318" y2="80" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#as2)"/>
+                <line x1="140" y1="100" x2="318" y2="80" stroke="#c8a660" stroke-width="1.5" marker-end="url(#as2)"/>
                 <text x="200" y="80" fill="#71717a" font-size="9">1. POST /token</text>
                 <text x="200" y="92" fill="#71717a" font-size="9">&nbsp;&nbsp;&nbsp;client_credentials</text>
 
-                <line x1="318" y1="80" x2="142" y2="100" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#as2)" stroke-dasharray="3 2"/>
+                <line x1="318" y1="80" x2="142" y2="100" stroke="#c8a660" stroke-width="1.5" marker-end="url(#as2)" stroke-dasharray="3 2"/>
                 <text x="200" y="125" fill="#71717a" font-size="9">2. access_token (JWT)</text>
                 <text x="200" y="137" fill="#71717a" font-size="9">&nbsp;&nbsp;&nbsp;ttl=300s</text>
 
-                <line x1="140" y1="115" x2="638" y2="115" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#as2)"/>
+                <line x1="140" y1="115" x2="638" y2="115" stroke="#c8a660" stroke-width="1.5" marker-end="url(#as2)"/>
                 <text x="490" y="105" fill="#71717a" font-size="9">3. GET /accounts &middot; Authorization: Bearer ...</text>
 
-                <line x1="638" y1="125" x2="142" y2="125" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#as2)" stroke-dasharray="3 2"/>
+                <line x1="638" y1="125" x2="142" y2="125" stroke="#c8a660" stroke-width="1.5" marker-end="url(#as2)" stroke-dasharray="3 2"/>
                 <text x="490" y="155" fill="#71717a" font-size="9">4. 200 OK + payload</text>
 
                 <text x="700" y="185" text-anchor="middle" fill="#71717a" font-size="9">B verifies JWT signature against AS jwks_uri (cached locally)</text>

@@ -1,17 +1,290 @@
 [
   {
+    "title": "Strangle the Rails, Not the Channels: How to Migrate Payment Schemes Without a Big-Bang Cutover",
+    "description": "Payment scheme migrations do not need a cutover weekend or a rewrite of every channel. Keep the channel contract fixed, move one scheme at a time behind its own flag, dark-launch against the existing path with agreed discrepancy thresholds, and let evidence — not the programme calendar — decide each cutover.",
+    "category": "",
+    "date": "2026-11-12",
+    "url": "blog/payment-rail-migration-decision.html"
+  },
+  {
+    "title": "Open Banking Conformance Is a Capability, Not a Certificate",
+    "description": "Banks tend to treat Open Banking conformance as a one-time certificate earned at go-live. It is better understood as a capability: the ability to prove, on every change, that regulatory interfaces still behave as the standard requires. What that means for build-versus-buy, for how readiness is reported, and for what leaders must own.",
+    "category": "",
+    "date": "2026-11-12",
+    "url": "blog/open-banking-conformance-decision.html"
+  },
+  {
+    "title": "The Live Code Is the Spec: Recover Business Rules Before You Rewrite Legacy Integration",
+    "description": "Rewrites of legacy integration fail because the specification everyone trusts is not what runs in production. Before rewriting, recover live behaviour as numbered business rules, rule on every difference, and make parity the cut-over criterion. A guide to the decisions leaders own.",
+    "category": "",
+    "date": "2026-11-12",
+    "url": "blog/live-code-is-the-spec.html"
+  },
+  {
+    "title": "Core Banking as a Product: Why the Core Should Stop Being Every Project's Bottleneck",
+    "description": "When every project reaches the core through raw message formats and a shared test environment, the core becomes every project’s bottleneck. Why banks should run the core as a product — governed business APIs, simulators as institutional assets, replaceability as an option — and the decisions leaders own.",
+    "category": "",
+    "date": "2026-11-12",
+    "url": "blog/core-banking-as-a-product.html"
+  },
+  {
+    "title": "Audit-Ready Releases: Replacing People-Dependent Deployments with Traceable Delivery",
+    "description": "Most releases still depend on the people who know the steps, and audit evidence is assembled after the fact. Traceable delivery makes the release a reviewed merge and the evidence a by-product. What auditors and boards actually get, what it does not fix, and the four decisions only leaders can make: freeze windows, who can merge to production, who owns shared standards, and when the old path closes.",
+    "category": "",
+    "date": "2026-11-12",
+    "url": "blog/audit-ready-releases-decision.html"
+  },
+  {
+    "title": "Cache Architecture Is a Risk Architecture: Why Read-Replica and Near-Cache Decisions Belong at VP Level",
+    "description": "Routing reads to Redis replicas saves money and reduces primary load. It also introduces a replica lag window during which your settlement APIs can serve stale exchange rates, limit matrices, or — in the worst case — stale balances. The decision about which data types are eligible for replica or near-cache reads is not a technical choice. It is a risk appetite decision that belongs at VP level.",
+    "category": "",
+    "date": "2026-11-07",
+    "url": "blog/near-cache-read-replicas-decision.html"
+  },
+  {
+    "title": "Running Flink in Production Is a Platform Commitment, Not a Developer Experiment",
+    "description": "Apache Flink on OpenShift crosses a line that Kafka Streams does not: it becomes a shared cluster that the platform team owns, not a library that a squad bundles. The decision to cross that line—and how to cross it without losing a payment in the process—belongs at VP level.",
+    "category": "",
+    "date": "2026-10-31",
+    "url": "blog/flink-on-openshift-decision.html"
+  },
+  {
+    "title": "Idempotency Is a Business Decision: Why Payment Deduplication Requires VP-Level Commitment",
+    "description": "Duplicate payment processing is not a developer oversight. It is a consequence of business decisions about retry policies, deployment topology, and incident response. The VP who understands that owns the control; the one who doesn’t finds out in a regulator examination.",
+    "category": "",
+    "date": "2026-10-24",
+    "url": "blog/idempotent-consumer-decision.html"
+  },
+  {
+    "title": "Circuit Breakers Are Not Optional: The Resilience Decision Every Integration Leader Defers Until Something Falls Over",
+    "description": "Banks consistently under-invest in fault isolation until the first cascade failure. The circuit breaker and bulkhead decision is a leadership call, not an engineering detail — and the cost of deferring it is always higher than the cost of building it upfront.",
+    "category": "",
+    "date": "2026-10-17",
+    "url": "blog/circuit-breaker-decision.html"
+  },
+  {
+    "title": "Event Contracts Are Governance, Not Documentation: The AsyncAPI Decision Every VP Defers Too Long",
+    "description": "Most banks treat AsyncAPI specs as documentation added after the fact. The ones who get event-driven architecture right treat them as governance instruments that precede the code. The decision a VP needs to make — and why deferring it costs more than the tooling ever will.",
+    "category": "",
+    "date": "2026-10-10",
+    "url": "blog/asyncapi-event-contracts-decision.html"
+  },
+  {
+    "title": "The Migration Risk No One Models: Why Banks Need Dual-Write Before They Need a New Database",
+    "description": "Database migrations fail because they are treated as a one-time event rather than a state synchronisation problem. The dual-write and shadow mode decision is not a technical choice — it is the risk governance decision that determines whether your bank can recover if the migration goes wrong.",
+    "category": "",
+    "date": "2026-10-03",
+    "url": "blog/dual-write-shadow-mode-decision.html"
+  },
+  {
+    "title": "The Certificate Lifecycle Debt Every KSA Bank Carries — And How to Pay It Off",
+    "description": "Manual certificate spreadsheets are a SAMA audit finding waiting to happen. The decision to automate certificate lifecycle with Vault PKI and cert-manager is not technical — it is about operational accountability and what the bank owes its regulators when a cert expires unexpectedly.",
+    "category": "",
+    "date": "2026-09-26",
+    "url": "blog/vault-pki-cert-lifecycle-decision.html"
+  },
+  {
+    "title": "Progressive Delivery: The Release Strategy Decision That Separates Platform Builders from Project Runners",
+    "description": "Most KSA banks still deploy in binary steps — zero to one hundred percent in a single change window. Progressive delivery changes the risk model. The question for leadership is not whether canary deployments are technically possible, but whether the organisation is structured to act on what they reveal.",
+    "category": "",
+    "date": "2026-09-19",
+    "url": "blog/progressive-delivery-decision.html"
+  },
+  {
+    "title": "Canonical Data Model: The Integration Decision That Outlives Every Platform Change",
+    "description": "Most KSA banks keep rebuilding format mappings because they never made one architectural commitment: a governed canonical data model. The CDM is not an engineering exercise; it is a leadership decision about who owns the integration estate long-term.",
+    "category": "",
+    "date": "2026-09-13",
+    "url": "blog/canonical-data-model-decision.html"
+  },
+  {
+    "title": "Vault Secrets Management: The Infrastructure Decision That Determines Whether Your Secrets Governance Survives a SAMA Examination",
+    "description": "Centralising secrets in HashiCorp Vault is not a DevOps tooling upgrade. It is a leadership decision about who is accountable for secret lifecycle governance, how your bank will satisfy annual key rotation requirements, and whether your integration platform can demonstrate dynamic credential issuance to a regulator.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/vault-secrets-decision.html"
+  },
+  {
+    "title": "Stateful Stream Processing: The Infrastructure Decision Your Fraud and Risk Teams Cannot Afford to Get Wrong",
+    "description": "Exactly-once stream processing is an architecture commitment, not a configuration flag. Why the latency, consistency, and state management decisions your teams make on Flink and Kafka Streams determine whether your real-time fraud controls are defensible to SAMA.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/stateful-stream-processing-decision.html"
+  },
+  {
+    "title": "SOAP-to-REST Modernisation: The API Architecture Decision That Lets You Retire the WSDL Without Rewriting the Backend",
+    "description": "Wrap versus rewrite versus expose as-is: the SOAP-to-REST decision carries different risk and cost profiles. SAMA Open Banking requires FAPI 2.0 on the facade even if the backend uses WS-Security BasicAuth. A well-designed wrapper extends the life of a proven backend by 5-10 years.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/soap-to-rest-decision.html"
+  },
+  {
+    "title": "Schema Registry: The Data Contract Decision That Prevents Breaking Every Consumer When a Team Changes a Field",
+    "description": "Schema governance is a team coordination decision, not just a technical one. Why the compatibility policy you set on your event schemas determines whether your Kafka-based architecture holds together at scale — and what the regulator will ask about it.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/schema-registry-decision.html"
+  },
+  {
+    "title": "Rate Limiting at Scale: The Infrastructure Decision That Protects Revenue While Satisfying SAMA",
+    "description": "Rate limiting defines your service tiers, protects your payment infrastructure, and determines whether SAMA finds your Open Banking quota controls adequate. A VP-level read on the decisions that matter before the engineers configure Redis.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/rate-limiting-decision.html"
+  },
+  {
+    "title": "Observability at Scale: The Platform Decision That Determines Whether Your Integration Estate Runs or Hides",
+    "description": "Building an end-to-end observability platform is not a monitoring upgrade. It is a leadership decision about who is accountable for system health, what the regulator can see on demand, and whether your integration estate can diagnose its own failures before customers notice.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/observability-pipeline-decision.html"
+  },
+  {
+    "title": "Multi-Tier Caching: The Platform Decision That Determines Your API Latency Floor",
+    "description": "L1 + L2 caching is an architecture commitment with coherence implications, not just adding a cache. The tier you miss on under load determines your p99. Leadership must own which data goes in which tier, what staleness is acceptable, and who is on-call when Redis fails at peak hours.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/multi-tier-caching-decision.html"
+  },
+  {
+    "title": "Multi-Cluster GitOps: The Platform Decision That Determines Whether Your Deployment Governance Scales",
+    "description": "Running ArgoCD ApplicationSets across multiple OpenShift clusters is not a CI/CD optimisation. It is a leadership decision about deployment governance, cluster promotion policies, and whether your platform team can manage regulatory separation between environments without manual intervention.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/multi-cluster-gitops-decision.html"
+  },
+  {
+    "title": "GraphQL Federation: The API Architecture Decision That Determines Whether Your Domain Teams Stay Autonomous",
+    "description": "GraphQL federation is not a routing optimisation. It is a domain ownership decision that determines whether your teams can ship independently or wait on a schema review board they never control. A VP-level read on the real trade-offs.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/graphql-federation-decision.html"
+  },
+  {
+    "title": "FAPI 2.0: The Security Architecture Decision That Determines Whether Your Open Banking APIs Satisfy SAMA Phase 2",
+    "description": "FAPI 2.0 is not optional for SAMA-regulated Open Banking — it is the baseline profile. The implementation choices within it have significant cost and UX implications that leadership must own before TPP onboarding can proceed.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/fapi-2-decision.html"
+  },
+  {
+    "title": "Data Mesh: The Architecture Decision That Shifts Data Ownership Back to the Domains That Understand It",
+    "description": "A data mesh is an organisational model, not a technology choice. In a regulated Saudi bank, it means every domain team becomes a data controller under PDPL, and federated governance must enforce compliance that central integration never had to own.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/event-driven-data-mesh-decision.html"
+  },
+  {
+    "title": "Session Management: The Security Decision That Determines Whether Your Banking App Passes a SAMA Examination",
+    "description": "Sticky sessions are a technical debt choice that fails silently on pod restart. Distributed Redis sessions are an infrastructure investment that satisfies SAMA session timeout requirements and survives examination — if leadership owns the policy decisions that make it work.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/distributed-session-decision.html"
+  },
+  {
+    "title": "Dead Letter Queues: The Messaging Decision That Separates Resilient Platforms from Brittle Ones",
+    "description": "What happens when a message cannot be processed? The DLQ decision is not a technical detail — it is the difference between a messaging platform that fails gracefully and one that blocks silently under the regulator's eye.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/dead-letter-queue-decision.html"
+  },
+  {
+    "title": "Multi-Master Replication: The Business Continuity Decision That Determines Whether Your Bank Can Write to Both Data Centers Simultaneously",
+    "description": "Active-active is a SAMA BCP requirement for Tier 1 systems, but active-active and conflict-free are not synonymous. The architecture you choose determines which. The examination tests your actual recovery capability, not your DR plan document.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/conflict-resolution-decision.html"
+  },
+  {
+    "title": "COBOL Data Mapping: The Mainframe Integration Decision That Determines Whether Modern Services Can Read 40-Year-Old Data",
+    "description": "DFDL versus bespoke Java parsers versus mainframe retirement: the COBOL data mapping decision is a risk and longevity question, not a technical one. Mapping errors produce incorrect balances under SAMA supervision — a regulatory incident, not a bug.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/cobol-data-mapping-decision.html"
+  },
+  {
+    "title": "Cache Invalidation via CDC: The Architecture Decision That Eliminates Stale Balances Without DBA Coordination",
+    "description": "CDC-driven cache invalidation is a platform commitment, not an application feature. It requires Debezium infrastructure and Kafka — and it is the only invalidation strategy that satisfies SAMA's real-time balance display requirement without DBA coordination on every batch window.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/cache-invalidation-decision.html"
+  },
+  {
+    "title": "API WAF and the OWASP API Top 10: The Security Decision Your CISO and CTO Both Have to Own",
+    "description": "Deploying a web application firewall in front of your API gateway is not a perimeter security upgrade. It is a leadership decision about which OWASP API Top 10 risks your bank is willing to accept at the platform layer, and which require application-level remediation.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/api-waf-decision.html"
+  },
+  {
+    "title": "API Composition: The Architecture Decision That Determines Whether Your Channels Own Their Experience",
+    "description": "One generic API for all channels versus a dedicated Backend-for-Frontend per channel — it is a decision about team autonomy, channel experience quality, and whether your FAPI 2.0 compliance posture holds under examination.",
+    "category": "",
+    "date": "2026-09-05",
+    "url": "blog/api-composition-decision.html"
+  },
+  {
+    "title": "Reconciliation Pipelines: The Data Integrity Decision That Regulators Actually Examine",
+    "description": "Automated reconciliation is not a data engineering project. It is a risk control decision about what happens when your CDC pipeline silently diverges from the source of truth — and what the regulator finds when they look.",
+    "category": "",
+    "date": "2026-08-29",
+    "url": "blog/reconciliation-pipelines-decision.html"
+  },
+  {
     "title": "Service Mesh mTLS: The Infrastructure Decision That Determines Whether Zero-Trust Is Real or Theoretical",
-    "description": "Deploying a service mesh for east-west mTLS is a leadership decision about compliance posture, operational cost, and who owns network security inside your cluster — not a platform team project.",
-    "category": "Enterprise Integration",
+    "description": "Deploying a service mesh for east-west mTLS is not a platform team project. It is a leadership decision that determines whether your bank's zero-trust posture survives a SAMA examination — and what it costs the teams that have to live with it.",
+    "category": "",
     "date": "2026-08-22",
     "url": "blog/service-mesh-mtls-decision.html"
   },
   {
+    "title": "CDC from Legacy DB2: The Architecture Decision That Shifts Who Owns the Mainframe Data Contract",
+    "description": "Change Data Capture from DB2 on z/OS and IBM i is not a technical nicety — it is the decision that determines whether your integration team can decouple from the mainframe release cycle or stays permanently coupled to it.",
+    "category": "",
+    "date": "2026-08-15",
+    "url": "blog/cdc-legacy-db2-decision.html"
+  },
+  {
+    "title": "Saga Patterns: The Distributed Transaction Decision Leaders Have to Own Before Engineering Writes a Line of Code",
+    "description": "Distributed transactions in a multi-step payment workflow are not an engineering problem. The decisions around consistency boundaries, compensation authority, and operational runbooks for stuck sagas sit above the engineering team — and must be made first.",
+    "category": "",
+    "date": "2026-08-08",
+    "url": "blog/saga-patterns-distributed-transactions-decision.html"
+  },
+  {
+    "title": "Real-Time Fraud Detection: The Infrastructure Decision Your Risk and Technology Leaders Both Have to Own",
+    "description": "A real-time fraud detection pipeline for card and IPS payments is not a data science project. The decisions that determine whether it works in production — feature ownership, model threshold governance, latency SLA accountability, and the feedback loop that prevents model drift — sit above the engineering team.",
+    "category": "",
+    "date": "2026-08-01",
+    "url": "blog/real-time-fraud-detection-decision.html"
+  },
+  {
+    "title": "ISO 20022 Migration: The Strategic Decision Your Bank Can't Delegate to the Integration Team",
+    "description": "ISO 20022 is not an integration project. The translation layer is the easy part. The hard decisions — coexistence strategy, purpose code governance, testing mandates — are leadership decisions that determine whether the migration lands cleanly or becomes a long-tail support problem.",
+    "category": "",
+    "date": "2026-07-25",
+    "url": "blog/iso-20022-migration-decision.html"
+  },
+  {
     "title": "Multi-Region Data: The Architecture Decision That Exposes Your Bank's Continuity Strategy",
-    "description": "Active/active is not a higher ambition than active/passive — it is a different risk profile. The VP decision is whether your write ownership model is mature enough to carry the operational complexity, and whether SAMA's RTO requirements actually demand it.",
-    "category": "Enterprise Integration",
+    "description": "Active/active is not a higher ambition than active/passive — it is a different risk profile. The VP decision is whether your write ownership model is mature enough to carry the operational complexity, and whether SAMA’s RTO requirements actually demand it.",
+    "category": "",
     "date": "2026-07-18",
     "url": "blog/cross-region-data-replication-decision.html"
+  },
+  {
+    "title": "In-Process Caching: The Infrastructure Decision That Lives Beneath Your Latency SLA",
+    "description": "Embedding state inside application pods with Hazelcast IMDG eliminates the network hop that limits Redis in compute-intensive financial workloads. The VP decision is whether the GC pressure, serialisation versioning risk, and tighter coupling are acceptable for the latency gains on offer.",
+    "category": "",
+    "date": "2026-07-11",
+    "url": "blog/hazelcast-in-process-caching-decision.html"
+  },
+  {
+    "title": "Event Sourcing in Payments: The Architecture Decision Your CTO and Compliance Team Both Own",
+    "description": "Event sourcing is an audit trail architecture, not just an engineering pattern. The business decision is whether the regulator's evidence requirements, the fraud team's temporal queries, and the reversibility demands of payment flows are worth the write complexity and eventual-consistency trade-offs it introduces.",
+    "category": "",
+    "date": "2026-07-04",
+    "url": "blog/event-sourcing-cqrs-payments-decision.html"
   },
   {
     "title": "The Automation Trap: Why Banking AI Optimizes Tasks but Rarely Transforms Operations",
@@ -155,7 +428,7 @@
   },
   {
     "title": "Governance That Accelerates: The Counterintuitive Truth About Enterprise Standards",
-    "description": "The best governance makes the right thing the easy thing. Not a gate — a ramp. How enterprise integration governance at SAIB was embedded in the platform rather than the process.",
+    "description": "The best governance makes the right thing the easy thing. Not a gate — a ramp. Why enterprise integration governance belongs in the platform rather than the process.",
     "category": "Governance & Leadership",
     "date": "2026-04-02",
     "url": "blog/governance-that-accelerates.html"

@@ -122,6 +122,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> HashiCorp Vault 1.17 / cert-manager 1.15 / OpenShift 4.15 / Keycloak 24</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Sep 26, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -142,7 +143,7 @@
               <svg width="780" height="400" viewBox="0 0 780 400" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="vp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="vp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
@@ -166,10 +167,10 @@
                 <text x="110" y="240" text-anchor="middle" fill="#71717a" font-size="9">cert-manager service acct</text>
 
                 <!-- cert-manager box -->
-                <rect x="290" y="100" width="200" height="120" rx="8" fill="#1c1c28" stroke="#00d4aa" stroke-width="1.5"/>
-                <text x="390" y="125" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">cert-manager</text>
+                <rect x="290" y="100" width="200" height="120" rx="8" fill="#1c1c28" stroke="#c8a660" stroke-width="1.5"/>
+                <text x="390" y="125" text-anchor="middle" fill="#c8a660" font-size="11" font-weight="600">cert-manager</text>
                 <text x="390" y="143" text-anchor="middle" fill="#71717a" font-size="9">ClusterIssuer (VaultIssuer)</text>
-                <rect x="310" y="155" width="160" height="30" rx="4" fill="#16161f" stroke="#00d4aa" stroke-width="1"/>
+                <rect x="310" y="155" width="160" height="30" rx="4" fill="#16161f" stroke="#c8a660" stroke-width="1"/>
                 <text x="390" y="168" text-anchor="middle" fill="#e4e4e7" font-size="9">Certificate CRD controller</text>
                 <text x="390" y="182" text-anchor="middle" fill="#71717a" font-size="9">renewBefore: 720h</text>
 
@@ -187,12 +188,12 @@
                 <rect x="590" y="185" width="150" height="35" rx="4" fill="#16161f" stroke="#ef4444" stroke-width="1"/>
                 <text x="665" y="200" text-anchor="middle" fill="#ef4444" font-size="9">inotify reload hook</text>
                 <text x="665" y="214" text-anchor="middle" fill="#71717a" font-size="9">nginx -s reload</text>
-                <rect x="590" y="232" width="150" height="35" rx="4" fill="#16161f" stroke="#00d4aa" stroke-width="1"/>
-                <text x="665" y="247" text-anchor="middle" fill="#00d4aa" font-size="9">Envoy / Istio sidecar</text>
+                <rect x="590" y="232" width="150" height="35" rx="4" fill="#16161f" stroke="#c8a660" stroke-width="1"/>
+                <text x="665" y="247" text-anchor="middle" fill="#c8a660" font-size="9">Envoy / Istio sidecar</text>
                 <text x="665" y="261" text-anchor="middle" fill="#71717a" font-size="9">SDS cert auto-reload</text>
 
                 <!-- arrows -->
-                <line x1="200" y1="175" x2="288" y2="175" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#vp1)"/>
+                <line x1="200" y1="175" x2="288" y2="175" stroke="#c8a660" stroke-width="1.5" marker-end="url(#vp1)"/>
                 <text x="230" y="165" fill="#71717a" font-size="8">issue / sign</text>
 
                 <line x1="390" y1="220" x2="390" y2="253" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#vp3)"/>
@@ -215,7 +216,7 @@
 
           <p>A few key decisions baked into this architecture:</p>
           <ul>
-            <li><strong>Short-lived leaf certs (90 days max).</strong> Vault issues 90-day certificates by default with renewal triggered at 30 days remaining. At SAIB, we run 30-day certs for internal east-west mTLS and 90-day certs for external partner APIs, matching the SAMA-recommended rotation cadence for transient credentials.</li>
+            <li><strong>Short-lived leaf certs (90 days max).</strong> Vault issues 90-day certificates by default with renewal triggered at 30 days remaining. A common banking pattern is 30-day certs for internal east-west mTLS and 90-day certs for external partner APIs, matching the SAMA-recommended rotation cadence for transient credentials.</li>
             <li><strong>Intermediate CA in Vault, root CA offline.</strong> The root CA private key never lives in Vault&rsquo;s storage. The root signs the intermediate CA cert once; thereafter the intermediate issues all leaf certs. If Vault is compromised, the root CA can revoke the intermediate and reissue.</li>
             <li><strong>No pod restarts on cert rotation.</strong> cert-manager updates the Kubernetes TLS Secret in-place. The application either uses projected volumes (which update automatically) or an inotify-triggered reload hook. No deployment rollout, no downtime, no change window required.</li>
           </ul>
@@ -230,8 +231,8 @@ vault secrets enable <span class="tok-k">-path</span>=<span class="tok-s">pki_in
 
 <span class="tok-c"># Generate intermediate CA CSR (Vault holds the private key)</span>
 vault write <span class="tok-k">-format</span>=json pki_int/intermediate/generate/internal \
-  common_name=<span class="tok-s">"SAIB Intermediate CA 2026"</span> \
-  organization=<span class="tok-s">"Saudi Investment Bank"</span> \
+  common_name=<span class="tok-s">"Example Bank Intermediate CA 2026"</span> \
+  organization=<span class="tok-s">"Example Bank"</span> \
   country=<span class="tok-s">"SA"</span> \
   key_type=<span class="tok-s">"rsa"</span> \
   key_bits=<span class="tok-n">4096</span> \
@@ -245,13 +246,13 @@ vault write pki_int/intermediate/set-signed certificate=<span class="tok-s">@int
 
 <span class="tok-c"># Configure issuing and CRL URLs (internal hostnames, not public)</span>
 vault write pki_int/config/urls \
-  issuing_certificates=<span class="tok-s">"https://vault.internal.saib.sa/v1/pki_int/ca"</span> \
-  crl_distribution_points=<span class="tok-s">"https://vault.internal.saib.sa/v1/pki_int/crl"</span> \
-  ocsp_servers=<span class="tok-s">"https://vault.internal.saib.sa/v1/pki_int/ocsp"</span>
+  issuing_certificates=<span class="tok-s">"https://vault.internal.bank.example/v1/pki_int/ca"</span> \
+  crl_distribution_points=<span class="tok-s">"https://vault.internal.bank.example/v1/pki_int/crl"</span> \
+  ocsp_servers=<span class="tok-s">"https://vault.internal.bank.example/v1/pki_int/ocsp"</span>
 
 <span class="tok-c"># Define an issuing role for internal service certs (max 30 days)</span>
 vault write pki_int/roles/internal-services \
-  allowed_domains=<span class="tok-s">"svc.cluster.local,internal.saib.sa"</span> \
+  allowed_domains=<span class="tok-s">"svc.cluster.local,internal.bank.example"</span> \
   allow_subdomains=<span class="tok-k">true</span> \
   allow_glob_domains=<span class="tok-k">false</span> \
   max_ttl=<span class="tok-s">"720h"</span> \
@@ -261,7 +262,7 @@ vault write pki_int/roles/internal-services \
 
 <span class="tok-c"># Define an issuing role for external partner certs (max 90 days)</span>
 vault write pki_int/roles/partner-apis \
-  allowed_domains=<span class="tok-s">"api.saib.sa"</span> \
+  allowed_domains=<span class="tok-s">"api.bank.example"</span> \
   allow_subdomains=<span class="tok-k">true</span> \
   max_ttl=<span class="tok-s">"2160h"</span> \
   key_usage=<span class="tok-s">"DigitalSignature,KeyEncipherment"</span> \
@@ -284,7 +285,7 @@ vault write pki_int/roles/partner-apis \
   <span class="tok-k">name</span>: <span class="tok-s">vault-pki-int</span>
 <span class="tok-k">spec</span>:
   <span class="tok-k">vault</span>:
-    <span class="tok-k">server</span>: <span class="tok-s">https://vault.internal.saib.sa</span>
+    <span class="tok-k">server</span>: <span class="tok-s">https://vault.internal.bank.example</span>
     <span class="tok-k">path</span>: <span class="tok-s">pki_int/sign/internal-services</span>   <span class="tok-c"># role name matches vault write pki_int/roles/...</span>
     <span class="tok-k">caBundle</span>: <span class="tok-s">LS0tLS1CRUd...</span>                 <span class="tok-c"># base64 of Vault&rsquo;s TLS CA cert</span>
     <span class="tok-k">auth</span>:
@@ -343,14 +344,14 @@ path <span class="tok-s">"pki_int/crl"</span> {
   <span class="tok-k">duration</span>: <span class="tok-s">720h</span>                               <span class="tok-c"># 30 days &mdash; internal service cert</span>
   <span class="tok-k">renewBefore</span>: <span class="tok-s">168h</span>                            <span class="tok-c"># Renew at 7 days remaining (23 days in)</span>
   <span class="tok-k">subject</span>:
-    <span class="tok-k">organizations</span>: [<span class="tok-s">"Saudi Investment Bank"</span>]
+    <span class="tok-k">organizations</span>: [<span class="tok-s">"Example Bank"</span>]
     <span class="tok-k">organizationalUnits</span>: [<span class="tok-s">"Payments Platform"</span>]
     <span class="tok-k">countries</span>: [<span class="tok-s">"SA"</span>]
   <span class="tok-k">commonName</span>: <span class="tok-s">payments-api.payments.svc.cluster.local</span>
   <span class="tok-k">dnsNames</span>:
     - <span class="tok-s">payments-api.payments.svc.cluster.local</span>
     - <span class="tok-s">payments-api.payments.svc</span>
-    - <span class="tok-s">payments-api.internal.saib.sa</span>
+    - <span class="tok-s">payments-api.internal.bank.example</span>
   <span class="tok-k">usages</span>:
     - <span class="tok-s">digital signature</span>
     - <span class="tok-s">key encipherment</span>
@@ -434,7 +435,7 @@ path <span class="tok-s">"pki_int/crl"</span> {
           <div class="code-block">
             <div class="code-block__header"><span>cert-bound-token-claim.json</span><span class="code-block__lang">json</span></div>
 <pre><code>{
-  <span class="tok-k">"iss"</span>: <span class="tok-s">"https://idp.saib.sa/realms/openbanking"</span>,
+  <span class="tok-k">"iss"</span>: <span class="tok-s">"https://idp.bank.example/realms/openbanking"</span>,
   <span class="tok-k">"sub"</span>: <span class="tok-s">"svc:payments-aggregator"</span>,
   <span class="tok-k">"aud"</span>: <span class="tok-s">"accounts-api"</span>,
   <span class="tok-k">"scope"</span>: <span class="tok-s">"accounts.read payments.initiate"</span>,
@@ -456,7 +457,7 @@ path <span class="tok-s">"pki_int/crl"</span> {
           <p>When cert-manager rotates the client cert, the thumbprint changes. The service must re-request an access token with the new cert before the next API call &mdash; which is why keeping access token TTL at 5 minutes for cert-bound tokens matters: the window between rotation and re-auth is bounded.</p>
 
           <h2 id="monitoring">Expiry monitoring</h2>
-          <p>The <code>x509-certificate-exporter</code> (enix-io/x509-certificate-exporter) is a Kubernetes DaemonSet that reads TLS Secrets and certificate files from node paths and exports expiry metrics to Prometheus. At SAIB we run it in two modes: scanning Kubernetes TLS Secrets across all namespaces, and dialling external partner endpoints to read their presented certs from the TLS handshake.</p>
+          <p>The <code>x509-certificate-exporter</code> (enix-io/x509-certificate-exporter) is a Kubernetes DaemonSet that reads TLS Secrets and certificate files from node paths and exports expiry metrics to Prometheus. A typical deployment runs it in two modes: scanning Kubernetes TLS Secrets across all namespaces, and dialling external partner endpoints to read their presented certs from the TLS handshake.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>x509-cert-exporter-values.yaml</span><span class="code-block__lang">yaml</span></div>

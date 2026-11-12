@@ -121,6 +121,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Kafka 3.7 / IBM MQ 9.3 / Strimzi / Spring Boot 3.3</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -158,7 +159,7 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>PaymentEventConsumer.java &mdash; @RetryableTopic with DLT</span><span class="code-block__lang">java</span></div>
-<pre><code><span class="tok-k">package</span> info.saib.payments.consumer;
+<pre><code><span class="tok-k">package</span> info.bank.payments.consumer;
 
 <span class="tok-k">import</span> org.springframework.kafka.annotation.KafkaListener;
 <span class="tok-k">import</span> org.springframework.kafka.annotation.RetryableTopic;
@@ -231,11 +232,11 @@
           <div class="code-block">
             <div class="code-block__header"><span>AMQMDLQ.conf &mdash; MQ DLQ handler configuration</span><span class="code-block__lang">properties</span></div>
 <pre><code><span class="tok-c"># IBM MQ Dead Letter Queue Handler (AMQMDLQ) configuration</span>
-<span class="tok-c"># Run as: runmqdlq SAIB.DEAD.LETTER.QUEUE SAIBQM1 < AMQMDLQ.conf</span>
+<span class="tok-c"># Run as: runmqdlq BANK.DEAD.LETTER.QUEUE BANKQM1 < AMQMDLQ.conf</span>
 
 <span class="tok-c"># --- Global parameters ---</span>
-<span class="tok-k">INPUTQ</span>(<span class="tok-s">SAIB.DEAD.LETTER.QUEUE</span>)          <span class="tok-c"># DLQ name, must match ALTER QMGR DEADQ()</span>
-<span class="tok-k">INPUTQM</span>(<span class="tok-s">SAIBQM1</span>)                         <span class="tok-c"># queue manager name</span>
+<span class="tok-k">INPUTQ</span>(<span class="tok-s">BANK.DEAD.LETTER.QUEUE</span>)          <span class="tok-c"># DLQ name, must match ALTER QMGR DEADQ()</span>
+<span class="tok-k">INPUTQM</span>(<span class="tok-s">BANKQM1</span>)                         <span class="tok-c"># queue manager name</span>
 <span class="tok-k">WAIT</span>(<span class="tok-s">YES</span>)                                <span class="tok-c"># wait for new messages; don't exit when queue empty</span>
 <span class="tok-k">RETRYINT</span>(<span class="tok-s">60</span>)                             <span class="tok-c"># retry interval in seconds for action(retry)</span>
 
@@ -246,8 +247,8 @@
 <span class="tok-k">FORMAT</span>(<span class="tok-s">MQSTR</span>)
 <span class="tok-k">APPLNAME</span>(<span class="tok-s">IPS*</span>)
 <span class="tok-k">ACTION</span>(<span class="tok-s">FWD</span>)                              <span class="tok-c"># forward — do not discard</span>
-<span class="tok-k">FWDQ</span>(<span class="tok-s">SAIB.PAYMENT.REGULATORY.HOLD</span>)
-<span class="tok-k">FWDQM</span>(<span class="tok-s">SAIBQM1</span>)
+<span class="tok-k">FWDQ</span>(<span class="tok-s">BANK.PAYMENT.REGULATORY.HOLD</span>)
+<span class="tok-k">FWDQM</span>(<span class="tok-s">BANKQM1</span>)
 
 <span class="tok-c"># Rule 2: Queue-full condition — retry up to 5 times before forwarding to ops queue</span>
 <span class="tok-k">REASON</span>(<span class="tok-s">MQRC_Q_FULL</span>)
@@ -261,8 +262,8 @@
 <span class="tok-c"># Rule 4: All other reasons → forward to ops monitoring queue</span>
 <span class="tok-k">REASON</span>(<span class="tok-s">*</span>)
 <span class="tok-k">ACTION</span>(<span class="tok-s">FWD</span>)
-<span class="tok-k">FWDQ</span>(<span class="tok-s">SAIB.OPS.DEAD.MESSAGES</span>)
-<span class="tok-k">FWDQM</span>(<span class="tok-s">SAIBQM1</span>)</code></pre>
+<span class="tok-k">FWDQ</span>(<span class="tok-s">BANK.OPS.DEAD.MESSAGES</span>)
+<span class="tok-k">FWDQM</span>(<span class="tok-s">BANKQM1</span>)</code></pre>
           </div>
 
           <p>MQ DLQ reason codes to monitor explicitly: <code>MQRC_Q_FULL</code> (2053) indicates a backed-up destination; <code>MQRC_NOT_AUTHORIZED</code> (2035) indicates an ACL misconfiguration; <code>MQRC_MSG_TOO_BIG_FOR_Q</code> (2030) indicates a message size limit violation that requires a schema or application change. Each reason code has a different remediation path and should trigger a different alert severity.</p>
@@ -276,7 +277,7 @@
               <svg width="780" height="320" viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="dlq-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="dlq-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
@@ -310,15 +311,15 @@
                 <text x="445" y="170" text-anchor="middle" fill="#71717a" font-size="8">7-day retention</text>
 
                 <!-- DLQ Handler -->
-                <rect x="555" y="60" width="200" height="200" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
-                <text x="655" y="82" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">DLQ Handler</text>
+                <rect x="555" y="60" width="200" height="200" rx="6" fill="#16161f" stroke="#c8a660" stroke-width="1.5"/>
+                <text x="655" y="82" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">DLQ Handler</text>
 
                 <rect x="570" y="95" width="170" height="35" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
                 <text x="655" y="112" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Classify</text>
                 <text x="655" y="123" text-anchor="middle" fill="#71717a" font-size="8">schema | transient | business</text>
 
-                <rect x="570" y="145" width="170" height="30" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="655" y="162" text-anchor="middle" fill="#00d4aa" font-size="9">Replay &rarr; source topic</text>
+                <rect x="570" y="145" width="170" height="30" rx="4" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="655" y="162" text-anchor="middle" fill="#c8a660" font-size="9">Replay &rarr; source topic</text>
                 <text x="655" y="173" text-anchor="middle" fill="#71717a" font-size="8">(after fix: transient failures)</text>
 
                 <rect x="570" y="190" width="170" height="30" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
@@ -330,18 +331,18 @@
                 <text x="655" y="263" text-anchor="middle" fill="#71717a" font-size="8">(compliance / regulatory hold)</text>
 
                 <!-- Arrows -->
-                <line x1="140" y1="147" x2="178" y2="147" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dlq-arr)"/>
+                <line x1="140" y1="147" x2="178" y2="147" stroke="#c8a660" stroke-width="1.5" marker-end="url(#dlq-arr)"/>
                 <line x1="325" y1="147" x2="373" y2="147" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#dlq-arr2)"/>
                 <text x="349" y="140" text-anchor="middle" fill="#ef4444" font-size="8">DLT publish</text>
-                <line x1="515" y1="147" x2="553" y2="147" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#dlq-arr)"/>
+                <line x1="515" y1="147" x2="553" y2="147" stroke="#c8a660" stroke-width="1.5" marker-end="url(#dlq-arr)"/>
 
                 <!-- Retry loop arrow (curved label) -->
                 <path d="M 252 190 Q 252 220 180 220 Q 140 220 140 180 Q 140 147 178 147" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4 2"/>
                 <text x="165" y="218" fill="#fbbf24" font-size="7.5">retry</text>
 
                 <!-- Replay arrow back -->
-                <path d="M 655 145 Q 655 28 445 28 Q 295 28 295 103" fill="none" stroke="#00d4aa" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#dlq-arr)"/>
-                <text x="455" y="22" fill="#00d4aa" font-size="8">replay path (post-fix)</text>
+                <path d="M 655 145 Q 655 28 445 28 Q 295 28 295 103" fill="none" stroke="#c8a660" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#dlq-arr)"/>
+                <text x="455" y="22" fill="#c8a660" font-size="8">replay path (post-fix)</text>
               </svg>
             </div>
             <div class="diagram__caption">Figure 1 &mdash; Kafka consumer exhausts retry attempts with exponential backoff, publishes to DLT; DLQ handler classifies and routes to replay, ops alert, or compliance archive</div>
@@ -361,7 +362,7 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>DlqReplayService.java &mdash; DLT consumer republishing to source topic</span><span class="code-block__lang">java</span></div>
-<pre><code><span class="tok-k">package</span> info.saib.integration.dlq;
+<pre><code><span class="tok-k">package</span> info.bank.integration.dlq;
 
 <span class="tok-k">import</span> org.apache.kafka.clients.consumer.ConsumerRecord;
 <span class="tok-k">import</span> org.apache.kafka.common.header.Headers;
@@ -436,7 +437,7 @@
           <ul>
             <li><strong>DLT consumer lag growing.</strong> If the DLT consumer group is falling behind &mdash; consumer lag on <code>payments.events.v1-dlt</code> is increasing &mdash; the DLQ handler itself is failing to process dead letters. Alert immediately; this means the safety valve is blocked. Use <code>kafka_consumer_group_lag{group="payments-processor-dlt"} &gt; 50</code> with a 1-minute evaluation window.</li>
             <li><strong>DLT write rate spike.</strong> A sudden increase in the rate of messages being published to the DLT indicates a consumer has started failing rapidly. Alert on <code>rate(kafka_topic_messages_in_total{topic="payments.events.v1-dlt"}[5m]) &gt; 5</code>. More than 5 messages per second arriving in the DLT warrants an immediate investigation of the source topic consumer.</li>
-            <li><strong>MQ DLQ depth growing.</strong> For IBM MQ, alert when <code>ibmmq_queue_depth{queue="SAIB.DEAD.LETTER.QUEUE"} &gt; 100</code> sustained for 5 minutes. A depth spike followed by a plateau indicates a batch of failures that the AMQMDLQ handler is not clearing.</li>
+            <li><strong>MQ DLQ depth growing.</strong> For IBM MQ, alert when <code>ibmmq_queue_depth{queue="BANK.DEAD.LETTER.QUEUE"} &gt; 100</code> sustained for 5 minutes. A depth spike followed by a plateau indicates a batch of failures that the AMQMDLQ handler is not clearing.</li>
           </ul>
           <p>The Grafana dashboard should show, per topic or per queue: DLT message rate (messages/min), DLT consumer lag, time-since-last-DLT-consumer-commit, and a table of the last 20 DLT messages with their reason codes. This is the first screen the on-call engineer opens when a DLQ alert fires.</p>
 

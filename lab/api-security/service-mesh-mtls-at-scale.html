@@ -121,6 +121,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Istio 1.22 / Linkerd 2.15 / SPIFFE / cert-manager 1.14 / OpenShift Service Mesh</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Aug 22, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -144,7 +145,7 @@
               <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="sm1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="sm2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
@@ -171,8 +172,8 @@
                 <text x="690" y="216" text-anchor="middle" fill="#fbbf24" font-size="9">envoy sidecar</text>
 
                 <!-- mTLS tunnel -->
-                <rect x="190" y="200" width="400" height="28" rx="6" fill="#0d1117" stroke="#00d4aa"/>
-                <text x="390" y="217" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">mTLS tunnel &mdash; SPIFFE SVIDs verified on both ends</text>
+                <rect x="190" y="200" width="400" height="28" rx="6" fill="#0d1117" stroke="#c8a660"/>
+                <text x="390" y="217" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">mTLS tunnel &mdash; SPIFFE SVIDs verified on both ends</text>
 
                 <!-- cert issuance arrows from control plane -->
                 <line x1="260" y1="55" x2="140" y2="195" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#sm2)"/>
@@ -185,15 +186,15 @@
                 <line x1="690" y1="197" x2="690" y2="182" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#sm2)"/>
 
                 <!-- sidecar to mTLS tunnel -->
-                <line x1="150" y1="213" x2="188" y2="213" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sm1)"/>
-                <line x1="590" y1="213" x2="632" y2="213" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#sm1)"/>
+                <line x1="150" y1="213" x2="188" y2="213" stroke="#c8a660" stroke-width="1.5" marker-end="url(#sm1)"/>
+                <line x1="590" y1="213" x2="632" y2="213" stroke="#c8a660" stroke-width="1.5" marker-end="url(#sm1)"/>
 
                 <!-- labels -->
                 <text x="390" y="290" text-anchor="middle" fill="#71717a" font-size="9">App speaks plaintext to localhost:15001 &middot; sidecar intercepts &amp; upgrades to mTLS</text>
                 <text x="390" y="308" text-anchor="middle" fill="#71717a" font-size="9">Both sides verify SPIFFE SVID against trust domain CA before handshake completes</text>
 
-                <text x="90" y="270" text-anchor="middle" fill="#4a9eff" font-size="8">spiffe://saib.sa/ns/payments/sa/payments-svc</text>
-                <text x="690" y="270" text-anchor="middle" fill="#fbbf24" font-size="8">spiffe://saib.sa/ns/accounts/sa/accounts-svc</text>
+                <text x="90" y="270" text-anchor="middle" fill="#4a9eff" font-size="8">spiffe://bank.example/ns/payments/sa/payments-svc</text>
+                <text x="690" y="270" text-anchor="middle" fill="#fbbf24" font-size="8">spiffe://bank.example/ns/accounts/sa/accounts-svc</text>
               </svg>
             </div>
             <div class="diagram__caption">Figure 1 &mdash; East-west mTLS via Envoy sidecar proxies &mdash; app containers speak plaintext locally; the mesh handles identity and encryption</div>
@@ -201,7 +202,7 @@
 
           <h2 id="istio-architecture">Istio architecture</h2>
           <p>Istio&rsquo;s control plane is <code>istiod</code>, a single binary that consolidates three formerly separate components: Pilot (xDS config distribution), Citadel (certificate issuance), and Galley (config validation). The data plane is Envoy, injected as a sidecar into every application pod.</p>
-          <p>The identity lifecycle works like this: when a pod starts, the kubelet passes a service account token to the Envoy sidecar via the <code>istio-token</code> projected volume. The sidecar presents this token to <code>istiod</code>; <code>istiod</code> validates it against the Kubernetes API and issues a short-lived X.509 SVID (SPIFFE Verifiable Identity Document) signed by the mesh CA. The SVID encodes the SPIFFE ID in the SAN (Subject Alternative Name) field &mdash; for example <code>spiffe://saib.sa/ns/payments/sa/payments-svc</code>. When the sidecar opens a connection to another workload, it presents this SVID; the remote sidecar verifies the SVID against the trust bundle and checks that the SPIFFE ID is permitted by the <code>AuthorizationPolicy</code>.</p>
+          <p>The identity lifecycle works like this: when a pod starts, the kubelet passes a service account token to the Envoy sidecar via the <code>istio-token</code> projected volume. The sidecar presents this token to <code>istiod</code>; <code>istiod</code> validates it against the Kubernetes API and issues a short-lived X.509 SVID (SPIFFE Verifiable Identity Document) signed by the mesh CA. The SVID encodes the SPIFFE ID in the SAN (Subject Alternative Name) field &mdash; for example <code>spiffe://bank.example/ns/payments/sa/payments-svc</code>. When the sidecar opens a connection to another workload, it presents this SVID; the remote sidecar verifies the SVID against the trust bundle and checks that the SPIFFE ID is permitted by the <code>AuthorizationPolicy</code>.</p>
           <p>Istio distributes configuration via xDS (Envoy&rsquo;s discovery service protocol): Listener Discovery Service, Route Discovery Service, Cluster Discovery Service, and Endpoint Discovery Service. The sidecar maintains a gRPC stream to <code>istiod</code> and receives config pushes when policy or topology changes. This is stateful &mdash; if <code>istiod</code> restarts, sidecars continue operating on the last-received config and reconnect to the new <code>istiod</code> instance without traffic disruption.</p>
 
           <h2 id="strict-vs-permissive">STRICT vs PERMISSIVE mode</h2>
@@ -256,7 +257,7 @@ kubectl exec -n payments deploy/payments-svc -c istio-proxy -- \
   openssl x509 -noout -text | grep -A2 <span class="tok-s">"Subject Alternative Name"</span>
 
 <span class="tok-c"># Expected output:</span>
-<span class="tok-c">#   URI:spiffe://saib.sa/ns/payments/sa/payments-svc</span>
+<span class="tok-c">#   URI:spiffe://bank.example/ns/payments/sa/payments-svc</span>
 
 <span class="tok-c"># Check SVID expiry on a live sidecar</span>
 istioctl proxy-config secret deploy/payments-svc -n payments \
@@ -266,7 +267,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
   base64 -d | openssl x509 -noout -dates</code></pre>
           </div>
 
-          <p>For clusters that need cross-cluster or cross-cloud identity (for example, a SAIB DR site on a second OpenShift cluster), SPIRE (the SPIFFE Reference Implementation) provides a federated trust model: each cluster runs a SPIRE Server, and the servers federate by exchanging trust bundles out-of-band. Istio can be configured to use SPIRE as its certificate authority via the <code>ExternalCertificateAuthority</code> plugin.</p>
+          <p>For clusters that need cross-cluster or cross-cloud identity (for example, a bank DR site on a second OpenShift cluster), SPIRE (the SPIFFE Reference Implementation) provides a federated trust model: each cluster runs a SPIRE Server, and the servers federate by exchanging trust bundles out-of-band. Istio can be configured to use SPIRE as its certificate authority via the <code>ExternalCertificateAuthority</code> plugin.</p>
 
           <h2 id="cert-rotation">Certificate rotation</h2>
           <p>Certificate rotation at scale is the most operationally sensitive part of a service mesh deployment. The failure mode is subtle: if a certificate expires before the sidecar has rotated it, connections from that workload fail with TLS handshake errors. At 200 pods and a 24-hour cert TTL, rotation events happen continuously &mdash; which is fine until the rotation mechanism itself breaks.</p>
@@ -276,7 +277,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
               <svg width="780" height="200" viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="sm3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                 </defs>
 
@@ -285,13 +286,13 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
                 <text x="280" y="79" text-anchor="middle" fill="#4a9eff" font-size="10">Certificate N &mdash; issued T+0, expires T+3600s</text>
 
                 <!-- Cert 2 lifetime bar (overlapping) -->
-                <rect x="380" y="100" width="360" height="30" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="560" y="119" text-anchor="middle" fill="#00d4aa" font-size="10">Certificate N+1 &mdash; issued T+3060s (10 min early)</text>
+                <rect x="380" y="100" width="360" height="30" rx="4" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="560" y="119" text-anchor="middle" fill="#c8a660" font-size="10">Certificate N+1 &mdash; issued T+3060s (10 min early)</text>
 
                 <!-- Overlap zone -->
-                <rect x="380" y="55" width="140" height="80" rx="0" fill="#00d4aa" fill-opacity="0.06" stroke="none"/>
-                <text x="450" y="95" text-anchor="middle" fill="#00d4aa" font-size="9">overlap</text>
-                <text x="450" y="107" text-anchor="middle" fill="#00d4aa" font-size="9">window</text>
+                <rect x="380" y="55" width="140" height="80" rx="0" fill="#c8a660" fill-opacity="0.06" stroke="none"/>
+                <text x="450" y="95" text-anchor="middle" fill="#c8a660" font-size="9">overlap</text>
+                <text x="450" y="107" text-anchor="middle" fill="#c8a660" font-size="9">window</text>
 
                 <!-- Expiry line -->
                 <line x1="520" y1="45" x2="520" y2="145" stroke="#ef4444" stroke-width="1" stroke-dasharray="4 2"/>
@@ -327,7 +328,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
     <span class="tok-k">certificates</span>:
       <span class="tok-k">workloadCertTtl</span>: <span class="tok-s">3600s</span>          <span class="tok-c"># 1-hour SVID TTL (SAMA-preferred short rotation)</span>
       <span class="tok-k">workloadCertGracePeriodRatio</span>: <span class="tok-s">0.5</span>  <span class="tok-c"># rotate at 50% lifetime = 30 min overlap</span>
-    <span class="tok-k">trustDomain</span>: <span class="tok-s">saib.sa</span>
+    <span class="tok-k">trustDomain</span>: <span class="tok-s">bank.example</span>
     <span class="tok-k">ca</span>:
       <span class="tok-k">workloadCertKeySize</span>: <span class="tok-n">2048</span>
       <span class="tok-k">caRSACertificateKeySize</span>: <span class="tok-n">4096</span></code></pre>
@@ -438,7 +439,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
 
           <h2 id="performance">Performance overhead</h2>
           <p>Service mesh mTLS adds latency at two points: the TLS handshake on connection establishment, and the encryption/decryption overhead on each request. In practice, connection pools mean that the handshake cost is amortized over many requests; the encryption overhead is the dominant factor.</p>
-          <p>Benchmarking Istio with Envoy sidecar against a baseline (no mesh) on a payment processing microservice at SAIB-representative load (500 RPS, 2 KB payload, gRPC):</p>
+          <p>Benchmarking Istio with Envoy sidecar against a baseline (no mesh) on a payment processing microservice at representative banking load (500 RPS, 2 KB payload, gRPC):</p>
 
           <table>
             <thead>
@@ -466,7 +467,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
             <li>Deny-all <code>AuthorizationPolicy</code> in every regulated namespace. Explicit ALLOW rules per caller/path/method.</li>
             <li>SVID TTL at 3600s. Grace period ratio at 0.5 (30-minute overlap). Prometheus alert on <code>istio_agent_cert_expiry_timestamp &lt; now + 600s</code>.</li>
             <li>Intermediate CA signed by Vault PKI. cert-manager managing intermediate renewal. Root CA stored offline or in HSM.</li>
-            <li>Trust domain set to a bank-specific value (e.g. <code>saib.sa</code>), not the default <code>cluster.local</code> (cluster.local is widely reused and reduces SPIFFE ID uniqueness in multi-cluster federation).</li>
+            <li>Trust domain set to a bank-specific value (e.g. <code>bank.example</code>), not the default <code>cluster.local</code> (cluster.local is widely reused and reduces SPIFFE ID uniqueness in multi-cluster federation).</li>
             <li>Istio access logs shipped to centralized SIEM. Fields: source principal, destination principal, request path, response code, duration, start time.</li>
             <li>Kiali (or Linkerd Viz) deployed and accessible only to network ops team. No public exposure.</li>
             <li>mTLS status visible in monitoring. Dashboard shows: % namespaces in STRICT, % pods meshed, cert expiry horizon, <code>AuthorizationPolicy</code> deny rate.</li>

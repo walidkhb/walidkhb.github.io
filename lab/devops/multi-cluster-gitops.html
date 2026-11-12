@@ -121,6 +121,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> ArgoCD 2.12 / OpenShift 4.15 / Helm 3.16 / Kustomize / ApplicationSet</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -168,7 +169,7 @@
     - <span class="tok-k">clusters</span>:
         <span class="tok-k">selector</span>:
           <span class="tok-k">matchLabels</span>:
-            <span class="tok-k">platform.saib.internal/managed</span>: <span class="tok-s">"true"</span>  <span class="tok-c"># only platform-managed clusters</span>
+            <span class="tok-k">platform.bank.internal/managed</span>: <span class="tok-s">"true"</span>  <span class="tok-c"># only platform-managed clusters</span>
         <span class="tok-k">values</span>:                <span class="tok-c"># static values available in template as {{ values.* }}</span>
           <span class="tok-k">revision</span>: <span class="tok-s">main</span>
 
@@ -178,7 +179,7 @@
     <span class="tok-k">spec</span>:
       <span class="tok-k">project</span>: <span class="tok-s">platform</span>
       <span class="tok-k">source</span>:
-        <span class="tok-k">repoURL</span>: <span class="tok-s">https://gitops.saib.internal/platform/apps.git</span>
+        <span class="tok-k">repoURL</span>: <span class="tok-s">https://gitops.bank.internal/platform/apps.git</span>
         <span class="tok-k">targetRevision</span>: <span class="tok-s">"{{ values.revision }}"</span>
         <span class="tok-k">path</span>: <span class="tok-s">platform/cert-manager</span>
         <span class="tok-k">helm</span>:
@@ -233,7 +234,7 @@
         <span class="tok-k">generators</span>:
           <span class="tok-c"># First: discover app directories under apps/ in the gitops repo</span>
           - <span class="tok-k">git</span>:
-              <span class="tok-k">repoURL</span>: <span class="tok-s">https://gitops.saib.internal/platform/integration-apps.git</span>
+              <span class="tok-k">repoURL</span>: <span class="tok-s">https://gitops.bank.internal/platform/integration-apps.git</span>
               <span class="tok-k">revision</span>: <span class="tok-s">HEAD</span>
               <span class="tok-k">directories</span>:
                 - <span class="tok-k">path</span>: <span class="tok-s">"apps/*"</span>        <span class="tok-c"># one dir per integration app</span>
@@ -243,7 +244,7 @@
           - <span class="tok-k">clusters</span>:
               <span class="tok-k">selector</span>:
                 <span class="tok-k">matchLabels</span>:
-                  <span class="tok-k">platform.saib.internal/integration</span>: <span class="tok-s">"true"</span>
+                  <span class="tok-k">platform.bank.internal/integration</span>: <span class="tok-s">"true"</span>
 
   <span class="tok-k">template</span>:
     <span class="tok-k">metadata</span>:
@@ -254,7 +255,7 @@
     <span class="tok-k">spec</span>:
       <span class="tok-k">project</span>: <span class="tok-s">integration</span>
       <span class="tok-k">source</span>:
-        <span class="tok-k">repoURL</span>: <span class="tok-s">https://gitops.saib.internal/platform/integration-apps.git</span>
+        <span class="tok-k">repoURL</span>: <span class="tok-s">https://gitops.bank.internal/platform/integration-apps.git</span>
         <span class="tok-k">targetRevision</span>: <span class="tok-s">HEAD</span>
         <span class="tok-k">path</span>: <span class="tok-s">"{{ path }}"</span>
         <span class="tok-k">helm</span>:
@@ -291,7 +292,7 @@
               <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="gs-arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="gs-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
@@ -311,8 +312,8 @@
                 <text x="390" y="62" text-anchor="middle" fill="#71717a" font-size="9">source of truth &mdash; no kubectl from CI</text>
 
                 <!-- Hub cluster -->
-                <rect x="220" y="120" width="340" height="110" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
-                <text x="390" y="143" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Management Cluster (Hub)</text>
+                <rect x="220" y="120" width="340" height="110" rx="6" fill="#16161f" stroke="#c8a660" stroke-width="1.5"/>
+                <text x="390" y="143" text-anchor="middle" fill="#c8a660" font-size="11" font-weight="600">Management Cluster (Hub)</text>
 
                 <!-- ArgoCD box inside hub -->
                 <rect x="235" y="152" width="145" height="64" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
@@ -322,8 +323,8 @@
                 <text x="307" y="208" text-anchor="middle" fill="#71717a" font-size="8">Redis &middot; Notifications</text>
 
                 <!-- ApplicationSet controller inside hub -->
-                <rect x="400" y="152" width="145" height="64" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="472" y="170" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">ApplicationSet</text>
+                <rect x="400" y="152" width="145" height="64" rx="4" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="472" y="170" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">ApplicationSet</text>
                 <text x="472" y="184" text-anchor="middle" fill="#71717a" font-size="8">Cluster generator</text>
                 <text x="472" y="196" text-anchor="middle" fill="#71717a" font-size="8">Git generator</text>
                 <text x="472" y="208" text-anchor="middle" fill="#71717a" font-size="8">Matrix generator</text>
@@ -396,14 +397,14 @@
 
   <span class="tok-c"># Restrict which source repos are allowed</span>
   <span class="tok-k">sourceRepos</span>:
-    - <span class="tok-s">https://gitops.saib.internal/payments/*</span>
-    - <span class="tok-s">https://gitops.saib.internal/platform/integration-apps.git</span>
+    - <span class="tok-s">https://gitops.bank.internal/payments/*</span>
+    - <span class="tok-s">https://gitops.bank.internal/platform/integration-apps.git</span>
 
   <span class="tok-c"># Integration team can only deploy to dev and test cluster namespaces</span>
   <span class="tok-k">destinations</span>:
-    - <span class="tok-k">server</span>: <span class="tok-s">https://dev-cluster.saib.internal:6443</span>
+    - <span class="tok-k">server</span>: <span class="tok-s">https://dev-cluster.bank.internal:6443</span>
       <span class="tok-k">namespace</span>: <span class="tok-s">"payments-*"</span>
-    - <span class="tok-k">server</span>: <span class="tok-s">https://test-cluster.saib.internal:6443</span>
+    - <span class="tok-k">server</span>: <span class="tok-s">https://test-cluster.bank.internal:6443</span>
       <span class="tok-k">namespace</span>: <span class="tok-s">"payments-*"</span>
     <span class="tok-c"># prod clusters NOT listed — integration team has no destination on prod</span>
 

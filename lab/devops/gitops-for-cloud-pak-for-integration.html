@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitOps for IBM Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A practical guide to moving IBM App Connect Enterprise, IBM MQ and API Connect delivery from push pipelines to pull-based GitOps on OpenShift: GitLab CI that never touches a cluster, one Argo CD per cluster, one application per platform per environment, layered configuration with content hashes, pre-sync MQSC Jobs, compliance as shared CI includes and an API registry.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="GitOps for IBM Cloud Pak for Integration &mdash; Lab">
+  <meta property="og:description" content="Ten rules for moving ACE, MQ and API Connect delivery to pull-based GitOps with GitLab CI and Argo CD, with compliance built into shared CI templates.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/devops/gitops-for-cloud-pak-for-integration.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GitOps for IBM Cloud Pak for Integration &mdash; Lab">
+  <meta name="twitter:description" content="From push pipelines to pull-based GitOps for ACE, MQ and API Connect on OpenShift. GitLab CI + Argo CD, ten rules, compliance as CI includes.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/devops/gitops-for-cloud-pak-for-integration.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "GitOps for IBM Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery",
+    "description": "A practical guide to moving IBM App Connect Enterprise, IBM MQ and API Connect delivery from push pipelines to pull-based GitOps on OpenShift: GitLab CI that never touches a cluster, one Argo CD per cluster, one application per platform per environment, layered configuration with content hashes, pre-sync MQSC Jobs, compliance as shared CI includes and an API registry.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-12",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/devops/gitops-for-cloud-pak-for-integration.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "DevOps &amp; Platform Engineering &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/devops.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "DevOps & Platform Engineering"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform</a><span>/</span>GitOps for Cloud Pak for Integration</div>
+          <span class="overline">Lab Article</span>
+          <h1>GitOps for IBM Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery</h1>
+          <p class="lead">Most integration estates still deploy the way the ESB era taught them: a pipeline pushes to a server, or a person does. Moving IBM App Connect Enterprise, IBM MQ and API Connect onto OpenShift does not fix that by itself. This guide covers the typical defects of a push model, ten rules that replace it, and the YAML that makes those rules stick &mdash; including compliance checks that teams get by including one file.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#push-defects">What a push model gets wrong</a></li>
+            <li><a href="#rules">Ten rules</a></li>
+            <li><a href="#topology">Repositories, environments, Argo CD</a></li>
+            <li><a href="#applications">One application per platform</a></li>
+            <li><a href="#config-layers">Configuration in three layers</a></li>
+            <li><a href="#mq-and-apis">MQ objects and API products</a></li>
+            <li><a href="#promotion">Promotion, rollback, sync policy</a></li>
+            <li><a href="#compliance">Compliance as a CI include</a></li>
+            <li><a href="#api-registry">The API registry</a></li>
+            <li><a href="#migration">Migrating beside the old system</a></li>
+            <li><a href="#failure-modes">Failure modes</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM Cloud Pak for Integration / App Connect Enterprise 12 / IBM MQ / API Connect / Red Hat OpenShift GitOps (Argo CD) / GitLab CI / Helm</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~13 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 12, 2026</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Cloud Pak for Integration puts integration runtimes on Kubernetes. The ACE operator runs integration servers as custom resources. The MQ operator runs queue managers. API Connect publishes products to catalogs. All of it is declarative. That makes GitOps possible. It does not make it happen.</p>
+          <p>A common first move to OpenShift keeps the old habits. A pipeline watches one repository. On every push it renders the configuration and applies it to the cluster. Other pipelines are started by hand. API products are published by a separate manual run. It works most days. On the other days it is hard to say what is running, or why.</p>
+          <p>The alternative is a pull model. CI (GitLab CI in the examples) builds and tests. Argo CD, one instance per cluster, reconciles each cluster to its own environment repository. Compliance checks live in shared CI templates. An API registry records every API, its consumers and its SLA. The rest of this article is the detail.</p>
+          <p>Two neighbouring articles cover adjacent ground. <a href="tekton-and-argocd.html">Tekton &amp; ArgoCD</a> covers the generic pipeline shape, secrets and image signing. <a href="multi-cluster-gitops.html">Multi-Cluster GitOps</a> covers hub-spoke fleets with ApplicationSet generators. This one is specific to integration runtimes, and it deliberately does <em>not</em> use a hub.</p>
+
+          <h2 id="push-defects">What a Push Model Gets Wrong</h2>
+          <p>Start with an honest defect list. Build it by reading the pipeline code and comparing it with what is actually on the cluster, not from what the pipeline is supposed to do. The items below are the defects that appear most often in push-based integration pipelines.</p>
+
+          <table>
+            <thead>
+              <tr><th>Defect</th><th>What happens</th><th>Consequence</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Whole-environment apply</strong></td><td>Every push to the main branch re-renders and re-applies the entire environment: MQ, API Connect, every integration server</td><td>One team&rsquo;s change redeploys every team. One broken file blocks all deployments.</td></tr>
+              <tr><td><strong>Wrong revision</strong></td><td>The trigger passes the commit SHA. The pipeline ignores it and clones the branch head.</td><td>A run deploys whatever the branch holds at run time, not the commit that triggered it. No traceability.</td></tr>
+              <tr><td><strong>No prune</strong></td><td>Resources are applied, never pruned</td><td>Deleting a file in Git changes nothing. Orphans accumulate. Rollback is manual.</td></tr>
+              <tr><td><strong>Mutable builds</strong></td><td>BAR files are published as <code>latest</code>, followed by a rollout restart</td><td>The tested build cannot be promoted unchanged. There is no known version to roll back to.</td></tr>
+              <tr><td><strong>Manual side doors</strong></td><td>Per-platform pipelines accept any branch and any path</td><td>Unreviewed code can reach a cluster. The cluster drifts from Git.</td></tr>
+              <tr><td><strong>Manual API publishing</strong></td><td>API products are published by a separate, hand-started run</td><td>APIs are not promoted with the integrations behind them</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout callout--note">
+            <div class="callout__title">None of these is exotic</div>
+            <p>Each defect is a reasonable shortcut taken under deadline. Together they mean you cannot answer the auditor&rsquo;s first question: &ldquo;which approved commit is running in production?&rdquo; Patching them one by one inside a push model still leaves you without drift detection. A cluster&rsquo;s state stays whatever the last run left behind.</p>
+          </div>
+
+          <h2 id="rules">Ten Rules</h2>
+          <p>Write the target as ten normative rules. Each one closes a defect or a class of defects. Short rules are easier to enforce in code and easier to defend in review.</p>
+
+          <ol class="step-list">
+            <li><h4>CI never touches a cluster</h4><p>CI builds, tests, publishes immutable artefacts and opens merge requests. It holds no cluster credentials. Only Argo CD changes platform namespaces.</p></li>
+            <li><h4>One Argo CD per cluster, one configuration repository per environment</h4><p>Each cluster&rsquo;s Argo CD reads only its own environment repository. Environments never share a repository or a branch.</p></li>
+            <li><h4>One Argo application per platform per environment</h4><p>The blast radius of any change is one platform in one environment. Each platform has its own AppProject and namespace.</p></li>
+            <li><h4>No floating versions</h4><p>Runtime, BAR, chart and image versions are pinned. The chart and the tooling reject <code>latest</code>, ranges and empty values.</p></li>
+            <li><h4>Promotion is a merge request; rollback is a revert</h4><p>The same versions move from dev to test to uat to prod by merge request. Nothing is rebuilt between environments.</p></li>
+            <li><h4>Sync policy follows risk</h4><p>Lower environments auto-sync with prune and self-heal. Production detects drift but syncs manually, after an approved merge, outside freeze windows.</p></li>
+            <li><h4>Configuration is readable, layered and hashed</h4><p>Three layers of readable sources, packaged with content hashes so a configuration change restarts exactly the servers that use it.</p></li>
+            <li><h4>MQ objects are applied by an idempotent pre-sync Job</h4><p>Queues and channels belong to the platform that uses them and change with it.</p></li>
+            <li><h4>API products publish after servers are healthy</h4><p>An API is never live in front of an integration that is not.</p></li>
+            <li><h4>Secrets sit behind a provider switch</h4><p>Credentials can stay in their current store, but the chart reads them through a <code>secrets.provider</code> switch. Moving to Vault later changes one value, not the layout.</p></li>
+          </ol>
+
+          <h2 id="topology">Repositories, Environments, Argo CD</h2>
+          <p>The repository model is the architecture. Get it wrong and every rule above becomes a convention rather than a fact. Five kinds of repository are enough, each with one owner.</p>
+
+          <table>
+            <thead>
+              <tr><th>Repository</th><th>Contains</th><th>Owner</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Delivery repos</strong> (one per integration)</td><td>ACE source, OpenAPI specs, tests, a short <code>.gitlab-ci.yml</code></td><td>Delivery team</td></tr>
+              <tr><td><strong>Shared CI templates</strong></td><td>Versioned pipeline templates, including the compliance jobs</td><td>Platform team</td></tr>
+              <tr><td><strong>Chart repo</strong></td><td>The Helm chart that renders a platform, plus the configuration packaging tool; released by tag</td><td>Platform team</td></tr>
+              <tr><td><strong>GitOps control repo</strong></td><td>Argo CD instances, AppProjects, ApplicationSets, namespaces</td><td>Platform team</td></tr>
+              <tr><td><strong>Environment repos</strong> (one each for dev, test, uat, prod)</td><td>Values and configuration sources only: <code>shared/</code> and <code>platforms/&lt;name&gt;/</code></td><td>CODEOWNERS per platform folder; prod merges restricted</td></tr>
+            </tbody>
+          </table>
+
+          <div class="diagram" role="img" aria-label="Repository, environment and Argo CD topology for pull-based integration delivery">
+            <div class="diagram__inner">
+              <svg width="780" height="450" viewBox="0 0 780 450" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="go-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
+                  </marker>
+                  <marker id="go-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="go-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                  <marker id="go-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Column headings -->
+                <text x="10" y="22" fill="#71717a" font-size="9" font-weight="600">SOURCE</text>
+                <text x="210" y="22" fill="#71717a" font-size="9" font-weight="600">CI (BUILD &amp; CHECK)</text>
+                <text x="405" y="22" fill="#71717a" font-size="9" font-weight="600">DESIRED STATE (GIT)</text>
+                <text x="610" y="22" fill="#71717a" font-size="9" font-weight="600">CLUSTERS (PULL)</text>
+
+                <!-- Source column -->
+                <rect x="10" y="40" width="170" height="60" rx="6" fill="#16161f" stroke="#c8a660" stroke-width="1.5"/>
+                <text x="95" y="62" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">Delivery repos</text>
+                <text x="95" y="77" text-anchor="middle" fill="#71717a" font-size="8">ACE source, OpenAPI</text>
+                <text x="95" y="90" text-anchor="middle" fill="#71717a" font-size="8">one per integration</text>
+
+                <rect x="10" y="115" width="170" height="50" rx="6" fill="#16161f" stroke="#c8a660" stroke-width="1.5"/>
+                <text x="95" y="136" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">Shared CI templates</text>
+                <text x="95" y="152" text-anchor="middle" fill="#71717a" font-size="8">tagged, included</text>
+
+                <rect x="10" y="180" width="170" height="50" rx="6" fill="#16161f" stroke="#c8a660" stroke-width="1.5"/>
+                <text x="95" y="201" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">API registry</text>
+                <text x="95" y="217" text-anchor="middle" fill="#71717a" font-size="8">schema-validated YAML</text>
+
+                <!-- CI box -->
+                <rect x="210" y="40" width="165" height="190" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="292" y="62" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">GitLab CI</text>
+                <text x="222" y="84" fill="#e4e4e7" font-size="8">secret scan</text>
+                <text x="222" y="100" fill="#e4e4e7" font-size="8">OpenAPI lint (Spectral)</text>
+                <text x="222" y="116" fill="#e4e4e7" font-size="8">contract tests (Pact)</text>
+                <text x="222" y="132" fill="#e4e4e7" font-size="8">build BAR x.y.z-sha</text>
+                <text x="222" y="148" fill="#e4e4e7" font-size="8">ZAP + k6 (pre-prod)</text>
+                <text x="222" y="164" fill="#e4e4e7" font-size="8">registry entry check</text>
+                <text x="222" y="190" fill="#f87171" font-size="8">no cluster credentials</text>
+                <text x="222" y="204" fill="#f87171" font-size="8">never applies to a cluster</text>
+
+                <!-- Artefact repo -->
+                <rect x="210" y="260" width="165" height="50" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="292" y="281" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Artefact repository</text>
+                <text x="292" y="297" text-anchor="middle" fill="#71717a" font-size="8">immutable BAR versions</text>
+
+                <!-- Source to CI arrows -->
+                <line x1="180" y1="70" x2="208" y2="70" stroke="#c8a660" stroke-width="1.5" marker-end="url(#go-arr)"/>
+                <line x1="180" y1="140" x2="208" y2="140" stroke="#c8a660" stroke-width="1.5" marker-end="url(#go-arr)"/>
+                <line x1="180" y1="205" x2="208" y2="205" stroke="#c8a660" stroke-width="1.5" marker-end="url(#go-arr)"/>
+                <line x1="292" y1="230" x2="292" y2="258" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#go-arr2)"/>
+
+                <!-- Desired state column -->
+                <rect x="405" y="40" width="170" height="44" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="490" y="59" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">Chart repo</text>
+                <text x="490" y="74" text-anchor="middle" fill="#71717a" font-size="8">released by tag</text>
+
+                <rect x="405" y="100" width="170" height="40" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="490" y="118" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">env repo: dev</text>
+                <text x="490" y="132" text-anchor="middle" fill="#71717a" font-size="7">shared/ + platforms/*</text>
+
+                <rect x="405" y="150" width="170" height="40" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="490" y="168" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">env repo: test</text>
+                <text x="490" y="182" text-anchor="middle" fill="#71717a" font-size="7">shared/ + platforms/*</text>
+
+                <rect x="405" y="200" width="170" height="40" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="490" y="218" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">env repo: uat</text>
+                <text x="490" y="232" text-anchor="middle" fill="#71717a" font-size="7">shared/ + platforms/*</text>
+
+                <rect x="405" y="250" width="170" height="40" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="490" y="268" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">env repo: prod</text>
+                <text x="490" y="282" text-anchor="middle" fill="#71717a" font-size="7">restricted merge</text>
+
+                <!-- CI opens MR on dev -->
+                <line x1="375" y1="120" x2="403" y2="120" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#go-arr2)"/>
+                <text x="380" y="112" fill="#a78bfa" font-size="7">MR</text>
+
+                <!-- Promotion arrows between env repos -->
+                <line x1="420" y1="140" x2="420" y2="148" stroke="#c8a660" stroke-width="1.5" marker-end="url(#go-arr)"/>
+                <line x1="420" y1="190" x2="420" y2="198" stroke="#c8a660" stroke-width="1.5" marker-end="url(#go-arr)"/>
+                <line x1="420" y1="240" x2="420" y2="248" stroke="#c8a660" stroke-width="1.5" marker-end="url(#go-arr)"/>
+                <text x="405" y="308" fill="#c8a660" font-size="8">promote = MR &middot; rollback = revert</text>
+
+                <!-- Clusters column -->
+                <rect x="610" y="100" width="160" height="40" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="690" y="117" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">dev &middot; Argo CD</text>
+                <text x="690" y="131" text-anchor="middle" fill="#71717a" font-size="7">auto-sync, prune, self-heal</text>
+
+                <rect x="610" y="150" width="160" height="40" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="690" y="167" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">test &middot; Argo CD</text>
+                <text x="690" y="181" text-anchor="middle" fill="#71717a" font-size="7">auto-sync, prune, self-heal</text>
+
+                <rect x="610" y="200" width="160" height="40" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="690" y="217" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">uat &middot; Argo CD</text>
+                <text x="690" y="231" text-anchor="middle" fill="#71717a" font-size="7">auto-sync, prune, self-heal</text>
+
+                <rect x="610" y="250" width="160" height="40" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="690" y="267" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">prod &middot; Argo CD</text>
+                <text x="690" y="281" text-anchor="middle" fill="#71717a" font-size="7">drift alert, manual sync</text>
+
+                <!-- Pull arrows: cluster reads its own env repo -->
+                <line x1="608" y1="120" x2="577" y2="120" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#go-arr3)"/>
+                <line x1="608" y1="170" x2="577" y2="170" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#go-arr3)"/>
+                <line x1="608" y1="220" x2="577" y2="220" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#go-arr3)"/>
+                <line x1="608" y1="270" x2="577" y2="270" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#go-arr4)"/>
+                <text x="580" y="95" fill="#71717a" font-size="7">pull</text>
+
+                <!-- Per-platform apps hint -->
+                <text x="610" y="60" fill="#e4e4e7" font-size="8">per cluster:</text>
+                <text x="610" y="74" fill="#71717a" font-size="7">1 Argo app per platform</text>
+                <text x="610" y="86" fill="#71717a" font-size="7">1 AppProject + namespace each</text>
+
+                <!-- Legend -->
+                <rect x="10" y="330" width="760" height="110" rx="6" fill="#16161f" stroke="#2d2d3a"/>
+                <text x="30" y="352" fill="#e4e4e7" font-size="9" font-weight="600">Legend</text>
+                <line x1="30" y1="370" x2="80" y2="370" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="90" y="374" fill="#e4e4e7" font-size="8">CI output: immutable BAR to the artefact repository, version-bump MR to the dev environment repo. Nothing else.</text>
+                <line x1="30" y1="390" x2="80" y2="390" stroke="#c8a660" stroke-width="1.5"/>
+                <text x="90" y="394" fill="#e4e4e7" font-size="8">Promotion: the same BAR and chart versions copied to the next environment repo by merge request.</text>
+                <line x1="30" y1="410" x2="80" y2="410" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="4,2"/>
+                <text x="90" y="414" fill="#e4e4e7" font-size="8">Pull: each Argo CD reads only its own environment repo plus the chart at a pinned tag.</text>
+                <line x1="30" y1="430" x2="80" y2="430" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,2"/>
+                <text x="90" y="434" fill="#e4e4e7" font-size="8">Production: same pull path, manual sync after an approved merge, blocked during freeze windows.</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Pull-based delivery topology: CI builds and opens merge requests; each cluster&rsquo;s Argo CD pulls only its own environment repository; integration servers download pinned BAR versions from the artefact repository at start-up</div>
+          </div>
+
+          <p>Why one Argo CD per cluster rather than a hub? Two reasons. First, environment isolation becomes physical. The prod Argo CD has no credentials for dev, and the dev Argo CD has none for prod. Second, a hub is a shared failure domain and a shared approval surface. In a regulated environment, a separate production control plane is easier to explain than a hub with careful RBAC. The trade-off is more Argo CD instances to upgrade. Red Hat OpenShift GitOps makes that an operator upgrade, not a project.</p>
+
+          <h2 id="applications">One Application per Platform per Environment</h2>
+          <p>A &ldquo;platform&rdquo; here is a business-aligned group of integration servers, their configurations, their MQ objects and their API products. Each platform gets one folder in each environment repository. An ApplicationSet in that cluster turns each folder into exactly one Argo CD Application.</p>
+          <p>The Application is multi-source. The chart comes from the chart repo at a pinned tag. The values come from the environment repo. Each platform folder carries a small descriptor that pins its chart version, so platforms can upgrade the chart one at a time.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>applicationset-platforms.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion:</span> <span class="tok-s">argoproj.io/v1alpha1</span>
+<span class="tok-k">kind:</span> <span class="tok-t">ApplicationSet</span>
+<span class="tok-k">metadata:</span>
+  <span class="tok-k">name:</span> <span class="tok-s">integration-platforms</span>
+  <span class="tok-k">namespace:</span> <span class="tok-s">integration-gitops</span>          <span class="tok-c"># this cluster's own Argo CD</span>
+<span class="tok-k">spec:</span>
+  <span class="tok-k">goTemplate:</span> <span class="tok-n">true</span>
+  <span class="tok-k">generators:</span>
+    <span class="tok-p">-</span> <span class="tok-k">git:</span>
+        <span class="tok-k">repoURL:</span> <span class="tok-s">https://git.example.com/ops/deploy-dev.git</span>
+        <span class="tok-k">revision:</span> <span class="tok-s">main</span>
+        <span class="tok-k">files:</span>
+          <span class="tok-p">-</span> <span class="tok-k">path:</span> <span class="tok-s">platforms/*/platform.yaml</span>   <span class="tok-c"># one file = one Application</span>
+  <span class="tok-k">template:</span>
+    <span class="tok-k">metadata:</span>
+      <span class="tok-k">name:</span> <span class="tok-s">'{{ .platform.name }}-dev'</span>
+    <span class="tok-k">spec:</span>
+      <span class="tok-k">project:</span> <span class="tok-s">'{{ .platform.name }}'</span>       <span class="tok-c"># AppProject per platform</span>
+      <span class="tok-k">destination:</span>
+        <span class="tok-k">server:</span> <span class="tok-s">https://kubernetes.default.svc</span>
+        <span class="tok-k">namespace:</span> <span class="tok-s">'{{ .platform.namespace }}'</span>
+      <span class="tok-k">sources:</span>
+        <span class="tok-p">-</span> <span class="tok-k">repoURL:</span> <span class="tok-s">https://git.example.com/platform/integration-charts.git</span>
+          <span class="tok-k">path:</span> <span class="tok-s">charts/ace-platform</span>
+          <span class="tok-k">targetRevision:</span> <span class="tok-s">'{{ .chart.version }}'</span>  <span class="tok-c"># a tag, never a branch</span>
+          <span class="tok-k">helm:</span>
+            <span class="tok-k">valueFiles:</span>
+              <span class="tok-p">-</span> <span class="tok-s">$values/shared/values.yaml</span>
+              <span class="tok-p">-</span> <span class="tok-s">'$values/platforms/{{ .platform.name }}/values.yaml'</span>
+        <span class="tok-p">-</span> <span class="tok-k">repoURL:</span> <span class="tok-s">https://git.example.com/ops/deploy-dev.git</span>
+          <span class="tok-k">targetRevision:</span> <span class="tok-s">main</span>
+          <span class="tok-k">ref:</span> <span class="tok-s">values</span>
+      <span class="tok-k">syncPolicy:</span>
+        <span class="tok-k">automated:</span>
+          <span class="tok-k">prune:</span> <span class="tok-n">true</span>
+          <span class="tok-k">selfHeal:</span> <span class="tok-n">true</span>
+        <span class="tok-k">syncOptions:</span>
+          <span class="tok-p">-</span> <span class="tok-s">PruneLast=true</span></code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>platforms/orders/platform.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">platform:</span>
+  <span class="tok-k">name:</span> <span class="tok-s">orders</span>
+  <span class="tok-k">namespace:</span> <span class="tok-s">int-orders</span>
+<span class="tok-k">chart:</span>
+  <span class="tok-k">version:</span> <span class="tok-s">ace-platform-2.3.1</span>   <span class="tok-c"># bumped per platform, by MR</span></code></pre>
+          </div>
+
+          <p>The AppProject is the fence. It limits the platform to its own namespace and to the kinds it is allowed to own. Shared objects &mdash; namespaces, common policies, bar-download credentials &mdash; are referenced by a platform, never owned by it. That stops a prune in one platform from deleting something another platform needs.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">One resource, one owner</div>
+            <p>During migration, the old push pipeline and Argo CD can both believe they own an integration server. They will fight. Self-heal reverts the pipeline&rsquo;s change; the next push reverts Argo&rsquo;s. Onboard a platform only after it has been removed from the old pipeline, and agree that hand-over with the owning team in writing.</p>
+          </div>
+
+          <h2 id="config-layers">Configuration in Three Layers</h2>
+          <p>ACE configuration is the hard part. Policy projects, server configuration, generic files and credentials all become operator <code>Configuration</code> resources. Many teams commit them as opaque base64 zips. Nobody can review a zip in a merge request.</p>
+          <p>Keep configuration as readable sources in three layers:</p>
+          <ul>
+            <li><strong>Environment-shared</strong> (<code>shared/</code>) &mdash; runtime version, common policies, defaults. Owned by the platform team.</li>
+            <li><strong>Platform</strong> (<code>platforms/&lt;name&gt;/config/</code>) &mdash; policy projects and server configuration for that platform. Owned by the delivery team.</li>
+            <li><strong>Environment values</strong> (<code>platforms/&lt;name&gt;/values.yaml</code>) &mdash; replicas, BAR versions, endpoints that differ per environment.</li>
+          </ul>
+          <p>A small packaging tool zips each source folder into a generated directory and names it with a content hash. The environment pipeline checks on every merge request that the generated output matches its sources. If someone edits the zip by hand, the check fails.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>platforms/orders/values.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">integrationServers:</span>
+  <span class="tok-p">-</span> <span class="tok-k">name:</span> <span class="tok-s">orders-api</span>
+    <span class="tok-k">replicas:</span> <span class="tok-n">2</span>
+    <span class="tok-k">bars:</span>
+      <span class="tok-p">-</span> <span class="tok-k">name:</span> <span class="tok-s">orders-api</span>
+        <span class="tok-k">version:</span> <span class="tok-s">1.8.0-4f2c9ab</span>          <span class="tok-c"># CI bumps this line by MR</span>
+    <span class="tok-k">configurations:</span>
+      <span class="tok-p">-</span> <span class="tok-s">orders-policies</span>                 <span class="tok-c"># from platforms/orders/config/</span>
+      <span class="tok-p">-</span> <span class="tok-s">orders-server-conf</span>
+      <span class="tok-p">-</span> <span class="tok-s">common-policies</span>                 <span class="tok-c"># referenced, owned by shared/</span>
+<span class="tok-k">secrets:</span>
+  <span class="tok-k">provider:</span> <span class="tok-s">repo</span>                         <span class="tok-c"># current store; later: vault, same layout</span></code></pre>
+          </div>
+
+          <p>The hash does the restart work. A <code>Configuration</code> name includes the first characters of its content hash. Change one policy file and the name changes. The integration server&rsquo;s <code>configurations</code> list changes with it. The operator rolls only the servers that reference it. No manual rollout restart. No restarting servers whose configuration did not change.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>charts/ace-platform/templates/configurations.yaml (excerpt)</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c">{{- /* Reject floating versions before anything renders. */}}</span>
+<span class="tok-c">{{- $rt := required "shared.aceVersion is required" .Values.shared.aceVersion }}</span>
+<span class="tok-c">{{- if regexMatch "(?i)latest|[*^~]|^$" $rt }}</span>
+<span class="tok-c">{{- fail (printf "floating ACE version not allowed: %s" $rt) }}</span>
+<span class="tok-c">{{- end }}</span>
+
+<span class="tok-c">{{- range $name, $c := .Values.generated.configurations }}</span>
+<span class="tok-k">apiVersion:</span> <span class="tok-s">appconnect.ibm.com/v1beta1</span>
+<span class="tok-k">kind:</span> <span class="tok-t">Configuration</span>
+<span class="tok-k">metadata:</span>
+  <span class="tok-k">name:</span> <span class="tok-s">{{ $name }}-{{ $c.hash | trunc 8 }}</span>   <span class="tok-c"># content hash in the name</span>
+<span class="tok-k">spec:</span>
+  <span class="tok-k">type:</span> <span class="tok-s">{{ $c.type }}</span>                      <span class="tok-c"># policyproject, serverconf, generic</span>
+  <span class="tok-k">data:</span> <span class="tok-s">{{ $c.data }}</span>                      <span class="tok-c"># packaged from readable sources</span>
+<span class="tok-p">---</span>
+<span class="tok-c">{{- end }}</span></code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Why not a config-management plugin?</div>
+            <p>Argo CD can run custom plugins to render manifests. Avoid them here. A plugin is code inside the repo server that nobody reviews with the change, and it makes local rendering differ from cluster rendering. Plain Helm plus a checked, generated directory renders the same everywhere. The pipeline can run <code>helm template</code> on every merge request and show the diff.</p>
+          </div>
+
+          <h2 id="mq-and-apis">MQ Objects and API Products</h2>
+          <p>Queues and API products are part of a platform. If they deploy separately, they drift separately. Argo CD resource hooks put them in the right order inside one sync.</p>
+          <p><strong>Before the servers:</strong> a <code>PreSync</code> Job applies the platform&rsquo;s MQSC script to the queue manager. The script must be idempotent. Use <code>DEFINE ... REPLACE</code> or a define-then-alter pattern, so running it twice changes nothing. If the Job fails, the sync stops and the integration servers are not touched.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>charts/ace-platform/templates/mqsc-presync-job.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion:</span> <span class="tok-s">batch/v1</span>
+<span class="tok-k">kind:</span> <span class="tok-t">Job</span>
+<span class="tok-k">metadata:</span>
+  <span class="tok-k">name:</span> <span class="tok-s">{{ .Values.platform.name }}-mqsc-{{ .Values.generated.mqscHash | trunc 8 }}</span>
+  <span class="tok-k">annotations:</span>
+    <span class="tok-k">argocd.argoproj.io/hook:</span> <span class="tok-s">PreSync</span>
+    <span class="tok-k">argocd.argoproj.io/hook-delete-policy:</span> <span class="tok-s">BeforeHookCreation</span>
+<span class="tok-k">spec:</span>
+  <span class="tok-k">backoffLimit:</span> <span class="tok-n">1</span>
+  <span class="tok-k">template:</span>
+    <span class="tok-k">spec:</span>
+      <span class="tok-k">restartPolicy:</span> <span class="tok-s">Never</span>
+      <span class="tok-k">containers:</span>
+        <span class="tok-p">-</span> <span class="tok-k">name:</span> <span class="tok-s">runmqsc</span>
+          <span class="tok-k">image:</span> <span class="tok-s">{{ .Values.shared.mqClientImage }}</span>   <span class="tok-c"># pinned tag</span>
+          <span class="tok-k">command:</span> [<span class="tok-s">"/bin/sh"</span>, <span class="tok-s">"-c"</span>]
+          <span class="tok-k">args:</span>
+            <span class="tok-p">-</span> <span class="tok-s">runmqsc -c -e "$QMGR" &lt; /mqsc/platform.mqsc</span>
+          <span class="tok-k">env:</span>
+            <span class="tok-p">-</span> { <span class="tok-k">name:</span> <span class="tok-s">QMGR</span>, <span class="tok-k">value:</span> <span class="tok-s">{{ .Values.mq.queueManager }}</span> }
+            <span class="tok-p">-</span> { <span class="tok-k">name:</span> <span class="tok-s">MQCCDTURL</span>, <span class="tok-k">value:</span> <span class="tok-s">file:///ccdt/ccdt.json</span> }
+          <span class="tok-k">volumeMounts:</span>
+            <span class="tok-p">-</span> { <span class="tok-k">name:</span> <span class="tok-s">mqsc</span>, <span class="tok-k">mountPath:</span> <span class="tok-s">/mqsc</span> }
+            <span class="tok-p">-</span> { <span class="tok-k">name:</span> <span class="tok-s">ccdt</span>, <span class="tok-k">mountPath:</span> <span class="tok-s">/ccdt</span> }
+      <span class="tok-k">volumes:</span>
+        <span class="tok-p">-</span> { <span class="tok-k">name:</span> <span class="tok-s">mqsc</span>, <span class="tok-k">configMap:</span> { <span class="tok-k">name:</span> <span class="tok-s">{{ .Values.platform.name }}-mqsc</span> } }
+        <span class="tok-p">-</span> { <span class="tok-k">name:</span> <span class="tok-s">ccdt</span>, <span class="tok-k">configMap:</span> { <span class="tok-k">name:</span> <span class="tok-s">mq-client-ccdt</span> } }</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>platforms/orders/config/mq/platform.mqsc</span><span class="code-block__lang">mqsc</span></div>
+<pre><code><span class="tok-c">* Idempotent: safe to run on every sync.</span>
+<span class="tok-k">DEFINE QLOCAL</span>(<span class="tok-s">'ORDERS.REQUEST'</span>) <span class="tok-t">MAXDEPTH</span>(<span class="tok-n">50000</span>) <span class="tok-t">DEFPSIST</span>(<span class="tok-s">YES</span>) <span class="tok-t">BOQNAME</span>(<span class="tok-s">'ORDERS.BACKOUT'</span>) <span class="tok-t">BOTHRESH</span>(<span class="tok-n">3</span>) <span class="tok-k">REPLACE</span>
+<span class="tok-k">DEFINE QLOCAL</span>(<span class="tok-s">'ORDERS.BACKOUT'</span>) <span class="tok-t">MAXDEPTH</span>(<span class="tok-n">50000</span>) <span class="tok-t">DEFPSIST</span>(<span class="tok-s">YES</span>) <span class="tok-k">REPLACE</span>
+<span class="tok-c">* Never DELETE here. Removals go through a reviewed, one-off change.</span></code></pre>
+          </div>
+
+          <p><strong>After the servers:</strong> a <code>PostSync</code> hook publishes the platform&rsquo;s API products to the environment&rsquo;s API Connect catalog. Argo CD runs <code>PostSync</code> hooks only after the sync succeeds and every resource reports healthy. So an API never goes live in front of an integration server that is still starting, or crash-looping. The product files sit in the platform folder, versioned with the BARs they front. Promotion moves both together.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Do not let the MQSC Job delete objects</div>
+            <p>It is tempting to make the MQ script fully declarative &mdash; delete anything not listed. Do not. A queue removed from the file during a refactor would be deleted with its messages on the next sync, in every environment, automatically below production. Additive and idempotent in the hook; removals as an explicit, reviewed change.</p>
+          </div>
+
+          <h2 id="promotion">Promotion, Rollback, Sync Policy</h2>
+          <p>Promotion is a merge request that copies versions, not files. The promotion job reads the BAR and chart versions from the dev folder of a platform and opens an MR that writes the same versions into the test repository. Then uat. Then prod. The tested build is the deployed build because there is only one build.</p>
+          <p>Rollback is <code>git revert</code> of the promotion commit. Argo CD sees the previous versions and reconciles. Because BARs are immutable and still in the artefact repository, the previous version is always there to pull.</p>
+
+          <table>
+            <thead>
+              <tr><th>Environment</th><th>Sync</th><th>Prune / self-heal</th><th>Who can merge</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>dev</strong></td><td>Automated</td><td>Yes / yes</td><td>Platform CODEOWNERS; CI bot for version bumps</td></tr>
+              <tr><td><strong>test</strong></td><td>Automated</td><td>Yes / yes</td><td>Platform CODEOWNERS</td></tr>
+              <tr><td><strong>uat</strong></td><td>Automated</td><td>Yes / yes</td><td>Platform CODEOWNERS</td></tr>
+              <tr><td><strong>prod</strong></td><td>Manual, after approved merge</td><td>Drift detected and alerted; not auto-corrected</td><td>Maintainers, with named approver; outside freeze windows</td></tr>
+            </tbody>
+          </table>
+
+          <p>The production freeze window is enforced twice. GitLab blocks merges to the prod environment repo during the window. Argo CD&rsquo;s AppProject blocks syncs, including manual ones, with a deny window. If one control is misconfigured, the other still holds.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>appproject-orders-prod.yaml (excerpt)</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">apiVersion:</span> <span class="tok-s">argoproj.io/v1alpha1</span>
+<span class="tok-k">kind:</span> <span class="tok-t">AppProject</span>
+<span class="tok-k">metadata:</span>
+  <span class="tok-k">name:</span> <span class="tok-s">orders</span>
+<span class="tok-k">spec:</span>
+  <span class="tok-k">sourceRepos:</span>
+    <span class="tok-p">-</span> <span class="tok-s">https://git.example.com/ops/deploy-prod.git</span>
+    <span class="tok-p">-</span> <span class="tok-s">https://git.example.com/platform/integration-charts.git</span>
+  <span class="tok-k">destinations:</span>
+    <span class="tok-p">-</span> { <span class="tok-k">server:</span> <span class="tok-s">https://kubernetes.default.svc</span>, <span class="tok-k">namespace:</span> <span class="tok-s">int-orders</span> }
+  <span class="tok-k">clusterResourceWhitelist:</span> []           <span class="tok-c"># no cluster-scoped kinds</span>
+  <span class="tok-k">syncWindows:</span>
+    <span class="tok-p">-</span> <span class="tok-k">kind:</span> <span class="tok-s">deny</span>                         <span class="tok-c"># example weekly freeze</span>
+      <span class="tok-k">schedule:</span> <span class="tok-s">'0 18 * * 4'</span>
+      <span class="tok-k">duration:</span> <span class="tok-s">48h</span>
+      <span class="tok-k">applications:</span> [<span class="tok-s">'*'</span>]
+      <span class="tok-k">manualSync:</span> <span class="tok-n">false</span>                  <span class="tok-c"># false = manual syncs are denied too</span></code></pre>
+          </div>
+
+          <h2 id="compliance">Compliance as a CI Include</h2>
+          <p>Delivery is only half the story. The other half is what must be true before a version is allowed to move. Do not ask each team to build that. Ship it as shared, versioned CI templates owned by the platform team. A delivery project includes them and sets a handful of variables &mdash; five to ten, typically.</p>
+
+          <table>
+            <thead>
+              <tr><th>Template</th><th>What it checks</th><th>When</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Compliance-enforced pipeline</strong></td><td>Mandatory jobs injected into every project; cannot be removed by the project</td><td>Every MR</td></tr>
+              <tr><td><strong>Secret scan</strong></td><td>Credentials committed to source</td><td>Every commit and MR</td></tr>
+              <tr><td><strong>Spectral OpenAPI lint</strong></td><td>API specs against the house ruleset: naming, errors, security schemes, versioning</td><td>When specs change</td></tr>
+              <tr><td><strong>Pact contract verification</strong></td><td>The provider still honours every consumer contract</td><td>Every MR and on merge</td></tr>
+              <tr><td><strong>ZAP scan</strong></td><td>Baseline API security scan against a deployed instance</td><td>Pre-production</td></tr>
+              <tr><td><strong>k6 performance</strong></td><td>p99 latency against the project&rsquo;s declared SLO</td><td>Pre-production</td></tr>
+            </tbody>
+          </table>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>.gitlab-ci.yml (a delivery project)</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">include:</span>
+  <span class="tok-p">-</span> <span class="tok-k">project:</span> <span class="tok-s">'platform/ci-templates'</span>
+    <span class="tok-k">ref:</span> <span class="tok-s">v3.4.0</span>                          <span class="tok-c"># a tag: templates are versioned too</span>
+    <span class="tok-k">file:</span>
+      <span class="tok-p">-</span> <span class="tok-s">templates/secret-scan.yml</span>
+      <span class="tok-p">-</span> <span class="tok-s">templates/spectral-lint.yml</span>
+      <span class="tok-p">-</span> <span class="tok-s">templates/ace-build.yml</span>       <span class="tok-c"># BAR x.y.z-sha, opens dev MR</span>
+      <span class="tok-p">-</span> <span class="tok-s">templates/pact-verify.yml</span>
+      <span class="tok-p">-</span> <span class="tok-s">templates/zap-scan.yml</span>
+      <span class="tok-p">-</span> <span class="tok-s">templates/k6-performance.yml</span>
+<span class="tok-c"># compliance-enforced.yml is attached by the group's compliance</span>
+<span class="tok-c"># framework. The project does not include it and cannot remove it.</span>
+
+<span class="tok-k">variables:</span>
+  <span class="tok-k">PROJECT_NAME:</span> <span class="tok-s">orders-api</span>
+  <span class="tok-k">DOMAIN:</span> <span class="tok-s">payments</span>
+  <span class="tok-k">PLATFORM:</span> <span class="tok-s">orders</span>                      <span class="tok-c"># env-repo folder to bump</span>
+  <span class="tok-k">PACT_PROVIDER:</span> <span class="tok-s">orders-api</span>
+  <span class="tok-k">OPENAPI_GLOB:</span> <span class="tok-s">"api-specs/*.yaml"</span>
+  <span class="tok-k">PERFORMANCE_SLO_P99_MS:</span> <span class="tok-s">"800"</span>
+  <span class="tok-k">API_REGISTRY_ID:</span> <span class="tok-s">API-PAYMENTS-014</span></code></pre>
+          </div>
+
+          <p>That is the whole file. The pipeline shape, the scanners, their versions and their thresholds live in one place. When the security team tightens a Spectral rule, every project picks it up on the next template release. The minimum bar rises everywhere at once, and nobody files a ticket per team.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Pin the template, then move it on purpose</div>
+            <p>Including templates from <code>ref: main</code> is the CI equivalent of a <code>latest</code> image. A broken template commit breaks every pipeline in the group at once. Tag template releases. Bump the tag in projects by MR &mdash; ideally an automated one &mdash; and keep the mandatory compliance jobs in the group-level framework so they cannot be pinned to an old version.</p>
+          </div>
+
+          <h2 id="api-registry">The API Registry</h2>
+          <p>Auditors and partners ask the same question in different forms: every API you publish, to whom, under what SLA. Without a registry, answering takes days of spreadsheets and email. With one, it takes minutes.</p>
+          <p>The registry does not need a product. A Git repository of YAML files works well: one file per API, validated against a JSON Schema on every commit. CI also checks uniqueness of IDs and that active entries point to something that exists. Retired APIs move to a <code>deprecated/</code> folder with a sunset date. They are never deleted.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>registry/active/API-PAYMENTS-014.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">id:</span> <span class="tok-s">API-PAYMENTS-014</span>
+<span class="tok-k">name:</span> <span class="tok-s">Orders API</span>
+<span class="tok-k">version:</span> <span class="tok-s">1.8.0</span>
+<span class="tok-k">status:</span> <span class="tok-s">active</span>                     <span class="tok-c"># planned | active | deprecated</span>
+<span class="tok-k">owner:</span>
+  <span class="tok-k">team:</span> <span class="tok-s">payments-integration</span>
+  <span class="tok-k">role:</span> <span class="tok-s">product-owner</span>
+<span class="tok-k">classification:</span> <span class="tok-s">confidential</span>
+<span class="tok-k">consumers:</span>
+  <span class="tok-p">-</span> { <span class="tok-k">name:</span> <span class="tok-s">mobile-channel</span>, <span class="tok-k">type:</span> <span class="tok-s">internal</span> }
+  <span class="tok-p">-</span> { <span class="tok-k">name:</span> <span class="tok-s">partner-a</span>, <span class="tok-k">type:</span> <span class="tok-s">external</span>, <span class="tok-k">agreement:</span> <span class="tok-s">required</span> }
+<span class="tok-k">sla:</span>
+  <span class="tok-k">availability:</span> <span class="tok-s">"99.9"</span>
+  <span class="tok-k">p99_ms:</span> <span class="tok-n">800</span>                          <span class="tok-c"># same value the k6 job enforces</span>
+<span class="tok-k">spec:</span> <span class="tok-s">api-specs/orders-api.yaml</span>
+<span class="tok-k">delivery:</span>
+  <span class="tok-k">platform:</span> <span class="tok-s">orders</span>
+<span class="tok-k">sunset_date:</span> <span class="tok-n">null</span></code></pre>
+          </div>
+
+          <p>Wire the registry into governance, not beside it. Create a draft entry with status <code>planned</code> when the design is approved at the first review gate. Require the entry to exist and validate before the pre-production review gate will pass. The CI template checks that <code>API_REGISTRY_ID</code> points to a valid entry, and that the SLO the k6 job enforces is the SLO the registry promises. One number, two uses.</p>
+
+          <h2 id="migration">Migrating Beside the Old System</h2>
+          <p>Do not rewrite the old push repository in place. Every team depends on it, and changing it under them is the riskiest option on the table. Build the new platform beside it and move platforms one at a time.</p>
+          <ol class="step-list">
+            <li><h4>Bootstrap once per cluster</h4><p>Install the OpenShift GitOps operator and the first Argo CD instance from the console. That is the last cluster-admin action. Everything after is Git.</p></li>
+            <li><h4>Prove an empty platform syncs green</h4><p>An ApplicationSet over an empty <code>platforms/</code> folder, AppProjects and namespaces. Boring is the goal.</p></li>
+            <li><h4>Pilot with a platform the old system never owned</h4><p>A new platform has no ownership conflict. Deploy, upgrade and roll back on dev through MRs only.</p></li>
+            <li><h4>Add API products and promotion</h4><p>Publish the pilot&rsquo;s APIs by sync. Then promote the same BAR version from dev to uat unchanged.</p></li>
+            <li><h4>Production</h4><p>The prod Argo CD, the prod environment repo, approvals and freeze windows. The first prod release goes out by approved MR.</p></li>
+            <li><h4>Onboard existing platforms one by one</h4><p>Each by agreement with its team, after it is removed from the old pipeline. The old system retires when the last platform leaves &mdash; as a separate decision.</p></li>
+          </ol>
+
+          <h2 id="failure-modes">Failure Modes</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Prune deletes a shared object</div>
+            <p>If a platform&rsquo;s chart renders a shared object &mdash; a common policy, a pull secret &mdash; Argo CD treats it as owned. Remove it from that platform and prune deletes it for everyone. Restrict kinds and namespaces in each AppProject. Render shared objects only from the shared layer. Reference them from platforms by name.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Generated configuration drifts from its sources</div>
+            <p>Someone fixes a policy directly in the generated zip to unblock a test. It works. The source still holds the old value, and the next regeneration silently reverts the fix. The merge-request check that regenerates and compares is not optional. Fail the pipeline on any difference.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Production drift becomes normal</div>
+            <p>Production does not self-heal by design, so manual drift persists until someone acts. Route out-of-sync alerts for prod to the on-call channel, not a dashboard. Treat each one as an incident: either the change goes into Git or it is reverted. A prod application that stays out of sync for a week means GitOps has been bypassed.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">The operator upgrades underneath you</div>
+            <p>Operators on automatic approval can roll a new ACE or MQ operator version into every environment at once. That defeats pinned runtimes. Set operator subscriptions to manual approval and move them through environments like any other version.</p>
+          </div>
+
+          <h2 id="checklist">Production Checklist</h2>
+          <ol class="step-list">
+            <li><h4>Write the defect list first</h4><p>Read the current pipeline code and compare it with the cluster. Name each defect. Each rule you adopt should close at least one.</p></li>
+            <li><h4>Remove cluster credentials from CI</h4><p>Revoke them, do not just stop using them. Then verify CI can still build, publish and open MRs.</p></li>
+            <li><h4>One Argo CD and one environment repo per cluster</h4><p>No cross-environment credentials. No shared branches.</p></li>
+            <li><h4>One Application and one AppProject per platform per environment</h4><p>Namespace and kind restrictions in every AppProject. No cluster-scoped kinds for platforms.</p></li>
+            <li><h4>Pin everything and make tools enforce it</h4><p>Runtime, BAR, chart, images, CI templates, operator subscriptions. The chart fails on floating versions.</p></li>
+            <li><h4>Readable, layered configuration with content hashes</h4><p>A merge-request check that generated output matches sources, and <code>helm template</code> diffs on every MR.</p></li>
+            <li><h4>Hooks for MQ and APIs</h4><p>Idempotent, additive MQSC in <code>PreSync</code>. API publishing in <code>PostSync</code>.</p></li>
+            <li><h4>Freeze windows enforced in two places</h4><p>Merge protection on the prod environment repo and a deny sync window in Argo CD.</p></li>
+            <li><h4>Compliance as included templates</h4><p>Mandatory jobs in the group compliance framework. Projects set variables, not pipelines.</p></li>
+            <li><h4>Registry entry required to pass the pre-production gate</h4><p>Schema-validated, with SLA values that the performance job enforces.</p></li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="tekton-and-argocd.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Tekton &amp; ArgoCD</div>
+            </a>
+            <a href="../devops.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">DevOps &amp; Platform &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2026 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

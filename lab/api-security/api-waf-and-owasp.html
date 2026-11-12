@@ -121,6 +121,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Kong 3.7 / AWS WAF v2 / OWASP CRS 4.0 / IBM API Connect 10.0.7 / ModSecurity 3</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -139,7 +140,7 @@
               <svg width="780" height="300" viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="waf-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="waf-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
@@ -159,8 +160,8 @@
                 <text x="55" y="153" text-anchor="middle" fill="#71717a" font-size="8">bots &middot; attackers</text>
 
                 <!-- Kong Gateway outer -->
-                <rect x="120" y="50" width="430" height="170" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
-                <text x="335" y="72" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Kong 3.7 Gateway &mdash; WAF Enforcement Layer</text>
+                <rect x="120" y="50" width="430" height="170" rx="6" fill="#16161f" stroke="#c8a660" stroke-width="1.5"/>
+                <text x="335" y="72" text-anchor="middle" fill="#c8a660" font-size="11" font-weight="600">Kong 3.7 Gateway &mdash; WAF Enforcement Layer</text>
 
                 <!-- Sub-boxes inside Kong -->
                 <rect x="135" y="84" width="120" height="120" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
@@ -194,8 +195,8 @@
                 <text x="480" y="194" text-anchor="middle" fill="#71717a" font-size="8">score threshold</text>
 
                 <!-- API Services -->
-                <rect x="575" y="80" width="140" height="80" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="645" y="105" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">API Services</text>
+                <rect x="575" y="80" width="140" height="80" rx="6" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="645" y="105" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">API Services</text>
                 <text x="645" y="120" text-anchor="middle" fill="#71717a" font-size="8">AIS / PIS / CoF</text>
                 <text x="645" y="133" text-anchor="middle" fill="#71717a" font-size="8">application-layer</text>
                 <text x="645" y="147" text-anchor="middle" fill="#71717a" font-size="8">BOLA checks here</text>
@@ -208,9 +209,9 @@
 
                 <!-- Arrows -->
                 <line x1="102" y1="130" x2="118" y2="130" stroke="#ef4444" stroke-width="1.5" marker-end="url(#waf-arr)"/>
-                <line x1="255" y1="144" x2="273" y2="144" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#waf-arr)"/>
-                <line x1="407" y1="144" x2="423" y2="144" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#waf-arr)"/>
-                <line x1="537" y1="130" x2="573" y2="120" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#waf-arr)"/>
+                <line x1="255" y1="144" x2="273" y2="144" stroke="#c8a660" stroke-width="1.5" marker-end="url(#waf-arr)"/>
+                <line x1="407" y1="144" x2="423" y2="144" stroke="#c8a660" stroke-width="1.5" marker-end="url(#waf-arr)"/>
+                <line x1="537" y1="130" x2="573" y2="120" stroke="#c8a660" stroke-width="1.5" marker-end="url(#waf-arr)"/>
 
                 <!-- BOLA detection path -->
                 <line x1="645" y1="162" x2="645" y2="183" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#waf-arr2)"/>
@@ -268,7 +269,7 @@
 - <span class="tok-k">name</span>: <span class="tok-s">oas-validation</span>
   <span class="tok-k">config</span>:
     <span class="tok-k">api_spec_encoded</span>: <span class="tok-n">false</span>
-    <span class="tok-k">api_spec</span>: <span class="tok-s">"https://spec.openbanking.saib.sa/pis/v1/openapi.yaml"</span>
+    <span class="tok-k">api_spec</span>: <span class="tok-s">"https://spec.openbanking.bank.example/pis/v1/openapi.yaml"</span>
     <span class="tok-k">validate_request_body</span>: <span class="tok-n">true</span>
     <span class="tok-k">validate_request_header_params</span>: <span class="tok-n">true</span>
     <span class="tok-k">validate_request_query_params</span>: <span class="tok-n">true</span>

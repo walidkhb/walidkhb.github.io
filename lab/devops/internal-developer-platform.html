@@ -122,6 +122,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Backstage 1.x / OpenShift 4.x / Tekton / Crossplane / Helm</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Jun 20, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -144,7 +145,7 @@
               <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="idp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="idp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
@@ -155,13 +156,13 @@
                 </defs>
 
                 <!-- Developer -->
-                <rect x="20" y="150" width="110" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <rect x="20" y="150" width="110" height="50" rx="6" fill="#16161f" stroke="#c8a660"/>
                 <text x="75" y="171" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Developer</text>
                 <text x="75" y="187" text-anchor="middle" fill="#71717a" font-size="9">fills IDP form</text>
 
                 <!-- Backstage -->
-                <rect x="175" y="60" width="150" height="60" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="250" y="84" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Backstage</text>
+                <rect x="175" y="60" width="150" height="60" rx="6" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="250" y="84" text-anchor="middle" fill="#c8a660" font-size="11" font-weight="600">Backstage</text>
                 <text x="250" y="100" text-anchor="middle" fill="#71717a" font-size="9">portal &middot; catalog &middot; scaffolder</text>
 
                 <!-- Git -->
@@ -197,13 +198,13 @@
                 <text x="450" y="194" text-anchor="middle" fill="#71717a" font-size="9">syncs env repo to cluster</text>
 
                 <!-- Arrows: Developer -> Backstage -->
-                <line x1="130" y1="175" x2="173" y2="110" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#idp1)"/>
+                <line x1="130" y1="175" x2="173" y2="110" stroke="#c8a660" stroke-width="1.5" marker-end="url(#idp1)"/>
 
                 <!-- Backstage -> Git -->
-                <line x1="325" y1="90" x2="383" y2="90" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#idp1)"/>
+                <line x1="325" y1="90" x2="383" y2="90" stroke="#c8a660" stroke-width="1.5" marker-end="url(#idp1)"/>
 
                 <!-- Git -> Tekton -->
-                <line x1="515" y1="90" x2="568" y2="90" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#idp1)"/>
+                <line x1="515" y1="90" x2="568" y2="90" stroke="#c8a660" stroke-width="1.5" marker-end="url(#idp1)"/>
 
                 <!-- Backstage -> Crossplane -->
                 <line x1="250" y1="120" x2="250" y2="238" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#idp2)"/>
@@ -221,8 +222,8 @@
                 <line x1="515" y1="183" x2="568" y2="260" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#idp3)"/>
 
                 <!-- Labels -->
-                <text x="148" y="133" fill="#00d4aa" font-size="8">scaffold</text>
-                <text x="338" y="83" fill="#00d4aa" font-size="8">creates repo</text>
+                <text x="148" y="133" fill="#c8a660" font-size="8">scaffold</text>
+                <text x="338" y="83" fill="#c8a660" font-size="8">creates repo</text>
                 <text x="248" y="192" fill="#a78bfa" font-size="8">XRD claim</text>
                 <text x="540" y="148" fill="#fbbf24" font-size="8">image+tag</text>
               </svg>
@@ -237,11 +238,11 @@
           <div class="code-block">
             <div class="code-block__header"><span>app-config.yaml</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-k">app</span>:
-  <span class="tok-k">title</span>: <span class="tok-s">SAIB Integration Platform</span>
-  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.saib.internal</span>
+  <span class="tok-k">title</span>: <span class="tok-s">Bank Integration Platform</span>
+  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.bank.internal</span>
 
 <span class="tok-k">backend</span>:
-  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.saib.internal</span>
+  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.bank.internal</span>
   <span class="tok-k">database</span>:
     <span class="tok-k">client</span>: <span class="tok-s">pg</span>
     <span class="tok-k">connection</span>:
@@ -263,7 +264,7 @@
   <span class="tok-k">providers</span>:
     <span class="tok-k">github</span>:
       <span class="tok-k">integrationOrg</span>:
-        <span class="tok-k">organization</span>: <span class="tok-s">saib-integration</span>
+        <span class="tok-k">organization</span>: <span class="tok-s">bank-integration</span>
         <span class="tok-k">catalogPath</span>: <span class="tok-s">/catalog-info.yaml</span>
         <span class="tok-k">filters</span>:
           <span class="tok-k">branch</span>: <span class="tok-s">main</span>
@@ -326,7 +327,7 @@
       <span class="tok-k">name</span>: <span class="tok-s">Create repository</span>
       <span class="tok-k">action</span>: <span class="tok-s">publish:github</span>
       <span class="tok-k">input</span>:
-        <span class="tok-k">repoUrl</span>: <span class="tok-s">github.com?owner=saib-integration&repo=${{ parameters.name }}-integration</span>
+        <span class="tok-k">repoUrl</span>: <span class="tok-s">github.com?owner=bank-integration&repo=${{ parameters.name }}-integration</span>
         <span class="tok-k">defaultBranch</span>: <span class="tok-s">main</span>
         <span class="tok-k">repoVisibility</span>: <span class="tok-s">private</span>
         <span class="tok-k">topics</span>: [<span class="tok-s">integration</span>, <span class="tok-s">${{ parameters.domain }}</span>, <span class="tok-s">ace</span>]
@@ -383,14 +384,14 @@
   <span class="tok-k">description</span>: <span class="tok-s">IPS payment instruction adapter — ISO 20022 to ACH transform</span>
   <span class="tok-k">annotations</span>:
     <span class="tok-k">backstage.io/techdocs-ref</span>: <span class="tok-s">dir:.</span>
-    <span class="tok-k">github.com/project-slug</span>: <span class="tok-s">saib-integration/payments-ips-adapter-integration</span>
+    <span class="tok-k">github.com/project-slug</span>: <span class="tok-s">bank-integration/payments-ips-adapter-integration</span>
     <span class="tok-k">argocd/app-name</span>: <span class="tok-s">payments-ips-adapter-prod</span>
   <span class="tok-k">tags</span>: [<span class="tok-s">payments</span>, <span class="tok-s">iso20022</span>, <span class="tok-s">ace</span>, <span class="tok-s">ips</span>]
   <span class="tok-k">links</span>:
-    - <span class="tok-k">url</span>: <span class="tok-s">https://wiki.saib.internal/runbooks/payments-ips-adapter</span>
+    - <span class="tok-k">url</span>: <span class="tok-s">https://wiki.bank.internal/runbooks/payments-ips-adapter</span>
       <span class="tok-k">title</span>: <span class="tok-s">Runbook</span>
       <span class="tok-k">icon</span>: <span class="tok-s">docs</span>
-    - <span class="tok-k">url</span>: <span class="tok-s">https://monitoring.saib.internal/d/payments-ips</span>
+    - <span class="tok-k">url</span>: <span class="tok-s">https://monitoring.bank.internal/d/payments-ips</span>
       <span class="tok-k">title</span>: <span class="tok-s">Dashboard</span>
       <span class="tok-k">icon</span>: <span class="tok-s">dashboard</span>
 <span class="tok-k">spec</span>:
@@ -417,9 +418,9 @@
 <span class="tok-k">apiVersion</span>: <span class="tok-s">apiextensions.crossplane.io/v1</span>
 <span class="tok-k">kind</span>: <span class="tok-s">CompositeResourceDefinition</span>
 <span class="tok-k">metadata</span>:
-  <span class="tok-k">name</span>: <span class="tok-s">xintegrationenvironments.platform.saib.internal</span>
+  <span class="tok-k">name</span>: <span class="tok-s">xintegrationenvironments.platform.bank.internal</span>
 <span class="tok-k">spec</span>:
-  <span class="tok-k">group</span>: <span class="tok-s">platform.saib.internal</span>
+  <span class="tok-k">group</span>: <span class="tok-s">platform.bank.internal</span>
   <span class="tok-k">names</span>:
     <span class="tok-k">kind</span>: <span class="tok-s">XIntegrationEnvironment</span>
     <span class="tok-k">plural</span>: <span class="tok-s">xintegrationenvironments</span>

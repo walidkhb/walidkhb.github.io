@@ -37,7 +37,7 @@
     .comparison-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); vertical-align: top; }
     .comparison-table tr:last-child td { border-bottom: none; }
     .comparison-table td:first-child { color: var(--color-text); font-weight: 500; }
-    .tag-yes { color: #00d4aa; font-weight: 600; }
+    .tag-yes { color: #c8a660; font-weight: 600; }
     .tag-no  { color: #ef4444; font-weight: 600; }
     .tag-partial { color: #fbbf24; font-weight: 600; }
   </style>
@@ -133,6 +133,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> Resilience4j 2.2 / Spring Boot 3.3 / IBM ACE 12 / Micrometer / Prometheus</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Oct 17, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -151,7 +152,7 @@
           <ul>
             <li><strong>Slow-response amplification.</strong> Payment gateways like SARIE respond in milliseconds under normal load but degrade to 5&ndash;15 seconds under settlement pressure at end-of-day. The integration layer has no visibility into whether this is transient overload or a sustained outage. Without a circuit breaker, every active request ties up a thread waiting for the answer.</li>
             <li><strong>Partial failures in orchestrated flows.</strong> An ISO 20022 payment initiation may call fraud screening, currency conversion, beneficiary validation, and the payment gateway in sequence. If the third step starts timing out, the circuit breaker must trip on step 3 without affecting step 1, step 2, or the responses already returned. Correctly scoping the breaker to the individual downstream &mdash; not the whole flow &mdash; is the implementation detail that most first attempts get wrong.</li>
-            <li><strong>Cascading failures across domain boundaries.</strong> SAIB&rsquo;s integration estate spans domains owned by different teams. A circuit breaker that trips silently &mdash; with no metrics, no alert, and no fallback log entry &mdash; makes incident diagnosis significantly harder. The open state of a breaker must be visible in the observability stack within seconds of the trip, not discovered retroactively in a post-incident review.</li>
+            <li><strong>Cascading failures across domain boundaries.</strong> A bank&rsquo;s integration estate typically spans domains owned by different teams. A circuit breaker that trips silently &mdash; with no metrics, no alert, and no fallback log entry &mdash; makes incident diagnosis significantly harder. The open state of a breaker must be visible in the observability stack within seconds of the trip, not discovered retroactively in a post-incident review.</li>
           </ul>
 
           <h2 id="circuit-breaker">The circuit breaker pattern</h2>
@@ -162,7 +163,7 @@
               <svg width="780" height="310" viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="cb1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="cb2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
@@ -173,8 +174,8 @@
                 </defs>
 
                 <!-- CLOSED state -->
-                <rect x="30" y="105" width="180" height="80" rx="8" fill="#1c1c28" stroke="#00d4aa" stroke-width="2"/>
-                <text x="120" y="135" text-anchor="middle" fill="#00d4aa" font-size="12" font-weight="700">CLOSED</text>
+                <rect x="30" y="105" width="180" height="80" rx="8" fill="#1c1c28" stroke="#c8a660" stroke-width="2"/>
+                <text x="120" y="135" text-anchor="middle" fill="#c8a660" font-size="12" font-weight="700">CLOSED</text>
                 <text x="120" y="155" text-anchor="middle" fill="#a1a1aa" font-size="9">calls pass through</text>
                 <text x="120" y="170" text-anchor="middle" fill="#a1a1aa" font-size="9">ring buffer tracks outcomes</text>
 
@@ -201,8 +202,8 @@
                 <text x="552" y="163" text-anchor="middle" fill="#71717a" font-size="8">(e.g. 30s)</text>
 
                 <!-- HALF_OPEN → CLOSED: probe calls pass -->
-                <path d="M 300 250 Q 180 280 120 187" fill="none" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cb1)"/>
-                <text x="200" y="293" text-anchor="middle" fill="#00d4aa" font-size="9">probe calls succeed</text>
+                <path d="M 300 250 Q 180 280 120 187" fill="none" stroke="#c8a660" stroke-width="1.5" marker-end="url(#cb1)"/>
+                <text x="200" y="293" text-anchor="middle" fill="#c8a660" font-size="9">probe calls succeed</text>
 
                 <!-- HALF_OPEN → OPEN: probe calls fail -->
                 <path d="M 390 195 L 390 107" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#cb2)"/>

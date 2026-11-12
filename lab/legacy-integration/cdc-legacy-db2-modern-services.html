@@ -124,6 +124,7 @@
             <span class="article-meta__item"><strong>Stack:</strong> IBM IIDR 11.4 &middot; Debezium 2.7 &middot; Apache Kafka &middot; DB2 z/OS &middot; DB2 for i</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Aug 15, 2026</span>
             <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
@@ -151,7 +152,7 @@
               <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="cdc1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="cdc2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
@@ -172,7 +173,7 @@
                 <text x="270" y="74" text-anchor="middle" fill="#71717a" font-size="9">log reader + Kafka</text>
                 <text x="270" y="88" text-anchor="middle" fill="#71717a" font-size="9">producer stage</text>
 
-                <line x1="170" y1="64" x2="198" y2="64" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cdc1)"/>
+                <line x1="170" y1="64" x2="198" y2="64" stroke="#c8a660" stroke-width="1.5" marker-end="url(#cdc1)"/>
 
                 <text x="90" y="192" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">IBM i PATH</text>
                 <rect x="10" y="204" width="160" height="60" rx="6" fill="#16161f" stroke="#4a9eff"/>
@@ -185,17 +186,17 @@
                 <text x="270" y="244" text-anchor="middle" fill="#71717a" font-size="9">Kafka Connect +</text>
                 <text x="270" y="258" text-anchor="middle" fill="#71717a" font-size="9">DB2 for i connector</text>
 
-                <line x1="170" y1="234" x2="198" y2="234" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cdc1)"/>
+                <line x1="170" y1="234" x2="198" y2="234" stroke="#c8a660" stroke-width="1.5" marker-end="url(#cdc1)"/>
 
-                <rect x="380" y="100" width="130" height="110" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="445" y="133" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="600">Kafka</text>
+                <rect x="380" y="100" width="130" height="110" rx="6" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="445" y="133" text-anchor="middle" fill="#c8a660" font-size="11" font-weight="600">Kafka</text>
                 <text x="445" y="152" text-anchor="middle" fill="#71717a" font-size="9">accounts.cdc</text>
                 <text x="445" y="168" text-anchor="middle" fill="#71717a" font-size="9">ledger.cdc</text>
                 <text x="445" y="184" text-anchor="middle" fill="#71717a" font-size="9">customers.cdc</text>
                 <text x="445" y="200" text-anchor="middle" fill="#71717a" font-size="9">loans.cdc</text>
 
-                <line x1="340" y1="64" x2="378" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cdc1)"/>
-                <line x1="340" y1="234" x2="378" y2="175" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#cdc1)"/>
+                <line x1="340" y1="64" x2="378" y2="140" stroke="#c8a660" stroke-width="1.5" marker-end="url(#cdc1)"/>
+                <line x1="340" y1="234" x2="378" y2="175" stroke="#c8a660" stroke-width="1.5" marker-end="url(#cdc1)"/>
 
                 <rect x="560" y="60" width="120" height="44" rx="4" fill="#16161f" stroke="#fbbf24"/>
                 <text x="620" y="79" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Payments svc</text>
@@ -231,10 +232,10 @@
           <div class="code-block">
             <div class="code-block__header"><span>iidr-replication.json</span><span class="code-block__lang">json</span></div>
 <pre><code>{
-  <span class="tok-k">"subscriptionName"</span>: <span class="tok-s">"SAIB_ACCOUNTS_TO_KAFKA"</span>,
+  <span class="tok-k">"subscriptionName"</span>: <span class="tok-s">"CORE_ACCOUNTS_TO_KAFKA"</span>,
   <span class="tok-k">"source"</span>: {
     <span class="tok-k">"type"</span>: <span class="tok-s">"DB2ZOS"</span>,
-    <span class="tok-k">"database"</span>: <span class="tok-s">"SAIBPROD"</span>,
+    <span class="tok-k">"database"</span>: <span class="tok-s">"COREPROD"</span>,
     <span class="tok-k">"schema"</span>: <span class="tok-s">"ACCTDB"</span>,
     <span class="tok-k">"tables"</span>: [<span class="tok-s">"ACCOUNTS"</span>, <span class="tok-s">"LEDGER_ENTRIES"</span>, <span class="tok-s">"HOLD_ORDERS"</span>],
     <span class="tok-k">"captureMode"</span>: <span class="tok-s">"LOG_BASED"</span>,        <span class="tok-c">// never TRIGGER</span>
@@ -243,13 +244,13 @@
   },
   <span class="tok-k">"target"</span>: {
     <span class="tok-k">"type"</span>: <span class="tok-s">"KAFKA"</span>,
-    <span class="tok-k">"bootstrapServers"</span>: <span class="tok-s">"kafka-1.saib.internal:9093,kafka-2.saib.internal:9093"</span>,
-    <span class="tok-k">"schemaRegistry"</span>: <span class="tok-s">"https://schema-registry.saib.internal"</span>,
+    <span class="tok-k">"bootstrapServers"</span>: <span class="tok-s">"kafka-1.bank.internal:9093,kafka-2.bank.internal:9093"</span>,
+    <span class="tok-k">"schemaRegistry"</span>: <span class="tok-s">"https://schema-registry.bank.internal"</span>,
     <span class="tok-k">"serializationFormat"</span>: <span class="tok-s">"AVRO"</span>,
     <span class="tok-k">"topicMapping"</span>: {
-      <span class="tok-k">"ACCOUNTS"</span>: <span class="tok-s">"saib.legacy.accounts.cdc"</span>,
-      <span class="tok-k">"LEDGER_ENTRIES"</span>: <span class="tok-s">"saib.legacy.ledger.cdc"</span>,
-      <span class="tok-k">"HOLD_ORDERS"</span>: <span class="tok-s">"saib.legacy.holds.cdc"</span>
+      <span class="tok-k">"ACCOUNTS"</span>: <span class="tok-s">"core.legacy.accounts.cdc"</span>,
+      <span class="tok-k">"LEDGER_ENTRIES"</span>: <span class="tok-s">"core.legacy.ledger.cdc"</span>,
+      <span class="tok-k">"HOLD_ORDERS"</span>: <span class="tok-s">"core.legacy.holds.cdc"</span>
     },
     <span class="tok-k">"partitionKey"</span>: <span class="tok-s">"ACCOUNT_NBR"</span>,    <span class="tok-c">// ordering guaranteed per account</span>
     <span class="tok-k">"security"</span>: {
@@ -279,20 +280,20 @@
           <div class="code-block">
             <div class="code-block__header"><span>debezium-ibmi-connector.json</span><span class="code-block__lang">json</span></div>
 <pre><code>{
-  <span class="tok-k">"name"</span>: <span class="tok-s">"saib-ibmi-customers"</span>,
+  <span class="tok-k">"name"</span>: <span class="tok-s">"core-ibmi-customers"</span>,
   <span class="tok-k">"config"</span>: {
     <span class="tok-k">"connector.class"</span>: <span class="tok-s">"io.debezium.connector.db2i.Db2iConnector"</span>,
-    <span class="tok-k">"database.hostname"</span>: <span class="tok-s">"as400-prod.saib.internal"</span>,
+    <span class="tok-k">"database.hostname"</span>: <span class="tok-s">"as400-prod.bank.internal"</span>,
     <span class="tok-k">"database.port"</span>: <span class="tok-s">"8471"</span>,
     <span class="tok-k">"database.user"</span>: <span class="tok-s">"CDCUSER"</span>,
     <span class="tok-k">"database.password"</span>: <span class="tok-s">"${file:/opt/kafka/secrets/ibmi.properties:db.password}"</span>,
     <span class="tok-k">"database.dbname"</span>: <span class="tok-s">"*LOCAL"</span>,
     <span class="tok-k">"schema.include.list"</span>: <span class="tok-s">"CUSTLIB"</span>,
     <span class="tok-k">"table.include.list"</span>: <span class="tok-s">"CUSTLIB.CUSTOMERS,CUSTLIB.LOANS,CUSTLIB.COLLATERAL"</span>,
-    <span class="tok-k">"topic.prefix"</span>: <span class="tok-s">"saib.legacy.ibmi"</span>,
+    <span class="tok-k">"topic.prefix"</span>: <span class="tok-s">"core.legacy.ibmi"</span>,
     <span class="tok-k">"key.converter"</span>: <span class="tok-s">"io.confluent.kafka.serializers.KafkaAvroSerializer"</span>,
     <span class="tok-k">"value.converter"</span>: <span class="tok-s">"io.confluent.kafka.serializers.KafkaAvroSerializer"</span>,
-    <span class="tok-k">"value.converter.schema.registry.url"</span>: <span class="tok-s">"https://schema-registry.saib.internal"</span>,
+    <span class="tok-k">"value.converter.schema.registry.url"</span>: <span class="tok-s">"https://schema-registry.bank.internal"</span>,
     <span class="tok-k">"journal.name"</span>: <span class="tok-s">"CUSTLIB/CUSTJRN"</span>,
     <span class="tok-k">"snapshot.mode"</span>: <span class="tok-s">"initial"</span>,            <span class="tok-c">// full snapshot on first run</span>
     <span class="tok-k">"snapshot.isolation.mode"</span>: <span class="tok-s">"read_committed"</span>,
@@ -325,7 +326,7 @@
 <pre><code>{
   <span class="tok-k">"type"</span>: <span class="tok-s">"record"</span>,
   <span class="tok-k">"name"</span>: <span class="tok-s">"AccountCdcEvent"</span>,
-  <span class="tok-k">"namespace"</span>: <span class="tok-s">"info.wbadawi.saib.legacy.accounts"</span>,
+  <span class="tok-k">"namespace"</span>: <span class="tok-s">"info.wbadawi.core.legacy.accounts"</span>,
   <span class="tok-k">"fields"</span>: [
     { <span class="tok-k">"name"</span>: <span class="tok-s">"eventType"</span>,         <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"enum"</span>, <span class="tok-k">"name"</span>: <span class="tok-s">"CdcOp"</span>, <span class="tok-k">"symbols"</span>: [<span class="tok-s">"INSERT"</span>,<span class="tok-s">"UPDATE"</span>,<span class="tok-s">"DELETE"</span>] }},
     { <span class="tok-k">"name"</span>: <span class="tok-s">"capturedAt"</span>,        <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },    <span class="tok-c">// ISO 8601 from DB2 log timestamp</span>
