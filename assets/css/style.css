@@ -379,27 +379,25 @@ section {
   z-index: 1;
 }
 
-.hero__inner {
+.hero__identity {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 3rem;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.hero__portrait {
-  position: relative;
-  z-index: 1;
-  flex: 0 0 auto;
-  width: clamp(220px, 26vw, 340px);
-}
+.hero__identity .hero__greeting { margin-bottom: 0.75rem; }
+.hero .hero__identity h1 { margin-bottom: 0; }
 
-.hero__portrait img,
+.hero__avatar,
 .about-intro__photo {
   display: block;
-  width: 100%;
-  height: auto;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
+  flex: 0 0 auto;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-accent-border);
   box-shadow: var(--shadow-md);
 }
 
@@ -409,21 +407,11 @@ section {
   gap: 2rem;
 }
 
-.about-intro__photo {
-  flex: 0 0 auto;
-  width: 200px;
-}
-
 @media (max-width: 860px) {
-  .hero__inner {
-    flex-direction: column-reverse;
-    align-items: flex-start;
-    gap: 1.5rem;
-  }
-  .hero__portrait { width: 120px; }
-  .hero { padding-bottom: 5.5rem; }
-  .about-intro { flex-direction: column; }
-  .about-intro__photo { width: 160px; }
+  .hero__identity { gap: 1rem; }
+  .hero__avatar { width: 72px; height: 72px; }
+  .about-intro { flex-direction: column; gap: 1.25rem; }
+  .about-intro__photo { width: 96px; height: 96px; }
 }
 
 .hero__greeting {
