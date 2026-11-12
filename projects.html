@@ -48,22 +48,6 @@
     .case-study__tech-tags { margin-bottom: 1rem; }
     .case-study__tech-links { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 0.5rem; }
     .case-study__tech-links .btn--ghost { font-size: 0.75rem; }
-    .before-today { margin-bottom: 4.5rem; padding-bottom: 4.5rem; border-bottom: 1px solid var(--color-border); }
-    .before-today__table { width: 100%; border-collapse: collapse; margin: 1.5rem 0 0; font-size: 0.875rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
-    .before-today__table th { font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); background: var(--color-bg-alt); text-align: left; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); }
-    .before-today__table td { padding: 0.75rem 1rem; color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
-    .before-today__table tr:last-child td { border-bottom: none; }
-    .before-today__table td:first-child { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text); white-space: nowrap; }
-    .before-today__table td:last-child { color: var(--color-text); }
-    @media (max-width: 640px) {
-      .before-today__table, .before-today__table tbody, .before-today__table tr, .before-today__table td { display: block; width: 100%; }
-      .before-today__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-      .before-today__table tr { padding: 1rem; border-bottom: 1px solid var(--color-border); }
-      .before-today__table tr:last-child { border-bottom: none; }
-      .before-today__table td { padding: 0.25rem 0; border-bottom: none; white-space: normal; }
-      .before-today__table td:first-child { color: var(--color-accent); margin-bottom: 0.25rem; white-space: normal; }
-      .before-today__table td[data-label]::before { content: attr(data-label); display: block; font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); margin-top: 0.5rem; }
-    }
   </style>
   <script type="application/ld+json">
   {
@@ -107,30 +91,6 @@
 
   <section>
     <div class="container container--narrow">
-
-      <!-- Before and today -->
-      <div class="before-today fade-in" id="before-and-today">
-        <span class="overline">Before and Today</span>
-        <h2 class="mb-3">What is permanently different</h2>
-        <p class="lead">The initiatives below add up to a different bank. This is the shift, dimension by dimension.</p>
-        <table class="before-today__table">
-          <thead>
-            <tr><th scope="col">Dimension</th><th scope="col">Before</th><th scope="col">Today</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Ownership</td><td data-label="Before">Integration ran as a service-request queue and a cost centre.</td><td data-label="Today">A funded platform capability with its own strategy, roadmap, governance and a 40+ organisation.</td></tr>
-            <tr><td>Speed</td><td data-label="Before">Point-to-point builds, quarterly releases, manual deployments.</td><td data-label="Today">Reusable services and continuous delivery: 70% faster time-to-market across 50+ systems.</td></tr>
-            <tr><td>Governance</td><td data-label="Before">Every project and vendor designed integration its own way.</td><td data-label="Today">One Integration Framework: ten standards, four review gates, recorded architecture decisions, mandatory in every RFP.</td></tr>
-            <tr><td>Regulatory readiness</td><td data-label="Before">Each mandate handled as a separate compliance project.</td><td data-label="Today">Regulatory interfaces are platform services: Open Banking stack passing 130/130 SAMA conformance tests in sandbox.</td></tr>
-            <tr><td>Risk and control</td><td data-label="Before">Overnight fraud detection; releases that depended on people.</td><td data-label="Today">Real-time fraud decisions (35% risk reduction); every release traceable with automated security and compliance checks.</td></tr>
-            <tr><td>Core banking</td><td data-label="Before">Direct, undocumented access; the core was the bottleneck for every test cycle.</td><td data-label="Today">14 governed business APIs and a full simulator: projects test in parallel without waiting for the core.</td></tr>
-            <tr><td>Knowledge</td><td data-label="Before">Critical know-how held by a few individuals and in legacy documents.</td><td data-label="Today">An engineering handbook and searchable knowledge base: onboarding, standards and core specifications owned by the institution.</td></tr>
-            <tr><td>Operations</td><td data-label="Before">Limited visibility of integration health for the operations centre.</td><td data-label="Today">Service dashboards, baselines, vendor SLA views and one-page escalation playbooks.</td></tr>
-            <tr><td>Vendors</td><td data-label="Before">Vendors set their own delivery standards and service levels.</td><td data-label="Today">Bank-defined standards and integration service levels written into sourcing and managed-services contracts.</td></tr>
-            <tr><td>Revenue</td><td data-label="Before">Banking services locked behind internal systems.</td><td data-label="Today">An API business with a partner ecosystem contributing 8% to annual profit.</td></tr>
-          </tbody>
-        </table>
-      </div>
 
       <!-- 01: Open Banking, Built In-House -->
       <div class="case-study fade-in">
