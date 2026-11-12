@@ -386,15 +386,19 @@ section {
   margin-bottom: 1.5rem;
 }
 
-.hero__identity .hero__greeting { margin-bottom: 0.75rem; }
 .hero .hero__identity h1 { margin-bottom: 0; }
+
+@media (min-width: 861px) {
+  .hero__content { max-width: 860px; }
+  .hero .hero__identity h1 { white-space: nowrap; }
+}
 
 .hero__avatar,
 .about-intro__photo {
   display: block;
   flex: 0 0 auto;
-  width: 112px;
-  height: 112px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--color-accent-border);
@@ -409,9 +413,9 @@ section {
 
 @media (max-width: 860px) {
   .hero__identity { gap: 1rem; }
-  .hero__avatar { width: 72px; height: 72px; }
+  .hero__avatar { width: 92px; height: 92px; }
   .about-intro { flex-direction: column; gap: 1.25rem; }
-  .about-intro__photo { width: 96px; height: 96px; }
+  .about-intro__photo { width: 120px; height: 120px; }
 }
 
 .hero__greeting {
