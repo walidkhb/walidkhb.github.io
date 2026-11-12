@@ -3,7 +3,7 @@
 Generate branded 1200x630 social-share (Open Graph) images for each article.
 
 One PNG per article is written to assets/img/og/<slug>.png, on-brand with the
-site: dark canvas, mint accent, Inter type, category label + headline.
+site: dark canvas, gold accent, Inter type, category label + headline.
 
 Requires Pillow and an Inter TTF. The Inter variable font is fetched into
 build/fonts/Inter.ttf by the setup step; falls back to a system sans if absent.
@@ -29,7 +29,7 @@ PAD = 84
 # Palette (from assets/css/style.css :root)
 BG = (10, 10, 15)            # --color-bg
 BG2 = (15, 15, 22)           # --color-bg-alt
-ACCENT = (0, 212, 170)       # --color-accent
+ACCENT = (200, 166, 96)       # --color-accent
 TEXT = (244, 244, 245)
 TEXT_SECONDARY = (161, 161, 170)
 TEXT_MUTED = (113, 113, 122)
@@ -145,7 +145,7 @@ def render(slug, title, category):
     for i in range(3):
         y0 = by + i * 26
         draw.rounded_rectangle([bx + i * 46, y0, bx + 150, y0 + 12], radius=6,
-                               fill=ACCENT if i == 0 else (26, 42, 40))
+                               fill=ACCENT if i == 0 else (42, 38, 28))
 
     # Wordmark, top-left
     mark = font(34, "Bold")

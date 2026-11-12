@@ -215,7 +215,7 @@ Host: auth.openbanking.bank.example</code></pre>
               <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="fa-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="fa-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
@@ -232,8 +232,8 @@ Host: auth.openbanking.bank.example</code></pre>
                 </defs>
 
                 <!-- Actor boxes -->
-                <rect x="10" y="18" width="130" height="52" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="75" y="39" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">TPP</text>
+                <rect x="10" y="18" width="130" height="52" rx="6" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="75" y="39" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">TPP</text>
                 <text x="75" y="53" text-anchor="middle" fill="#71717a" font-size="8">Third-Party Provider</text>
                 <text x="75" y="64" text-anchor="middle" fill="#71717a" font-size="8">Open Banking Client</text>
 
@@ -250,21 +250,21 @@ Host: auth.openbanking.bank.example</code></pre>
                 <text x="700" y="64" text-anchor="middle" fill="#71717a" font-size="8">Kong 3.7 &middot; IBM APIC</text>
 
                 <!-- Lifelines -->
-                <line x1="75" y1="70" x2="75" y2="340" stroke="#00d4aa" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.4"/>
+                <line x1="75" y1="70" x2="75" y2="340" stroke="#c8a660" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.4"/>
                 <line x1="385" y1="70" x2="385" y2="340" stroke="#a78bfa" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.4"/>
                 <line x1="700" y1="70" x2="700" y2="340" stroke="#4a9eff" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.4"/>
 
                 <!-- Step 1: POST /par -->
-                <line x1="75" y1="100" x2="375" y2="100" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fa-arr)"/>
-                <text x="215" y="95" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">&#x2460; POST /par + authorization_details</text>
+                <line x1="75" y1="100" x2="375" y2="100" stroke="#c8a660" stroke-width="1.5" marker-end="url(#fa-arr)"/>
+                <text x="215" y="95" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">&#x2460; POST /par + authorization_details</text>
 
                 <!-- Step 2: request_uri response -->
                 <line x1="375" y1="116" x2="75" y2="116" stroke="#71717a" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#fa-arr)"/>
                 <text x="215" y="130" text-anchor="middle" fill="#71717a" font-size="9">&#x2461; request_uri (expires 90 s, single-use)</text>
 
                 <!-- Step 3: redirect user -->
-                <line x1="75" y1="155" x2="375" y2="155" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fa-arr)"/>
-                <text x="215" y="149" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">&#x2462; redirect: client_id + request_uri only</text>
+                <line x1="75" y1="155" x2="375" y2="155" stroke="#c8a660" stroke-width="1.5" marker-end="url(#fa-arr)"/>
+                <text x="215" y="149" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">&#x2462; redirect: client_id + request_uri only</text>
                 <text x="215" y="169" text-anchor="middle" fill="#71717a" font-size="8">(user browser &mdash; no sensitive params in URL)</text>
 
                 <!-- PSU consent box inside AS -->
@@ -278,8 +278,8 @@ Host: auth.openbanking.bank.example</code></pre>
                 <text x="215" y="232" text-anchor="middle" fill="#71717a" font-size="8">(signed JWT response &mdash; prevents response tampering)</text>
 
                 <!-- Step 5: POST /token + DPoP -->
-                <line x1="75" y1="255" x2="375" y2="255" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#fa-arr)"/>
-                <text x="215" y="249" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">&#x2465; POST /token + code + DPoP proof JWT</text>
+                <line x1="75" y1="255" x2="375" y2="255" stroke="#c8a660" stroke-width="1.5" marker-end="url(#fa-arr)"/>
+                <text x="215" y="249" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">&#x2465; POST /token + code + DPoP proof JWT</text>
 
                 <!-- Step 6: access_token DPoP-bound -->
                 <line x1="375" y1="272" x2="75" y2="272" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#fa-arr3)"/>

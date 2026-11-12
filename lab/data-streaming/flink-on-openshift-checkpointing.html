@@ -145,7 +145,7 @@
               <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="flink-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="flink-arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
@@ -156,7 +156,7 @@
                 </defs>
 
                 <!-- Kafka (source) -->
-                <rect x="10" y="140" width="120" height="80" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <rect x="10" y="140" width="120" height="80" rx="6" fill="#16161f" stroke="#c8a660"/>
                 <text x="70" y="174" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Kafka</text>
                 <text x="70" y="190" text-anchor="middle" fill="#71717a" font-size="9">payment-events</text>
                 <text x="70" y="204" text-anchor="middle" fill="#71717a" font-size="9">sanctions-updates</text>
@@ -190,7 +190,7 @@
                 <text x="525" y="82" text-anchor="middle" fill="#71717a" font-size="9">checkpoint &amp; savepoint store</text>
 
                 <!-- Kafka (sink) -->
-                <rect x="450" y="140" width="150" height="80" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <rect x="450" y="140" width="150" height="80" rx="6" fill="#16161f" stroke="#c8a660"/>
                 <text x="525" y="174" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Kafka (sink)</text>
                 <text x="525" y="190" text-anchor="middle" fill="#71717a" font-size="9">screening-decisions</text>
                 <text x="525" y="204" text-anchor="middle" fill="#71717a" font-size="9">fraud-alerts</text>
@@ -200,7 +200,7 @@
                 <text x="312" y="352" text-anchor="middle" fill="#a78bfa" font-size="9" opacity="0.7">OpenShift namespace: flink-prod</text>
 
                 <!-- Arrows: Kafka → TM -->
-                <line x1="130" y1="180" x2="198" y2="175" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#flink-arrow)"/>
+                <line x1="130" y1="180" x2="198" y2="175" stroke="#c8a660" stroke-width="1.5" marker-end="url(#flink-arrow)"/>
                 <!-- TM → JM control -->
                 <line x1="280" y1="140" x2="280" y2="102" stroke="#a78bfa" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#flink-arrow-purple)"/>
                 <line x1="280" y1="230" x2="280" y2="102" stroke="#a78bfa" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#flink-arrow-purple)"/>
@@ -210,8 +210,8 @@
                 <line x1="360" y1="175" x2="448" y2="110" stroke="#4a9eff" stroke-width="1.2" stroke-dasharray="2 2" marker-end="url(#flink-arrow-blue)"/>
                 <line x1="360" y1="265" x2="448" y2="90" stroke="#4a9eff" stroke-width="1.2" stroke-dasharray="2 2" marker-end="url(#flink-arrow-blue)"/>
                 <!-- TM → Kafka sink -->
-                <line x1="360" y1="175" x2="448" y2="180" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#flink-arrow)"/>
-                <line x1="360" y1="265" x2="448" y2="200" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#flink-arrow)"/>
+                <line x1="360" y1="175" x2="448" y2="180" stroke="#c8a660" stroke-width="1.5" marker-end="url(#flink-arrow)"/>
+                <line x1="360" y1="265" x2="448" y2="200" stroke="#c8a660" stroke-width="1.5" marker-end="url(#flink-arrow)"/>
               </svg>
             </div>
             <div class="diagram__caption">Figure 1 &mdash; Flink cluster on OpenShift: JobManager HA, TaskManagers with local RocksDB, incremental checkpoints to MinIO/COS, and Kafka source and sink</div>
@@ -434,13 +434,13 @@ descriptor.enableTimeToLive(ttlConfig);</code></pre>
               <svg width="780" height="240" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="ha-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                 </defs>
 
                 <!-- Active JM -->
-                <rect x="20" y="80" width="160" height="70" rx="6" fill="#1c1c28" stroke="#00d4aa"/>
-                <text x="100" y="108" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">JobManager-0 (active)</text>
+                <rect x="20" y="80" width="160" height="70" rx="6" fill="#1c1c28" stroke="#c8a660"/>
+                <text x="100" y="108" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">JobManager-0 (active)</text>
                 <text x="100" y="124" text-anchor="middle" fill="#71717a" font-size="9">leader</text>
                 <text x="100" y="138" text-anchor="middle" fill="#71717a" font-size="9">holds job graph in memory</text>
 
@@ -468,7 +468,7 @@ descriptor.enableTimeToLive(ttlConfig);</code></pre>
                 <text x="340" y="219" text-anchor="middle" fill="#71717a" font-size="9">reads job graph from S3</text>
 
                 <!-- Arrows -->
-                <line x1="180" y1="115" x2="258" y2="115" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ha-arrow)"/>
+                <line x1="180" y1="115" x2="258" y2="115" stroke="#c8a660" stroke-width="1.5" marker-end="url(#ha-arrow)"/>
                 <line x1="420" y1="115" x2="498" y2="115" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ha-arrow)"/>
                 <line x1="100" y1="170" x2="260" y2="205" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#ha-arrow)"/>
               </svg>

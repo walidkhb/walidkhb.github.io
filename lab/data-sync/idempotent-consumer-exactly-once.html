@@ -149,7 +149,7 @@
               <svg width="780" height="300" viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
@@ -167,12 +167,12 @@
                 <text x="235" y="57" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Consumer</text>
                 <text x="235" y="73" text-anchor="middle" fill="#71717a" font-size="9">processes msg N+1</text>
 
-                <rect x="345" y="35" width="120" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
-                <text x="405" y="57" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Downstream DB</text>
+                <rect x="345" y="35" width="120" height="50" rx="6" fill="#16161f" stroke="#c8a660"/>
+                <text x="405" y="57" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">Downstream DB</text>
                 <text x="405" y="73" text-anchor="middle" fill="#71717a" font-size="9">state updated</text>
 
-                <line x1="130" y1="60" x2="173" y2="60" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr1)"/>
-                <line x1="295" y1="60" x2="343" y2="60" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr1)"/>
+                <line x1="130" y1="60" x2="173" y2="60" stroke="#c8a660" stroke-width="1.5" marker-end="url(#arr1)"/>
+                <line x1="295" y1="60" x2="343" y2="60" stroke="#c8a660" stroke-width="1.5" marker-end="url(#arr1)"/>
 
                 <!-- crash X -->
                 <text x="235" y="110" text-anchor="middle" fill="#ef4444" font-size="22" font-weight="600">&#x2717;</text>
@@ -345,7 +345,7 @@ ack.acknowledge();
               <svg width="780" height="240" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
@@ -361,14 +361,14 @@ ack.acknowledge();
                 <text x="295" y="130" text-anchor="middle" fill="#71717a" font-size="9">SET dedup:&lt;id&gt; NX EX 172800</text>
 
                 <!-- path 1: first delivery -->
-                <line x1="150" y1="110" x2="218" y2="110" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr3)"/>
-                <text x="184" y="105" text-anchor="middle" fill="#00d4aa" font-size="8">SET NX</text>
+                <line x1="150" y1="110" x2="218" y2="110" stroke="#c8a660" stroke-width="1.5" marker-end="url(#arr3)"/>
+                <text x="184" y="105" text-anchor="middle" fill="#c8a660" font-size="8">SET NX</text>
 
-                <line x1="370" y1="100" x2="460" y2="65" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr3)"/>
-                <text x="415" y="70" text-anchor="middle" fill="#00d4aa" font-size="8">OK (first seen)</text>
+                <line x1="370" y1="100" x2="460" y2="65" stroke="#c8a660" stroke-width="1.5" marker-end="url(#arr3)"/>
+                <text x="415" y="70" text-anchor="middle" fill="#c8a660" font-size="8">OK (first seen)</text>
 
-                <rect x="460" y="35" width="170" height="50" rx="6" fill="#16161f" stroke="#00d4aa"/>
-                <text x="545" y="54" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Process &amp; Ack</text>
+                <rect x="460" y="35" width="170" height="50" rx="6" fill="#16161f" stroke="#c8a660"/>
+                <text x="545" y="54" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">Process &amp; Ack</text>
                 <text x="545" y="72" text-anchor="middle" fill="#71717a" font-size="9">business logic runs, offset commits</text>
 
                 <!-- path 2: duplicate -->
@@ -398,7 +398,7 @@ ack.acknowledge();
               <svg width="780" height="280" viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                 </defs>
 
@@ -416,8 +416,8 @@ ack.acknowledge();
                 <text x="300" y="176" text-anchor="middle" fill="#71717a" font-size="9">3. sendOffsetsToTxn()</text>
                 <text x="300" y="194" text-anchor="middle" fill="#71717a" font-size="9">4. commitTransaction()</text>
 
-                <rect x="460" y="100" width="130" height="80" rx="8" fill="#0f0f16" stroke="#00d4aa"/>
-                <text x="525" y="124" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">payment.enriched</text>
+                <rect x="460" y="100" width="130" height="80" rx="8" fill="#0f0f16" stroke="#c8a660"/>
+                <text x="525" y="124" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">payment.enriched</text>
                 <text x="525" y="142" text-anchor="middle" fill="#71717a" font-size="9">output topic</text>
                 <text x="525" y="158" text-anchor="middle" fill="#71717a" font-size="9">only committed</text>
                 <text x="525" y="172" text-anchor="middle" fill="#71717a" font-size="9">records visible</text>
@@ -430,8 +430,8 @@ ack.acknowledge();
                 <text x="705" y="181" text-anchor="middle" fill="#71717a" font-size="9">epochs prevent</text>
                 <text x="705" y="197" text-anchor="middle" fill="#71717a" font-size="9">zombie writes</text>
 
-                <line x1="150" y1="140" x2="218" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr5)"/>
-                <line x1="380" y1="140" x2="458" y2="140" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#arr5)"/>
+                <line x1="150" y1="140" x2="218" y2="140" stroke="#c8a660" stroke-width="1.5" marker-end="url(#arr5)"/>
+                <line x1="380" y1="140" x2="458" y2="140" stroke="#c8a660" stroke-width="1.5" marker-end="url(#arr5)"/>
                 <line x1="380" y1="120" x2="648" y2="120" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4 2"/>
 
                 <rect x="20" y="220" width="740" height="40" rx="6" fill="#0f0f16" stroke="#71717a" stroke-dasharray="3 2"/>

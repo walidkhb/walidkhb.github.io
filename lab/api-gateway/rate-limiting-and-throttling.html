@@ -135,7 +135,7 @@
               <svg width="780" height="290" viewBox="0 0 780 290" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="rl-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="rl-arr-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
@@ -150,18 +150,18 @@
                 <text x="65" y="122" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Consumer</text>
                 <text x="65" y="138" text-anchor="middle" fill="#71717a" font-size="9">PSP / TPAP / BFF</text>
                 <text x="65" y="148" text-anchor="middle" fill="#71717a" font-size="8">JWT sub = identity</text>
-                <line x1="120" y1="126" x2="168" y2="126" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#rl-arr)"/>
-                <text x="144" y="119" text-anchor="middle" fill="#00d4aa" font-size="8">request</text>
+                <line x1="120" y1="126" x2="168" y2="126" stroke="#c8a660" stroke-width="1.5" marker-end="url(#rl-arr)"/>
+                <text x="144" y="119" text-anchor="middle" fill="#c8a660" font-size="8">request</text>
 
                 <!-- Kong Gateway -->
-                <rect x="170" y="80" width="155" height="92" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="2"/>
-                <text x="247" y="101" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Kong Gateway</text>
+                <rect x="170" y="80" width="155" height="92" rx="6" fill="#16161f" stroke="#c8a660" stroke-width="2"/>
+                <text x="247" y="101" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">Kong Gateway</text>
                 <text x="247" y="116" text-anchor="middle" fill="#71717a" font-size="8">rate-limiting-advanced</text>
                 <text x="247" y="129" text-anchor="middle" fill="#71717a" font-size="8">policy: redis (sliding window)</text>
                 <text x="247" y="142" text-anchor="middle" fill="#71717a" font-size="8">identity: JWT sub</text>
                 <text x="247" y="155" text-anchor="middle" fill="#71717a" font-size="8">headers: X-RateLimit-*</text>
-                <line x1="325" y1="126" x2="378" y2="126" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#rl-arr)"/>
-                <text x="351" y="119" text-anchor="middle" fill="#00d4aa" font-size="8">EVALSHA</text>
+                <line x1="325" y1="126" x2="378" y2="126" stroke="#c8a660" stroke-width="1.5" marker-end="url(#rl-arr)"/>
+                <text x="351" y="119" text-anchor="middle" fill="#c8a660" font-size="8">EVALSHA</text>
 
                 <!-- Redis Cluster -->
                 <rect x="380" y="80" width="155" height="92" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="2"/>
@@ -203,10 +203,10 @@
                 <rect x="176" y="258" width="38" height="12" rx="3" fill="#1c1c28" stroke="#ef4444"/>
                 <text x="195" y="280" text-anchor="middle" fill="#71717a" font-size="7">empty &rarr; 429</text>
                 <text x="240" y="240" fill="#71717a" font-size="8">refill rate</text>
-                <text x="240" y="252" fill="#00d4aa" font-size="8">tokens/sec</text>
+                <text x="240" y="252" fill="#c8a660" font-size="8">tokens/sec</text>
                 <text x="240" y="264" fill="#71717a" font-size="8">burst = bucket</text>
                 <text x="240" y="276" fill="#71717a" font-size="8">capacity</text>
-                <line x1="230" y1="247" x2="220" y2="247" stroke="#00d4aa" stroke-width="1" marker-end="url(#rl-arr)"/>
+                <line x1="230" y1="247" x2="220" y2="247" stroke="#c8a660" stroke-width="1" marker-end="url(#rl-arr)"/>
               </svg>
             </div>
             <div class="diagram__caption">Figure 1 &mdash; Request flow through Kong rate limiter: Kong calls a Redis Lua script atomically to update the sliding window counter and receive the allow/reject decision; the token bucket inset illustrates burst behaviour when the bucket fills between requests</div>

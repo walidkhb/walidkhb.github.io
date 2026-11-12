@@ -181,7 +181,7 @@
               <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
                   <marker id="ob1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                    <path d="M0,0 L10,5 L0,10 z" fill="#c8a660"/>
                   </marker>
                   <marker id="ob2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                     <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
@@ -192,8 +192,8 @@
                 </defs>
 
                 <!-- Actors -->
-                <rect x="20" y="30" width="110" height="52" rx="5" fill="#16161f" stroke="#00d4aa"/>
-                <text x="75" y="51" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">TPP Server</text>
+                <rect x="20" y="30" width="110" height="52" rx="5" fill="#16161f" stroke="#c8a660"/>
+                <text x="75" y="51" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">TPP Server</text>
                 <text x="75" y="66" text-anchor="middle" fill="#71717a" font-size="8">acme-finance.sa</text>
 
                 <rect x="315" y="30" width="150" height="52" rx="5" fill="#1c1c28" stroke="#a78bfa"/>
@@ -206,8 +206,8 @@
 
                 <!-- Step lines -->
                 <!-- 1: TPP → AS: POST /bc-authorize -->
-                <line x1="130" y1="120" x2="313" y2="120" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ob1)"/>
-                <text x="220" y="113" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">1</text>
+                <line x1="130" y1="120" x2="313" y2="120" stroke="#c8a660" stroke-width="1.5" marker-end="url(#ob1)"/>
+                <text x="220" y="113" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">1</text>
                 <text x="220" y="136" text-anchor="middle" fill="#71717a" font-size="8">POST /bc-authorize (login_hint, scope, consent payload)</text>
 
                 <!-- 2: AS → TPP: 200 auth_req_id -->
@@ -229,8 +229,8 @@
                 <text x="550" y="267" text-anchor="middle" fill="#71717a" font-size="8">SCA result &rarr; AS; consent status &rarr; AUTHORISED</text>
 
                 <!-- 6: TPP polls token endpoint -->
-                <line x1="130" y1="300" x2="313" y2="300" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ob1)"/>
-                <text x="220" y="293" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">6</text>
+                <line x1="130" y1="300" x2="313" y2="300" stroke="#c8a660" stroke-width="1.5" marker-end="url(#ob1)"/>
+                <text x="220" y="293" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">6</text>
                 <text x="220" y="315" text-anchor="middle" fill="#71717a" font-size="8">POST /token (grant_type=urn:openid:ciba, auth_req_id)</text>
 
                 <!-- 7: AS → TPP: tokens -->
