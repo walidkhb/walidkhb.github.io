@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Judicial Enforcement as an Obligation Ledger, Not Stacked Holds &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Designing a judicial-enforcement order platform as a typed obligation ledger: money stays in core, core holds become an idempotent reconciled projection, every order is a hash-chained event stream, services ship as signed content packs, and connectors are certified against reversal storms.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Judicial Enforcement as an Obligation Ledger, Not Stacked Holds &mdash; Lab">
+  <meta property="og:description" content="Typed obligation ledger, reconciled core-hold projection, hash-chained order streams, signed content packs and certified connectors for judicial-enforcement orders.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/enforcement-obligation-ledger.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Enforcement as an Obligation Ledger &mdash; Lab">
+  <meta name="twitter:description" content="Stop stacking one core hold per order. Keep a typed obligation ledger and reconcile one hold per asset to it.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/enforcement-obligation-ledger.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Judicial Enforcement as an Obligation Ledger, Not Stacked Holds",
+    "description": "Designing a judicial-enforcement order platform as a typed obligation ledger: money stays in core, core holds become an idempotent reconciled projection, every order is a hash-chained event stream, services ship as signed content packs, and connectors are certified against reversal storms.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-12",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/event-driven/enforcement-obligation-ledger.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Event-Driven Architecture &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/event-driven.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "Event-Driven Architecture"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Enforcement Obligation Ledger</div>
+          <span class="overline">Lab Article</span>
+          <h1>Judicial Enforcement as an Obligation Ledger, Not Stacked Holds</h1>
+          <p class="lead">A court order arrives. The bank must block, garnish, deny, ban or lift. The obvious design places one core hold per order and lets the core banking system be the record. It works for the first order. It breaks on the third order against the same account, on the first partial lift, and on every card or wallet that cannot carry a reference. The alternative is to make the platform the record of <em>obligations</em>, keep the money in core, and treat every core hold as a reconciled projection.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#options">Stacked holds vs a ledger</a></li>
+            <li><a href="#ledger">The obligation ledger</a></li>
+            <li><a href="#reconciler">The reconciler</a></li>
+            <li><a href="#protected-share">Protected share</a></li>
+            <li><a href="#order-stream">Hash-chained order streams</a></li>
+            <li><a href="#lifecycle">Lifecycle &amp; reversal</a></li>
+            <li><a href="#content-packs">Signed content packs</a></li>
+            <li><a href="#connectors">Connector SDK</a></li>
+            <li><a href="#failure-modes">Failure modes</a></li>
+            <li><a href="#checklist">Delivery checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> Java 21 / Spring Boot / PostgreSQL / Apache Kafka / Red Hat OpenShift</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Architects &amp; engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~13 min</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>Judicial enforcement looks simple from a distance. An authority sends an order. The bank finds the subject&rsquo;s assets and acts. There are five verbs. <strong>Block</strong> reserves an amount. <strong>Garnish</strong> reserves an amount, or freezes when no amount is given. <strong>Deny</strong> and <strong>ban</strong> restrict what the subject can do, not how much is held. <strong>Lift</strong> releases what an earlier order imposed, in full or in part.</p>
+          <p>The difficulty is not any single verb. It is the combination. Several orders from different authorities can target the same account at the same time. Each can be lifted, reduced or reversed independently. A reversal can arrive while the original order is still executing. The bank must be able to answer, at any moment and for an auditor: <em>what is held, on which asset, because of which order, of which type, and how much was left untouched by law?</em></p>
+          <p>That question has one architectural fork. Either the core banking system is the record of what is held, or the enforcement platform is. This article takes the second path and walks through what it costs: a ledger, a reconciler, an event store, a content model and a connector contract. It builds on the patterns in <a href="event-sourcing-and-cqrs.html">Event Sourcing &amp; CQRS in Payments</a> and does not repeat them. Here the focus is on what changes when the aggregate is a legal obligation rather than a payment.</p>
+
+          <div class="diagram" role="img" aria-label="Orders write typed obligations to a ledger; a reconciler computes one target hold per asset and drives the core hold projection through connectors">
+            <div class="diagram__inner">
+              <svg width="780" height="400" viewBox="0 0 780 400" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="ol-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="ol-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="ol-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                  <marker id="ol-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                </defs>
+
+                <!-- Orders column -->
+                <text x="10" y="22" fill="#71717a" font-size="9" font-weight="600">ORDERS (event-sourced)</text>
+                <rect x="10" y="32" width="150" height="50" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="85" y="52" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Order A &middot; block</text>
+                <text x="85" y="68" text-anchor="middle" fill="#71717a" font-size="8">amount 40,000</text>
+                <rect x="10" y="94" width="150" height="50" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="85" y="114" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Order B &middot; garnish</text>
+                <text x="85" y="130" text-anchor="middle" fill="#71717a" font-size="8">amount 15,000</text>
+                <rect x="10" y="156" width="150" height="50" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="85" y="176" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Order C &middot; ban</text>
+                <text x="85" y="192" text-anchor="middle" fill="#71717a" font-size="8">restriction, no amount</text>
+                <rect x="10" y="218" width="150" height="50" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="85" y="238" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Lift (partial) of A</text>
+                <text x="85" y="254" text-anchor="middle" fill="#71717a" font-size="8">release 10,000</text>
+
+                <line x1="160" y1="57" x2="210" y2="110" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ol-arr)"/>
+                <line x1="160" y1="119" x2="210" y2="135" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ol-arr)"/>
+                <line x1="160" y1="181" x2="210" y2="165" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ol-arr)"/>
+                <line x1="160" y1="243" x2="210" y2="190" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#ol-arr)"/>
+
+                <!-- Ledger -->
+                <text x="215" y="22" fill="#71717a" font-size="9" font-weight="600">OBLIGATION LEDGER (record)</text>
+                <rect x="215" y="32" width="200" height="236" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="315" y="52" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Asset: current account #1</text>
+                <rect x="227" y="62" width="176" height="24" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="235" y="78" fill="#e4e4e7" font-size="8">AMOUNT_HOLD  A  30,000</text>
+                <rect x="227" y="92" width="176" height="24" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="235" y="108" fill="#e4e4e7" font-size="8">AMOUNT_HOLD  B  15,000</text>
+                <rect x="227" y="122" width="176" height="24" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="235" y="138" fill="#e4e4e7" font-size="8">RESTRICTION  C  ban</text>
+                <rect x="227" y="152" width="176" height="24" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="235" y="168" fill="#fbbf24" font-size="8">PROTECTED_ALLOWANCE  6,000</text>
+                <line x1="227" y1="190" x2="403" y2="190" stroke="#2d2d3a"/>
+                <text x="235" y="206" fill="#71717a" font-size="8">netObligation  = 45,000</text>
+                <text x="235" y="222" fill="#71717a" font-size="8">restrictions   = {ban}</text>
+                <text x="235" y="238" fill="#71717a" font-size="8">ledgerVersion  = 7</text>
+                <text x="235" y="256" fill="#71717a" font-size="7">funds never move into the ledger</text>
+
+                <line x1="415" y1="150" x2="465" y2="150" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ol-arr2)"/>
+
+                <!-- Reconciler -->
+                <text x="470" y="22" fill="#71717a" font-size="9" font-weight="600">RECONCILER</text>
+                <rect x="470" y="92" width="150" height="116" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="545" y="112" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">target per asset</text>
+                <text x="545" y="132" text-anchor="middle" fill="#e4e4e7" font-size="7">min(netObligation,</text>
+                <text x="545" y="145" text-anchor="middle" fill="#e4e4e7" font-size="7">max(0, balance &minus;</text>
+                <text x="545" y="158" text-anchor="middle" fill="#e4e4e7" font-size="7">protectedAllowance))</text>
+                <text x="545" y="180" text-anchor="middle" fill="#71717a" font-size="7">key: asset + ledgerVersion</text>
+                <text x="545" y="194" text-anchor="middle" fill="#71717a" font-size="7">no-op when already at target</text>
+
+                <line x1="620" y1="150" x2="660" y2="150" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#ol-arr3)"/>
+
+                <!-- Core projection -->
+                <text x="645" y="22" fill="#71717a" font-size="9" font-weight="600">CORE (money)</text>
+                <rect x="660" y="92" width="110" height="116" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="715" y="112" text-anchor="middle" fill="#00d4aa" font-size="9" font-weight="600">Core hold</text>
+                <text x="715" y="130" text-anchor="middle" fill="#e4e4e7" font-size="8">ONE hold</text>
+                <text x="715" y="144" text-anchor="middle" fill="#e4e4e7" font-size="8">per asset</text>
+                <text x="715" y="164" text-anchor="middle" fill="#71717a" font-size="7">+ restriction</text>
+                <text x="715" y="178" text-anchor="middle" fill="#71717a" font-size="7">flag for ban</text>
+                <text x="715" y="196" text-anchor="middle" fill="#71717a" font-size="7">via connector</text>
+
+                <!-- Feedback: balance events and drift -->
+                <path d="M715,208 L715,250 L545,250 L545,212" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#ol-arr4)"/>
+                <text x="560" y="244" fill="#fbbf24" font-size="7">balance events &middot; drift scan</text>
+
+                <!-- Legend -->
+                <rect x="10" y="290" width="760" height="96" rx="6" fill="#16161f" stroke="#2d2d3a"/>
+                <text x="30" y="310" fill="#e4e4e7" font-size="9" font-weight="600">Reading the figure</text>
+                <line x1="30" y1="326" x2="80" y2="326" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="90" y="330" fill="#e4e4e7" font-size="8">Orders append typed obligations; a lift edits obligations, it never touches a core hold directly</text>
+                <line x1="30" y1="344" x2="80" y2="344" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="90" y="348" fill="#e4e4e7" font-size="8">The reconciler drives each asset to one target hold, idempotently, through the connector SDK</text>
+                <line x1="30" y1="362" x2="80" y2="362" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="4,2"/>
+                <text x="90" y="366" fill="#e4e4e7" font-size="8">Balance changes, pay-cycle rollover and periodic drift scans re-trigger reconciliation</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Orders write to the obligation ledger; the reconciler projects one hold per asset into core. Money stays in core. The ledger is the record of why it is held.</div>
+          </div>
+
+          <h2 id="options">Stacked holds vs an obligation ledger</h2>
+          <p>Two options were on the table.</p>
+          <p><strong>Option 1: delegate to core.</strong> Each order places its own hold, tagged with the order reference. A lift removes that order&rsquo;s holds. The core is the record. The platform is stateless. This is the simplest design and the one most banks start with.</p>
+          <p><strong>Option 2: a typed obligation ledger.</strong> The platform records obligations per party, per asset and per type, accumulated across every active order. The funds stay in core. The hold in core is a projection that a reconciler drives to a computed target.</p>
+          <p>Option 1 fails in ways that only show up in production. Three orders on one account mean three holds, each sized without knowledge of the others. A partial lift must find the right hold and resize it, which many core primitives cannot do. Cards and wallets often have a hold primitive with no reference field at all. Totals across orders must be recomputed by scanning core each time. And no one can answer &ldquo;why is this money held?&rdquo; without stitching core records back to orders by hand.</p>
+
+          <table>
+            <thead>
+              <tr><th>Criterion (weight)</th><th>Option 1 &mdash; stacked core holds</th><th>Option 2 &mdash; obligation ledger</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Domain ownership clarity</strong> (20%)</td><td>3</td><td>5</td></tr>
+              <tr><td><strong>Correct accumulation &amp; partial lift</strong> (25%)</td><td>1</td><td>5</td></tr>
+              <tr><td><strong>Works over crude core primitives</strong> (15%)</td><td>2</td><td>5</td></tr>
+              <tr><td><strong>Auditability</strong> (15%)</td><td>2</td><td>5</td></tr>
+              <tr><td><strong>Operational simplicity</strong> (15%)</td><td>5</td><td>3</td></tr>
+              <tr><td><strong>Cards &amp; wallets as first-class assets</strong> (10%)</td><td>2</td><td>5</td></tr>
+              <tr><td><strong>Weighted score</strong></td><td><strong>2.4</strong></td><td><strong>4.6</strong></td></tr>
+            </tbody>
+          </table>
+
+          <p>The one criterion where Option 1 wins is operational simplicity. That is honest. Option 2 introduces a reconciliation obligation: drift between the ledger and core must be detected and healed. The decision was to accept that cost, because it is bounded and testable. The correctness cost of Option 1 is neither.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">The split that makes this acceptable</div>
+            <p>The platform owns <em>obligations</em>. Core owns <em>money</em>. The ledger never holds a balance, never posts an entry and never moves funds. That keeps the platform out of the money-ledger business, and keeps the regulator&rsquo;s view of balances exactly where it was. What changes is that &ldquo;why is this held&rdquo; now has one authoritative answer.</p>
+          </div>
+
+          <h2 id="ledger">The obligation ledger</h2>
+          <p>An obligation is a typed claim that an order places on one asset. Types matter because they behave differently. An amount hold accumulates. A restriction does not. A protected allowance subtracts. Types also let different measures coexist on one account and be lifted independently: lifting a ban must not release a garnish.</p>
+
+          <table>
+            <thead>
+              <tr><th>Obligation type</th><th>Produced by</th><th>Accumulates?</th><th>Core projection</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>AMOUNT_HOLD</code></td><td>Block, garnish with an amount</td><td>Yes &mdash; summed per asset</td><td>One hold sized by the reconciler</td></tr>
+              <tr><td><code>FREEZE</code></td><td>Garnish without an amount</td><td>No &mdash; boolean per asset</td><td>Freeze flag or full hold, per connector capability</td></tr>
+              <tr><td><code>RESTRICTION</code></td><td>Deny, ban</td><td>No &mdash; set of kinds per party or asset</td><td>Restriction applied once, removed when the set is empty</td></tr>
+              <tr><td><code>PROTECTED_ALLOWANCE</code></td><td>Policy, per pay cycle</td><td>Renews once per cycle</td><td>Reduces the target; never projected on its own</td></tr>
+            </tbody>
+          </table>
+
+          <p>Lift is not an obligation type. A lift is an event that releases, fully or partly, the obligations an earlier order created. The ledger records the release; the reconciler does the rest. This is the core simplification. Nobody ever writes code that says &ldquo;find hold X in core and reduce it by Y&rdquo;.</p>
+          <p>Obligations are allocated per asset. When an order targets a party, allocation decides which accounts carry how much: transactional accounts first, a currency order, eligibility rules from the asset taxonomy. Allocation is policy, so it lives in versioned configuration, not in connector code.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>obligation-entry.schema.json</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-s">"$schema"</span>: <span class="tok-s">"https://json-schema.org/draft/2020-12/schema"</span>,
+  <span class="tok-s">"title"</span>: <span class="tok-s">"ObligationEntry"</span>,
+  <span class="tok-s">"type"</span>: <span class="tok-s">"object"</span>,
+  <span class="tok-s">"required"</span>: [<span class="tok-s">"obligationId"</span>, <span class="tok-s">"orderRef"</span>, <span class="tok-s">"assetRef"</span>, <span class="tok-s">"type"</span>, <span class="tok-s">"status"</span>],
+  <span class="tok-s">"properties"</span>: {
+    <span class="tok-s">"obligationId"</span>: { <span class="tok-s">"type"</span>: <span class="tok-s">"string"</span>, <span class="tok-s">"format"</span>: <span class="tok-s">"uuid"</span> },
+    <span class="tok-s">"orderRef"</span>:     { <span class="tok-s">"type"</span>: <span class="tok-s">"string"</span>, <span class="tok-s">"description"</span>: <span class="tok-s">"the order that created it"</span> },
+    <span class="tok-s">"assetRef"</span>:     { <span class="tok-s">"type"</span>: <span class="tok-s">"string"</span>, <span class="tok-s">"description"</span>: <span class="tok-s">"opaque, issued by the connector"</span> },
+    <span class="tok-s">"assetClass"</span>:   { <span class="tok-s">"enum"</span>: [<span class="tok-s">"CURRENT_ACCOUNT"</span>, <span class="tok-s">"DEPOSIT"</span>, <span class="tok-s">"PREPAID_CARD"</span>, <span class="tok-s">"WALLET"</span>] },
+    <span class="tok-s">"type"</span>:         { <span class="tok-s">"enum"</span>: [<span class="tok-s">"AMOUNT_HOLD"</span>, <span class="tok-s">"FREEZE"</span>, <span class="tok-s">"RESTRICTION"</span>, <span class="tok-s">"PROTECTED_ALLOWANCE"</span>] },
+    <span class="tok-s">"amount"</span>:       { <span class="tok-s">"$ref"</span>: <span class="tok-s">"#/$defs/money"</span> },
+    <span class="tok-s">"released"</span>:     { <span class="tok-s">"$ref"</span>: <span class="tok-s">"#/$defs/money"</span>, <span class="tok-s">"description"</span>: <span class="tok-s">"cumulative partial lifts"</span> },
+    <span class="tok-s">"restrictionKind"</span>: { <span class="tok-s">"enum"</span>: [<span class="tok-s">"DENY"</span>, <span class="tok-s">"BAN"</span>] },
+    <span class="tok-s">"cycle"</span>:        { <span class="tok-s">"type"</span>: <span class="tok-s">"string"</span>, <span class="tok-s">"description"</span>: <span class="tok-s">"pay period, allowance only"</span> },
+    <span class="tok-s">"status"</span>:       { <span class="tok-s">"enum"</span>: [<span class="tok-s">"ACTIVE"</span>, <span class="tok-s">"RELEASED"</span>] },
+    <span class="tok-s">"sourceEvent"</span>:  { <span class="tok-s">"type"</span>: <span class="tok-s">"string"</span>, <span class="tok-s">"description"</span>: <span class="tok-s">"orderRef + sequence that produced this row"</span> }
+  },
+  <span class="tok-s">"$defs"</span>: {
+    <span class="tok-s">"money"</span>: {
+      <span class="tok-s">"type"</span>: <span class="tok-s">"object"</span>,
+      <span class="tok-s">"required"</span>: [<span class="tok-s">"value"</span>, <span class="tok-s">"currency"</span>],
+      <span class="tok-s">"properties"</span>: {
+        <span class="tok-s">"value"</span>:    { <span class="tok-s">"type"</span>: <span class="tok-s">"string"</span>, <span class="tok-s">"pattern"</span>: <span class="tok-s">"^[0-9]+(\\.[0-9]{1,3})?$"</span> },
+        <span class="tok-s">"currency"</span>: { <span class="tok-s">"type"</span>: <span class="tok-s">"string"</span>, <span class="tok-s">"pattern"</span>: <span class="tok-s">"^[A-Z]{3}$"</span> }
+      }
+    }
+  }
+}</code></pre>
+          </div>
+
+          <p>Every row carries <code>sourceEvent</code>. The ledger is itself a projection of the order streams described below. You can drop it and rebuild it. That property is what lets you trust it as the record.</p>
+
+          <h2 id="reconciler">The reconciler</h2>
+          <p>The reconciler has one job: for each asset, compute the hold that should exist and make core agree. The target is one line:</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>target</span><span class="code-block__lang">text</span></div>
+<pre><code>heldTarget = min( netObligation, max(0, balance &minus; protectedAllowance) )</code></pre>
+          </div>
+
+          <p><code>netObligation</code> is the sum of active amount holds on the asset, minus releases. <code>protectedAllowance</code> is the part of salary the law leaves with the customer, or zero when core protects it natively or the order waives it. <code>balance</code> is the balance <em>before</em> the platform&rsquo;s own hold. Get that last detail wrong and the reconciler chases its own tail: it sees the hold it placed as missing money and shrinks the hold on every run.</p>
+          <p>The reconciler runs on four triggers. An obligation changes. A balance-changing event lands on the asset, such as a credit that makes more money available to hold. A pay cycle rolls over and the allowance renews. A periodic sweep checks for drift. All four call the same function. There is one path, so there is one thing to test.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>HoldReconciler.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public final class</span> <span class="tok-t">HoldReconciler</span> {
+
+    <span class="tok-k">private final</span> <span class="tok-t">ObligationLedger</span> ledger;
+    <span class="tok-k">private final</span> <span class="tok-t">ConnectorRuntime</span> connectors;
+    <span class="tok-k">private final</span> <span class="tok-t">ProjectionStore</span> projections;   <span class="tok-c">// last hold we placed, per asset</span>
+    <span class="tok-k">private final</span> <span class="tok-t">DriftReporter</span> drift;
+
+    <span class="tok-k">public</span> <span class="tok-t">Outcome</span> reconcile(<span class="tok-t">AssetRef</span> asset, <span class="tok-t">Trigger</span> trigger) {
+        <span class="tok-t">LedgerView</span> view = ledger.activeView(asset);           <span class="tok-c">// all orders, all types</span>
+        <span class="tok-t">Money</span> net        = view.netAmountObligation();
+        <span class="tok-t">Money</span> protectedAl = view.protectedAllowance();         <span class="tok-c">// ZERO if delegated or waived</span>
+
+        <span class="tok-t">HoldState</span> core   = connectors.holdState(asset);          <span class="tok-c">// what core says exists</span>
+        <span class="tok-t">Money</span> balance    = core.availableExcludingOwnHold();    <span class="tok-c">// never count our own hold</span>
+
+        <span class="tok-t">Money</span> target = <span class="tok-t">Money</span>.min(net,
+                <span class="tok-t">Money</span>.max(<span class="tok-t">Money</span>.ZERO, balance.minus(protectedAl)));
+
+        <span class="tok-t">Projection</span> expected = projections.get(asset);
+        <span class="tok-k">if</span> (!core.heldAmount().equals(expected.amount())) {
+            drift.report(asset, expected, core, trigger);      <span class="tok-c">// someone else touched it</span>
+        }
+        <span class="tok-k">if</span> (core.heldAmount().equals(target)) {
+            <span class="tok-k">return</span> <span class="tok-t">Outcome</span>.noOp(asset, view.version());       <span class="tok-c">// idempotent: nothing to do</span>
+        }
+
+        <span class="tok-c">// Key = asset + ledger version. A replay of the same version is a no-op</span>
+        <span class="tok-c">// at the connector; a newer version supersedes, never stacks.</span>
+        <span class="tok-t">IdempotencyKey</span> key = <span class="tok-t">IdempotencyKey</span>.of(asset, view.version());
+        <span class="tok-t">CapabilityResult</span> r = target.isZero()
+                ? connectors.holdLift(asset, key)
+                : connectors.holdSet(asset, target, key);       <span class="tok-c">// place or modify</span>
+
+        <span class="tok-k">return switch</span> (r.code()) {
+            <span class="tok-k">case</span> OK, ALREADY_APPLIED -&gt; {
+                projections.put(asset, <span class="tok-k">new</span> <span class="tok-t">Projection</span>(target, view.version()));
+                <span class="tok-k">yield</span> <span class="tok-t">Outcome</span>.applied(asset, target);
+            }
+            <span class="tok-k">case</span> TEMPORARY  -&gt; <span class="tok-t">Outcome</span>.retryLater(asset);         <span class="tok-c">// backoff, same key</span>
+            <span class="tok-k">case</span> NOT_FOUND, PERMANENT -&gt; <span class="tok-t">Outcome</span>.escalate(asset, r); <span class="tok-c">// human task</span>
+            <span class="tok-k">case</span> INSUFFICIENT_FUNDS -&gt; <span class="tok-t">Outcome</span>.retryOnNextBalanceEvent(asset);
+        };
+    }
+}</code></pre>
+          </div>
+
+          <p>Two properties matter more than the code. First, the key is the <em>ledger version</em>, not the order. Ten orders on one asset produce one hold, resized ten times, not ten holds. Second, the reconciler is convergent. Run it twice, run it after a crash, run it from two pods at once with an advisory lock per asset: the end state is the same.</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Drift is a signal, not something to fight</div>
+            <p>The ledger is authoritative, so the reconciler drives core back to target when it finds drift. But if the same asset drifts on every sweep, something outside the platform keeps changing it: a manual release, a core expiry date, a batch job. Re-applying forever hides that. Cap automatic re-application per asset per day, then raise a human task with the before and after. Drift that repeats is a process problem, not a reconciliation problem.</p>
+          </div>
+
+          <h2 id="protected-share">Protected share where the channel cannot compute it</h2>
+          <p>Enforcement law commonly leaves part of a salary untouchable. Core banking systems often implement this natively. Prepaid cards, payroll cards and wallets that receive salary usually do not. The obligation is uniform; the substrate is not. The platform has to make the protection uniform anyway.</p>
+          <p>The answer is three tiers, chosen per asset from what the connector declares it can do.</p>
+
+          <table>
+            <thead>
+              <tr><th>Tier</th><th>When</th><th>Mechanism</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Delegate</strong></td><td>Connector declares <code>nativeProtectedShare</code></td><td>Pass the flag; core computes and enforces. The ledger allowance is zero for that asset.</td></tr>
+              <tr><td><strong>Synthesize</strong></td><td>No native protection, but <code>partialHold</code> is supported</td><td>Platform computes the allowance centrally and the reconciler holds the net amount, renewing every pay cycle.</td></tr>
+              <tr><td><strong>Gap</strong></td><td>No partial hold, or no reliable salary signal</td><td>Never over-hold silently. Detect, escalate to a human carve-out, or mark the asset ineligible for amount holds while protection applies.</td></tr>
+            </tbody>
+          </table>
+
+          <p>One guardrail binds all three: exactly one layer protects each asset. Native where it exists, synthesized only where it does not. Two layers would carve the allowance out twice and under-enforce the order.</p>
+          <p>Synthesis needs to know when salary arrives. Two sources usually exist: a payroll file that says who was paid how much for which period, and a per-account credit notification that arrives faster but cannot tell salary from any other credit. Treat the file as the authority and the notification as a latency shortcut. Normalize both to one event and deduplicate on <code>(party, asset, period)</code>. The allowance then renews exactly once per cycle, whatever order the two sources arrive in, and even if one never arrives.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Ship the gap tier before the synthesize tier</div>
+            <p>The compliance-critical failure is holding money the law protects. Under-enforcement is a finding; illegal over-holding of a salary is harm to a customer. Ship delegate and gap first: they guarantee no silent over-hold. Synthesis is the harder engineering and can follow once the reconciler has run in production for a few pay cycles.</p>
+          </div>
+
+          <h2 id="order-stream">Every order is a hash-chained stream</h2>
+          <p>Each order is an event-sourced aggregate with its own stream. Two properties go beyond a standard event store.</p>
+          <p><strong>Gap-free sequence per order.</strong> Each event carries a sequence number that starts at 1 and increments by exactly 1. An append succeeds only if the expected previous sequence matches, enforced by a unique constraint on <code>(order_id, sequence)</code>. A missing number is detectable without any other source of truth.</p>
+          <p><strong>Hash chain.</strong> Each event stores <code>hash = H(prevHash || canonical(event))</code>. Altering or deleting any event breaks every hash after it. The chain head is anchored periodically to write-once storage. An auditor can verify an order&rsquo;s full history with nothing but the stream and the anchor.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>order-event.json</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-s">"orderId"</span>: <span class="tok-s">"7f1c2e9a-4b8d-4f0e-9a51-1d2c3b4a5e6f"</span>,
+  <span class="tok-s">"sequence"</span>: <span class="tok-n">6</span>,
+  <span class="tok-s">"type"</span>: <span class="tok-s">"ObligationReleased"</span>,
+  <span class="tok-s">"occurredAt"</span>: <span class="tok-s">"2026-11-12T09:41:07.312Z"</span>,
+  <span class="tok-s">"descriptor"</span>: { <span class="tok-s">"service"</span>: <span class="tok-s">"lift"</span>, <span class="tok-s">"version"</span>: <span class="tok-s">"3.2.0"</span> },
+  <span class="tok-s">"payload"</span>: {
+    <span class="tok-s">"releasesOrder"</span>: <span class="tok-s">"order:block:a"</span>,
+    <span class="tok-s">"assetRef"</span>: <span class="tok-s">"asset:opaque:01"</span>,
+    <span class="tok-s">"amount"</span>: { <span class="tok-s">"value"</span>: <span class="tok-s">"10000.00"</span>, <span class="tok-s">"currency"</span>: <span class="tok-s">"XXX"</span> },
+    <span class="tok-s">"partial"</span>: <span class="tok-k">true</span>
+  },
+  <span class="tok-s">"decision"</span>: { <span class="tok-s">"rule"</span>: <span class="tok-s">"lift.partial"</span>, <span class="tok-s">"ruleVersion"</span>: <span class="tok-s">"3.2.0"</span>, <span class="tok-s">"inputsDigest"</span>: <span class="tok-s">"sha256:9c1f&hellip;"</span> },
+  <span class="tok-s">"prevHash"</span>: <span class="tok-s">"sha256:4e07&hellip;"</span>,
+  <span class="tok-s">"hash"</span>: <span class="tok-s">"sha256:b3a9&hellip;"</span>
+}</code></pre>
+          </div>
+
+          <p>Note the <code>decision</code> block. Every event that reflects a choice records the rule, the rule version and a digest of the inputs. Replaying the same inputs against the same version gives the same outcome. That turns &ldquo;why did the bank do this?&rdquo; from an investigation into a lookup. Personal data inside payloads is field-encrypted, and identity keys are hashed; the chain covers the ciphertext, so a key rotation does not break verification.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>ChainVerifier.java</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">public</span> <span class="tok-t">Verification</span> verify(<span class="tok-t">List</span>&lt;<span class="tok-t">StoredEvent</span>&gt; stream, <span class="tok-t">Anchor</span> anchor) {
+    <span class="tok-t">String</span> prev = <span class="tok-t">Hashes</span>.GENESIS;
+    <span class="tok-k">long</span> expectedSeq = <span class="tok-n">1</span>;
+    <span class="tok-k">for</span> (<span class="tok-t">StoredEvent</span> e : stream) {
+        <span class="tok-k">if</span> (e.sequence() != expectedSeq++) <span class="tok-k">return</span> <span class="tok-t">Verification</span>.gap(e);
+        <span class="tok-k">if</span> (!e.prevHash().equals(prev))   <span class="tok-k">return</span> <span class="tok-t">Verification</span>.broken(e);
+        <span class="tok-t">String</span> h = <span class="tok-t">Hashes</span>.sha256(prev, <span class="tok-t">Canonical</span>.json(e.withoutHash()));
+        <span class="tok-k">if</span> (!h.equals(e.hash()))          <span class="tok-k">return</span> <span class="tok-t">Verification</span>.tampered(e);
+        prev = h;
+    }
+    <span class="tok-k">return</span> anchor.covers(prev) ? <span class="tok-t">Verification</span>.ok() : <span class="tok-t">Verification</span>.unanchored(prev);
+}</code></pre>
+          </div>
+
+          <h2 id="lifecycle">Lifecycle and reversal from any state</h2>
+          <p>Orders follow an explicit state machine. The states are the same vocabulary used in dashboards and alerts, so nobody reconstructs status from logs.</p>
+
+          <table>
+            <thead>
+              <tr><th>State</th><th>Meaning</th><th>Can reverse?</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>RECEIVED</code></td><td>Accepted and acknowledged</td><td>Yes</td></tr>
+              <tr><td><code>VALIDATING</code></td><td>Schema and rule checks</td><td>Yes</td></tr>
+              <tr><td><code>EXECUTING</code></td><td>Obligations recorded; capability calls in flight</td><td>Yes</td></tr>
+              <tr><td><code>AWAITING_APPROVAL</code></td><td>Maker-checker required by policy</td><td>Yes</td></tr>
+              <tr><td><code>COMPOSING_OUTCOME</code> / <code>CALLBACK_PENDING</code></td><td>Result assembled; reply queued in an outbox</td><td>Yes</td></tr>
+              <tr><td><code>COMPLETED</code>, <code>REJECTED</code>, <code>DECLINED</code></td><td>Terminal</td><td>No &mdash; a later lift is a new order</td></tr>
+              <tr><td><code>REVERSING</code> &rarr; <code>REVERSAL_COMPLETED</code></td><td>Compensation per the service descriptor</td><td>&mdash;</td></tr>
+            </tbody>
+          </table>
+
+          <p>A reversal can arrive at any pre-terminal state. In a stacked-hold design that is painful: you must know which holds exist at this instant, which calls are mid-flight, and undo each one. With the ledger it is short. The reversal appends <code>ObligationReleased</code> for every active obligation of the order and moves to <code>REVERSING</code>. The reconciler recomputes the asset targets. If a capability call was mid-flight, its late reply is applied under an older ledger version and is superseded on the next run. Compensation becomes data, not choreography.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">A reversal that arrives before the order</div>
+            <p>Messages can arrive out of order. Store a reversal for an unknown order as a <em>tombstone</em> keyed by the order reference, with a time-to-live. When the original order arrives, it is born reversed: it is recorded, audited and closed without ever creating an obligation. Rejecting the early reversal instead leaves an order that executes and is never undone.</p>
+          </div>
+
+          <h2 id="content-packs">Services as signed, versioned content packs</h2>
+          <p>Block, garnish, lift, deny and ban are not five code paths. They are five descriptors executed by one engine. The engine knows a small number of choreography templates: two-leg request and callback, two-leg with approval, synchronous inquiry, and reversal compensation. A descriptor picks a template and parameterizes it. A new service adds a descriptor; only a genuinely new shape needs a release.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>services/garnish.yaml</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">service:</span>
+  <span class="tok-k">id:</span> <span class="tok-s">garnish</span>
+  <span class="tok-k">version:</span> <span class="tok-s">2.4.0</span>
+  <span class="tok-k">choreography:</span> <span class="tok-s">two-leg-approval</span>
+  <span class="tok-k">reversal:</span> { <span class="tok-k">supported:</span> <span class="tok-s">true</span>, <span class="tok-k">compensation:</span> <span class="tok-s">obligations.releaseAll</span> }
+  <span class="tok-k">sla:</span> { <span class="tok-k">replyWithin:</span> <span class="tok-s">PT15M</span> }
+
+  <span class="tok-k">validations:</span>
+    <span class="tok-p">-</span> <span class="tok-k">rule:</span> <span class="tok-s">"request.amount == null || request.amount.value &gt; 0"</span>
+      <span class="tok-k">error:</span> <span class="tok-s">INVALID_AMOUNT</span>
+
+  <span class="tok-k">obligations:</span>                     <span class="tok-c"># what the order writes to the ledger</span>
+    <span class="tok-p">-</span> <span class="tok-k">when:</span> <span class="tok-s">"request.amount != null"</span>
+      <span class="tok-k">type:</span> <span class="tok-s">AMOUNT_HOLD</span>
+      <span class="tok-k">allocate:</span> <span class="tok-s">policy.allocation.default</span>
+    <span class="tok-p">-</span> <span class="tok-k">when:</span> <span class="tok-s">"request.amount == null"</span>
+      <span class="tok-k">type:</span> <span class="tok-s">FREEZE</span>
+
+  <span class="tok-k">capabilities:</span>                    <span class="tok-c"># tenant connectors must provide these</span>
+    <span class="tok-p">-</span> <span class="tok-s">party.resolve</span>
+    <span class="tok-p">-</span> <span class="tok-s">account.list</span>
+    <span class="tok-p">-</span> <span class="tok-s">balance.inquire</span>
+    <span class="tok-p">-</span> <span class="tok-s">hold.set</span>
+
+  <span class="tok-k">approval:</span> { <span class="tok-k">required:</span> <span class="tok-s">byPolicy</span>, <span class="tok-k">roles:</span> [<span class="tok-s">maker</span>, <span class="tok-s">checker</span>] }
+  <span class="tok-k">regression:</span> <span class="tok-s">scenarios/garnish/*.replay</span></code></pre>
+          </div>
+
+          <p>A <strong>content pack</strong> bundles descriptors, schemas, outcome tables, bilingual labels and regression scenarios. It is signed at build time and verified on import. It is immutable and promoted through environments like an image. Each order records the descriptor version it started on and stays pinned to it. A new pack changes new orders only. That removes a whole class of incident: the rule that changed under an order already half-way through execution.</p>
+
+          <h2 id="connectors">Connector SDK: contracts, taxonomy, certification</h2>
+          <p>The engine never talks to a bank system directly. It calls <em>capabilities</em>, and a per-tenant connector translates each capability to one system: core, card platform, wallet. Connectors are thin and stateless. All order state, and all audit, lives in the platform.</p>
+
+          <table>
+            <thead>
+              <tr><th>Capability</th><th>Shape</th><th>Rule</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>party.resolve</code></td><td>identity &rarr; partyRef</td><td>The only place identity is translated</td></tr>
+              <tr><td><code>account.list</code></td><td>partyRef, filter &rarr; assets</td><td>Filter vocabulary owned by the platform</td></tr>
+              <tr><td><code>balance.inquire</code></td><td>assetRef &rarr; available, ledger</td><td>Must expose balance excluding own hold</td></tr>
+              <tr><td><code>hold.set</code> / <code>hold.lift</code></td><td>assetRef, amount, key &rarr; holdRef</td><td>Replay-safe on the idempotency key</td></tr>
+              <tr><td><code>restriction.apply</code> / <code>.remove</code></td><td>ref, kind, key &rarr; restrictionRef</td><td>Deny and ban class</td></tr>
+              <tr><td><code>payroll.inflow</code></td><td>events &rarr; normalized credit</td><td>File, notification, both or none</td></tr>
+            </tbody>
+          </table>
+
+          <p>Connectors return capability results, never system status codes. The error taxonomy is fixed by the SDK: <code>NOT_FOUND</code>, <code>INSUFFICIENT_FUNDS</code>, <code>ALREADY_APPLIED</code>, <code>TEMPORARY</code>, <code>PERMANENT</code>. Five values, each with one engine reaction. A connector that cannot map an error to one of them has not understood the system it wraps.</p>
+          <p>Each connector ships a <strong>manifest</strong> declaring its capabilities, versions and flags such as <code>partialHold</code> and <code>nativeProtectedShare</code>. Before a service is switched on for a tenant, the console checks that bound connectors cover every capability the descriptor needs. A gap blocks activation. It never surfaces as a runtime failure on a live order.</p>
+          <p><strong>Certification</strong> is a contract-test suite plus a simulator scenario pack, and it must run green before a connector binds. The scenarios that catch real defects are not the happy paths:</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Duplicate delivery</h4>
+              <p>The same <code>hold.set</code> with the same key arrives twice, ten milliseconds apart, and again an hour later. The second and third must return <code>ALREADY_APPLIED</code> and leave exactly one hold.</p>
+            </li>
+            <li>
+              <h4>Reversal storms</h4>
+              <p>Hundreds of orders on overlapping assets are reversed at once, at every lifecycle state, including mid-call. End state: every asset at its recomputed target, no orphan holds, every stream verifiable.</p>
+            </li>
+            <li>
+              <h4>Out-of-order and superseded calls</h4>
+              <p>A call under ledger version 5 completes after version 6 was applied. The connector, or the reconciler on its next pass, must leave version 6 in force.</p>
+            </li>
+            <li>
+              <h4>Timeouts with unknown outcome</h4>
+              <p>The connector times out after core applied the hold. The retry with the same key must converge, not double.</p>
+            </li>
+          </ol>
+
+          <h2 id="failure-modes">Failure modes</h2>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Two layers protecting the same salary</div>
+            <p>A core is upgraded and starts enforcing protected share natively, but its connector manifest still says it does not. The platform synthesizes an allowance on top of the native one, and the order is under-enforced by the full allowance. Mitigation: the manifest is versioned and tied to the connector release, and certification includes a scenario that fails if both layers protect the same asset.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Reconciler hammering a degraded core</div>
+            <p>A balance event storm during a payroll run triggers a reconcile per credit. If core is already slow, the reconciler adds load at the worst time. Mitigation: coalesce triggers per asset over a short window, keep a circuit breaker per connector, and let <code>TEMPORARY</code> back off. The target is a function of state, not of the trigger, so coalescing loses nothing.</p>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">A ledger rebuilt from a broken stream</div>
+            <p>If a projection rebuild silently skips an event, the ledger under-states obligations and the reconciler releases money it should hold. Mitigation: rebuilds verify every chain first and refuse to publish a ledger version derived from a stream with a gap or a broken hash.</p>
+          </div>
+
+          <h2 id="checklist">Delivery checklist</h2>
+
+          <ol class="step-list">
+            <li>
+              <h4>Get the ownership split signed</h4>
+              <p>Platform owns obligations; core owns money. Write it as a decision record and get legal, compliance and core banking to sign it. Every later argument resolves against this line.</p>
+            </li>
+            <li>
+              <h4>Define obligation types before services</h4>
+              <p>Types, accumulation rules and how each projects to each asset class. Services are then just descriptors that emit typed obligations.</p>
+            </li>
+            <li>
+              <h4>Build the reconciler as a first-class component</h4>
+              <p>One function, four triggers, keyed on asset and ledger version, with drift reporting and a cap on automatic re-application. Test it with property-based tests: any sequence of obligation changes must converge to the same target.</p>
+            </li>
+            <li>
+              <h4>Make every order stream gap-free and chained</h4>
+              <p>Unique constraint on sequence, hash per event, periodic anchors, and a verifier the auditors can run themselves.</p>
+            </li>
+            <li>
+              <h4>Ship the protected-share gap tier first</h4>
+              <p>Delegate where core can, escalate where nothing can, and only then synthesize. Never ship a path that can silently over-hold.</p>
+            </li>
+            <li>
+              <h4>Package services as signed packs with pinning</h4>
+              <p>Sign, verify, promote, pin. Regression scenarios travel inside the pack, so a pack cannot be promoted without its own tests.</p>
+            </li>
+            <li>
+              <h4>Certify connectors on the hard scenarios</h4>
+              <p>Duplicate delivery, reversal storms, superseded calls and unknown-outcome timeouts. A connector that passes only the happy path is not certified.</p>
+            </li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="event-sourcing-and-cqrs.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Event Sourcing &amp; CQRS in Payments</div>
+            </a>
+            <a href="../event-driven.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Event-Driven Architecture &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2026 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

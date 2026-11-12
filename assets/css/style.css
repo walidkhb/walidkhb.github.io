@@ -1115,10 +1115,12 @@ section ul li span[style*="background: var(--color-accent)"] {
 /* --- Lab Article --- */
 .lab-article__layout {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: 3.5rem;
   align-items: start;
 }
+
+.lab-article__layout > * { min-width: 0; }
 
 .lab-article__toc {
   position: sticky;
@@ -1529,8 +1531,22 @@ section ul li span[style*="background: var(--color-accent)"] {
 
 @media (max-width: 1024px) {
   .lab-article__layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
+  }
+  .lab-article__body table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .lab-article__body :not(pre) > code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .lab-article__body h2,
+  .lab-article__body h3,
+  .lab-article__body h4 {
+    overflow-wrap: anywhere;
   }
   .lab-article__toc {
     position: static;
