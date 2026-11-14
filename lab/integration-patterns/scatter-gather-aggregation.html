@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scatter-Gather: Multi-Source Account Aggregation for SAMA Open Banking &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Building a production-grade scatter-gather aggregation layer for SAMA Open Banking Phase 2: parallel fan-out, timeout budgets, partial-result handling, IBM ACE and Spring Boot implementations, and the caching strategies that keep p99 latency under 300ms.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Scatter-Gather: Multi-Source Account Aggregation for SAMA Open Banking &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Fan-out, timeout budgets, partial results, and caching &mdash; building a compliant aggregation layer for SAMA Open Banking Phase 2 in a KSA bank.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/scatter-gather-aggregation.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Scatter-Gather: Multi-Source Account Aggregation for SAMA Open Banking">
+  <meta name="twitter:description" content="Fan-out, timeout budgets, partial results, and caching for SAMA Open Banking aggregation in production.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/scatter-gather-aggregation.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Scatter-Gather: Multi-Source Account Aggregation for SAMA Open Banking",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-14",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/integration-patterns/scatter-gather-aggregation.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Integration Design Patterns &mdash; Lab &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/lab/integration-patterns.html"
+    },
+    "description": "Building a production-grade scatter-gather aggregation layer for SAMA Open Banking Phase 2: parallel fan-out, timeout budgets, partial-result handling, IBM ACE and Spring Boot implementations, and the caching strategies that keep p99 latency under 300ms.",
+    "proficiencyLevel": "Expert",
+    "audience": {
+      "@type": "Audience",
+      "audienceType": "Software Engineers, Integration Architects"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>Scatter-Gather Aggregation</div>
+          <span class="overline">Lab Article</span>
+          <h1>Scatter-Gather: Multi-Source Account Aggregation for SAMA Open Banking</h1>
+          <p class="lead">Fanning out balance and transaction queries across a fragmented KSA bank estate &mdash; legacy CBS, digital core, card processor, investment accounts &mdash; and assembling a compliant Open Banking response under a 300ms wall-clock budget: timeout allocation, partial-result semantics, IBM ACE and Spring Boot wiring, and the caching layer that makes it survivable in production.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#when-scatter-gather">When to use it</a></li>
+            <li><a href="#fan-out-design">Fan-out design</a></li>
+            <li><a href="#timeout-budget">Timeout budget allocation</a></li>
+            <li><a href="#ace-implementation">IBM ACE implementation</a></li>
+            <li><a href="#spring-boot-impl">Spring Boot implementation</a></li>
+            <li><a href="#partial-results">Partial result handling</a></li>
+            <li><a href="#circuit-breaker-integration">Circuit breaker integration</a></li>
+            <li><a href="#caching">Response caching</a></li>
+            <li><a href="#sama-compliance">SAMA Open Banking compliance</a></li>
+            <li><a href="#performance">Performance &amp; scalability</a></li>
+            <li><a href="#production-reality">What production tells you</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM ACE 12 / Spring Boot 3 / Resilience4j 2 / Redis 7 / SAMA Open Banking API v2 / CompletableFuture</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 14, 2026</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>SAMA Open Banking Phase 2 requires participant banks to expose a consolidated account view to authorised Third-Party Providers (TPPs) &mdash; a customer&rsquo;s current accounts, savings, credit cards, and investment portfolio surfaced through a single API response. For a large KSA bank that grew by acquisition, that data does not live in one system. It lives in a legacy core banking system (CICS-era Temenos or Misys), a digital banking platform, a card-processing platform, and possibly a separate investment and custody system. The integration layer that assembles the unified response is a <strong>scatter-gather</strong> aggregator.</p>
+          <p>Scatter-gather is one of the original Enterprise Integration Patterns: send one request outbound to N recipients in parallel, collect the N responses, and return a single composed response to the original caller. It is straightforward to describe and genuinely difficult to implement correctly in a financial services context because every trade-off has a regulatory or customer-experience consequence &mdash; most obviously the question of what to do when one of the N downstream calls fails or times out within the wall-clock budget.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">SAMA Open Banking Phase 2 scope</div>
+            <p>Phase 2 of SAMA&rsquo;s Open Banking Framework (launched in full during 2025) mandates that banks expose account information and transaction history APIs conforming to the SAMA Open Banking Technical Specification v2.0. The spec sets a maximum response time of 3,000ms for account listing and 5,000ms for transaction history at the API gateway level. The scatter-gather aggregation layer must complete within a margin of that budget &mdash; leaving room for the gateway overhead, TLS handshake, and serialisation. A practical internal target is 2,500ms wall-clock for the aggregation, 300ms for a single-system account query that the cache serves.</p>
+          </div>
+
+          <h2 id="when-scatter-gather">When to use it</h2>
+          <p>The scatter-gather pattern earns its complexity cost in one specific situation: the response requires data from multiple independent sources that cannot be queried together, and those sources can be called in parallel to meet a latency budget that sequential calls would miss.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Pattern</th>
+                <th>Use when</th>
+                <th>Do not use when</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Scatter-Gather</strong></td>
+                <td>N independent systems; partial result is acceptable; latency budget is tighter than sum of sequential calls</td>
+                <td>Sources are dependent (B needs A&rsquo;s result); all-or-nothing is required; N = 1</td>
+              </tr>
+              <tr>
+                <td><strong>Sequential call chain</strong></td>
+                <td>Each call depends on the prior result; ordering matters for business logic</td>
+                <td>Sources are independent; latency is critical; a slow source should not block others</td>
+              </tr>
+              <tr>
+                <td><strong>API composition (BFF)</strong></td>
+                <td>Response needs data from two or three services; client-driven aggregation is acceptable</td>
+                <td>Many sources (&gt;4); a backend aggregation contract is required; the client is a TPP not in your control</td>
+              </tr>
+              <tr>
+                <td><strong>Event-driven read model</strong></td>
+                <td>Query volume is high; freshness within seconds is acceptable; Debezium + Kafka pipeline is already in place</td>
+                <td>Real-time freshness is required; data sources cannot produce events; regulatory audit trail per query is needed</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>For SAMA Open Banking, scatter-gather is the right choice when: the account universe spans multiple systems, the TPP requires a single consolidated response per SAMA spec, and the bank cannot afford the 2&ndash;4 second latency of sequential calls to its legacy core plus card platform plus digital core. When a pre-built read model fed by CDC is available (from a Debezium pipeline into a Redis or Elasticsearch projection), use that instead &mdash; it is simpler and faster. Scatter-gather is the fallback when the read model does not exist or cannot be built within the programme timeline.</p>
+
+          <h2 id="fan-out-design">Fan-out design</h2>
+          <p>The fan-out side of scatter-gather requires three decisions before writing code: which systems are in scope, what the request schema looks like for each, and whether the fan-out is static (always call all N systems) or dynamic (derive the target list from the customer&rsquo;s product holding at query time).</p>
+          <p>Dynamic fan-out is correct for a KSA bank: a customer with only current accounts and a credit card should not trigger a call to the investment platform. Dynamic fan-out reduces downstream load and reduces the chance that a slow or unavailable system delays a response for customers who have no products on that system. The product holding map &mdash; which systems hold products for which customers &mdash; must be maintained centrally, usually in a party and product registry that the integration layer queries at the start of each Open Banking session.</p>
+
+          <div class="diagram" role="img" aria-label="Scatter-gather aggregation flow for SAMA Open Banking account query">
+            <div class="diagram__inner">
+              <svg width="780" height="420" viewBox="0 0 780 420" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="sg1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="sg2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="sg3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                  <marker id="sg4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                </defs>
+
+                <!-- TPP / API Gateway -->
+                <rect x="20" y="175" width="130" height="60" rx="6" fill="#16161f" stroke="#00d4aa" stroke-width="2"/>
+                <text x="85" y="200" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">TPP / API Gateway</text>
+                <text x="85" y="216" text-anchor="middle" fill="#71717a" font-size="9">GET /accounts</text>
+                <text x="85" y="228" text-anchor="middle" fill="#71717a" font-size="9">SAMA OB v2</text>
+
+                <!-- Aggregation layer -->
+                <rect x="210" y="145" width="175" height="120" rx="8" fill="#0f0f16" stroke="#00d4aa" stroke-width="2"/>
+                <text x="297" y="168" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">AGGREGATION LAYER</text>
+                <rect x="225" y="178" width="145" height="35" rx="5" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="297" y="195" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Product Registry Lookup</text>
+                <text x="297" y="208" text-anchor="middle" fill="#71717a" font-size="8">derive target list</text>
+                <rect x="225" y="223" width="145" height="30" rx="5" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="297" y="241" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Fan-out / Fan-in</text>
+                <text x="297" y="253" text-anchor="middle" fill="#71717a" font-size="8">CompletableFuture / ACE async</text>
+
+                <!-- Downstream systems -->
+                <rect x="460" y="40" width="150" height="55" rx="6" fill="#16161f" stroke="#4a9eff"/>
+                <text x="535" y="61" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Legacy CBS</text>
+                <text x="535" y="75" text-anchor="middle" fill="#71717a" font-size="9">Temenos T24 / CICS</text>
+                <text x="535" y="87" text-anchor="middle" fill="#71717a" font-size="9">current + savings accts</text>
+
+                <rect x="460" y="120" width="150" height="55" rx="6" fill="#16161f" stroke="#a78bfa"/>
+                <text x="535" y="141" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Digital Core</text>
+                <text x="535" y="155" text-anchor="middle" fill="#71717a" font-size="9">Mambu / Thought Machine</text>
+                <text x="535" y="167" text-anchor="middle" fill="#71717a" font-size="9">digital wallet + flexi</text>
+
+                <rect x="460" y="200" width="150" height="55" rx="6" fill="#16161f" stroke="#fbbf24"/>
+                <text x="535" y="221" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Card Processor</text>
+                <text x="535" y="235" text-anchor="middle" fill="#71717a" font-size="9">Visa DPS / FIS</text>
+                <text x="535" y="247" text-anchor="middle" fill="#71717a" font-size="9">credit + prepaid cards</text>
+
+                <rect x="460" y="280" width="150" height="55" rx="6" fill="#16161f" stroke="#ef4444"/>
+                <text x="535" y="301" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Investment Platform</text>
+                <text x="535" y="315" text-anchor="middle" fill="#71717a" font-size="9">Murex / Calypso</text>
+                <text x="535" y="327" text-anchor="middle" fill="#71717a" font-size="9">sukuk + funds (dynamic)</text>
+
+                <!-- Redis cache -->
+                <rect x="460" y="360" width="150" height="45" rx="6" fill="#16161f" stroke="#00d4aa"/>
+                <text x="535" y="380" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Redis Cache</text>
+                <text x="535" y="395" text-anchor="middle" fill="#71717a" font-size="9">60-s TTL &middot; partial stale</text>
+
+                <!-- Arrows: TPP → aggregation -->
+                <line x1="150" y1="205" x2="208" y2="205" stroke="#00d4aa" stroke-width="2" marker-end="url(#sg1)"/>
+
+                <!-- Arrows: aggregation → downstreams -->
+                <line x1="385" y1="195" x2="458" y2="68" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#sg4)"/>
+                <line x1="385" y1="205" x2="458" y2="148" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#sg2)"/>
+                <line x1="385" y1="215" x2="458" y2="228" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#sg3)"/>
+                <line x1="385" y1="225" x2="458" y2="308" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#sg1)"/>
+
+                <!-- Cache read -->
+                <line x1="385" y1="250" x2="458" y2="378" stroke="#00d4aa" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#sg1)"/>
+
+                <!-- Labels -->
+                <text x="410" y="35" text-anchor="middle" fill="#71717a" font-size="8">always called</text>
+                <text x="410" y="115" text-anchor="middle" fill="#71717a" font-size="8">always called</text>
+                <text x="410" y="197" text-anchor="middle" fill="#71717a" font-size="8">always called</text>
+                <text x="415" y="275" text-anchor="middle" fill="#71717a" font-size="8">if holdings exist</text>
+                <text x="395" y="340" text-anchor="middle" fill="#71717a" font-size="8">cache-first</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Dynamic scatter-gather aggregation for SAMA Open Banking: the product registry determines which systems receive a fan-out call; cache-first reads short-circuit the fan-out for warm sessions.</div>
+          </div>
+
+          <h2 id="timeout-budget">Timeout budget allocation</h2>
+          <p>The 3,000ms SAMA Open Banking SLA is a wall-clock budget that must be allocated across every hop in the response path. Working backwards from the SLA:</p>
+          <ul>
+            <li><strong>TLS + gateway overhead:</strong> 50ms</li>
+            <li><strong>Product registry lookup:</strong> 50ms (served from Redis; no network hop to CBS)</li>
+            <li><strong>Scatter-gather wall-clock:</strong> 2,500ms (the entire parallel fan-out must complete within this)</li>
+            <li><strong>Response assembly and serialisation:</strong> 150ms</li>
+            <li><strong>Total:</strong> 2,750ms, leaving 250ms margin against the 3,000ms limit</li>
+          </ul>
+          <p>The 2,500ms budget for the scatter-gather fan-out is the budget for the <em>slowest</em> downstream call that completes within the window. Fast calls (a modern digital core returning in 80ms) return early; slow calls (a legacy CICS CBS that consistently takes 1,800ms) define the wall clock. Any downstream that does not respond within 2,500ms must be treated as a timeout and handled as a partial result &mdash; which means the per-call timeout for each downstream must be set to 2,400ms (100ms less than the fan-out budget, to allow for thread scheduling overhead).</p>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Do not give every downstream the same timeout</div>
+            <p>Setting a uniform 2,400ms timeout across all downstreams means a fast digital core that returns in 80ms still waits for the 2,400ms window before the caller considers it timed out if it fails. The right design is a <strong>per-downstream timeout</strong> derived from that system&rsquo;s p99 latency plus a 50% safety margin, subject to the 2,400ms hard ceiling. A system with a p99 of 200ms gets a 300ms timeout. A legacy CBS with a p99 of 1,500ms gets a 2,250ms timeout. Configure these per-downstream, measure them in production, and tune quarterly.</p>
+          </div>
+
+          <h2 id="ace-implementation">IBM ACE implementation</h2>
+          <p>IBM ACE 12 implements scatter-gather through its <code>Fan-out</code> and <code>Fan-in</code> message flow nodes, introduced as a production-ready pattern in ACE 12.0.6. The <code>Fan-out</code> node dispatches a copy of the incoming message to N parallel flows simultaneously; each flow processes its branch independently; the <code>Fan-in</code> node aggregates the results when either all branches complete or the fan-in timeout expires.</p>
+
+          <ol class="step-list">
+            <li>
+              <h4>Product registry lookup (Compute node)</h4>
+              <p>A <code>Compute</code> node or <code>DatabaseRetrieve</code> node queries the product registry for the consented customer. The result is a list of system codes (<code>CBS</code>, <code>DIGITAL</code>, <code>CARD</code>, <code>INVEST</code>) stored in a local environment variable. This list drives the dynamic fan-out in the next node.</p>
+            </li>
+            <li>
+              <h4>Fan-out node configuration</h4>
+              <p>Configure the <code>Fan-out</code> node with a <em>distributor</em> expression that iterates over the system-code list. Set the <code>Fan-out mode</code> to <code>Parallel</code>. Each branch receives a copy of the original request message plus the system code for that branch injected into the local environment tree.</p>
+            </li>
+            <li>
+              <h4>Per-branch adapter subflows</h4>
+              <p>Each branch routes via a <code>RouteToLabel</code> node to a system-specific subflow. The CBS subflow translates the request to a CICS COMMAREA format via DFDL and calls the mainframe through the CICS TCP/IP link; the digital core subflow calls a REST API; the card subflow calls a SOAP/XML gateway. Each subflow normalises its response to the canonical account schema before returning to the fan-in node.</p>
+            </li>
+            <li>
+              <h4>Per-branch timeout configuration</h4>
+              <p>Wrap each branch&rsquo;s outbound call in an ACE <code>Timeout Control</code> flow with the per-system timeout value. When a timeout fires, the timeout flow propagates a structured error message to the fan-in node using the <code>Failure</code> terminal &mdash; not a Java exception. The fan-in node must be configured to accept failure messages as valid partial inputs.</p>
+            </li>
+            <li>
+              <h4>Fan-in aggregation</h4>
+              <p>Configure the <code>Fan-in</code> node to aggregate results as they arrive. Set the fan-in timeout to 2,400ms (the hard ceiling). Configure <code>Allow partial completion</code> to <code>true</code> &mdash; this is the flag that determines whether a timed-out or erroring branch causes the entire aggregation to fail or allows the available results to proceed. For Open Banking, partial is always the right choice.</p>
+            </li>
+            <li>
+              <h4>Response assembly (Compute node)</h4>
+              <p>A final <code>Compute</code> node iterates over the aggregated results, identifies which branches succeeded and which timed out or failed, and assembles the SAMA Open Banking JSON response. It appends a <code>partialData</code> flag and per-system <code>status</code> field when any branch did not return a full result &mdash; required by the SAMA spec for degraded responses.</p>
+            </li>
+          </ol>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>AccountAggregator.esql &mdash; ACE fan-in result assembly</span><span class="code-block__lang">esql</span></div>
+<pre><code><span class="tok-k">CREATE COMPUTE MODULE</span> AssembleAggregatedAccounts
+  <span class="tok-k">CREATE FUNCTION</span> Main() <span class="tok-k">RETURNS</span> BOOLEAN
+  <span class="tok-k">BEGIN</span>
+    <span class="tok-k">DECLARE</span> partial   <span class="tok-k">BOOLEAN</span>  FALSE;
+    <span class="tok-k">DECLARE</span> acctIndex <span class="tok-k">INTEGER</span> 1;
+    <span class="tok-k">DECLARE</span> branch    <span class="tok-k">REFERENCE TO</span> InputRoot.XMLNSC.FanInOutput.Branch[1];
+
+    <span class="tok-k">WHILE</span> LASTMOVE(branch) <span class="tok-k">DO</span>
+      <span class="tok-k">IF</span> branch.status = <span class="tok-s">'SUCCESS'</span> <span class="tok-k">THEN</span>
+        <span class="tok-c">-- Copy canonical account list from this branch into output</span>
+        <span class="tok-k">DECLARE</span> acct <span class="tok-k">REFERENCE TO</span> branch.CanonicalAccounts.Account[1];
+        <span class="tok-k">WHILE</span> LASTMOVE(acct) <span class="tok-k">DO</span>
+          <span class="tok-k">SET</span> OutputRoot.JSON.Data.accounts.Item[acctIndex] = acct;
+          <span class="tok-k">SET</span> acctIndex = acctIndex + 1;
+          <span class="tok-k">MOVE</span> acct NEXTSIBLING;
+        <span class="tok-k">END WHILE</span>;
+      <span class="tok-k">ELSEIF</span> branch.status = <span class="tok-s">'TIMEOUT'</span>
+          <span class="tok-k">OR</span> branch.status = <span class="tok-s">'ERROR'</span> <span class="tok-k">THEN</span>
+        <span class="tok-k">SET</span> partial = TRUE;
+        <span class="tok-c">-- Log the degraded system for the response metadata</span>
+        <span class="tok-k">SET</span> OutputRoot.JSON.Data.meta.degradedSystems[] = branch.systemCode;
+      <span class="tok-k">END IF</span>;
+      <span class="tok-k">MOVE</span> branch NEXTSIBLING;
+    <span class="tok-k">END WHILE</span>;
+
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.meta.partialData = partial;
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.meta.queryTimestamp =
+        CAST(CURRENT_TIMESTAMP <span class="tok-k">AS CHARACTER</span> FORMAT <span class="tok-s">'IU'</span>);
+
+    <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out1'</span>;
+    <span class="tok-k">RETURN</span> FALSE;
+  <span class="tok-k">END</span>;
+<span class="tok-k">END MODULE</span>;</code></pre>
+          </div>
+
+          <h2 id="spring-boot-impl">Spring Boot implementation</h2>
+          <p>When the aggregation layer is not built on IBM ACE &mdash; common for greenfield Open Banking gateway implementations on OpenShift &mdash; Spring Boot 3 with <code>CompletableFuture</code> and <code>VirtualThreads</code> (Java 21) is the idiomatic choice. The <code>CompletableFuture.allOf()</code> and <code>CompletableFuture.anyOf()</code> methods handle fan-out/fan-in; Resilience4j decorates each downstream call with its own circuit breaker and timeout policy.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>AccountAggregationService.java &mdash; virtual-thread scatter-gather</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-k">@Service</span>
+<span class="tok-k">public class</span> <span class="tok-t">AccountAggregationService</span> {
+
+    <span class="tok-k">private final</span> <span class="tok-t">ProductRegistryClient</span> registry;
+    <span class="tok-k">private final</span> <span class="tok-t">Map</span>&lt;<span class="tok-t">SystemCode</span>, <span class="tok-t">AccountSourceAdapter</span>&gt; adapters;
+    <span class="tok-k">private final</span> <span class="tok-t">AggregationCache</span> cache;
+
+    <span class="tok-k">public</span> <span class="tok-t">AggregatedAccountResponse</span> aggregate(<span class="tok-t">String</span> consentId, <span class="tok-t">String</span> customerId) {
+        <span class="tok-k">var</span> targets = registry.getProductSystems(customerId); <span class="tok-c">// e.g. [CBS, DIGITAL, CARD]</span>
+
+        <span class="tok-k">var</span> futures = targets.stream()
+            .map(system -&gt; fetchWithTimeout(system, customerId, consentId))
+            .toList();
+
+        <span class="tok-k">var</span> all = <span class="tok-t">CompletableFuture</span>.allOf(futures.toArray(<span class="tok-k">new</span> <span class="tok-t">CompletableFuture</span>[<span class="tok-n">0</span>]));
+
+        <span class="tok-k">try</span> {
+            all.get(<span class="tok-n">2_400</span>, <span class="tok-t">TimeUnit</span>.MILLISECONDS); <span class="tok-c">// hard ceiling</span>
+        } <span class="tok-k">catch</span> (<span class="tok-t">TimeoutException</span> e) {
+            all.cancel(<span class="tok-k">false</span>); <span class="tok-c">// cancel remaining; collect completed below</span>
+        } <span class="tok-k">catch</span> (<span class="tok-t">InterruptedException</span> | <span class="tok-t">ExecutionException</span> ignored) {}
+
+        <span class="tok-k">return</span> assembleResult(targets, futures);
+    }
+
+    <span class="tok-k">private</span> <span class="tok-t">CompletableFuture</span>&lt;<span class="tok-t">SystemResult</span>&gt; fetchWithTimeout(
+            <span class="tok-t">SystemCode</span> system, <span class="tok-t">String</span> customerId, <span class="tok-t">String</span> consentId) {
+
+        <span class="tok-k">return</span> <span class="tok-t">CompletableFuture</span>
+            .supplyAsync(() -&gt; adapters.get(system).fetchAccounts(customerId, consentId),
+                <span class="tok-t">Executors</span>.newVirtualThreadPerTaskExecutor())
+            .orTimeout(adapters.get(system).getTimeoutMs(), <span class="tok-t">TimeUnit</span>.MILLISECONDS)
+            .handle((result, ex) -&gt; ex == <span class="tok-k">null</span>
+                ? <span class="tok-k">new</span> <span class="tok-t">SystemResult</span>(system, result, <span class="tok-t">Status</span>.SUCCESS)
+                : <span class="tok-k">new</span> <span class="tok-t">SystemResult</span>(system, <span class="tok-k">null</span>,
+                    ex <span class="tok-k">instanceof</span> <span class="tok-t">TimeoutException</span> ? <span class="tok-t">Status</span>.TIMEOUT : <span class="tok-t">Status</span>.ERROR));
+    }
+
+    <span class="tok-k">private</span> <span class="tok-t">AggregatedAccountResponse</span> assembleResult(
+            <span class="tok-t">List</span>&lt;<span class="tok-t">SystemCode</span>&gt; targets,
+            <span class="tok-t">List</span>&lt;<span class="tok-t">CompletableFuture</span>&lt;<span class="tok-t">SystemResult</span>&gt;&gt; futures) {
+
+        <span class="tok-k">var</span> results = futures.stream()
+            .map(f -&gt; f.isDone() &amp;&amp; !f.isCancelled() &amp;&amp; !f.isCompletedExceptionally()
+                ? f.join()
+                : <span class="tok-k">new</span> <span class="tok-t">SystemResult</span>(null, <span class="tok-k">null</span>, <span class="tok-t">Status</span>.TIMEOUT))
+            .toList();
+
+        <span class="tok-k">var</span> accounts = results.stream()
+            .filter(r -&gt; r.status() == <span class="tok-t">Status</span>.SUCCESS)
+            .flatMap(r -&gt; r.accounts().stream())
+            .toList();
+
+        <span class="tok-k">var</span> degraded = results.stream()
+            .filter(r -&gt; r.status() != <span class="tok-t">Status</span>.SUCCESS)
+            .map(r -&gt; r.system().name())
+            .toList();
+
+        <span class="tok-k">return new</span> <span class="tok-t">AggregatedAccountResponse</span>(accounts, !degraded.isEmpty(), degraded);
+    }
+}</code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Virtual threads change the capacity model</div>
+            <p>Java 21 virtual threads (Project Loom) eliminate the thread-per-downstream scalability ceiling that made scatter-gather expensive on platform thread pools. Each downstream call runs on its own virtual thread; blocking I/O parks the virtual thread and yields the carrier thread for other work. At 100 concurrent Open Banking sessions each fanning out to 3 systems, you need 300 concurrent I/O calls &mdash; trivial for virtual threads, expensive for a fixed platform thread pool of 200. If you are building the aggregation layer on Java 17 or earlier, use a dedicated <code>ForkJoinPool</code> with a parallelism ceiling matched to your downstream concurrency limits.</p>
+          </div>
+
+          <h2 id="partial-results">Partial result handling</h2>
+          <p>The partial result decision is the hardest business call in a scatter-gather implementation, and it must be made explicitly &mdash; not defaulted by the engineering team. The choices are:</p>
+          <ul>
+            <li><strong>Return available + flag degraded:</strong> The response includes accounts from the systems that responded successfully. A <code>meta.partialData: true</code> flag and a <code>meta.degradedSystems</code> array tell the TPP which systems did not respond. This is what the SAMA Open Banking spec permits during a declared degraded period.</li>
+            <li><strong>Fail the entire request:</strong> If any mandatory system (e.g. the primary CBS) does not respond, return a 503 with a Retry-After header. Use this for systems that hold accounts the customer is likely querying specifically &mdash; not a justified default for the investment platform if only 20% of customers have investment accounts.</li>
+            <li><strong>Serve from stale cache:</strong> If a fresh partial result is unacceptable but a stale complete result from a prior successful query is acceptable, serve the cache entry and flag its age. This requires a cache TTL policy and a consent-aware cache key (covered in the next section).</li>
+          </ul>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Never silently omit accounts</div>
+            <p>The worst partial-result behaviour is returning an account list that appears complete but is missing accounts from a timed-out system &mdash; without any flag to signal the omission. A TPP that shows a customer their &ldquo;balance&rdquo; from an incomplete response without indicating the data is partial creates a consumer harm risk and a potential SAMA compliance issue (the SAMA Open Banking spec explicitly requires banks to indicate when a response is incomplete). Always surface the partial flag; never return a 200 OK response with silently missing data.</p>
+          </div>
+
+          <h2 id="circuit-breaker-integration">Circuit breaker integration</h2>
+          <p>Each downstream in the scatter-gather must be independently circuit-broken. If the legacy CBS is in an open circuit state, the fan-out should not even attempt to call it &mdash; it should immediately return a <code>CIRCUIT_OPEN</code> status for that branch and let the aggregation proceed without waiting for the CBS timeout to expire. This reduces response time for all CBS-circuit-open periods from 2,250ms (the CBS per-call timeout) to &lt;5ms (the circuit breaker check).</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>application.yml &mdash; Resilience4j circuit breakers per downstream</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">resilience4j</span>:
+  <span class="tok-k">circuitbreaker</span>:
+    <span class="tok-k">instances</span>:
+      <span class="tok-k">cbs-adapter</span>:
+        <span class="tok-k">slidingWindowSize</span>: <span class="tok-n">20</span>
+        <span class="tok-k">failureRateThreshold</span>: <span class="tok-n">40</span>         <span class="tok-c"># CBS is unreliable: open at 40%</span>
+        <span class="tok-k">slowCallRateThreshold</span>: <span class="tok-n">60</span>
+        <span class="tok-k">slowCallDurationThreshold</span>: <span class="tok-s">"1800ms"</span>
+        <span class="tok-k">waitDurationInOpenState</span>: <span class="tok-s">"30s"</span>
+        <span class="tok-k">permittedCallsInHalfOpenState</span>: <span class="tok-n">3</span>
+        <span class="tok-k">automaticTransitionFromOpenToHalfOpenEnabled</span>: <span class="tok-n">true</span>
+
+      <span class="tok-k">digital-core-adapter</span>:
+        <span class="tok-k">slidingWindowSize</span>: <span class="tok-n">20</span>
+        <span class="tok-k">failureRateThreshold</span>: <span class="tok-n">60</span>         <span class="tok-c"># digital core is reliable: open at 60%</span>
+        <span class="tok-k">slowCallDurationThreshold</span>: <span class="tok-s">"300ms"</span>
+        <span class="tok-k">waitDurationInOpenState</span>: <span class="tok-s">"15s"</span>
+        <span class="tok-k">permittedCallsInHalfOpenState</span>: <span class="tok-n">5</span>
+        <span class="tok-k">automaticTransitionFromOpenToHalfOpenEnabled</span>: <span class="tok-n">true</span>
+
+      <span class="tok-k">card-adapter</span>:
+        <span class="tok-k">slidingWindowSize</span>: <span class="tok-n">20</span>
+        <span class="tok-k">failureRateThreshold</span>: <span class="tok-n">50</span>
+        <span class="tok-k">slowCallDurationThreshold</span>: <span class="tok-s">"500ms"</span>
+        <span class="tok-k">waitDurationInOpenState</span>: <span class="tok-s">"20s"</span>
+        <span class="tok-k">permittedCallsInHalfOpenState</span>: <span class="tok-n">3</span>
+        <span class="tok-k">automaticTransitionFromOpenToHalfOpenEnabled</span>: <span class="tok-n">true</span>
+
+  <span class="tok-k">timelimiter</span>:
+    <span class="tok-k">instances</span>:
+      <span class="tok-k">cbs-adapter</span>:
+        <span class="tok-k">timeoutDuration</span>: <span class="tok-s">"2250ms"</span>  <span class="tok-c"># p99 1500ms + 50% margin</span>
+      <span class="tok-k">digital-core-adapter</span>:
+        <span class="tok-k">timeoutDuration</span>: <span class="tok-s">"300ms"</span>   <span class="tok-c"># p99 200ms + 50% margin</span>
+      <span class="tok-k">card-adapter</span>:
+        <span class="tok-k">timeoutDuration</span>: <span class="tok-s">"750ms"</span>   <span class="tok-c"># p99 500ms + 50% margin</span></code></pre>
+          </div>
+
+          <h2 id="caching">Response caching</h2>
+          <p>Open Banking account queries have a characteristic usage pattern: a customer opens their finance app, grants consent, and the TPP calls the account listing once per session startup, then periodically in the background. The same aggregated result is requested multiple times in a short window. Caching the assembled result &mdash; not individual downstream results &mdash; at a 60-second TTL is the highest-leverage performance optimisation available, reducing the fan-out call rate by 70&ndash;90% in a typical Open Banking session.</p>
+          <p>Cache key design for Open Banking must incorporate the consent ID, not just the customer ID. A single customer may have multiple active consents from different TPPs, each with a different account scope. The cache key must be <code>consent:{consentId}:accounts</code>. The TTL must be bounded by the consent expiry &mdash; a consent expiring in 30 seconds must not be served from a 60-second-old cache entry that pre-dates the expiry.</p>
+          <p>Partial results should be cached with a flag and a shorter TTL. If the CBS was unreachable during the aggregation and you cached a partial result, the next request should re-attempt the fan-out sooner than it would for a complete result. Use a 15-second TTL for partial results versus 60 seconds for complete.</p>
+
+          <h2 id="sama-compliance">SAMA Open Banking compliance</h2>
+          <p>The SAMA Open Banking Technical Specification v2.0 imposes several requirements on aggregation layer behaviour that are not obvious from reading the API spec alone:</p>
+          <ul>
+            <li><strong>Consent scope enforcement at the aggregator:</strong> The aggregation layer must enforce the account scope in the consent grant. If a TPP&rsquo;s consent covers only current accounts, the aggregator must not fan out to the card processor even if the customer has a card. This requires the product registry lookup to intersect the customer&rsquo;s product holding with the consented account types before constructing the target list.</li>
+            <li><strong>Response staleness disclosure:</strong> When serving a cached result, the response must include a <code>meta.dataRetrievedAt</code> field with the timestamp of the last live fetch. The SAMA spec does not mandate a maximum staleness, but regulators interpret ambiguous cases against the bank; keep staleness within the cache TTL and surface it in the response.</li>
+            <li><strong>Audit log per aggregation call:</strong> Each fan-out must be logged with: the consent ID, customer pseudonym, target system list, per-system status and latency, and whether the response was partial. This log is the evidence trail for a SAMA inspection of an Open Banking incident.</li>
+            <li><strong>Rate limit enforcement:</strong> The SAMA spec sets a maximum of 4 account-info requests per consent per hour from the same TPP. The aggregation layer must enforce this limit before fanning out &mdash; not just at the API gateway. Gateway rate-limit counters can be bypassed by replay attacks; the aggregation layer&rsquo;s enforcement is the backstop.</li>
+          </ul>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Account scope in SAMA OB v2 uses resource IDs, not types</div>
+            <p>SAMA Open Banking v2 consent grants reference specific account <em>resource IDs</em> (the bank-assigned account identifiers) rather than account types. This means your product registry lookup must map resource IDs to systems &mdash; not types to systems &mdash; and your aggregation must only fan out to systems that hold at least one resource ID from the consent grant. A consent for account <code>SA8450000012345678</code> (a CBS current account) must not trigger a card-processor call, even though the customer has cards. The registry design must support per-resource-ID system mapping, not just per-product-type.</p>
+          </div>
+
+          <h2 id="performance">Performance &amp; scalability</h2>
+          <p>Scatter-gather is I/O-bound, not CPU-bound. The scalability ceiling is the number of concurrent downstream connections you can hold open, which is a function of connection pool sizes, the downstream systems&rsquo; own concurrency limits, and the number of concurrent Open Banking sessions.</p>
+          <p>At 500 concurrent Open Banking sessions fanning out to 3 systems each, the aggregation layer needs to sustain 1,500 concurrent outbound connections. Each downstream must have a connection pool sized to absorb that load without queueing. For the legacy CBS on a mainframe, 1,500 concurrent CICS connections is likely above its capacity &mdash; this is the most common scalability limit discovered during load testing. The remediation is to introduce a request queue at the CBS adapter with a maximum queue depth, circuit break when the queue fills, and serve partial results from the other two systems. The CBS adapter becomes the pacing element for the entire aggregation; size its connection pool and queue depth in coordination with the mainframe team.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Key sizing parameter</th>
+                <th>Typical value for 500 concurrent sessions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CBS adapter connection pool</td>
+                <td>Max concurrent CICS connections</td>
+                <td>150&ndash;200 (mainframe-limited; queue remainder)</td>
+              </tr>
+              <tr>
+                <td>Digital core adapter</td>
+                <td>HTTP connection pool per pod</td>
+                <td>400 (REST API; modern platform)</td>
+              </tr>
+              <tr>
+                <td>Card adapter connection pool</td>
+                <td>SOAP/HTTP connections</td>
+                <td>250 (legacy constraint from card processor)</td>
+              </tr>
+              <tr>
+                <td>Redis cache</td>
+                <td>Operations per second</td>
+                <td>5,000 reads + 1,000 writes (well within Redis single-node capacity)</td>
+              </tr>
+              <tr>
+                <td>Spring Boot pods (OpenShift)</td>
+                <td>Pods at peak</td>
+                <td>4&ndash;6 pods at 100 sessions/pod HPA target</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="production-reality">What production tells you</h2>
+          <p>Three things appear in every scatter-gather production deployment at a KSA bank that engineering teams do not predict during design.</p>
+
+          <p><strong>The slowest downstream defines your p99, not your average.</strong> If the CBS takes 1,800ms p99 on working days during peak hours, your scatter-gather response time p99 is 1,800ms regardless of how fast the other three systems are. Optimising the digital core from 100ms to 80ms makes no measurable difference to the customer. The only optimisation that matters for latency is reducing CBS response time &mdash; which usually requires CBS-side caching or indexing changes, not changes to the aggregation layer.</p>
+
+          <p><strong>Consent-scope enforcement bugs produce phantom data.</strong> The most common production incident after go-live is a TPP receiving account data outside the consented scope &mdash; not because of a security breach, but because the product registry lookup was incorrect and fanned out to a system that holds an account the consent does not cover. The result is a customer complaint that the finance app shows an account they did not expect. This is a consent enforcement bug, not a data breach, but it triggers a SAMA incident report. Test consent scope enforcement explicitly with accounts that partially overlap the consented scope; do not test only with fully-consented customers.</p>
+
+          <p><strong>The partial-result flag is the most useful operational signal you have.</strong> When the CBS circuit breaker opens during a maintenance window, the partial-result flag in your logs tells you exactly which sessions were affected and which TPPs need to be notified. If you did not build the partial flag into your audit log at launch, you will reconstruct the blast radius of every CBS incident from raw logs, manually, while the incident is open. Build the flag; log it; alert on a threshold (e.g. more than 15% of sessions returning partial in any 5-minute window).</p>
+
+          <nav class="article-nav">
+            <a href="../integration-patterns.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Integration Design Patterns</div>
+            </a>
+            <a href="circuit-breaker-and-bulkhead.html" class="article-nav__next">
+              <div class="article-nav__label">Related article</div>
+              <div class="article-nav__title">Circuit Breaker &amp; Bulkhead: Resilience4j for Financial Integration &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

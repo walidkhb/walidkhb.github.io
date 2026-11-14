@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scatter-Gather Is Not a Technical Pattern: It&rsquo;s a Service Agreement with the Customer &mdash; Waleed Albadawi</title>
+  <meta name="description" content="The scatter-gather aggregation decision for SAMA Open Banking is a business commitment, not an engineering choice. The VP has to decide what a partial result means to the customer before the team writes a line of code.">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/scatter-gather-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Scatter-Gather Decision &mdash; Open Banking Aggregation &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Scatter-Gather Is Not a Technical Pattern: It&rsquo;s a Service Agreement with the Customer &mdash; Waleed Albadawi">
+  <meta property="og:description" content="The partial-result decision in Open Banking aggregation is a business liability call, not an engineering default. What the VP must decide before the team starts building.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/scatter-gather-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Scatter-Gather Is Not a Technical Pattern: It&rsquo;s a Service Agreement with the Customer">
+  <meta name="twitter:description" content="Partial-result handling in Open Banking aggregation is a business commitment, not a default configuration. The VP decision that determines what the customer sees when a backend is slow.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Scatter-Gather Is Not a Technical Pattern: It's a Service Agreement with the Customer",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-14",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/blog/scatter-gather-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights &mdash; Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Initiatives</a>
+        <a href="../expertise.html">Expertise</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../blog.html" class="active">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span>Enterprise Integration</div>
+      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; November 14, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
+      <h1 style="max-width:820px;">Scatter-Gather Is Not a Technical Pattern: It&rsquo;s a Service Agreement with the Customer</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>When SAMA Open Banking Phase 2 compels a bank to expose a unified account view to TPPs, the engineering team reaches for the scatter-gather pattern and starts designing fan-out flows. This is correct. What the engineering team will not resolve on its own &mdash; and what the VP of Enterprise Integration must decide before the design is finished &mdash; is what happens when the legacy core banking system does not respond within the wall-clock budget. That answer is not a configuration value. It is a service agreement with the customer.</p>
+
+        <p>A KSA bank&rsquo;s account universe typically spans three or four systems: a legacy CBS that has held current accounts for a decade, a digital core that runs the newer flexi-save and digital wallet products, a card processor for credit and prepaid products, and possibly an investment platform for affluent customers. SAMA requires these to be surfaced in a single API response to the TPP within 3,000 milliseconds. The systems cannot be queried sequentially &mdash; the aggregate latency would exceed the SLA. They must be queried in parallel, their results merged, and the merged response returned before the slowest system would have finished if called alone.</p>
+
+        <blockquote>
+          <p>The scatter-gather pattern is not a question of whether to call systems in parallel. It is a question of what you tell the customer when one of those systems is slow.</p>
+        </blockquote>
+
+        <p class="article-section">The partial-result decision</p>
+
+        <p>When the legacy CBS takes 2,400 milliseconds to respond &mdash; which is a p99 outcome, not a failure &mdash; the aggregation layer faces a choice. It can wait for the CBS and return a complete response that blows the SLA. It can time out the CBS call and return a partial response that omits the customer&rsquo;s current accounts. Or it can serve a cached result from an earlier successful aggregation and flag its age.</p>
+
+        <p>Each choice is defensible in a specific context. None of them should be chosen by the engineering team at implementation time, because each carries a different business liability. Returning a partial response that omits current accounts means a customer using a budgeting TPP sees an incomplete picture of their finances &mdash; they may make a spending decision based on a balance that does not include their largest account. Serving a stale cache means the account balance shown to the TPP may be minutes old, during a period when the customer was making transactions. Waiting and blowing the SLA means SAMA records a breach in the participant performance dashboard.</p>
+
+        <p>The VP&rsquo;s decision is which of these is least harmful for each category of downstream. For the legacy CBS, most banks conclude that partial with a flag is preferable to stale &mdash; and that the SAMA spec&rsquo;s explicit support for partial responses with a <code>partialData</code> flag makes this the regulator-approved path. For the investment platform, stale-cache is acceptable because investment balances move slowly and a 60-second-old balance rarely creates a material decision error. These distinctions must be documented and signed off, not inferred from the default configuration of a circuit breaker library.</p>
+
+        <p class="article-section">The consent-scope trap</p>
+
+        <p>SAMA Open Banking v2 consent grants reference specific account resource IDs, not account types. A consent for account <code>SA8450000012345678</code> does not authorise the TPP to see the customer&rsquo;s credit card balance, even if the card is from the same bank. The scatter-gather layer must enforce this scope &mdash; it must only fan out to the systems that hold the consented accounts. This is not an engineering default; it requires a product registry that maps account resource IDs to systems, maintained in real time, consulted at the start of every aggregation call.</p>
+
+        <p>The business problem is that the product registry is owned by neither the integration team nor the digital banking team &mdash; it sits across a boundary. Getting it built and kept current requires a programme decision and a data ownership agreement between the integration platform and the product systems. Without VP sponsorship, this registry is frequently the item that blocks go-live: the aggregation layer is complete, the SAMA certification is pending, and the product registry is still a spreadsheet in someone&rsquo;s email.</p>
+
+        <p class="article-section">What SAMA will ask in an examination</p>
+
+        <p>SAMA&rsquo;s Open Banking supervision looks for three things in a bank&rsquo;s aggregation implementation. The first is consent traceability: for any account data returned through the Open Banking API, the bank must be able to demonstrate which consent authorised it, what scope that consent had, and whether the response stayed within that scope. The second is incident response: when a system is unavailable and the bank returns a partial response, the bank must have notified the relevant TPPs of the degraded state within the timeframe the spec requires. The third is rate-limit enforcement: the SAMA spec allows TPPs to call account APIs up to four times per hour per consent; the bank must enforce this and log each call against the consent.</p>
+
+        <p>None of these are observable purely from application logs. They require a structured audit trail that the aggregation layer writes on every call: consent ID, customer pseudonym, target system list, per-system status, response completeness flag, and TPP identifier. Building this audit trail is engineering work, but deciding what it must contain is a governance decision. The VP must specify the audit requirements before the team builds the logging infrastructure &mdash; retrofitting a compliant audit trail after go-live is a full sprint of work, usually done under time pressure after the first SAMA compliance query.</p>
+
+        <p class="article-section">What the team needs to ship it</p>
+
+        <p>The engineering team building the scatter-gather aggregation layer needs three things from leadership that cannot be delivered at the technical level. The first is a documented partial-result policy, specifying what happens when each downstream system is unavailable or slow &mdash; partial flag, stale cache, or synchronous wait &mdash; for each system in scope. The second is an agreed product registry design and owner, with a confirmed feed from the product systems that keeps it current; without this the aggregation layer cannot enforce consent scope correctly. The third is a defined audit schema &mdash; the fields that must be logged on every call &mdash; reviewed by the compliance team before implementation, not after.</p>
+
+        <p>The team also needs a realistic test dataset that includes customers with accounts on some systems but not others, accounts at or near the consented scope boundary, and concurrent sessions at the peak volume expected during SAMA certification load testing. Open Banking certification failures that occur at load test time, six weeks before the go-live date, are almost always caused by CBS connection pool exhaustion under concurrent scatter-gather sessions &mdash; a capacity limit the CBS mainframe team could have sized correctly if the integration team had shared the concurrent-session projections two months earlier.</p>
+
+        <p>The technical depth behind the implementation &mdash; IBM ACE fan-out/fan-in node configuration, Spring Boot virtual-thread pattern, per-downstream circuit breaker tuning, and the caching strategy that keeps p99 response time under 300ms for warm sessions &mdash; is covered in the <a href="../lab/integration-patterns/scatter-gather-aggregation.html" style="color:var(--color-accent);">Scatter-Gather: Multi-Source Account Aggregation for SAMA Open Banking lab article</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
