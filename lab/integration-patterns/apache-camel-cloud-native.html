@@ -432,13 +432,13 @@
               <tr>
                 <td><strong>Component catalog</strong></td>
                 <td>300+ components. Community-maintained. Quality varies.</td>
-                <td>~100 certified connectors. IBM-maintained, tested for z/OS, MQ.</td>
+                <td>~100 certified connectors. IBM-maintained, tested for IBM MQ and Db2.</td>
                 <td>500+ connectors. Many SaaS-first. Support quality inconsistent.</td>
               </tr>
               <tr>
                 <td><strong>SOAP / legacy</strong></td>
                 <td>camel-cxf works on JVM. Not native-compilable.</td>
-                <td>First-class: SOAP, COBOL COMMAREA, MQ, z/OS adapters certified.</td>
+                <td>First-class: SOAP, MQ and fixed-length record adapters certified.</td>
                 <td>Functional but not primary focus. Third-party connector risk.</td>
               </tr>
               <tr>
@@ -468,7 +468,7 @@
             </tbody>
           </table>
 
-          <p>The practical decision rule: <strong>keep IBM ACE for integration with legacy IBM stack</strong> (CICS, MQ, Db2, COBOL data formats). IBM owns those adapters and certifies them against every ACE release. <strong>Use Camel K or Camel Quarkus for cloud-native event-driven integrations</strong> between modern services &mdash; REST, Kafka, Postgres, HTTP &mdash; where ACE&rsquo;s complexity and licensing cost are not justified by the integration&rsquo;s simplicity.</p>
+          <p>The practical decision rule: <strong>keep IBM ACE for integration with legacy IBM stack</strong> (MQ, Db2, fixed-length record formats). IBM owns those adapters and certifies them against every ACE release. <strong>Use Camel K or Camel Quarkus for cloud-native event-driven integrations</strong> between modern services &mdash; REST, Kafka, Postgres, HTTP &mdash; where ACE&rsquo;s complexity and licensing cost are not justified by the integration&rsquo;s simplicity.</p>
 
           <h2 id="observability">Observability</h2>
           <p>Camel 4.x ships OpenTelemetry tracing out of the box via <code>camel-opentelemetry</code>. Each exchange generates a span with route ID, exchange ID, component name, and elapsed time. Propagate the trace context into downstream Kafka headers and HTTP headers so that Jaeger or Tempo can reconstruct cross-service call chains.</p>

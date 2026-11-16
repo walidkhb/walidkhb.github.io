@@ -102,7 +102,7 @@
 
           <h2 id="overview">Overview</h2>
           <p>Distributed systems hold the same fact in multiple places: a payment lives in the core ledger, a search index, a fraud feature store, and an analytics warehouse. Keeping these in sync is the single most consequential distributed-systems problem in financial services. Get it wrong and the bank shows different balances on the app vs the statement &mdash; and you find out in a complaint.</p>
-          <p>The robust pattern is <strong>change data capture (CDC)</strong>: read the transaction log of the source database, ship the changes through Kafka, apply them downstream. <strong>Debezium</strong> is the de-facto open-source implementation; for IBM Db2 and z/OS, IBM&rsquo;s InfoSphere Data Replication (IIDR) plays the same role.</p>
+          <p>The robust pattern is <strong>change data capture (CDC)</strong>: read the transaction log of the source database, ship the changes through Kafka, apply them downstream. <strong>Debezium</strong> is the de-facto open-source implementation; for IBM Db2, IBM&rsquo;s InfoSphere Data Replication (IIDR) plays the same role.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Single source of truth, single write path</div>

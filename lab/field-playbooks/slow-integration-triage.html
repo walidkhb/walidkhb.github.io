@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Field Playbooks &mdash; Slow Integration Triage &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A field method for slow APIs and flows: time every hop of one request, read the shape of the slowness, check the eight usual suspects in order of cost, and lock the fix in with a latency budget.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Field Playbooks &mdash; Slow Integration Triage &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="A field method for slow APIs and flows: time every hop of one request, read the shape of the slowness, check the eight usual suspects in order of cost, and lock the fix in with a latency budget.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/field-playbooks/slow-integration-triage.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Slow Integration Triage &mdash; Lab">
+  <meta name="twitter:description" content="The API is slow is a complaint, not a measurement.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/field-playbooks/slow-integration-triage.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Where Did the Time Go? A Triage Method for Slow Integrations",
+    "description": "A field method for slow APIs and flows: time every hop of one request, read the shape of the slowness, check the eight usual suspects in order of cost, and lock the fix in with a latency budget.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-16",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/field-playbooks/slow-integration-triage.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Field Playbooks &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/field-playbooks.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "Field Playbooks"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../field-playbooks.html">Field Playbooks</a><span>/</span>Slow Integration Triage</div>
+          <span class="overline">Lab Playbook</span>
+          <h1>Where Did the Time Go? A Triage Method for Slow Integrations</h1>
+          <p class="lead">&ldquo;The API is slow&rdquo; is a complaint, not a measurement. This is a method for putting numbers on every hop of one real request, the causes that explain most slow integrations, and the order in which to fix them.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#problem">The problem</a></li>
+            <li><a href="#measure">Time every hop of the same request</a></li>
+            <li><a href="#shape">Read the shape of the slowness</a></li>
+            <li><a href="#suspects">Check the usual suspects</a></li>
+            <li><a href="#fix-order">Fix in order of cost</a></li>
+            <li><a href="#keep">Keep it fixed</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Applies to:</strong> Correlation IDs &middot; Structured logs &middot; Connection pools</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers &amp; team leads</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~8 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 16, 2026</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="problem">The problem</h2>
+          <p>&ldquo;The API is slow&rdquo; arrives as a complaint, not a measurement. The channel team blames integration. Integration blames the backend. The backend team shows a dashboard where everything is green. Days pass in meetings.</p>
+          <p>The argument ends when someone puts numbers on each hop of one real request. This playbook is a method for doing that in hours, and a list of the causes that account for most slow integrations.</p>
+
+          <h2 id="measure">Step 1: Time every hop of the same request</h2>
+          <p>You need one identifier that travels with the request, and one log line per hop that records how long that hop took.</p>
+          <ul>
+            <li><strong>One correlation ID.</strong> Created at the edge, forwarded in a header on every call, written in every log line. If a hop drops it, fix that first.</li>
+            <li><strong>Two timestamps per hop.</strong> When the request arrived and when the response left. The difference is the total time. Subtract the time spent waiting on the next hop, and the remainder is the time that hop spent on its own work.</li>
+            <li><strong>Queue time, separately.</strong> Record how long the request waited for a thread or a connection before work began. This number is usually missing, and it is usually the answer.</li>
+          </ul>
+          <div class="code-block">
+            <div class="code-block__header"><span>One structured log line per hop (illustrative)</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-s">"correlationId"</span>: <span class="tok-s">"c1b7e0f2"</span>,
+  <span class="tok-s">"hop"</span>: <span class="tok-s">"integration"</span>,
+  <span class="tok-s">"operation"</span>: <span class="tok-s">"getAccountSummary"</span>,
+  <span class="tok-s">"totalMs"</span>: <span class="tok-n">1840</span>,
+  <span class="tok-s">"waitForConnectionMs"</span>: <span class="tok-n">1310</span>,
+  <span class="tok-s">"downstreamMs"</span>: <span class="tok-n">420</span>,
+  <span class="tok-s">"ownWorkMs"</span>: <span class="tok-n">110</span>,
+  <span class="tok-s">"requestBytes"</span>: <span class="tok-n">512</span>,
+  <span class="tok-s">"responseBytes"</span>: <span class="tok-n">48210</span>
+}</code></pre>
+          </div>
+          <p>In this example the backend answered in 420 ms. The request spent 1,310 ms waiting for a free connection. The backend dashboard is green and the user still waits two seconds.</p>
+
+          <h2 id="shape">Step 2: Read the shape of the slowness</h2>
+          <p>Look at the distribution, not the average. The pattern tells you where to look.</p>
+          <table>
+            <thead>
+              <tr><th>What you see</th><th>Likely cause</th><th>First check</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Every request is slow, even at low load</strong></td><td>Work on the path: serial calls, large payloads, a slow query.</td><td>Per-hop own-work time for a single request.</td></tr>
+              <tr><td><strong>Fast when quiet, slow when busy</strong></td><td>Saturation: a pool, a thread limit or a queue is full.</td><td>Wait-for-connection time and pool usage at peak.</td></tr>
+              <tr><td><strong>Mostly fast, a few very slow</strong></td><td>Timeouts and retries, pauses, cold connections.</td><td>The slowest 1% of requests, one by one.</td></tr>
+              <tr><td><strong>Slow in steps (1 s, 3 s, 5 s)</strong></td><td>A fixed timeout or retry delay somewhere.</td><td>Search configuration for those exact values.</td></tr>
+              <tr><td><strong>Slow after a quiet period</strong></td><td>Connections closed by an idle timeout and rebuilt.</td><td>Connection setup counts after idle time.</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="suspects">Step 3: Check the usual suspects</h2>
+          <p>These account for most of the cases. Check them in this order, because the first ones are the cheapest to confirm.</p>
+          <ol class="step-list">
+            <li>
+              <h4>Connection pool too small, or connections not returned</h4>
+              <p>Requests queue for a connection while the backend sits idle. Look for wait time before the call starts. A pool that never shrinks back usually means a code path that fails to release.</p>
+            </li>
+            <li>
+              <h4>A new connection for every call</h4>
+              <p>Each call pays for a network handshake and a security handshake before any work. Reuse connections. On an internal call this alone often removes most of the latency.</p>
+            </li>
+            <li>
+              <h4>Calls made one after another that could run together</h4>
+              <p>Three independent lookups at 300 ms each take 900 ms in sequence and about 300 ms in parallel.</p>
+            </li>
+            <li>
+              <h4>The same reference data fetched on every request</h4>
+              <p>Branch lists, product codes and currency tables rarely change. Cache them with a short expiry.</p>
+            </li>
+            <li>
+              <h4>Payloads far larger than the consumer needs</h4>
+              <p>A response of several hundred fields, parsed and transformed in full so that the channel can show five. Trim at the source, or add a field selection.</p>
+            </li>
+            <li>
+              <h4>Synchronous logging of full payloads</h4>
+              <p>Writing every request and response to disk inside the request path. Log asynchronously, and log sizes and identifiers by default, not bodies.</p>
+            </li>
+            <li>
+              <h4>Hidden retries</h4>
+              <p>A client library that silently retries turns one slow call into three. Look for attempt counts above one.</p>
+            </li>
+            <li>
+              <h4>Name resolution and certificate checks on each call</h4>
+              <p>Lookups that should be cached and are not. They show up as a steady extra delay on the first call of each connection.</p>
+            </li>
+          </ol>
+
+          <h2 id="fix-order">Step 4: Fix in order of cost</h2>
+          <table>
+            <thead>
+              <tr><th>Fix</th><th>Effort</th><th>Typical effect</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Reuse connections, size the pool</strong></td><td>Configuration</td><td>Large, immediately.</td></tr>
+              <tr><td><strong>Align timeouts, remove hidden retries</strong></td><td>Configuration</td><td>Removes the slowest outliers.</td></tr>
+              <tr><td><strong>Cache reference data</strong></td><td>Small change</td><td>Removes whole calls.</td></tr>
+              <tr><td><strong>Parallel calls</strong></td><td>Flow change</td><td>Cuts path time to the slowest branch.</td></tr>
+              <tr><td><strong>Smaller payloads</strong></td><td>Contract change</td><td>Steady gain, needs consumer agreement.</td></tr>
+              <tr><td><strong>More capacity</strong></td><td>Cost</td><td>Last. It hides the cause and it returns.</td></tr>
+            </tbody>
+          </table>
+          <div class="callout callout--warn">
+            <div class="callout__title">Change one thing, then measure again</div>
+            <p>Three fixes applied together leave nobody able to say which one worked. Keep the before-and-after numbers for each change. They are the evidence for the next budget conversation.</p>
+          </div>
+
+          <h2 id="keep">Step 5: Keep it fixed</h2>
+          <ul>
+            <li><strong>Give each hop a latency budget.</strong> Write it in the interface agreement. A hop that exceeds its budget owns the problem.</li>
+            <li><strong>Alert on the slowest 1%, not the average.</strong> Averages stay calm while a share of users waits ten seconds.</li>
+            <li><strong>Put pool usage and wait time on the dashboard.</strong> Saturation shows there before users notice.</li>
+            <li><strong>Run a load test in the pipeline</strong> for the few operations that carry most of the traffic, and fail the build if the budget is broken.</li>
+          </ul>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+          <ul>
+            <li><strong>Trusting each team&rsquo;s own dashboard.</strong> Each one measures from inside its own system. The waiting happens in between.</li>
+            <li><strong>Testing with one user.</strong> Saturation problems do not exist at a load of one.</li>
+            <li><strong>A test environment that is nothing like production.</strong> Smaller pools, no security handshake, empty tables. Measure in production with real requests where you can.</li>
+            <li><strong>Raising timeouts to make errors disappear.</strong> The errors become slow successes, and threads stay busy for longer. Saturation gets worse.</li>
+          </ul>
+
+          <h2 id="checklist">Checklist</h2>
+          <ol class="step-list">
+            <li>
+              <h4>Confirm the correlation ID reaches every hop</h4>
+              <p>Pick one slow request and find it in every log.</p>
+            </li>
+            <li>
+              <h4>Build the per-hop table for that request</h4>
+              <p>Total, wait, downstream and own work for each hop.</p>
+            </li>
+            <li>
+              <h4>Match the pattern to the table in step 2</h4>
+              <p>Decide whether you are looking at work, saturation or outliers.</p>
+            </li>
+            <li>
+              <h4>Walk the suspects in order and fix the cheapest first</h4>
+              <p>One change at a time, measured.</p>
+            </li>
+            <li>
+              <h4>Record the budget per hop and alert on it</h4>
+              <p>So the next slowdown is found by an alert, not a complaint.</p>
+            </li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="timeouts-and-unknown-outcomes.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Timeouts &amp; Unknown Outcomes</div>
+            </a>
+            <a href="onboarding-consumers-in-days.html" class="article-nav__next">
+              <div class="article-nav__label">Next &rarr;</div>
+              <div class="article-nav__title">Onboarding in Days</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2026 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

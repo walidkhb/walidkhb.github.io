@@ -6,7 +6,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Distributed Caching: Cache Invalidation via CDC &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Using Debezium and Kafka to drive cache invalidation from database change events &mdash; the only pattern that survives DBA-level updates the application never sees, with production patterns for IBM DB2 on z/OS and Redis 7.2.">
+  <meta name="description" content="Using Debezium and Kafka to drive cache invalidation from database change events &mdash; the only pattern that survives DBA-level updates the application never sees, with production patterns for IBM DB2 and Redis 7.2.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Distributed Caching: Cache Invalidation via CDC &mdash; Lab">
   <meta property="og:description" content="Debezium 2.7 + Kafka 3.7 + Redis 7.2: driving cache invalidation from database change events for regulated financial services.">
@@ -120,7 +120,7 @@
         <article class="lab-article__body">
 
           <div class="article-meta">
-            <span class="article-meta__item"><strong>Stack:</strong> Debezium 2.7 / Kafka 3.7 / Redis 7.2 / IBM DB2 for z/OS</span>
+            <span class="article-meta__item"><strong>Stack:</strong> Debezium 2.7 / Kafka 3.7 / Redis 7.2 / IBM DB2</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
             <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
@@ -131,7 +131,7 @@
           <p>Cache invalidation is the hardest problem in distributed systems because the database is the source of truth and the cache is a copy &mdash; and copies get stale. The classic approach is TTL: give cached values a time-to-live, accept that reads within that window may be stale, and size the TTL to balance freshness against DB load. For product catalogues or exchange rates, this is fine. For account balances in a regulated bank, it is not.</p>
           <p>The TTL failure scenario is elementary: a customer initiates a SAR 10,000 transfer at 14:32:01. The core banking system posts the debit at 14:32:03. The account balance cache entry was written at 14:31:45 with a 60-second TTL. At 14:32:20, the customer opens their mobile banking dashboard. The cache serves the pre-debit balance. The customer sees SAR 42,300 instead of SAR 32,300. SAMA&rsquo;s Cyber Security Framework requires that balance display reflects the current authorised state &mdash; not &ldquo;the state as of the last cache write.&rdquo;</p>
           <p>Application-level invalidation &mdash; where the application deletes the cache key immediately after writing to the database &mdash; closes the TTL gap for writes the application makes. It does not cover out-of-band changes: a DBA running an emergency correction, a batch job reconciling SAMA settlement figures, a core banking module updating balances through a database procedure the API layer never calls. Those writes are invisible to the application. CDC is not.</p>
-          <p>Change Data Capture reads the database&rsquo;s own transaction log (the DB2 journal on z/OS, the redo log on Oracle, the binlog on MySQL). Every committed change appears in the log within milliseconds of commit. Debezium tails the log, transforms each change into a structured event, and publishes it to Kafka. A dedicated cache invalidation consumer reads these events and deletes or updates the corresponding Redis key. The result: the cache is invalidated whenever the database changes &mdash; regardless of which system caused the change.</p>
+          <p>Change Data Capture reads the database&rsquo;s own transaction log (the DB2 log, the redo log on Oracle, the binlog on MySQL). Every committed change appears in the log within milliseconds of commit. Debezium tails the log, transforms each change into a structured event, and publishes it to Kafka. A dedicated cache invalidation consumer reads these events and deletes or updates the corresponding Redis key. The result: the cache is invalidated whenever the database changes &mdash; regardless of which system caused the change.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">CDC invalidation makes the cache eventually consistent, not strongly consistent</div>
@@ -159,10 +159,10 @@
                   </marker>
                 </defs>
 
-                <!-- DB2 z/OS -->
+                <!-- DB2 -->
                 <rect x="10" y="90" width="140" height="100" rx="6" fill="#1c1c28" stroke="#fbbf24" stroke-width="1.5"/>
                 <text x="80" y="118" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">IBM DB2</text>
-                <text x="80" y="134" text-anchor="middle" fill="#71717a" font-size="9">for z/OS</text>
+                <text x="80" y="134" text-anchor="middle" fill="#71717a" font-size="9">source DB</text>
                 <text x="80" y="152" text-anchor="middle" fill="#71717a" font-size="9">ACCOUNT_BAL</text>
                 <text x="80" y="168" text-anchor="middle" fill="#71717a" font-size="9">DB2 journal</text>
 
@@ -226,13 +226,13 @@
             <div class="diagram__caption">Figure 1 &mdash; CDC invalidation pipeline: DB2 journal &rarr; Debezium connector &rarr; Kafka change-event topic &rarr; invalidation consumer &rarr; Redis DEL; application reads fresh from DB on next cache miss</div>
           </div>
 
-          <p><strong>Component 1: Database transaction log.</strong> DB2 for z/OS uses the DB2 journal (also called the log). Every committed INSERT, UPDATE, and DELETE is recorded here before the transaction completes. Debezium reads the journal using DB2&rsquo;s replication API; it does not poll the table, so it adds negligible load to the database server.</p>
+          <p><strong>Component 1: Database transaction log.</strong> DB2 uses the DB2 journal (also called the log). Every committed INSERT, UPDATE, and DELETE is recorded here before the transaction completes. Debezium reads the journal using DB2&rsquo;s replication API; it does not poll the table, so it adds negligible load to the database server.</p>
           <p><strong>Component 2: Debezium connector.</strong> Debezium transforms raw log entries into structured change events &mdash; JSON or Avro records containing the before and after values of each changed row, the operation type (c/r/u/d), and the transaction timestamp. The connector stores its read position (offset) in a Kafka topic, so a connector restart resumes from exactly where it stopped.</p>
           <p><strong>Component 3: Kafka topic.</strong> One topic per source table (or one topic per logical domain if you prefer). Topics are durable: a consumer outage does not lose events; it just falls behind. The invalidation consumer is a dedicated consumer group that reads these topics. It does not share a consumer group with business consumers reading the same topics for other purposes &mdash; partition assignment and offset management must be independent.</p>
           <p><strong>Component 4: Cache invalidation consumer.</strong> A Spring Boot application (or a lightweight Kafka Streams job) that reads change events, extracts the cache key corresponding to the changed row, and calls Redis <code>DEL</code> or <code>UNLINK</code>. The consumer is stateless: it maps event fields to cache keys deterministically. Restart it and it re-reads from its committed offset &mdash; already-processed events result in idempotent deletes (deleting a key that is already absent is a no-op in Redis).</p>
 
           <h2 id="debezium-config">Debezium Connector for DB2</h2>
-          <p>IBM DB2 for z/OS requires supplemental logging enabled at the table level before Debezium can read before-images of updated rows. Without before-images, update events carry only the after state &mdash; which is sufficient for cache invalidation (you can still derive the cache key from the after row), but not for change-data scenarios that need to know what changed. Enable supplemental logging during the DB2 maintenance window, not as an emergency change on a live table.</p>
+          <p>IBM DB2 requires supplemental logging enabled at the table level before Debezium can read before-images of updated rows. Without before-images, update events carry only the after state &mdash; which is sufficient for cache invalidation (you can still derive the cache key from the after row), but not for change-data scenarios that need to know what changed. Enable supplemental logging during the DB2 maintenance window, not as an emergency change on a live table.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>debezium-db2-connector.json</span><span class="code-block__lang">json</span></div>

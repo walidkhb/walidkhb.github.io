@@ -133,7 +133,7 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>SAMA Open Banking Phase 2 requires participant banks to expose a consolidated account view to authorised Third-Party Providers (TPPs) &mdash; a customer&rsquo;s current accounts, savings, credit cards, and investment portfolio surfaced through a single API response. For a large KSA bank that grew by acquisition, that data does not live in one system. It lives in a legacy core banking system (CICS-era Temenos or Misys), a digital banking platform, a card-processing platform, and possibly a separate investment and custody system. The integration layer that assembles the unified response is a <strong>scatter-gather</strong> aggregator.</p>
+          <p>SAMA Open Banking Phase 2 requires participant banks to expose a consolidated account view to authorised Third-Party Providers (TPPs) &mdash; a customer&rsquo;s current accounts, savings, credit cards, and investment portfolio surfaced through a single API response. For a large KSA bank that grew by acquisition, that data does not live in one system. It lives in a legacy core banking system, a digital banking platform, a card-processing platform, and possibly a separate investment and custody system. The integration layer that assembles the unified response is a <strong>scatter-gather</strong> aggregator.</p>
           <p>Scatter-gather is one of the original Enterprise Integration Patterns: send one request outbound to N recipients in parallel, collect the N responses, and return a single composed response to the original caller. It is straightforward to describe and genuinely difficult to implement correctly in a financial services context because every trade-off has a regulatory or customer-experience consequence &mdash; most obviously the question of what to do when one of the N downstream calls fails or times out within the wall-clock budget.</p>
 
           <div class="callout callout--note">
@@ -219,7 +219,7 @@
                 <!-- Downstream systems -->
                 <rect x="460" y="40" width="150" height="55" rx="6" fill="#16161f" stroke="#4a9eff"/>
                 <text x="535" y="61" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Legacy CBS</text>
-                <text x="535" y="75" text-anchor="middle" fill="#71717a" font-size="9">Temenos T24 / CICS</text>
+                <text x="535" y="75" text-anchor="middle" fill="#71717a" font-size="9">system of record</text>
                 <text x="535" y="87" text-anchor="middle" fill="#71717a" font-size="9">current + savings accts</text>
 
                 <rect x="460" y="120" width="150" height="55" rx="6" fill="#16161f" stroke="#a78bfa"/>
@@ -274,7 +274,7 @@
             <li><strong>Response assembly and serialisation:</strong> 150ms</li>
             <li><strong>Total:</strong> 2,750ms, leaving 250ms margin against the 3,000ms limit</li>
           </ul>
-          <p>The 2,500ms budget for the scatter-gather fan-out is the budget for the <em>slowest</em> downstream call that completes within the window. Fast calls (a modern digital core returning in 80ms) return early; slow calls (a legacy CICS CBS that consistently takes 1,800ms) define the wall clock. Any downstream that does not respond within 2,500ms must be treated as a timeout and handled as a partial result &mdash; which means the per-call timeout for each downstream must be set to 2,400ms (100ms less than the fan-out budget, to allow for thread scheduling overhead).</p>
+          <p>The 2,500ms budget for the scatter-gather fan-out is the budget for the <em>slowest</em> downstream call that completes within the window. Fast calls (a modern digital core returning in 80ms) return early; slow calls (a legacy CBS that consistently takes 1,800ms) define the wall clock. Any downstream that does not respond within 2,500ms must be treated as a timeout and handled as a partial result &mdash; which means the per-call timeout for each downstream must be set to 2,400ms (100ms less than the fan-out budget, to allow for thread scheduling overhead).</p>
 
           <div class="callout callout--warn">
             <div class="callout__title">Do not give every downstream the same timeout</div>
@@ -295,7 +295,7 @@
             </li>
             <li>
               <h4>Per-branch adapter subflows</h4>
-              <p>Each branch routes via a <code>RouteToLabel</code> node to a system-specific subflow. The CBS subflow translates the request to a CICS COMMAREA format via DFDL and calls the mainframe through the CICS TCP/IP link; the digital core subflow calls a REST API; the card subflow calls a SOAP/XML gateway. Each subflow normalises its response to the canonical account schema before returning to the fan-in node.</p>
+              <p>Each branch routes via a <code>RouteToLabel</code> node to a system-specific subflow. The CBS subflow translates the request to the core&rsquo;s fixed-length message format via DFDL and calls it over MQ; the digital core subflow calls a REST API; the card subflow calls a SOAP/XML gateway. Each subflow normalises its response to the canonical account schema before returning to the fan-in node.</p>
             </li>
             <li>
               <h4>Per-branch timeout configuration</h4>
@@ -498,7 +498,7 @@
 
           <h2 id="performance">Performance &amp; scalability</h2>
           <p>Scatter-gather is I/O-bound, not CPU-bound. The scalability ceiling is the number of concurrent downstream connections you can hold open, which is a function of connection pool sizes, the downstream systems&rsquo; own concurrency limits, and the number of concurrent Open Banking sessions.</p>
-          <p>At 500 concurrent Open Banking sessions fanning out to 3 systems each, the aggregation layer needs to sustain 1,500 concurrent outbound connections. Each downstream must have a connection pool sized to absorb that load without queueing. For the legacy CBS on a mainframe, 1,500 concurrent CICS connections is likely above its capacity &mdash; this is the most common scalability limit discovered during load testing. The remediation is to introduce a request queue at the CBS adapter with a maximum queue depth, circuit break when the queue fills, and serve partial results from the other two systems. The CBS adapter becomes the pacing element for the entire aggregation; size its connection pool and queue depth in coordination with the mainframe team.</p>
+          <p>At 500 concurrent Open Banking sessions fanning out to 3 systems each, the aggregation layer needs to sustain 1,500 concurrent outbound connections. Each downstream must have a connection pool sized to absorb that load without queueing. For the legacy CBS, 1,500 concurrent connections is likely above its capacity &mdash; this is the most common scalability limit discovered during load testing. The remediation is to introduce a request queue at the CBS adapter with a maximum queue depth, circuit break when the queue fills, and serve partial results from the other two systems. The CBS adapter becomes the pacing element for the entire aggregation; size its connection pool and queue depth in coordination with the team that runs it.</p>
 
           <table>
             <thead>
@@ -511,8 +511,8 @@
             <tbody>
               <tr>
                 <td>CBS adapter connection pool</td>
-                <td>Max concurrent CICS connections</td>
-                <td>150&ndash;200 (mainframe-limited; queue remainder)</td>
+                <td>Max concurrent CBS connections</td>
+                <td>150&ndash;200 (core-limited; queue remainder)</td>
               </tr>
               <tr>
                 <td>Digital core adapter</td>
