@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Field Playbooks &mdash; Timeouts &amp; Unknown Outcomes &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A practical playbook for write calls that time out: one shrinking timeout budget, idempotency keys created at the origin, a pending outcome in the contract, inquire-then-retry, and daily reconciliation.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Field Playbooks &mdash; Timeouts &amp; Unknown Outcomes &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="A practical playbook for write calls that time out: one shrinking timeout budget, idempotency keys created at the origin, a pending outcome in the contract, inquire-then-retry, and daily reconciliation.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/field-playbooks/timeouts-and-unknown-outcomes.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Timeouts &amp; Unknown Outcomes &mdash; Lab">
+  <meta name="twitter:description" content="A timeout on a write is not a failure.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/field-playbooks/timeouts-and-unknown-outcomes.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "The Call Timed Out. Did It Work? Handling Unknown Outcomes Without Double Posting",
+    "description": "A practical playbook for write calls that time out: one shrinking timeout budget, idempotency keys created at the origin, a pending outcome in the contract, inquire-then-retry, and daily reconciliation.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-16",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/field-playbooks/timeouts-and-unknown-outcomes.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Field Playbooks &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/field-playbooks.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "Field Playbooks"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../field-playbooks.html">Field Playbooks</a><span>/</span>Timeouts &amp; Unknown Outcomes</div>
+          <span class="overline">Lab Playbook</span>
+          <h1>The Call Timed Out. Did It Work? Handling Unknown Outcomes Without Double Posting</h1>
+          <p class="lead">A timeout on a write is not a failure. It is an unknown, and treating it as a failure is how customers get debited twice. Six tactics that make the unknown outcome explicit and give every team the same way to resolve it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#problem">The problem</a></li>
+            <li><a href="#budget">One timeout budget, shrinking at every hop</a></li>
+            <li><a href="#key">The originator creates the idempotency key</a></li>
+            <li><a href="#three-outcomes">Put three outcomes in the contract</a></li>
+            <li><a href="#resolve">Resolve unknowns by asking, not by repeating</a></li>
+            <li><a href="#retry-rules">Write down what may be retried</a></li>
+            <li><a href="#reconcile">Reconcile every day</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Applies to:</strong> Any gateway &middot; Any integration runtime &middot; REST or messaging</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers &amp; team leads</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~8 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 16, 2026</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="problem">The problem</h2>
+          <p>A channel sends a transfer. The integration layer forwards it. The backend takes too long, and the caller gives up after its timeout. Nobody on the calling side knows whether the money moved.</p>
+          <p>Most duplicate postings start here. The caller treats the timeout as a failure and sends the request again. The first request had in fact succeeded, a little late. The customer is debited twice.</p>
+          <p>A timeout is not a failure. It is a third outcome: <strong>unknown</strong>. The tactics below make that outcome explicit and give every team the same way to resolve it.</p>
+
+          <h2 id="budget">Tactic 1: One timeout budget, shrinking at every hop</h2>
+          <p>Timeouts set independently by each team are the root cause. If the gateway waits 10 seconds and the integration layer waits 30, the gateway gives up while the work is still running behind it.</p>
+          <p>Set one end-to-end budget at the edge, then make each inner hop strictly shorter than the hop that calls it. The innermost system must always answer, or be abandoned, before its caller stops listening.</p>
+          <table>
+            <thead>
+              <tr><th>Hop</th><th>Timeout</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Channel &rarr; gateway</strong></td><td>10.0 s</td><td>The user-facing budget. Everything else fits inside it.</td></tr>
+              <tr><td><strong>Gateway &rarr; integration</strong></td><td>9.0 s</td><td>Leaves the gateway time to return a clean response.</td></tr>
+              <tr><td><strong>Integration &rarr; backend</strong></td><td>7.5 s</td><td>Leaves time for one status inquiry after a timeout.</td></tr>
+              <tr><td><strong>Status inquiry</strong></td><td>1.0 s</td><td>Short and read-only. Runs only when the write timed out.</td></tr>
+            </tbody>
+          </table>
+          <p>The numbers are illustrative. The rule is the point: <strong>inner timeouts are shorter than outer ones, and the difference is large enough to do something useful.</strong></p>
+
+          <h2 id="key">Tactic 2: The originator creates the idempotency key</h2>
+          <p>A retry is only safe if the receiver can recognise it. That needs a key that is created once, by the system where the business action started, and carried unchanged through every hop.</p>
+          <ul>
+            <li><strong>Create it at the origin.</strong> The channel generates the key when the user confirms. A key generated by a middle layer changes on every retry and protects nothing.</li>
+            <li><strong>Never regenerate it.</strong> Gateways and integration flows forward the key. They do not replace it.</li>
+            <li><strong>Store it with the result.</strong> The system that performs the write saves the key and the outcome in the same transaction as the write itself.</li>
+            <li><strong>Return the stored result on a repeat.</strong> The same key with the same payload gets the original answer. The same key with a different payload is rejected.</li>
+          </ul>
+
+          <h2 id="three-outcomes">Tactic 3: Put three outcomes in the contract</h2>
+          <p>Most API contracts offer two answers: success and error. Callers then have to guess what a timeout means. Give them a third answer they can program against.</p>
+          <div class="code-block">
+            <div class="code-block__header"><span>Response when the outcome is not yet known (illustrative)</span><span class="code-block__lang">json</span></div>
+<pre><code>HTTP/1.1 202 Accepted
+
+{
+  <span class="tok-s">"status"</span>: <span class="tok-s">"PENDING"</span>,
+  <span class="tok-s">"idempotencyKey"</span>: <span class="tok-s">"7f3c2a9e-51d4-4c0b-9a6e-2f1b8c4d7e10"</span>,
+  <span class="tok-s">"statusUrl"</span>: <span class="tok-s">"/transfers/status/7f3c2a9e-51d4-4c0b-9a6e-2f1b8c4d7e10"</span>,
+  <span class="tok-s">"retryAfterSeconds"</span>: <span class="tok-n">5</span>
+}</code></pre>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Outcome</th><th>Meaning</th><th>What the caller does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Completed</strong></td><td>The write happened.</td><td>Show success.</td></tr>
+              <tr><td><strong>Rejected</strong></td><td>The write did not happen and will not.</td><td>Show the reason. A new attempt needs a new key.</td></tr>
+              <tr><td><strong>Pending</strong></td><td>The write may or may not have happened.</td><td>Tell the user it is being processed. Ask the status endpoint. Do not send a new request.</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="resolve">Tactic 4: Resolve unknowns by asking, not by repeating</h2>
+          <p>When the write to the backend times out, the integration layer should not retry the write straight away. It should ask.</p>
+          <ol class="step-list">
+            <li>
+              <h4>Ask the backend for the status of that key</h4>
+              <p>One short, read-only inquiry. If the backend says completed or rejected, return that answer and stop.</p>
+            </li>
+            <li>
+              <h4>If the backend has never seen the key, retry the write once</h4>
+              <p>The first request did not arrive. A retry with the same key is safe.</p>
+            </li>
+            <li>
+              <h4>If the inquiry also fails, return pending</h4>
+              <p>Record the item in a pending table with the key, the time and the payload hash. Do not guess.</p>
+            </li>
+            <li>
+              <h4>Let a background job close every pending item</h4>
+              <p>The job repeats the inquiry with increasing gaps until it gets a final answer. Anything still open after an agreed time goes to a person, with the evidence attached.</p>
+            </li>
+          </ol>
+          <div class="callout callout--warn">
+            <div class="callout__title">A reversal is a new transaction, not an undo</div>
+            <p>Do not send an automatic reversal for a pending item. If the original did not happen, the reversal credits money that was never debited. Reverse only after the status inquiry confirms the original completed.</p>
+          </div>
+
+          <h2 id="retry-rules">Tactic 5: Write down what may be retried</h2>
+          <p>Retry behaviour should be a published rule, not a library default.</p>
+          <table>
+            <thead>
+              <tr><th>Situation</th><th>Retry?</th><th>Rule</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Read request, any failure</strong></td><td>Yes</td><td>Up to two retries, with backoff and jitter, inside the budget.</td></tr>
+              <tr><td><strong>Write, connection refused</strong></td><td>Yes</td><td>The request never left. Same key.</td></tr>
+              <tr><td><strong>Write, timeout after sending</strong></td><td>Not directly</td><td>Inquire first. Retry only if the key is unknown to the backend.</td></tr>
+              <tr><td><strong>Write, business rejection</strong></td><td>No</td><td>The answer is final. Retrying repeats the rejection.</td></tr>
+              <tr><td><strong>Write, backend overloaded</strong></td><td>Later</td><td>Respect the wait the backend asks for. Do not add load to an overloaded system.</td></tr>
+            </tbody>
+          </table>
+          <p>Retry at one layer only. If the channel, the gateway and the integration layer each retry three times, one user action becomes 27 backend calls at the exact moment the backend is struggling.</p>
+
+          <h2 id="reconcile">Tactic 6: Reconcile every day</h2>
+          <p>Even with all of the above, something will slip through. A daily comparison of what the channel believes against what the backend recorded catches it before the customer does.</p>
+          <ul>
+            <li>Match on the idempotency key, not on amount and time.</li>
+            <li>Report three lists: completed on both sides, completed on one side only, and still pending.</li>
+            <li>Treat the &ldquo;one side only&rdquo; list as a defect list. Each entry points to a path where the rules above are not followed.</li>
+          </ul>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+          <ul>
+            <li><strong>Showing &ldquo;failed&rdquo; on a timeout.</strong> The user tries again with a new key, and the protection is bypassed by design.</li>
+            <li><strong>Keys that expire too early.</strong> If stored keys are removed after an hour and a retry arrives after two, it is processed as new. Keep keys longer than the longest possible retry.</li>
+            <li><strong>Storing the key after the write.</strong> A crash between the two leaves a write with no record. Both belong in one transaction.</li>
+            <li><strong>A status inquiry that touches the slow path.</strong> If the inquiry depends on the same overloaded resource, it times out too. Make it a cheap lookup.</li>
+          </ul>
+
+          <h2 id="checklist">Checklist</h2>
+          <ol class="step-list">
+            <li>
+              <h4>Draw the hops and write each timeout next to it</h4>
+              <p>Fix any hop where the inner timeout is not shorter than the outer one.</p>
+            </li>
+            <li>
+              <h4>Confirm where the idempotency key is created</h4>
+              <p>It must be the originating system, and no hop may replace it.</p>
+            </li>
+            <li>
+              <h4>Add the pending outcome and a status endpoint to the contract</h4>
+              <p>Agree the wording the channel shows to the user for a pending result.</p>
+            </li>
+            <li>
+              <h4>Replace blind retries with inquire-then-retry</h4>
+              <p>Remove retries from every layer except one.</p>
+            </li>
+            <li>
+              <h4>Run the daily reconciliation and review the exceptions weekly</h4>
+              <p>The exception count is the measure of whether the design works.</p>
+            </li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="../field-playbooks.html">
+              <div class="article-nav__label">&larr; Back to topic</div>
+              <div class="article-nav__title">Field Playbooks</div>
+            </a>
+            <a href="slow-integration-triage.html" class="article-nav__next">
+              <div class="article-nav__label">Next &rarr;</div>
+              <div class="article-nav__title">Slow Integration Triage</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2026 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

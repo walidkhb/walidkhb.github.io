@@ -378,7 +378,7 @@ path <span class="tok-s">"pki_int/crl"</span> {
               <tr><td><strong>7 days</strong></td><td>24h</td><td>Internal east-west (Istio sidecar)</td><td>Minimal blast radius on compromise; higher Vault API call rate</td></tr>
               <tr><td><strong>30 days</strong></td><td>168h (7d)</td><td>Internal service mTLS (non-Istio)</td><td>Balanced rotation cadence; low Vault load; renews while service is live</td></tr>
               <tr><td><strong>90 days</strong></td><td>720h (30d)</td><td>External partner APIs; ingress TLS</td><td>Partner systems get 30-day notice; SAMA-acceptable rotation cadence</td></tr>
-              <tr><td><strong>1 year</strong></td><td>2160h (90d)</td><td>Legacy system client certs (mainframe)</td><td>Long-lived cert for systems that cannot hot-reload; revocation must be tested</td></tr>
+              <tr><td><strong>1 year</strong></td><td>2160h (90d)</td><td>Legacy system client certs</td><td>Long-lived cert for systems that cannot hot-reload; revocation must be tested</td></tr>
             </tbody>
           </table>
 

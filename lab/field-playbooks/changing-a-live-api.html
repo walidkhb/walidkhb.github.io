@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Field Playbooks &mdash; Changing a Live API &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="How to keep an API changing while its consumers keep working: an agreed list of breaking changes, additive design, per-consumer usage reports, consumer contract tests, expand-migrate-contract, and retirement by evidence.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Field Playbooks &mdash; Changing a Live API &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="How to keep an API changing while its consumers keep working: an agreed list of breaking changes, additive design, per-consumer usage reports, consumer contract tests, expand-migrate-contract, and retirement by evidence.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/field-playbooks/changing-a-live-api.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Changing a Live API &mdash; Lab">
+  <meta name="twitter:description" content="One consumer needs a change.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/field-playbooks/changing-a-live-api.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Changing a Live API Without Breaking Its Consumers",
+    "description": "How to keep an API changing while its consumers keep working: an agreed list of breaking changes, additive design, per-consumer usage reports, consumer contract tests, expand-migrate-contract, and retirement by evidence.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-16",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/field-playbooks/changing-a-live-api.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Field Playbooks &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/field-playbooks.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "Field Playbooks"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../field-playbooks.html">Field Playbooks</a><span>/</span>Changing a Live API</div>
+          <span class="overline">Lab Playbook</span>
+          <h1>Changing a Live API Without Breaking Its Consumers</h1>
+          <p class="lead">One consumer needs a change. Two others fail the next morning. Freezing the API is not the answer. Six tactics that let a provider keep moving, with proof of who would be affected before anything is released.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#problem">The problem</a></li>
+            <li><a href="#breaking">First, agree what &ldquo;breaking&rdquo; means</a></li>
+            <li><a href="#tolerant">Add, never alter, and require tolerant consumers</a></li>
+            <li><a href="#usage">Know who uses what</a></li>
+            <li><a href="#contract-tests">Let consumers&rsquo; expectations run in the provider&rsquo;s pipeline</a></li>
+            <li><a href="#expand-contract">Expand, migrate, contract</a></li>
+            <li><a href="#versions">Version rarely, and keep one implementation</a></li>
+            <li><a href="#deprecate">Retire by evidence, not by announcement</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+            <li><a href="#checklist">Checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Applies to:</strong> OpenAPI &middot; API gateway analytics &middot; Contract tests in CI</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers &amp; team leads</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~8 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 16, 2026</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="problem">The problem</h2>
+          <p>An API has twelve consumers. One of them needs a change. The provider makes it, tests it, and releases it. Two other consumers fail the next morning, because they depended on something nobody knew they depended on.</p>
+          <p>The usual reaction is to freeze the API or to demand that all consumers test every release. Both make delivery slower without removing the risk. The tactics below let an API keep changing while its consumers keep working.</p>
+
+          <h2 id="breaking">First, agree what &ldquo;breaking&rdquo; means</h2>
+          <p>Teams argue about this after the incident. Publish the list before it.</p>
+          <table>
+            <thead>
+              <tr><th>Change</th><th>Breaking?</th><th>Note</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Add an optional request field</strong></td><td>No</td><td>Old consumers do not send it.</td></tr>
+              <tr><td><strong>Add a response field</strong></td><td>No, if consumers ignore unknown fields</td><td>Make that a rule for every consumer.</td></tr>
+              <tr><td><strong>Add a new value to a list of codes</strong></td><td>Often yes</td><td>Consumers with a fixed list fail on the new value.</td></tr>
+              <tr><td><strong>Make an optional field required</strong></td><td>Yes</td><td>Old requests are now rejected.</td></tr>
+              <tr><td><strong>Remove or rename a field</strong></td><td>Yes</td><td>Even if you believe nobody uses it.</td></tr>
+              <tr><td><strong>Change a type, format or unit</strong></td><td>Yes</td><td>Amounts and dates are the common cases.</td></tr>
+              <tr><td><strong>Tighten validation</strong></td><td>Yes</td><td>Requests accepted yesterday fail today.</td></tr>
+              <tr><td><strong>Change an error code or status</strong></td><td>Yes</td><td>Consumers branch on them.</td></tr>
+              <tr><td><strong>Change a default or the sort order</strong></td><td>Yes</td><td>The contract file does not change, the behaviour does.</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="tolerant">Tactic 1: Add, never alter, and require tolerant consumers</h2>
+          <ul>
+            <li><strong>Providers only add.</strong> New optional fields, new operations, new endpoints. Existing fields keep their name, type and meaning.</li>
+            <li><strong>Consumers ignore what they do not know.</strong> An unknown response field is skipped, not treated as an error. Check this in the onboarding tests.</li>
+            <li><strong>Consumers handle unknown codes.</strong> Every list of codes has a documented fallback: treat an unknown value as &ldquo;other&rdquo; and carry on.</li>
+          </ul>
+
+          <h2 id="usage">Tactic 2: Know who uses what</h2>
+          <p>You cannot retire a field safely if you do not know who reads it. Record usage per consumer, per operation and per version at the gateway.</p>
+          <div class="code-block">
+            <div class="code-block__header"><span>Usage report that answers &ldquo;who would this break?&rdquo; (illustrative)</span><span class="code-block__lang">text</span></div>
+<pre><code>Operation: GET /accounts/{id}/summary      Period: last 90 days
+
+Consumer        Version   Calls      Last call     Sends legacy header
+--------------  --------  ---------  ------------  -------------------
+mobile-app      v2        4,812,330  today         no
+web-banking     v2        1,204,118  today         no
+branch-system   v1           88,402  today         yes
+partner-a       v1              311  41 days ago   yes
+batch-reports   v1                0  never         -</code></pre>
+          </div>
+          <p>With this report the retirement of v1 is a conversation with two teams, not an announcement to everyone followed by a wait.</p>
+
+          <h2 id="contract-tests">Tactic 3: Let consumers&rsquo; expectations run in the provider&rsquo;s pipeline</h2>
+          <p>Each consumer records the requests it sends and the parts of the response it relies on. These expectations are stored with the provider and run on every build.</p>
+          <ul>
+            <li>A change that breaks a consumer fails the provider&rsquo;s build, before release.</li>
+            <li>The failure names the consumer and the field. The provider knows whom to call.</li>
+            <li>Consumers no longer need to test every provider release by hand.</li>
+          </ul>
+          <p>Start small. The three largest consumers and the ten most-used operations cover most of the risk.</p>
+
+          <h2 id="expand-contract">Tactic 4: Expand, migrate, contract</h2>
+          <p>When a change cannot be additive, split it into three releases.</p>
+          <ol class="step-list">
+            <li>
+              <h4>Expand</h4>
+              <p>Add the new field or behaviour next to the old one. Both work. Nothing breaks.</p>
+            </li>
+            <li>
+              <h4>Migrate</h4>
+              <p>Consumers move one by one, in their own releases. The usage report shows progress.</p>
+            </li>
+            <li>
+              <h4>Contract</h4>
+              <p>Remove the old form only when usage has been zero for an agreed period.</p>
+            </li>
+          </ol>
+          <div class="callout callout--warn">
+            <div class="callout__title">The third step is the one that gets skipped</div>
+            <p>If the old form is never removed, the API carries every past design forever. Put the removal date in the plan at the start, and give it an owner.</p>
+          </div>
+
+          <h2 id="versions">Tactic 5: Version rarely, and keep one implementation</h2>
+          <ul>
+            <li><strong>A new major version is the last resort.</strong> Use it when the model itself changes, not for a renamed field.</li>
+            <li><strong>One implementation behind both versions.</strong> The old version is a thin translation in front of the new one. Two full copies drift apart and double the fixes.</li>
+            <li><strong>At most two versions live.</strong> A third version starts only when the first is gone.</li>
+          </ul>
+
+          <h2 id="deprecate">Tactic 6: Retire by evidence, not by announcement</h2>
+          <ol class="step-list">
+            <li>
+              <h4>Mark it</h4>
+              <p>Flag the operation or field as deprecated in the contract. Return a response header that says so, with the removal date.</p>
+            </li>
+            <li>
+              <h4>Tell the consumers who still use it</h4>
+              <p>By name, from the usage report, with what to change.</p>
+            </li>
+            <li>
+              <h4>Watch usage fall</h4>
+              <p>Chase the ones that do not move. Escalate with numbers.</p>
+            </li>
+            <li>
+              <h4>Rehearse the removal</h4>
+              <p>Switch the old form off in the test environments first, then for short planned windows, before removing it for good.</p>
+            </li>
+            <li>
+              <h4>Remove it</h4>
+              <p>When usage has been zero for the agreed period.</p>
+            </li>
+          </ol>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+          <ul>
+            <li><strong>&ldquo;Nobody uses that field.&rdquo;</strong> Somebody does. Check the usage report, not memory.</li>
+            <li><strong>Bug fixes that change behaviour.</strong> Consumers may depend on the bug. Treat the fix as a change and check the contract tests.</li>
+            <li><strong>Generated clients with strict parsing.</strong> Some reject unknown fields by default. Find them during onboarding.</li>
+            <li><strong>Batch consumers.</strong> A job that runs once a month does not appear in a seven-day usage report. Use a period longer than the slowest cycle.</li>
+            <li><strong>Removal dates that keep moving.</strong> After the second extension, nobody believes the date. Extend once, with a reason, and hold it.</li>
+          </ul>
+
+          <h2 id="checklist">Checklist</h2>
+          <ol class="step-list">
+            <li>
+              <h4>Publish the list of breaking changes</h4>
+              <p>And the rule that consumers must ignore unknown fields and handle unknown codes.</p>
+            </li>
+            <li>
+              <h4>Turn on usage reporting per consumer and version</h4>
+              <p>Keep at least 90 days.</p>
+            </li>
+            <li>
+              <h4>Collect contract expectations from the largest consumers</h4>
+              <p>Run them in the provider pipeline.</p>
+            </li>
+            <li>
+              <h4>Use expand, migrate, contract for the next non-additive change</h4>
+              <p>With the removal date agreed up front.</p>
+            </li>
+            <li>
+              <h4>Retire one old version using the evidence steps</h4>
+              <p>One completed retirement makes the next one routine.</p>
+            </li>
+          </ol>
+
+          <nav class="article-nav">
+            <a href="onboarding-consumers-in-days.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Onboarding in Days</div>
+            </a>
+            <a href="first-30-minutes-of-an-incident.html" class="article-nav__next">
+              <div class="article-nav__label">Next &rarr;</div>
+              <div class="article-nav__title">First 30 Minutes of an Incident</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2026 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

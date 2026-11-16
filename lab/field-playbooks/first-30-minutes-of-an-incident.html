@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Field Playbooks &mdash; First 30 Minutes of an Incident &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A fixed order of work for the on-call integration engineer: establish scope, find the failing hop from four signals, restore service with the least drastic action, communicate every 15 minutes, and recover the affected work safely.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Field Playbooks &mdash; First 30 Minutes of an Incident &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="A fixed order of work for the on-call integration engineer: establish scope, find the failing hop from four signals, restore service with the least drastic action, communicate every 15 minutes, and recover the affected work safely.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/field-playbooks/first-30-minutes-of-an-incident.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="First 30 Minutes of an Incident &mdash; Lab">
+  <meta name="twitter:description" content="The integration layer sits between everything, so it is blamed for everything.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/field-playbooks/first-30-minutes-of-an-incident.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "The First 30 Minutes of an Integration Incident",
+    "description": "A fixed order of work for the on-call integration engineer: establish scope, find the failing hop from four signals, restore service with the least drastic action, communicate every 15 minutes, and recover the affected work safely.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-16",
+    "author": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Waleed Albadawi",
+      "url": "https://www.wbadawi.info/"
+    },
+    "url": "https://www.wbadawi.info/lab/field-playbooks/first-30-minutes-of-an-incident.html",
+    "isPartOf": {
+      "@type": "WebPage",
+      "name": "Field Playbooks &mdash; Lab",
+      "url": "https://www.wbadawi.info/lab/field-playbooks.html"
+    },
+    "proficiencyLevel": "Expert",
+    "articleSection": "Field Playbooks"
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Initiatives</a>
+        <a href="../../expertise.html">Expertise</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active">Lab</a>
+        <a href="../../contact.html">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../field-playbooks.html">Field Playbooks</a><span>/</span>First 30 Minutes of an Incident</div>
+          <span class="overline">Lab Playbook</span>
+          <h1>The First 30 Minutes of an Integration Incident</h1>
+          <p class="lead">The integration layer sits between everything, so it is blamed for everything. Without a method, the first half hour goes to joining calls and restarting things. This playbook gives the on-call engineer a fixed order of work.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <aside class="lab-article__toc">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#problem">The problem</a></li>
+            <li><a href="#scope">Minutes 0&ndash;5: Establish the scope</a></li>
+            <li><a href="#locate">Minutes 5&ndash;15: Find the failing hop</a></li>
+            <li><a href="#restore">Minutes 15&ndash;30: Restore service</a></li>
+            <li><a href="#communicate">Throughout: One short update every 15 minutes</a></li>
+            <li><a href="#recover">After service returns: Recover the work safely</a></li>
+            <li><a href="#review">The next day: Three questions</a></li>
+            <li><a href="#prepare">Prepare before the incident</a></li>
+            <li><a href="#pitfalls">Pitfalls</a></li>
+          </ul>
+        </aside>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Applies to:</strong> Dashboards &middot; Queues &middot; Circuit breakers &middot; Runbooks</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers &amp; team leads</span>
+            <span class="article-meta__item"><strong>Read:</strong> ~9 min</span>
+            <span class="article-meta__item"><strong>Published:</strong> Nov 16, 2026</span>
+            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
+          </div>
+
+          <h2 id="problem">The problem</h2>
+          <p>The integration layer sits between everything, so it is blamed for everything. When a channel reports errors, the first call goes to the integration team, whether the cause is a backend, the network, a certificate or the channel itself.</p>
+          <p>Without a method, the first half hour goes to joining calls and restarting things. Restarts destroy the evidence, and the incident returns a day later.</p>
+          <p>This playbook gives the on-call engineer a fixed order of work. The goals, in order: <strong>stop the harm, find the failing hop, restore service, keep the evidence</strong>. Root cause comes later.</p>
+
+          <h2 id="scope">Minutes 0&ndash;5: Establish the scope</h2>
+          <p>Three questions narrow the search faster than any dashboard.</p>
+          <table>
+            <thead>
+              <tr><th>Question</th><th>If yes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Is one consumer affected, or all of them?</strong></td><td>One consumer: look at that consumer, its credentials and its limits.</td></tr>
+              <tr><td><strong>Is one operation affected, or all of them?</strong></td><td>One operation: look at the backend behind it.</td></tr>
+              <tr><td><strong>Did it start at a precise time?</strong></td><td>Find what changed at that time: a release, a configuration change, a certificate expiry, a scheduled job.</td></tr>
+            </tbody>
+          </table>
+          <p>Most incidents follow a change. Check the change record for the last 24 hours before anything else. If a release went out just before the start time, <strong>roll it back first and investigate afterwards.</strong></p>
+
+          <h2 id="locate">Minutes 5&ndash;15: Find the failing hop</h2>
+          <p>For each hop on the path, look at the same four signals. The failing hop is the first one, going inward, where they turn bad.</p>
+          <table>
+            <thead>
+              <tr><th>Signal</th><th>What it tells you</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Request rate</strong></td><td>A drop means requests are not arriving. A spike means a retry storm or an unusual load.</td></tr>
+              <tr><td><strong>Error rate</strong></td><td>Which errors, and from where. A rejection by the backend is different from a failure to reach it.</td></tr>
+              <tr><td><strong>Response time</strong></td><td>Slow responses come before errors. Timeouts at exact, repeated values point to a configured limit.</td></tr>
+              <tr><td><strong>Saturation</strong></td><td>Connection pools, threads, queue depth, memory. A full pool makes a healthy backend look dead.</td></tr>
+            </tbody>
+          </table>
+          <div class="code-block">
+            <div class="code-block__header"><span>Reading the error tells you which side to call (illustrative)</span><span class="code-block__lang">text</span></div>
+<pre><code>Symptom at the integration layer         Most likely place
+---------------------------------------  --------------------------------
+Connection refused                       Backend down, or network rule
+Connection timed out                     Network path, or backend overloaded
+Security handshake failure               Certificate expired or changed
+Authentication rejected (all consumers)  Identity service, or a rotated secret
+Authentication rejected (one consumer)   That consumer's credentials
+Read timeout, backend healthy            Pool exhausted on our side
+Queue depth rising, nothing consumed     Consumer stopped, or a poison message</code></pre>
+          </div>
+
+          <h2 id="restore">Minutes 15&ndash;30: Restore service</h2>
+          <p>Choose the least drastic action that stops the harm. Work down this list.</p>
+          <ol class="step-list">
+            <li>
+              <h4>Roll back the last change</h4>
+              <p>If anything was released or reconfigured near the start time. This resolves more incidents than every other action together.</p>
+            </li>
+            <li>
+              <h4>Fail fast on the broken backend</h4>
+              <p>Stop calling a backend that is not answering. Return a clear error straight away. This frees threads and connections, so the operations that do work keep working.</p>
+            </li>
+            <li>
+              <h4>Shed load</h4>
+              <p>Lower the limits for the least critical consumers. Protect payments before reports.</p>
+            </li>
+            <li>
+              <h4>Pause, do not purge</h4>
+              <p>For message flows, stop the consumer and let messages wait in the queue. They are safe there. A purged queue is lost business.</p>
+            </li>
+            <li>
+              <h4>Move the poison message aside</h4>
+              <p>If one message fails again and again and blocks the rest, move it to a holding queue with its details, and let the others flow.</p>
+            </li>
+            <li>
+              <h4>Restart, last, and one instance at a time</h4>
+              <p>Capture the logs and a thread dump first. Restart one instance and confirm that it helps before touching the others.</p>
+            </li>
+          </ol>
+          <div class="callout callout--danger">
+            <div class="callout__title">Do not restart everything at once</div>
+            <p>A full restart removes the evidence, drops work in progress, and sends every waiting consumer back at the same moment. If the cause was load, the restart recreates it.</p>
+          </div>
+
+          <h2 id="communicate">Throughout: One short update every 15 minutes</h2>
+          <p>One person works on the problem and another one communicates. The update has four lines, and it is sent even when nothing has changed.</p>
+          <div class="code-block">
+            <div class="code-block__header"><span>Status update template</span><span class="code-block__lang">text</span></div>
+<pre><code>Impact:    What users cannot do, and since when.
+Scope:     Which channels and operations. What still works.
+Status:    What we know. What we have done. What we are doing now.
+Next:      Time of the next update.</code></pre>
+          </div>
+          <p>State facts only. &ldquo;We do not know yet&rdquo; is an acceptable status. A guess that turns out to be wrong costs more time than it saves.</p>
+
+          <h2 id="recover">After service returns: Recover the work safely</h2>
+          <ul>
+            <li><strong>Count what was affected.</strong> Requests that failed, messages that waited, items with an unknown outcome.</li>
+            <li><strong>Resolve unknown outcomes by inquiry.</strong> Do not resend writes until you know whether the first attempt landed.</li>
+            <li><strong>Replay slowly.</strong> Release held messages at a controlled rate. A backend that has just recovered will fall over again under the full backlog.</li>
+            <li><strong>Reconcile.</strong> Compare both sides for the incident window before declaring it closed.</li>
+          </ul>
+
+          <h2 id="review">The next day: Three questions</h2>
+          <ol class="step-list">
+            <li>
+              <h4>How did we find out?</h4>
+              <p>If a user told us before an alert did, the first action is a new alert.</p>
+            </li>
+            <li>
+              <h4>What took the longest?</h4>
+              <p>Finding the hop, getting access, reaching the right person. That step gets fixed.</p>
+            </li>
+            <li>
+              <h4>What would have limited the damage?</h4>
+              <p>A shorter timeout, a limit, an automatic fail-fast. That goes into the design, with an owner and a date.</p>
+            </li>
+          </ol>
+          <p>Write the timeline from the logs, not from memory. Name systems and decisions, not people.</p>
+
+          <h2 id="prepare">Prepare before the incident</h2>
+          <p>Everything above is faster if these exist before the first call.</p>
+          <table>
+            <thead>
+              <tr><th>Item</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>A map of every path</strong></td><td>Channel, gateway, flow, backend, with the owner and contact for each hop.</td></tr>
+              <tr><td><strong>One dashboard per path</strong></td><td>The four signals for each hop, side by side.</td></tr>
+              <tr><td><strong>A list of recent changes</strong></td><td>One place to see what was released in the last day, across teams.</td></tr>
+              <tr><td><strong>Certificate expiry alerts</strong></td><td>At 30, 14 and 7 days. Expired certificates are the most avoidable incident.</td></tr>
+              <tr><td><strong>Tested switches</strong></td><td>Fail-fast, load shedding and pause controls that the on-call engineer is allowed to use, and has used in a drill.</td></tr>
+              <tr><td><strong>A rehearsal</strong></td><td>Twice a year, break something in a test environment and run this playbook.</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="pitfalls">Pitfalls</h2>
+          <ul>
+            <li><strong>Hunting root cause while users are down.</strong> Restore first. The evidence you saved will still be there.</li>
+            <li><strong>Raising timeouts or pool sizes in the middle of the incident.</strong> It often moves the pressure to a weaker system.</li>
+            <li><strong>Ten people changing things.</strong> One person decides. Every action is written in the incident channel before it is taken.</li>
+            <li><strong>Closing when the errors stop.</strong> The incident is closed when the affected work is recovered and reconciled.</li>
+          </ul>
+
+          <nav class="article-nav">
+            <a href="changing-a-live-api.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Changing a Live API</div>
+            </a>
+            <a href="../field-playbooks.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Field Playbooks &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__inner">
+        <div>&copy; 2026 Waleed Albadawi. All rights reserved.</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="../../contact.html">Contact</a></li>
+          <li><a href="../../resume.html">Resume</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
