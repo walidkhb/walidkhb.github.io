@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Integration Design Patterns &mdash; IBM ACE &amp; EIP &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Enterprise integration patterns in production: content-based routing, message translation, splitter, aggregator, choreography vs orchestration, and how IBM App Connect Enterprise (ACE) implements them in regulated financial services platforms.">
+  <meta name="description" content="Enterprise integration patterns in production: content-based routing, message translation, splitter, aggregator, choreography vs orchestration, and how IBM App Connect Enterprise (ACE) implements them in regulated enterprise platforms.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Integration Design Patterns &mdash; IBM ACE &amp; EIP &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="EIP catalogue and IBM ACE message flows for financial services integration.">
+  <meta property="og:description" content="EIP catalogue and IBM ACE message flows for enterprise integration.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/ibm-ace.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Integration Design Patterns &mdash; Production Patterns">
-  <meta name="twitter:description" content="EIP catalogue and IBM ACE message flows for financial services.">
+  <meta name="twitter:description" content="EIP catalogue and IBM ACE message flows for regulated enterprises.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/ibm-ace.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,7 +63,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>IBM ACE</div>
           <span class="overline">Lab Article</span>
           <h1>Integration Design Patterns &amp; IBM ACE</h1>
-          <p class="lead">The EIP catalogue applied to production financial services integration: content-based routing, message translation, splitter/aggregator, choreography vs orchestration, canonical data models, and how IBM App Connect Enterprise (ACE) implements them in real flows.</p>
+          <p class="lead">The EIP catalogue applied to production enterprise integration: content-based routing, message translation, splitter/aggregator, choreography vs orchestration, canonical data models, and how IBM App Connect Enterprise (ACE) implements them in real flows.</p>
         </div>
       </div>
     </div>
@@ -101,12 +101,12 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Integration platforms in financial services exist to bridge systems that have nothing in common &mdash; a 30-year-old core banking system, a SaaS KYC provider, a real-time payment scheme, a partner B2B feed. The patterns that make this tractable were catalogued in Hohpe &amp; Woolf&rsquo;s <em>Enterprise Integration Patterns</em>; the runtime that implements them in most banks is <strong>IBM App Connect Enterprise (ACE)</strong>, the successor to IBM Integration Bus (IIB) and WebSphere Message Broker.</p>
+          <p>Integration platforms in regulated enterprises exist to bridge systems that have nothing in common &mdash; a 30-year-old mainframe system of record, a SaaS identity-verification provider, a real-time payment or settlement network, a partner B2B feed. The patterns that make this tractable were catalogued in Hohpe &amp; Woolf&rsquo;s <em>Enterprise Integration Patterns</em>; the runtime that implements them in many IBM-centric organisations &mdash; banks, insurers, telecoms operators and government agencies &mdash; is <strong>IBM App Connect Enterprise (ACE)</strong>, the successor to IBM Integration Bus (IIB) and WebSphere Message Broker.</p>
           <p>The ACE primitive is a <strong>message flow</strong>: a directed graph of nodes that consume from a source, transform/route/enrich, and deliver to one or more sinks. Each node is one EIP &mdash; the platform&rsquo;s value proposition is the catalogue, not the runtime.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">ACE is not an ESB</div>
-            <p>Modern ACE deployments are <strong>microservice-shaped</strong>: one integration server per domain, packaged as a container, deployed via CI to OpenShift. The 2010s-style monolithic ESB &mdash; one shared broker for the whole bank &mdash; is exactly the anti-pattern this article is trying to help you avoid.</p>
+            <p>Modern ACE deployments are <strong>microservice-shaped</strong>: one integration server per domain, packaged as a container, deployed via CI to OpenShift. The 2010s-style monolithic ESB &mdash; one shared broker for the whole enterprise &mdash; is exactly the anti-pattern this article is trying to help you avoid.</p>
           </div>
 
           <h2 id="topology">ACE topology</h2>
@@ -158,7 +158,7 @@
                 <text x="690" y="148" text-anchor="middle" fill="#71717a" font-size="9">events.* topics</text>
 
                 <rect x="620" y="180" width="140" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
-                <text x="690" y="202" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Core banking</text>
+                <text x="690" y="202" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Legacy core</text>
                 <text x="690" y="218" text-anchor="middle" fill="#71717a" font-size="9">fixed-length messages</text>
 
                 <rect x="620" y="250" width="140" height="50" rx="6" fill="#16161f" stroke="#4a9eff"/>
@@ -265,7 +265,7 @@
           <div class="code-block">
             <div class="code-block__header"><span>canonical-payment-v1.xsd</span><span class="code-block__lang">xsd</span></div>
 <pre><code><span class="tok-k">&lt;xs:schema</span> xmlns:xs=<span class="tok-s">"http://www.w3.org/2001/XMLSchema"</span>
-           targetNamespace=<span class="tok-s">"http://acmebank.com/canonical/v1"</span>&gt;
+           targetNamespace=<span class="tok-s">"https://example.com/canonical/v1"</span>&gt;
 
   <span class="tok-k">&lt;xs:complexType</span> name=<span class="tok-s">"Payment"</span>&gt;
     <span class="tok-k">&lt;xs:sequence&gt;</span>

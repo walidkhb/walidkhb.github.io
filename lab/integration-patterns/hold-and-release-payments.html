@@ -5,19 +5,19 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hold-and-Release: A Two-Phase Pattern for Integrating Payment Hubs with Core Banking &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="A generic guide to integrating a payment hub with core banking using two phases: verify-and-hold, then post-and-release or release-only. Covers the payment lifecycle state machine, deriving an accounting-event catalogue, idempotent channel API design, idempotency store trade-offs, resilience settings, per-scheme routing and failure modes.">
+  <title>Hold-and-Release: A Two-Phase Pattern for Integrating Orchestration Hubs with Legacy Systems of Record &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="A generic guide to integrating an orchestration hub with a legacy system of record using two phases: verify-and-hold, then post-and-release or release-only. Worked through with a payment hub in front of a legacy core; the same mechanics apply to inventory reservations, prepaid-balance charging and ticketing holds. Covers the lifecycle state machine, deriving an accounting-event catalogue, idempotent channel API design, idempotency store trade-offs, resilience settings, per-scheme routing and failure modes.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Hold-and-Release: A Two-Phase Pattern for Integrating Payment Hubs with Core Banking">
-  <meta property="og:description" content="Verify-and-hold, then post-and-release: the state machine, accounting-event method, idempotent channel API and failure modes for putting a payment hub in front of core banking.">
+  <meta property="og:title" content="Hold-and-Release: A Two-Phase Pattern for Integrating Orchestration Hubs with Legacy Systems of Record">
+  <meta property="og:description" content="Verify-and-hold, then post-and-release: the state machine, accounting-event method, idempotent channel API and failure modes for putting an orchestration hub &mdash; such as a payment hub &mdash; in front of a legacy system of record.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/hold-and-release-payments.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Hold-and-Release: A Two-Phase Payment Integration Pattern">
-  <meta name="twitter:description" content="A two-phase hold-and-release state machine, an idempotent channel API, and the failure modes of putting a payment hub in front of core banking.">
+  <meta name="twitter:title" content="Hold-and-Release: A Two-Phase Reserve-and-Commit Integration Pattern">
+  <meta name="twitter:description" content="A two-phase hold-and-release state machine, an idempotent channel API, and the failure modes of putting an orchestration hub in front of a legacy system of record.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/hold-and-release-payments.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,8 +37,8 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Hold-and-Release: A Two-Phase Pattern for Integrating Payment Hubs with Core Banking",
-    "description": "A generic guide to integrating a payment hub with core banking using two phases: verify-and-hold, then post-and-release or release-only. Covers the payment lifecycle state machine, deriving an accounting-event catalogue, idempotent channel API design, idempotency store trade-offs, resilience settings, per-scheme routing and failure modes.",
+    "headline": "Hold-and-Release: A Two-Phase Pattern for Integrating Orchestration Hubs with Legacy Systems of Record",
+    "description": "A generic guide to integrating an orchestration hub with a legacy system of record using two phases: verify-and-hold, then post-and-release or release-only. Worked through with a payment hub in front of a legacy core; the same mechanics apply to inventory reservations, prepaid-balance charging and ticketing holds. Covers the lifecycle state machine, deriving an accounting-event catalogue, idempotent channel API design, idempotency store trade-offs, resilience settings, per-scheme routing and failure modes.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-12",
     "author": {
@@ -90,8 +90,8 @@
         <div>
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Patterns</a><span>/</span>Hold-and-Release Payments</div>
           <span class="overline">Lab Article</span>
-          <h1>Hold-and-Release: A Two-Phase Pattern for Integrating Payment Hubs with Core Banking</h1>
-          <p class="lead">A payment hub knows the schemes. Core banking knows the money. The cleanest integration between them is two calls &mdash; verify-and-hold, then post-and-release or release-only &mdash; driven by an explicit state machine, an accounting-event catalogue derived by method, and an idempotent channel API that never changes when the routing behind it does.</p>
+          <h1>Hold-and-Release: A Two-Phase Pattern for Integrating Orchestration Hubs with Legacy Systems of Record</h1>
+          <p class="lead">An orchestration hub knows the external rails. The system of record knows the balances. In payments that means a payment hub in front of a legacy core; in retail, an order orchestrator in front of an inventory system; in telecoms, a charging gateway in front of a prepaid balance store. The cleanest integration between them is two calls &mdash; verify-and-hold, then post-and-release or release-only &mdash; driven by an explicit state machine, an accounting-event catalogue derived by method, and an idempotent channel API that never changes when the routing behind it does.</p>
         </div>
       </div>
     </div>
@@ -106,7 +106,7 @@
           <ul class="lab-article__toc-list">
             <li><a href="#overview">Overview</a></li>
             <li><a href="#why-two-phase">Why two phases</a></li>
-            <li><a href="#core-contract">The core banking contract</a></li>
+            <li><a href="#core-contract">The system-of-record contract</a></li>
             <li><a href="#state-machine">The payment state machine</a></li>
             <li><a href="#accounting-events">Deriving accounting events</a></li>
             <li><a href="#channel-api">The idempotent channel API</a></li>
@@ -129,31 +129,31 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Most banks that modernise payments end up with the same topology. A <strong>payment hub</strong> runs the rails: instant payments, high-value RTGS, bill payments, bulk files, request-to-pay. It builds and parses ISO 20022 messages, talks to the schemes and tracks scheme status. It does not hold accounts. <strong>Core banking</strong> holds the accounts, balances, holds and the ledger, and knows nothing about schemes. In the Saudi market that means a hub speaking to SARIE, the instant payment rail and SADAD, while the core remains the book of record.</p>
-          <p>Between the two sits an <strong>integration layer</strong>. Its job is narrow and should stay narrow: translate protocols, correlate requests and replies, enforce idempotency, route, and protect core banking with circuit breakers and retries. It holds no payment business logic and no accounting rules.</p>
-          <p>This article describes a pattern for the money-movement part of that integration: how a scheme-bound payment reserves, books or releases funds in core banking, and how to keep that safe under retries, timeouts and late scheme replies. The organisational side &mdash; moving schemes onto a hub one at a time without a big-bang cutover &mdash; is covered in the companion essay <a href="../../blog/payment-rail-migration-decision.html">Strangle the Rails, Not the Channels</a>.</p>
+          <p>Organisations that put a modern orchestration engine in front of a legacy book of record tend to end up with the same topology, and payments is the clearest example &mdash; the one this article uses throughout. A <strong>payment hub</strong> runs the rails: instant payments, high-value RTGS, bill payments, bulk files, request-to-pay. It builds and parses ISO 20022 messages, talks to the schemes and tracks scheme status. It does not hold accounts. The <strong>legacy core</strong> &mdash; the system of record &mdash; holds the accounts, balances, holds and the ledger, and knows nothing about schemes. The same split appears wherever a scarce resource must be reserved before an external party confirms: stock reserved while a marketplace confirms an order, prepaid credit reserved while a network session runs, a seat held while a payment clears.</p>
+          <p>Between the two sits an <strong>integration layer</strong>. Its job is narrow and should stay narrow: translate protocols, correlate requests and replies, enforce idempotency, route, and protect the system of record with circuit breakers and retries. It holds no payment business logic and no accounting rules.</p>
+          <p>This article describes a pattern for the money-movement part of that integration: how a scheme-bound payment reserves, books or releases funds in the system of record, and how to keep that safe under retries, timeouts and late scheme replies. The organisational side &mdash; moving schemes onto a hub one at a time without a big-bang cutover &mdash; is covered in the companion essay <a href="../../blog/payment-rail-migration-decision.html">Strangle the Rails, Not the Channels</a>.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Three owners, three domains</div>
-            <p>The hub owns the payment lifecycle and scheme messaging. Core banking owns account state, holds and posting. The integration layer owns translation, correlation, idempotency, resilience and routing. If a design review cannot say in one sentence which of the three owns a field or a decision, fix that first. Ambiguous ownership turns into duplicated logic, and duplicated logic turns into reconciliation breaks.</p>
+            <p>The hub owns the payment lifecycle and scheme messaging. The system of record owns account state, holds and posting. The integration layer owns translation, correlation, idempotency, resilience and routing. If a design review cannot say in one sentence which of the three owns a field or a decision, fix that first. Ambiguous ownership turns into duplicated logic, and duplicated logic turns into reconciliation breaks.</p>
           </div>
 
           <h2 id="why-two-phase">Why Two Phases</h2>
-          <p>The tempting design is a single call: when a customer sends money, debit the account in core banking, then submit to the scheme. It is simple and it works on the happy path. It fails badly on every other path.</p>
+          <p>The tempting design is a single call: when a customer sends money, debit the account in the core, then submit to the scheme. It is simple and it works on the happy path. It fails badly on every other path.</p>
           <ul>
-            <li><strong>The scheme rejects after the debit.</strong> The customer has been debited for a payment that never left the bank. You now need a compensating credit, a customer notification and an explanation on the statement &mdash; for what should have been a non-event.</li>
+            <li><strong>The scheme rejects after the debit.</strong> The customer has been debited for a payment that never left the institution. You now need a compensating credit, a customer notification and an explanation on the statement &mdash; for what should have been a non-event.</li>
             <li><strong>The scheme times out.</strong> You do not know whether the money moved. With a booked debit, the only safe options are to leave it and investigate, or to reverse it and risk a double payment if the scheme later confirms.</li>
-            <li><strong>Submit first, debit later</strong> is worse. If the scheme accepts and the debit then fails on insufficient funds, the bank has paid out money it cannot collect.</li>
+            <li><strong>Submit first, debit later</strong> is worse. If the scheme accepts and the debit then fails on insufficient funds, the institution has paid out money it cannot collect.</li>
           </ul>
-          <p>The two-phase pattern separates the <em>reservation</em> of funds from the <em>booking</em> of the debit. Phase one validates the debit and places a hold, so the money cannot be spent elsewhere while the scheme decides. Phase two either books the debit and lifts the hold together, or lifts the hold and books nothing. A rejected or timed-out payment leaves no entry on the statement, only a hold that existed for a few seconds. This is the same idea as card authorisation and capture, applied to account-to-account payments.</p>
+          <p>The two-phase pattern separates the <em>reservation</em> of funds from the <em>booking</em> of the debit. Phase one validates the debit and places a hold, so the money cannot be spent elsewhere while the scheme decides. Phase two either books the debit and lifts the hold together, or lifts the hold and books nothing. A rejected or timed-out payment leaves no entry on the statement, only a hold that existed for a few seconds. This is the same idea as card authorisation and capture, applied to account-to-account payments &mdash; and the same idea as an online-charging reservation in telecoms or a soft allocation of stock in retail.</p>
 
           <div class="callout callout--warn">
             <div class="callout__title">Two phases is not a distributed transaction</div>
-            <p>The hold and the post are separate commits in core banking. Nothing rolls back automatically if the second call never arrives. The pattern is safe only if every hold has an owner that is guaranteed to issue the second call, and a sweeper that catches the cases where it did not. Both are covered below.</p>
+            <p>The hold and the post are separate commits in the system of record. Nothing rolls back automatically if the second call never arrives. The pattern is safe only if every hold has an owner that is guaranteed to issue the second call, and a sweeper that catches the cases where it did not. Both are covered below.</p>
           </div>
 
-          <h2 id="core-contract">The Core Banking Contract</h2>
-          <p>Core banking needs to expose two operations for hub-driven payments.</p>
+          <h2 id="core-contract">The System-of-Record Contract</h2>
+          <p>The system of record needs to expose two operations for hub-driven payments.</p>
           <ul>
             <li><strong>Verify-and-hold.</strong> One synchronous call that validates the debit (account status, restrictions, limits, available balance) and places a hold for the amount. On success it returns a <strong>hold reference</strong>. Validation and reservation happen atomically, so there is no window in which funds were checked but not yet reserved.</li>
             <li><strong>Post</strong>, with two modes, both keyed on the hold reference. <em>Post-and-release</em> books the debit and lifts the hold in one step. <em>Release-only</em> lifts the hold and books nothing.</li>
@@ -181,8 +181,8 @@
 <span class="tok-k">Idempotency-Key</span>: <span class="tok-s">pay-7d1c0a52e9b84f3a</span>
 <span class="tok-k">Content-Type</span>: application/json
 
-{ <span class="tok-k">"paymentId"</span>: <span class="tok-s">"P-000184223"</span>, <span class="tok-k">"debtorAccount"</span>: <span class="tok-s">"SA44..."</span>,
-  <span class="tok-k">"amount"</span>: <span class="tok-s">"2500.00"</span>, <span class="tok-k">"currency"</span>: <span class="tok-s">"SAR"</span>, <span class="tok-k">"paymentType"</span>: <span class="tok-s">"INSTANT_OUTBOUND"</span> }
+{ <span class="tok-k">"paymentId"</span>: <span class="tok-s">"P-000184223"</span>, <span class="tok-k">"debtorAccount"</span>: <span class="tok-s">"ACC-00012345"</span>,
+  <span class="tok-k">"amount"</span>: <span class="tok-s">"2500.00"</span>, <span class="tok-k">"currency"</span>: <span class="tok-s">"EUR"</span>, <span class="tok-k">"paymentType"</span>: <span class="tok-s">"INSTANT_OUTBOUND"</span> }
 
 <span class="tok-c"># 200 OK</span>
 { <span class="tok-k">"status"</span>: <span class="tok-s">"HELD"</span>, <span class="tok-k">"holdReference"</span>: <span class="tok-s">"H-90311475"</span> }
@@ -201,7 +201,7 @@
           <p>One property of this contract is non-negotiable: <strong>the post must be idempotent on the hold reference.</strong> A second post against a hold that has already been consumed returns the original result; it never books again. Without that, every timeout on the post call becomes a potential double debit.</p>
 
           <h2 id="state-machine">The Payment State Machine</h2>
-          <p>Every scheme-bound payment moves through the same states. Internal transfers that never leave the bank can collapse to a single posted state, because there is no scheme leg to wait for. The status codes on the transitions use ISO 20022 as the example: a <code>pacs.002</code> status report carries acceptance (<code>ACCP</code>) or rejection (<code>RJCT</code>), and a <code>camt.056</code> carries a recall request.</p>
+          <p>Every scheme-bound payment moves through the same states. Internal transfers that never leave the institution can collapse to a single posted state, because there is no scheme leg to wait for. The status codes on the transitions use ISO 20022 as the example: a <code>pacs.002</code> status report carries acceptance (<code>ACCP</code>) or rejection (<code>RJCT</code>), and a <code>camt.056</code> carries a recall request.</p>
 
           <div class="diagram" role="img" aria-label="Payment state machine: RECEIVED to VALIDATING to HELD to SUBMITTED to SCHEME_PENDING, ending in POSTED, RELEASED, REJECTED or REVERSED">
             <div class="diagram__inner">
@@ -353,7 +353,7 @@
           </div>
 
           <h2 id="accounting-events">Deriving the Accounting-Event Catalogue</h2>
-          <p>Every post call carries an accounting event that tells core banking which accounts to debit and credit. The catalogue of events is a contract between the integration team and finance operations, and it is where payment programmes quietly lose months.</p>
+          <p>Every post call carries an accounting event that tells the core which accounts to debit and credit. The catalogue of events is a contract between the integration team and finance operations, and it is where payment programmes quietly lose months.</p>
           <p>The usual way to build the catalogue is a walkthrough: list the flows the team knows best and write an event for each. That produces a catalogue that looks complete and is not. The gaps surface one at a time during testing &mdash; an outbound flow with no customer-debit event, a funding source nobody listed, a refund leg with no settlement entry &mdash; and each one costs a round trip with operations and a configuration change in the core.</p>
           <p><strong>Derive the catalogue from a matrix instead.</strong> The axes are payment type, funding source and lifecycle outcome. Every cell needs either an event or an explicit &ldquo;not applicable&rdquo; with a reason. An illustrative excerpt:</p>
 
@@ -375,8 +375,8 @@
           <p>The method takes an afternoon with finance operations and saves weeks later. Three practices make it stick.</p>
           <ul>
             <li><strong>Make the matrix additive.</strong> New payment types and funding sources add rows; existing event codes are never renamed or repurposed. Renaming an event breaks historical reporting and reconciliation.</li>
-            <li><strong>Keep funding source out of the hub.</strong> Schemes do not care whether a customer paid from an account or a card. The integration layer carries the funding source from the channel session to the verify call, and core banking selects the event. Adding a funding type later becomes a core and integration change with no hub scope.</li>
-            <li><strong>Pair two-system postings with a daily control.</strong> When a card platform books the customer-level debit and core banking books against a settlement pool, the two totals must match every day. A gap is either a duplicate or a fraud signal, and it belongs in an operations queue.</li>
+            <li><strong>Keep funding source out of the hub.</strong> Schemes do not care whether a customer paid from an account or a card. The integration layer carries the funding source from the channel session to the verify call, and the core selects the event. Adding a funding type later becomes a core and integration change with no hub scope.</li>
+            <li><strong>Pair two-system postings with a daily control.</strong> When a card platform books the customer-level debit and the core books against a settlement pool, the two totals must match every day. A gap is either a duplicate or a fraud signal, and it belongs in an operations queue.</li>
           </ul>
 
           <h2 id="channel-api">The Idempotent Channel API</h2>
@@ -448,24 +448,24 @@
           </div>
 
           <h2 id="resilience">Resilience Settings</h2>
-          <p>Two upstreams, two sets of limits. A typical arrangement reaches core banking over IBM MQ with request/reply correlation and the hub over REST with mutual TLS. The values below are a starting point for illustration; tune them against measured latency, not intuition.</p>
+          <p>Two upstreams, two sets of limits. A typical arrangement reaches the legacy core over IBM MQ with request/reply correlation and the hub over REST with mutual TLS. The values below are a starting point for illustration; tune them against measured latency, not intuition.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>resilience.yaml</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-k">resilience4j:</span>
   <span class="tok-k">circuitbreaker:</span>
     <span class="tok-k">instances:</span>
-      <span class="tok-k">core-banking:</span>
+      <span class="tok-k">legacy-core:</span>
         <span class="tok-k">sliding-window-type:</span> <span class="tok-s">COUNT_BASED</span>
         <span class="tok-k">sliding-window-size:</span> <span class="tok-n">20</span>            <span class="tok-c"># last 20 calls</span>
         <span class="tok-k">failure-rate-threshold:</span> <span class="tok-n">50</span>         <span class="tok-c"># open at 50% failures</span>
         <span class="tok-k">wait-duration-in-open-state:</span> <span class="tok-s">30s</span>
         <span class="tok-k">permitted-number-of-calls-in-half-open-state:</span> <span class="tok-n">3</span>
       <span class="tok-k">payment-hub:</span>
-        <span class="tok-k">base-config:</span> <span class="tok-s">core-banking</span>
+        <span class="tok-k">base-config:</span> <span class="tok-s">legacy-core</span>
   <span class="tok-k">timelimiter:</span>
     <span class="tok-k">instances:</span>
-      <span class="tok-k">core-banking:</span> { <span class="tok-k">timeout-duration:</span> <span class="tok-s">8s</span> }    <span class="tok-c"># MQ request/reply</span>
+      <span class="tok-k">legacy-core:</span> { <span class="tok-k">timeout-duration:</span> <span class="tok-s">8s</span> }    <span class="tok-c"># MQ request/reply</span>
       <span class="tok-k">payment-hub:</span>  { <span class="tok-k">timeout-duration:</span> <span class="tok-s">10s</span> }
   <span class="tok-k">retry:</span>
     <span class="tok-k">instances:</span>
@@ -478,7 +478,7 @@
 
           <ul>
             <li><strong>Retry only what is idempotent end to end.</strong> Verify-and-hold carries an idempotency key the core honours, and the post is keyed on the hold reference. Anything that is not idempotent end to end gets no automatic retry.</li>
-            <li><strong>One breaker per upstream.</strong> A slow hub must not trip the breaker that protects core banking, and the other way round.</li>
+            <li><strong>One breaker per upstream.</strong> A slow hub must not trip the breaker that protects the system of record, and the other way round.</li>
             <li><strong>Timeouts are state transitions.</strong> If the hub does not accept a submission within its timeout, the integration layer issues release-only with reason <code>TIMEOUT</code>. Funds are never left reserved behind an unknown outcome.</li>
             <li><strong>An open breaker is an answer.</strong> Channels get <code>503 UPSTREAM_UNAVAILABLE</code> quickly, which beats holding a connection for eight seconds to learn the same thing.</li>
           </ul>
@@ -516,7 +516,7 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">Post succeeded, reply lost</div>
-            <p>Core banking books the debit and releases the hold, but the MQ reply misses the timeout. A naive retry could book twice. Two defences: the post is idempotent on the hold reference, and the retry path first queries the hold&rsquo;s status. Test this deliberately by dropping replies in a non-production environment.</p>
+            <p>The core books the debit and releases the hold, but the MQ reply misses the timeout. A naive retry could book twice. Two defences: the post is idempotent on the hold reference, and the retry path first queries the hold&rsquo;s status. Test this deliberately by dropping replies in a non-production environment.</p>
           </div>
 
           <div class="callout callout--warn">
