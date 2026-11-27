@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Streaming &mdash; Flink on OpenShift: Checkpointing &amp; Exactly-Once &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Running Apache Flink on Red Hat OpenShift for financial-grade stream processing: Flink Kubernetes Operator deployment, checkpoint configuration to S3-compatible storage, exactly-once Kafka source and sink, RocksDB tuning, HA topology, and rolling upgrade patterns for regulated payment pipelines.">
+  <meta name="description" content="Running Apache Flink on Red Hat OpenShift for mission-critical stream processing: Flink Kubernetes Operator deployment, checkpoint configuration to S3-compatible storage, exactly-once Kafka source and sink, RocksDB tuning, HA topology, and rolling upgrade patterns for regulated transaction pipelines.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Flink on OpenShift: Checkpointing &amp; Exactly-Once &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Production Flink on OpenShift for financial services: checkpointing, exactly-once, RocksDB tuning, HA and rolling upgrades.">
+  <meta property="og:description" content="Production Flink on OpenShift: checkpointing, exactly-once, RocksDB tuning, HA and rolling upgrades for pipelines that cannot lose data.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/flink-on-openshift-checkpointing.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,8 +17,12 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Flink on OpenShift: Checkpointing &amp; Exactly-Once">
-  <meta name="twitter:description" content="Production Flink on OpenShift: checkpoint configuration, exactly-once Kafka sink, RocksDB tuning for payment pipelines.">
+  <meta name="twitter:description" content="Production Flink on OpenShift: checkpoint configuration, exactly-once Kafka sink, RocksDB tuning for transaction pipelines.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/flink-on-openshift-checkpointing.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -37,19 +41,51 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Flink on OpenShift: Checkpointing, Exactly-Once, and Production Operations for Financial Stream Processing",
-    "description": "Running Apache Flink on Red Hat OpenShift for financial-grade stream processing: Flink Kubernetes Operator deployment, checkpoint configuration to S3-compatible storage, exactly-once Kafka source and sink, RocksDB tuning, HA topology, and rolling upgrade patterns for regulated payment pipelines.",
+    "headline": "Flink on OpenShift: Checkpointing, Exactly-Once, and Production Operations for Mission-Critical Stream Processing",
+    "description": "Running Apache Flink on Red Hat OpenShift for mission-critical stream processing: Flink Kubernetes Operator deployment, checkpoint configuration to S3-compatible storage, exactly-once Kafka source and sink, RocksDB tuning, HA topology, and rolling upgrade patterns for regulated transaction pipelines.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-10-31",
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/lab/data-streaming/flink-on-openshift-checkpointing.html",
     "isPartOf": {
@@ -91,7 +127,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Flink on OpenShift</div>
           <span class="overline">Lab Article</span>
           <h1>Data Streaming: Flink on OpenShift &mdash; Checkpointing &amp; Exactly-Once</h1>
-          <p class="lead">Running Apache Flink as a production cluster on Red Hat OpenShift: Flink Kubernetes Operator topology, checkpoint and savepoint configuration against S3-compatible storage, exactly-once Kafka source and sink, RocksDB state backend tuning, HA failover, and rolling upgrade patterns for financial payment pipelines that cannot afford silent data loss.</p>
+          <p class="lead">Running Apache Flink as a production cluster on Red Hat OpenShift: Flink Kubernetes Operator topology, checkpoint and savepoint configuration against S3-compatible storage, exactly-once Kafka source and sink, RocksDB state backend tuning, HA failover, and rolling upgrade patterns for transaction pipelines that cannot afford silent data loss.</p>
         </div>
       </div>
     </div>
@@ -129,8 +165,8 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Deploying Flink is easy. Running it in production on a regulated financial platform is not. The stream-processing logic articles in this Lab series cover windowing, joins, and state semantics; this article covers the operational layer that keeps those pipelines alive: how the cluster is structured on OpenShift, how checkpoints are persisted safely so a pod restart does not reprocess hours of payment data, and what exactly-once end-to-end really costs in latency and throughput.</p>
-          <p>The context is a payment screening and fraud-detection platform at a mid-sized bank: roughly 150,000 payment messages per day across SARIE, SWIFT, and internal transfers, with a hard requirement that duplicate payment execution is a production incident, not a tolerated edge case. That constraint drives every configuration choice here.</p>
+          <p>Deploying Flink is easy. Running it in production on a regulated, business-critical platform is not. The stream-processing logic articles in this Lab series cover windowing, joins, and state semantics; this article covers the operational layer that keeps those pipelines alive: how the cluster is structured on OpenShift, how checkpoints are persisted safely so a pod restart does not reprocess hours of transaction data, and what exactly-once end-to-end really costs in latency and throughput.</p>
+          <p>The running example is a transaction screening and fraud-detection pipeline: a few hundred thousand messages per day arriving from several upstream channels (card, instant and cross-border transfers for a payments business; orders, refunds and payouts for a marketplace), with a hard requirement that duplicate execution is a production incident, not a tolerated edge case. That constraint drives every configuration choice here.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Flink vs Kafka Streams for this use case</div>
@@ -237,7 +273,7 @@
 
           <div class="callout callout--note">
             <div class="callout__title">OpenShift SCC constraint</div>
-            <p>Flink&rsquo;s default container runs as UID 9999. OpenShift&rsquo;s <code>restricted</code> SCC rejects non-root images that don&rsquo;t declare a <code>runAsNonRoot: true</code> security context. Either use the official <code>apache/flink:1.19-scala_2.12-java17</code> image which already sets UID 9999, or configure a custom SCC that allows that UID range. Do not use <code>anyuid</code> in production; SAMA&rsquo;s hardening guidelines prohibit it.</p>
+            <p>Flink&rsquo;s default container runs as UID 9999. OpenShift&rsquo;s <code>restricted</code> SCC rejects non-root images that don&rsquo;t declare a <code>runAsNonRoot: true</code> security context. Either use the official <code>apache/flink:1.19-scala_2.12-java17</code> image which already sets UID 9999, or configure a custom SCC that allows that UID range. Do not use <code>anyuid</code> in production; most hardening baselines (CIS benchmarks, sector security standards) prohibit it.</p>
           </div>
 
           <h2 id="deploy">Deploying on OpenShift</h2>
@@ -250,7 +286,7 @@
             </li>
             <li>
               <h4>Create the S3 secret and ConfigMap</h4>
-              <p>Checkpoint storage credentials for MinIO or IBM COS go in a Kubernetes <code>Secret</code> referenced by the <code>FlinkDeployment</code>. Never bake credentials into the image.</p>
+              <p>Checkpoint storage credentials for MinIO, Ceph or a cloud object store go in a Kubernetes <code>Secret</code> referenced by the <code>FlinkDeployment</code>. Never bake credentials into the image.</p>
             </li>
             <li>
               <h4>Build and push the application JAR image</h4>
@@ -315,19 +351,19 @@
           </div>
 
           <h2 id="checkpointing">Checkpointing</h2>
-          <p>A checkpoint is a consistent snapshot of the entire distributed streaming state, including Kafka consumer offsets. If a TaskManager dies and a new one starts, Flink restores the operators from the last successful checkpoint and resumes consuming from the Kafka offsets recorded in that checkpoint. No data is lost; some data may be reprocessed (the window between the last checkpoint and the failure). Incremental checkpoints only write changed RocksDB SST files, which reduces checkpoint size from several GB to tens of MB for a typical financial pipeline.</p>
+          <p>A checkpoint is a consistent snapshot of the entire distributed streaming state, including Kafka consumer offsets. If a TaskManager dies and a new one starts, Flink restores the operators from the last successful checkpoint and resumes consuming from the Kafka offsets recorded in that checkpoint. No data is lost; some data may be reprocessed (the window between the last checkpoint and the failure). Incremental checkpoints only write changed RocksDB SST files, which reduces checkpoint size from several GB to tens of MB for a typical transaction pipeline.</p>
 
           <div class="callout callout--warn">
             <div class="callout__title">Checkpoint interval vs checkpoint timeout</div>
             <p>The default checkpoint timeout is 10 minutes. If a checkpoint takes longer than 10 minutes (which can happen when RocksDB state grows large), Flink cancels it and logs a warning&mdash;but continues processing. You will not notice until a recovery reveals a stale restore point hours behind the current offset. Set <code>execution.checkpointing.timeout</code> explicitly and alarm on checkpoint failures. For a 5 GB state backend, 90 seconds is a reasonable initial timeout.</p>
           </div>
 
-          <p>The recommended checkpoint-to-S3 path uses the Flink S3 filesystem plugin bundled with the distribution. For IBM COS, configure the S3 endpoint override:</p>
+          <p>The recommended checkpoint-to-S3 path uses the Flink S3 filesystem plugin bundled with the distribution. For any S3-compatible store (MinIO, Ceph, IBM COS), configure the S3 endpoint override:</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>flink-conf.yaml additions for IBM COS</span><span class="code-block__lang">yaml</span></div>
+            <div class="code-block__header"><span>flink-conf.yaml additions for S3-compatible storage</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-c"># Place in the flinkConfiguration stanza of the FlinkDeployment CR</span>
-<span class="tok-k">s3.endpoint</span>: <span class="tok-s">https://s3.ap.cloud-object-storage.appdomain.cloud</span>
+<span class="tok-k">s3.endpoint</span>: <span class="tok-s">https://s3.storage.example.com</span>
 <span class="tok-k">s3.access-key</span>: <span class="tok-s">${S3_ACCESS_KEY}</span>      <span class="tok-c"># injected from Secret</span>
 <span class="tok-k">s3.secret-key</span>: <span class="tok-s">${S3_SECRET_KEY}</span>
 <span class="tok-k">s3.path.style.access</span>: <span class="tok-s">"true"</span>
@@ -346,7 +382,7 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">Exactly-once with non-Kafka sinks</div>
-            <p>The two-phase commit protocol requires the sink to support transactional writes. Kafka does. A REST API, a direct JDBC connection (without XA), or a custom HTTP sink does not. If your pipeline writes to a non-transactional sink&mdash;a SWIFT message queue, a core banking API, an SFTP export&mdash;you have at-most-once (if you skip retries) or at-least-once (if you retry). Making those sinks idempotent at the consumer side is the only path to effectively-once semantics. The <a href="../data-sync/idempotent-consumer-exactly-once.html">Idempotent Consumers article</a> covers that pattern.</p>
+            <p>The two-phase commit protocol requires the sink to support transactional writes. Kafka does. A REST API, a direct JDBC connection (without XA), or a custom HTTP sink does not. If your pipeline writes to a non-transactional sink&mdash;a partner message queue, a legacy system-of-record API, an SFTP export&mdash;you have at-most-once (if you skip retries) or at-least-once (if you retry). Making those sinks idempotent at the consumer side is the only path to effectively-once semantics. The <a href="../data-sync/idempotent-consumer-exactly-once.html">Idempotent Consumers article</a> covers that pattern.</p>
           </div>
 
           <div class="code-block">
@@ -376,7 +412,7 @@
           </div>
 
           <h2 id="rocksdb">RocksDB tuning</h2>
-          <p>RocksDB is the default state backend for large stateful Flink jobs. Its default configuration is optimised for a generic workload, not for a financial screening pipeline where state is read heavily (sanctions lookups) and written moderately (velocity counters). Two tuning areas matter most: the <strong>block cache</strong> (keeps hot SST blocks in memory, reduces read I/O) and <strong>write buffer</strong> (batches writes before flushing to L0).</p>
+          <p>RocksDB is the default state backend for large stateful Flink jobs. Its default configuration is optimised for a generic workload, not for a screening pipeline where state is read heavily (sanctions lookups) and written moderately (velocity counters). Two tuning areas matter most: the <strong>block cache</strong> (keeps hot SST blocks in memory, reduces read I/O) and <strong>write buffer</strong> (batches writes before flushing to L0).</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>RocksDBTuner.java</span><span class="code-block__lang">java</span></div>
@@ -480,7 +516,7 @@ descriptor.enableTimeToLive(ttlConfig);</code></pre>
 
           <h2 id="upgrades">Rolling upgrades and savepoints</h2>
           <p>A Flink application upgrade&mdash;new JAR, new parallelism, changed operator logic&mdash;requires stopping the running job, taking a savepoint, and restarting from it. A savepoint is a manually-triggered consistent snapshot; unlike a checkpoint, it is retained until explicitly deleted and its format is stable across Flink minor versions.</p>
-          <p>With the operator&rsquo;s <code>upgradeMode: savepoint</code>, the upgrade workflow is fully automated: update the image tag in the <code>FlinkDeployment</code> CR, commit to Git, ArgoCD applies the change, the operator triggers a savepoint, waits for it to complete, and starts the new version from that savepoint. The pipeline is offline for 5&ndash;15 seconds (savepoint duration). For payment screening with a hard SLA, schedule upgrades during the SARIE maintenance window (daily between 00:00&ndash;05:00 AST).</p>
+          <p>With the operator&rsquo;s <code>upgradeMode: savepoint</code>, the upgrade workflow is fully automated: update the image tag in the <code>FlinkDeployment</code> CR, commit to Git, ArgoCD applies the change, the operator triggers a savepoint, waits for it to complete, and starts the new version from that savepoint. The pipeline is offline for 5&ndash;15 seconds (savepoint duration). For a screening pipeline with a hard SLA, schedule upgrades inside the agreed low-traffic or maintenance window of the downstream systems it feeds.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">State schema compatibility on upgrade</div>
@@ -509,7 +545,7 @@ descriptor.enableTimeToLive(ttlConfig);</code></pre>
 
           <div class="callout callout--danger">
             <div class="callout__title">Checkpoint storage fills silently</div>
-            <p>With <code>state.checkpoints.num-retained: 3</code>, only the 3 most recent checkpoints are kept&mdash;but only if the checkpoint is marked &ldquo;complete&rdquo;. A checkpoint that partially uploaded and then failed may leave orphaned SST files in S3 that the cleaner never touches, because they are not in the checkpoint directory index. Run a weekly S3 lifecycle rule to expire objects older than 7 days under the checkpoint prefix. IBM COS and MinIO both support lifecycle policies on a bucket prefix.</p>
+            <p>With <code>state.checkpoints.num-retained: 3</code>, only the 3 most recent checkpoints are kept&mdash;but only if the checkpoint is marked &ldquo;complete&rdquo;. A checkpoint that partially uploaded and then failed may leave orphaned SST files in S3 that the cleaner never touches, because they are not in the checkpoint directory index. Run a weekly S3 lifecycle rule to expire objects older than 7 days under the checkpoint prefix. MinIO, Ceph and the major cloud object stores all support lifecycle policies on a bucket prefix.</p>
           </div>
 
           <div class="callout callout--danger">
@@ -551,7 +587,7 @@ descriptor.enableTimeToLive(ttlConfig);</code></pre>
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scatter-Gather Is Not a Technical Pattern: It&rsquo;s a Service Agreement with the Customer &mdash; Waleed Albadawi</title>
   <meta name="description" content="The scatter-gather aggregation decision for SAMA Open Banking is a business commitment, not an engineering choice. The VP has to decide what a partial result means to the customer before the team writes a line of code.">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/blog/scatter-gather-decision.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:image:width" content="1200">
@@ -37,7 +38,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/style.css?v=20261127">
 
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
@@ -61,12 +62,44 @@
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/blog/scatter-gather-decision.html",
     "isPartOf": {
@@ -144,7 +177,7 @@
 
         <p>The team also needs a realistic test dataset that includes customers with accounts on some systems but not others, accounts at or near the consented scope boundary, and concurrent sessions at the peak volume expected during SAMA certification load testing. Open Banking certification failures that occur at load test time, six weeks before the go-live date, are almost always caused by CBS connection pool exhaustion under concurrent scatter-gather sessions &mdash; a capacity limit the core banking team could have sized correctly if the integration team had shared the concurrent-session projections two months earlier.</p>
 
-        <p>The technical depth behind the implementation &mdash; IBM ACE fan-out/fan-in node configuration, Spring Boot virtual-thread pattern, per-downstream circuit breaker tuning, and the caching strategy that keeps p99 response time under 300ms for warm sessions &mdash; is covered in the <a href="../lab/integration-patterns/scatter-gather-aggregation.html" style="color:var(--color-accent);">Scatter-Gather: Multi-Source Account Aggregation for SAMA Open Banking lab article</a>.</p>
+        <p>The technical depth behind the implementation &mdash; IBM ACE fan-out/fan-in node configuration, Spring Boot virtual-thread pattern, per-downstream circuit breaker tuning, and the caching strategy that keeps p99 response time under 300ms for warm sessions &mdash; is covered in the <a href="../lab/integration-patterns/scatter-gather-aggregation.html" style="color:var(--color-accent);">Scatter-Gather: Multi-Source Aggregation Across Fragmented Systems of Record lab article</a>.</p>
 
       </div>
     </div>
@@ -163,6 +196,6 @@
     </div>
   </footer>
 
-  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/main.js?v=20261127"></script>
 </body>
 </html>

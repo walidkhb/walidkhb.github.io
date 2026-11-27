@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Streaming: Stateful Stream Processing Patterns &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Stateful stream processing with Apache Flink 1.19 and Kafka Streams 3.7: window types, RocksDB state backends, exactly-once checkpointing, velocity checks, stream enrichment, and late data handling for regulated banking.">
+  <meta name="description" content="Stateful stream processing with Apache Flink 1.19 and Kafka Streams 3.7: window types, RocksDB state backends, exactly-once checkpointing, velocity checks, stream enrichment, and late data handling for regulated, high-volume workloads.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Data Streaming: Stateful Stream Processing Patterns &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Flink and Kafka Streams stateful processing: window types, RocksDB backends, exactly-once checkpoints, velocity checks, enrichment patterns, and late data handling for payment and fraud workloads.">
+  <meta property="og:description" content="Flink and Kafka Streams stateful processing: window types, RocksDB backends, exactly-once checkpoints, velocity checks, enrichment patterns, and late data handling for transaction, fraud and telemetry workloads.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/stateful-stream-processing.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,8 +17,12 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Stateful Stream Processing Patterns &mdash; Data Streaming Lab">
-  <meta name="twitter:description" content="Flink and Kafka Streams: window types, RocksDB, exactly-once checkpointing, velocity checks, and late data for banking.">
+  <meta name="twitter:description" content="Flink and Kafka Streams: window types, RocksDB, exactly-once checkpointing, velocity checks, and late data handling in production.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/stateful-stream-processing.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -38,18 +42,50 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Data Streaming: Stateful Stream Processing Patterns",
-    "description": "Stateful stream processing with Apache Flink 1.19 and Kafka Streams 3.7: window types, RocksDB state backends, exactly-once checkpointing, velocity checks, stream enrichment, and late data handling for regulated banking.",
+    "description": "Stateful stream processing with Apache Flink 1.19 and Kafka Streams 3.7: window types, RocksDB state backends, exactly-once checkpointing, velocity checks, stream enrichment, and late data handling for regulated, high-volume workloads.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/lab/data-streaming/stateful-stream-processing.html",
     "isPartOf": {
@@ -91,7 +127,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Stateful Stream Processing</div>
           <span class="overline">Lab Article</span>
           <h1>Data Streaming: Stateful Stream Processing Patterns</h1>
-          <p class="lead">Maintaining state across events &mdash; running totals, session detection, pattern matching &mdash; is what separates a stream processor from a message router. Apache Flink 1.19 and Kafka Streams 3.7 with RocksDB state backends, exactly-once checkpointing, velocity check implementations, broadcast state enrichment, and production-grade late data handling for payment and fraud workloads in regulated Saudi banking.</p>
+          <p class="lead">Maintaining state across events &mdash; running totals, session detection, pattern matching &mdash; is what separates a stream processor from a message router. Apache Flink 1.19 and Kafka Streams 3.7 with RocksDB state backends, exactly-once checkpointing, velocity check implementations, broadcast state enrichment, and production-grade late data handling for payment, fraud, order and telemetry workloads in regulated, high-volume environments.</p>
         </div>
       </div>
     </div>
@@ -128,7 +164,7 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Stateless stream processing &mdash; filtering, transforming, routing &mdash; answers questions about a single event in isolation. It cannot answer questions that span multiple events over time: Has this customer made five transactions in the last ten minutes? Is this session of transactions consistent with the customer&rsquo;s historical behaviour profile? Has this account received three or more incoming transfers today that individually fall below the SAMA reporting threshold but collectively exceed it?</p>
+          <p>Stateless stream processing &mdash; filtering, transforming, routing &mdash; answers questions about a single event in isolation. It cannot answer questions that span multiple events over time: Has this customer made five transactions in the last ten minutes? Is this session of transactions consistent with the customer&rsquo;s historical behaviour profile? Has this account received three or more incoming transfers today that individually fall below a regulatory reporting threshold but collectively exceed it? Has this device sent more failed logins in the last minute than in the previous hour?</p>
           <p>Answering those questions requires <strong>state</strong>: information accumulated from past events that is available when the current event is processed. The stream processor must maintain that state reliably, recover it correctly after a failure, and evict it when it is no longer needed to prevent unbounded memory growth. Stateful processing is therefore a more demanding operational commitment than stateless processing &mdash; it requires a state backend, a recovery mechanism, and an operational discipline around state growth and schema migration.</p>
           <p>The two relevant engines in the Kafka ecosystem are <strong>Apache Flink</strong> (a dedicated stream processing cluster with rich stateful primitives and exactly-once via Chandy-Lamport checkpointing) and <strong>Kafka Streams</strong> (an embedded library that runs inside your JVM process with state managed via RocksDB and backed by Kafka changelog topics). The right choice depends on the complexity of the stateful computation, the size of the state, and the team&rsquo;s operational maturity with distributed systems.</p>
 
@@ -229,22 +265,22 @@
 
           <table>
             <thead>
-              <tr><th>Window type</th><th>Time alignment</th><th>Memory per window</th><th>Primary banking use case</th><th>Late data handling</th></tr>
+              <tr><th>Window type</th><th>Time alignment</th><th>Memory per window</th><th>Typical use case</th><th>Late data handling</th></tr>
             </thead>
             <tbody>
-              <tr><td><strong>Tumbling</strong></td><td>Fixed boundaries; non-overlapping</td><td>One window per key</td><td>Daily transaction totals, hourly SAMA reporting aggregates</td><td>Single window per period; missed events update next window</td></tr>
+              <tr><td><strong>Tumbling</strong></td><td>Fixed boundaries; non-overlapping</td><td>One window per key</td><td>Daily transaction totals, hourly reporting or billing aggregates</td><td>Single window per period; missed events update next window</td></tr>
               <tr><td><strong>Hopping</strong></td><td>Fixed size, fixed advance; overlapping</td><td>Multiple windows per key (size/advance ratio)</td><td>Rolling 5-minute velocity checks with 1-minute advance</td><td>Event contributes to all overlapping windows</td></tr>
-              <tr><td><strong>Session</strong></td><td>Gap-based; no fixed size</td><td>One window per active session per key</td><td>Login session fraud grouping, ATM usage session</td><td>Late events can merge or extend sessions</td></tr>
+              <tr><td><strong>Session</strong></td><td>Gap-based; no fixed size</td><td>One window per active session per key</td><td>Login session fraud grouping, ATM, kiosk or device usage session</td><td>Late events can merge or extend sessions</td></tr>
               <tr><td><strong>Global</strong></td><td>No boundary &mdash; entire stream per key</td><td>Grows with all events for key (unbounded)</td><td>Lifetime totals &mdash; use with explicit state TTL only</td><td>Always included; no late data concept</td></tr>
             </tbody>
           </table>
 
-          <p>For SAMA velocity limit controls &mdash; maximum N transactions in a rolling window &mdash; <strong>hopping windows</strong> provide the most accurate real-time check because the window advances continuously. For daily reporting aggregations aligned to the business day boundary, <strong>tumbling windows</strong> are the correct and simplest choice. For fraud patterns based on transaction clustering in time (a burst of activity followed by silence), <strong>session windows</strong> model the behaviour naturally. For customer lifetime statistics that never expire, use a <strong>KeyedProcessFunction</strong> with explicit state &mdash; not a global window, which has no eviction mechanism.</p>
+          <p>For velocity limit controls &mdash; maximum N transactions, logins or API calls in a rolling window &mdash; <strong>hopping windows</strong> provide the most accurate real-time check because the window advances continuously. For daily reporting aggregations aligned to the business day boundary, <strong>tumbling windows</strong> are the correct and simplest choice. For fraud patterns based on transaction clustering in time (a burst of activity followed by silence), <strong>session windows</strong> model the behaviour naturally. For customer lifetime statistics that never expire, use a <strong>KeyedProcessFunction</strong> with explicit state &mdash; not a global window, which has no eviction mechanism.</p>
 
           <h2 id="flink-state">Flink State Backends</h2>
           <p>Flink&rsquo;s state backend determines where operator state is stored during job execution and how it is persisted to durable storage for fault tolerance.</p>
-          <p><strong>HashMapStateBackend</strong> (formerly HeapStateBackend) stores all state as Java objects on the JVM heap. Access is fast &mdash; in-process, no serialisation overhead &mdash; but state size is bounded by the TaskManager heap and state is lost on a process restart unless checkpointed. Suitable for small per-key state (counters, flags) where the total state across all active keys fits comfortably in 60&ndash;70% of the TaskManager heap. In a payment context with millions of active customer keys, this ceiling is reached quickly.</p>
-          <p><strong>EmbeddedRocksDBStateBackend</strong> stores all state in a RocksDB instance on local disk, serialised as byte arrays. State size is bounded only by available disk, not by JVM heap, enabling orders-of-magnitude larger state per TaskManager. The trade-off is serialisation overhead on every state read and write, and RocksDB&rsquo;s compaction behaviour under high write load (see pitfalls). For most banking stateful pipelines &mdash; velocity ring buffers, customer session state, running aggregations over tens of millions of customers &mdash; RocksDB is the correct backend.</p>
+          <p><strong>HashMapStateBackend</strong> (formerly HeapStateBackend) stores all state as Java objects on the JVM heap. Access is fast &mdash; in-process, no serialisation overhead &mdash; but state size is bounded by the TaskManager heap and state is lost on a process restart unless checkpointed. Suitable for small per-key state (counters, flags) where the total state across all active keys fits comfortably in 60&ndash;70% of the TaskManager heap. In a payment, e-commerce or IoT context with millions of active keys, this ceiling is reached quickly.</p>
+          <p><strong>EmbeddedRocksDBStateBackend</strong> stores all state in a RocksDB instance on local disk, serialised as byte arrays. State size is bounded only by available disk, not by JVM heap, enabling orders-of-magnitude larger state per TaskManager. The trade-off is serialisation overhead on every state read and write, and RocksDB&rsquo;s compaction behaviour under high write load (see pitfalls). For most production stateful pipelines &mdash; velocity ring buffers, customer session state, running aggregations over tens of millions of customers &mdash; RocksDB is the correct backend.</p>
           <p><strong>State TTL</strong> is configured per state descriptor and is independent of the state backend. It specifies how long state is retained after the last write or read (configurable). Expired state is not immediately removed &mdash; it is lazily evicted on access or during RocksDB background compaction. For payment velocity state, set TTL to 2&times; the longest velocity window (e.g. TTL=60 minutes for a 30-minute velocity window) to ensure state is available for late-arriving events within the allowed lateness budget.</p>
 
           <h2 id="kafka-streams-state">Kafka Streams State Stores</h2>
@@ -307,8 +343,8 @@
 
   <span class="tok-k">state-backend</span>: <span class="tok-s">rocksdb</span>
   <span class="tok-k">state-backend-incremental</span>: <span class="tok-k">true</span>
-  <span class="tok-k">state-checkpoints-dir</span>: <span class="tok-s">s3://acmebank-flink/checkpoints/</span>
-  <span class="tok-k">state-savepoints-dir</span>: <span class="tok-s">s3://acmebank-flink/savepoints/</span>
+  <span class="tok-k">state-checkpoints-dir</span>: <span class="tok-s">s3://example-flink/checkpoints/</span>
+  <span class="tok-k">state-savepoints-dir</span>: <span class="tok-s">s3://example-flink/savepoints/</span>
 
   <span class="tok-k">restart-strategy</span>:
     <span class="tok-k">type</span>: <span class="tok-s">exponential-delay</span>
@@ -328,7 +364,7 @@
           </div>
 
           <h2 id="fraud-velocity">Velocity Check Implementation</h2>
-          <p>A SAMA-compliant velocity check &mdash; block a customer whose card generates more than N transactions within a rolling time window &mdash; requires per-key stateful aggregation with event-time semantics and state TTL. The implementation below uses a Flink <code>KeyedProcessFunction</code> with a <code>ListState</code> ring buffer and state TTL.</p>
+          <p>A regulator-grade velocity check &mdash; block a customer whose card (or account, or device) generates more than N transactions within a rolling time window &mdash; requires per-key stateful aggregation with event-time semantics and state TTL. The implementation below uses a Flink <code>KeyedProcessFunction</code> with a <code>ListState</code> ring buffer and state TTL.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>VelocityCheckFunction.java (Flink KeyedProcessFunction)</span><span class="code-block__lang">java</span></div>
@@ -435,15 +471,15 @@
           </ol>
 
           <h2 id="enrichment">Stream Enrichment</h2>
-          <p>Most fraud and risk computations require enriching payment events with reference data that does not arrive in the payment event itself: customer segment, account risk tier, merchant category code, counterparty bank risk rating. This reference data changes slowly (hours to days) but must be available in milliseconds at the moment of scoring.</p>
+          <p>Most fraud and risk computations require enriching payment events with reference data that does not arrive in the payment event itself: customer segment, account risk tier, merchant category code, counterparty risk rating. This reference data changes slowly (hours to days) but must be available in milliseconds at the moment of scoring.</p>
           <p>Flink provides two enrichment patterns. <strong>Async I/O</strong> calls an external service (Redis, HTTP endpoint) for each event asynchronously, with configurable parallelism and timeout. Suitable for low-volume enrichment with acceptable 2&ndash;5 ms latency per lookup. <strong>Broadcast State</strong> loads a slow-changing reference dataset once per operator and makes it available in-process for every event, with zero lookup latency. Suitable for relatively small datasets (merchant categories, risk tiers, country codes) that fit in memory and are updated infrequently.</p>
           <p>For a payment stream enriched with merchant category codes: broadcast the merchant reference stream (from a Kafka topic updated daily) to all task slots via <code>DataStream.broadcast()</code>. In the <code>KeyedBroadcastProcessFunction</code>, the <code>processBroadcastElement</code> method updates the broadcast state when a new merchant record arrives; <code>processElement</code> reads from broadcast state to enrich each payment. The enrichment is always in-process &mdash; no network hop, sub-millisecond, consistent across all task slots.</p>
           <p>Temporal join (also called a <strong>time-enriched join</strong>) is the correct pattern for enriching a payment stream with a reference data snapshot that was valid at the payment event time, not the current reference data. Flink&rsquo;s SQL <code>FOR SYSTEM_TIME AS OF</code> syntax implements this: <code>SELECT p.*, r.riskTier FROM payments p JOIN riskProfile FOR SYSTEM_TIME AS OF p.eventTime AS r ON p.customerId = r.customerId</code>. This is essential for regulatory audit: the enrichment used at scoring time must be reconstructable from the data that was available at that moment, not from current reference data that may have changed.</p>
 
           <h2 id="late-data">Late Data and Watermarks</h2>
           <p>Event-time processing requires a mechanism to advance the notion of time in the stream and to decide when a window is &ldquo;complete enough&rdquo; to trigger computation. Watermarks are the mechanism: a watermark at time <em>t</em> asserts that no future events with event time less than <em>t</em> will arrive. Once the watermark passes a window&rsquo;s end boundary, Flink fires the window and emits the result.</p>
-          <p><strong>WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10))</strong> is the correct starting point for payment event streams. It generates a watermark that lags 10 seconds behind the highest observed event timestamp in the stream. This allows events that arrive up to 10 seconds out of order (due to network retransmissions, IPS gateway buffering, or micro-batch ingest delays) to still be included in their correct window.</p>
-          <p><strong>Allowed lateness</strong> extends this further: events that arrive after the watermark has passed the window end but within the allowed lateness period update the window result and retrigger it. Use <code>.allowedLateness(Duration.ofSeconds(30))</code> for IPS transfer events, which occasionally retransmit. After the allowed lateness period, truly late events are routed to a side output for manual review &mdash; never silently dropped on a payment topic.</p>
+          <p><strong>WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10))</strong> is the correct starting point for payment event streams. It generates a watermark that lags 10 seconds behind the highest observed event timestamp in the stream. This allows events that arrive up to 10 seconds out of order (due to network retransmissions, payment-gateway or partner buffering, or micro-batch ingest delays) to still be included in their correct window.</p>
+          <p><strong>Allowed lateness</strong> extends this further: events that arrive after the watermark has passed the window end but within the allowed lateness period update the window result and retrigger it. Use <code>.allowedLateness(Duration.ofSeconds(30))</code> for partner or scheme feeds that occasionally retransmit. After the allowed lateness period, truly late events are routed to a side output for manual review &mdash; never silently dropped on a payment topic.</p>
 
           <div class="callout callout--warn">
             <div class="callout__title">RocksDB compaction under high write load can cause checkpoint timeouts</div>
@@ -459,7 +495,7 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">Growing state without TTL causes OOM in weeks</div>
-            <p>A velocity buffer state without TTL grows monotonically. Every unique customer key that ever transacted retains its state indefinitely. A bank with 2 million active cardholders and a 30-minute velocity buffer holding 10 transactions each consumes roughly 1&ndash;2 GB of state &mdash; manageable. After 12 months the same state grows to include churned customers with zero recent transactions, adding hundreds of millions of stale keys to RocksDB. This pattern has caused production OOM kills and data loss on stateful Flink jobs that worked fine in development but were never stress-tested with real churn rates. Always set TTL. Always verify RocksDB size growth in the first 30 days of production operation.</p>
+            <p>A velocity buffer state without TTL grows monotonically. Every unique customer key that ever transacted retains its state indefinitely. A platform with 2 million active cardholders (or accounts, or devices) and a 30-minute velocity buffer holding 10 transactions each consumes roughly 1&ndash;2 GB of state &mdash; manageable. After 12 months the same state grows to include churned customers with zero recent transactions, adding hundreds of millions of stale keys to RocksDB. This pattern has caused production OOM kills and data loss on stateful Flink jobs that worked fine in development but were never stress-tested with real churn rates. Always set TTL. Always verify RocksDB size growth in the first 30 days of production operation.</p>
           </div>
 
           <div class="callout callout--warn">
@@ -512,7 +548,7 @@
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Synchronisation &mdash; Reconciliation Pipelines for Regulators &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Production reconciliation pipelines for regulated financial systems: daily break detection via CDC fingerprinting, automated break investigation, SAMA-aligned audit trails, and the reporting that survives an examination.">
+  <meta name="description" content="Production reconciliation pipelines for regulated systems and regulatory reporting: daily break detection via CDC fingerprinting, automated break investigation, audit trails aligned with supervisory expectations, and the reporting that survives an examination.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Data Synchronisation &mdash; Reconciliation Pipelines for Regulators">
-  <meta property="og:description" content="CDC fingerprinting, automated break investigation, and SAMA-ready audit trails for reconciliation pipelines.">
+  <meta property="og:description" content="CDC fingerprinting, automated break investigation, and examination-ready audit trails for reconciliation pipelines.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/data-sync/reconciliation-pipelines-for-regulators.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,8 +17,12 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Reconciliation Pipelines for Regulators">
-  <meta name="twitter:description" content="Daily reconciliation that catches CDC drift and satisfies SAMA audit requirements.">
+  <meta name="twitter:description" content="Daily reconciliation that catches CDC drift and satisfies regulatory audit requirements.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/reconciliation-pipelines-for-regulators.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -39,18 +43,50 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Data Synchronisation: Reconciliation Pipelines for Regulators",
-    "description": "Production reconciliation pipelines for regulated financial systems: daily break detection via CDC fingerprinting, automated break investigation, SAMA-aligned audit trails, and the reporting that survives an examination.",
+    "description": "Production reconciliation pipelines for regulated systems and regulatory reporting: daily break detection via CDC fingerprinting, automated break investigation, audit trails aligned with supervisory expectations, and the reporting that survives an examination.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-08-29",
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/lab/data-sync/reconciliation-pipelines-for-regulators.html",
     "isPartOf": {
@@ -90,7 +126,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Reconciliation Pipelines for Regulators</div>
           <span class="overline">Lab Article</span>
           <h1>Data Synchronisation: Reconciliation Pipelines for Regulators</h1>
-          <p class="lead">Daily reconciliation jobs that catch CDC drift the application can&rsquo;t see, the audit trail SAMA actually wants, and how to wire up automated break investigation so the morning report isn&rsquo;t a manual spreadsheet ritual.</p>
+          <p class="lead">Daily reconciliation jobs that catch CDC drift the application can&rsquo;t see, the audit trail examiners actually ask for, and how to wire up automated break investigation so the morning report isn&rsquo;t a manual spreadsheet ritual.</p>
         </div>
       </div>
     </div>
@@ -109,7 +145,7 @@
             <li><a href="#fingerprinting">Fingerprinting &amp; hash comparison</a></li>
             <li><a href="#scheduling">Scheduling &amp; windowing</a></li>
             <li><a href="#break-investigation">Automated break investigation</a></li>
-            <li><a href="#audit-trail">SAMA audit trail requirements</a></li>
+            <li><a href="#audit-trail">Regulatory audit-trail requirements</a></li>
             <li><a href="#implementation">Building the pipeline</a></li>
             <li><a href="#reporting">Regulator-ready reporting</a></li>
             <li><a href="#pitfalls">Common pitfalls</a></li>
@@ -127,9 +163,9 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>CDC keeps distributed data in sync in near-real-time. Reconciliation proves that it worked &mdash; and catches the cases where it didn&rsquo;t. Every production CDC deployment eventually produces a break: a row that was updated on the source while the Debezium connector was down, a slot replay that delivered an event twice, an outbox row deleted before the connector picked it up because someone ran a manual cleanup. These breaks are rare and usually small. In a regulated bank they are also mandatory to detect, investigate, and report within a prescribed window.</p>
-          <p>SAMA&rsquo;s Technology Risk Management (TRM) framework does not prescribe a reconciliation technology stack. It does require that banks demonstrate <em>data integrity controls</em> across system boundaries &mdash; evidence that data transmitted between core systems is complete, accurate, and that discrepancies are detected and resolved. A Debezium connector that &ldquo;mostly works&rdquo; is not a control; a reconciliation job with a break report and an investigation log is.</p>
-          <p>This article covers the full pipeline: fingerprint generation, hash comparison at scale, intraday vs. daily scheduling, automated break classification, and the reporting format that satisfies an examination team.</p>
+          <p>CDC keeps distributed data in sync in near-real-time. Reconciliation proves that it worked &mdash; and catches the cases where it didn&rsquo;t. Every production CDC deployment eventually produces a break: a row that was updated on the source while the Debezium connector was down, a slot replay that delivered an event twice, an outbox row deleted before the connector picked it up because someone ran a manual cleanup. These breaks are rare and usually small. In a regulated organisation &mdash; a bank or payment firm, an insurer, a utility, a healthcare provider &mdash; they are also mandatory to detect, investigate, and report within a prescribed window.</p>
+          <p>Supervisory guidance &mdash; MAS&rsquo;s Technology Risk Management Guidelines, the EBA&rsquo;s guidelines on ICT and security risk management, and comparable frameworks from SAMA, the FCA and sector regulators &mdash; rarely prescribes a reconciliation technology stack. What it consistently expects is that regulated firms demonstrate <em>data integrity controls</em> across system boundaries &mdash; evidence that data transmitted between critical systems, and into regulatory returns, is complete and accurate, and that discrepancies are detected and resolved. A Debezium connector that &ldquo;mostly works&rdquo; is not a control; a reconciliation job with a break report and an investigation log is.</p>
+          <p>The same pipeline underpins regulatory reporting: the figures in a regulatory return are only as trustworthy as the reconciliation between the reporting warehouse and the systems of record that feed it. This article covers the full pipeline: fingerprint generation, hash comparison at scale, intraday vs. daily scheduling, automated break classification, and the reporting format that satisfies an examination team.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">This complements, not replaces, CDC monitoring</div>
@@ -186,7 +222,7 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">Manual SQL queries are not a reconciliation pipeline</div>
-            <p>Comparing two tables by hand each morning with a shared spreadsheet is a control that can&rsquo;t be audited, can&rsquo;t scale to millions of rows, and produces no timestamp evidence. SAMA expects an automated, repeatable process with a stored result log. Manual checks are evidence that the control does not exist.</p>
+            <p>Comparing two tables by hand each morning with a shared spreadsheet is a control that can&rsquo;t be audited, can&rsquo;t scale to millions of rows, and produces no timestamp evidence. Examiners expect an automated, repeatable process with a stored result log. Manual checks are evidence that the control does not exist.</p>
           </div>
 
           <h2 id="architecture">Pipeline architecture</h2>
@@ -233,8 +269,8 @@
                 <!-- Downstream -->
                 <rect x="400" y="60" width="130" height="80" rx="8" fill="#16161f" stroke="#c8a660"/>
                 <text x="465" y="88" text-anchor="middle" fill="#c8a660" font-size="11" font-weight="600">Downstream</text>
-                <text x="465" y="108" text-anchor="middle" fill="#e4e4e7" font-size="10">Search / Analytics</text>
-                <text x="465" y="126" text-anchor="middle" fill="#71717a" font-size="9">Elasticsearch / DWH</text>
+                <text x="465" y="108" text-anchor="middle" fill="#e4e4e7" font-size="10">Reporting / Search</text>
+                <text x="465" y="126" text-anchor="middle" fill="#71717a" font-size="9">Reporting mart / DWH</text>
 
                 <!-- Streaming Recon (Flink) -->
                 <rect x="400" y="200" width="130" height="70" rx="8" fill="#1c1c28" stroke="#a78bfa"/>
@@ -245,7 +281,7 @@
                 <!-- Batch Recon (Spark) -->
                 <rect x="590" y="60" width="170" height="80" rx="8" fill="#1c1c28" stroke="#4a9eff"/>
                 <text x="675" y="85" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Spark (batch)</text>
-                <text x="675" y="103" text-anchor="middle" fill="#e4e4e7" font-size="9">daily 02:00 AST</text>
+                <text x="675" y="103" text-anchor="middle" fill="#e4e4e7" font-size="9">daily 02:00 local</text>
                 <text x="675" y="119" text-anchor="middle" fill="#71717a" font-size="9">full-table hash compare</text>
                 <text x="675" y="133" text-anchor="middle" fill="#71717a" font-size="9">authoritative report</text>
 
@@ -267,7 +303,7 @@
 
                 <!-- Labels -->
                 <rect x="20" y="330" width="740" height="38" rx="6" fill="#0f0f16" stroke="#71717a" stroke-dasharray="3 2"/>
-                <text x="390" y="348" text-anchor="middle" fill="#71717a" font-size="9">Streaming path: 15-min windows, catches breaks within the hour &middot; Batch path: daily authoritative run, signed result, stored for 7 years per SAMA TRM</text>
+                <text x="390" y="348" text-anchor="middle" fill="#71717a" font-size="9">Streaming: 15-min windows, breaks found within the hour &middot; Batch: daily authoritative run, signed result, kept for the retention period</text>
                 <text x="390" y="363" text-anchor="middle" fill="#71717a" font-size="9">Both paths write to the Break Store &middot; Batch result is the one that counts for audit</text>
               </svg>
             </div>
@@ -275,11 +311,11 @@
           </div>
 
           <h2 id="fingerprinting">Fingerprinting &amp; hash comparison</h2>
-          <p>The core technique is row fingerprinting: for each row in the source and downstream, compute a deterministic hash of the business-significant columns; compare hashes by primary key. A mismatch on the hash means a break; matching hashes mean the row is in sync. At a mid-sized bank&rsquo;s scale (tens of millions of payment records), hashing allows the comparison to run in minutes rather than column-by-column SQL joins that would take hours.</p>
+          <p>The core technique is row fingerprinting: for each row in the source and downstream, compute a deterministic hash of the business-significant columns; compare hashes by primary key. A mismatch on the hash means a break; matching hashes mean the row is in sync. At the scale of a mid-sized enterprise (tens of millions of transaction records), hashing allows the comparison to run in minutes rather than column-by-column SQL joins that would take hours.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Which columns to hash</div>
-            <p>Do not hash technical columns like <code>updated_at</code>, <code>version</code>, or <code>_kafka_offset</code> &mdash; these legitimately differ between source and downstream by design. Hash only columns that must be identical: amounts, account numbers, reference IDs, status codes, ISO 20022 field values. Document the exclusion list explicitly; it is part of the reconciliation control definition.</p>
+            <p>Do not hash technical columns like <code>updated_at</code>, <code>version</code>, or <code>_kafka_offset</code> &mdash; these legitimately differ between source and downstream by design. Hash only columns that must be identical: amounts, account or customer numbers, reference IDs, status codes, external-standard identifiers (ISO 20022, EDI and the like). Document the exclusion list explicitly; it is part of the reconciliation control definition.</p>
           </div>
 
           <div class="code-block">
@@ -360,7 +396,7 @@
           <p>The two scheduling strategies:</p>
           <ul>
             <li><strong>Intraday (streaming):</strong> 15-minute tumbling windows, Flink watermark set at window-end minus the measured propagation lag. Result: a near-real-time break count, alerted if it exceeds a threshold (e.g., more than 0 unexplained breaks in a 15-minute window). This feeds the operations dashboard.</li>
-            <li><strong>Daily batch (authoritative):</strong> Runs at 02:00 AST on the prior business day&rsquo;s data. The window is T&minus;1 business day, 00:00:00&ndash;23:59:59 AST, with a 90-second lag. Spark reads source and downstream via JDBC. Result is written to the <code>recon_runs</code> table and signed with a SHA-256 of the result set for tamper evidence. This is the regulatory artefact.</li>
+            <li><strong>Daily batch (authoritative):</strong> Runs at 02:00 in the reporting timezone on the prior business day&rsquo;s data. The window is T&minus;1 business day, 00:00:00&ndash;23:59:59 in that timezone, with a 90-second lag. Spark reads source and downstream via JDBC. Result is written to the <code>recon_runs</code> table and signed with a SHA-256 of the result set for tamper evidence. This is the regulatory artefact.</li>
           </ul>
 
           <h2 id="break-investigation">Automated break investigation</h2>
@@ -389,12 +425,12 @@
             </li>
             <li>
               <h4>Escalate OPEN_BREAK items</h4>
-              <p>Any break that survives all the above steps is an <code>OPEN_BREAK</code> requiring human investigation. Write to the <code>break_investigations</code> table, fire a PagerDuty alert, and set an SLA timer. SAMA TRM requires that data integrity failures are investigated and resolved within a documented timeframe &mdash; the timer enforces it.</p>
+              <p>Any break that survives all the above steps is an <code>OPEN_BREAK</code> requiring human investigation. Write to the <code>break_investigations</code> table, fire a PagerDuty alert, and set an SLA timer. Regulators expect data integrity failures to be investigated and resolved within a documented timeframe &mdash; the timer enforces it.</p>
             </li>
           </ol>
 
-          <h2 id="audit-trail">SAMA audit trail requirements</h2>
-          <p>SAMA&rsquo;s Technology Risk Management framework and the Cyber Security Framework both treat data integrity as an auditable control. In practice, an examination team will ask for evidence of three things:</p>
+          <h2 id="audit-trail">Regulatory audit-trail requirements</h2>
+          <p>Technology-risk and cyber-security frameworks across regulated sectors treat data integrity as an auditable control, and so do internal and external auditors. In practice, an examination team will ask for evidence of three things:</p>
           <ul>
             <li><strong>That reconciliation runs on a defined schedule.</strong> The <code>recon_runs</code> table with its <code>scheduled_at</code>, <code>started_at</code>, <code>completed_at</code>, and <code>status</code> columns is this evidence. A run that was skipped must have a reason recorded.</li>
             <li><strong>That breaks are detected, classified, and resolved within the SLA.</strong> The <code>break_investigations</code> table with its <code>detected_at</code>, <code>classified_at</code>, <code>resolved_at</code>, <code>resolution_type</code>, and <code>resolved_by</code> columns provides the case log.</li>
@@ -438,8 +474,8 @@
           </div>
 
           <div class="callout callout--danger">
-            <div class="callout__title">Retention: 7 years, immutable</div>
-            <p>SAMA TRM requires data integrity records to be retained for a minimum of 7 years. The <code>recon_runs</code> and <code>break_investigations</code> tables must be on a retention policy that prevents deletion or modification by application code. Use PostgreSQL row-level security to block DELETEs from the reconciliation service role, and store the result CSVs in an S3 bucket with Object Lock in Compliance mode.</p>
+            <div class="callout__title">Retention: multi-year, immutable</div>
+            <p>Retention periods for data-integrity and reporting records are set by the regulator and the jurisdiction &mdash; commonly five to ten years, with seven a frequent baseline. The <code>recon_runs</code> and <code>break_investigations</code> tables must be on a retention policy that prevents deletion or modification by application code. Use PostgreSQL row-level security to block DELETEs from the reconciliation service role, and store the result CSVs in an S3 bucket with Object Lock in Compliance mode.</p>
           </div>
 
           <h2 id="implementation">Building the pipeline</h2>
@@ -463,7 +499,7 @@
             </li>
             <li>
               <h4>Wire the alerting and SLA monitoring</h4>
-              <p>Alert on: any <code>OPEN_BREAK</code> created; any break that reaches 50% of the SLA deadline without a <code>resolved_at</code>; any run that does not start within 15 minutes of its scheduled time. All three are SLA violations under SAMA TRM; all three should page the on-call engineer, not just create a Jira ticket.</p>
+              <p>Alert on: any <code>OPEN_BREAK</code> created; any break that reaches 50% of the SLA deadline without a <code>resolved_at</code>; any run that does not start within 15 minutes of its scheduled time. All three are breaches of the documented control; all three should page the on-call engineer, not just create a Jira ticket.</p>
             </li>
             <li>
               <h4>Generate and store the result artefact</h4>
@@ -522,7 +558,7 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">Timezone assumptions in window boundaries</div>
-            <p>SAMA reporting deadlines are in AST (UTC+3). If the source DB uses UTC and the downstream uses a different timezone, a naive window boundary will include or exclude the wrong rows at day boundaries. Store all timestamps in UTC in the break store; convert to AST only in the report output layer. A one-hour error in the window boundary can cause an entire hour&rsquo;s worth of rows to appear as breaks.</p>
+            <p>Regulatory reporting deadlines are usually defined in local time &mdash; a fixed offset such as UTC+3 in some jurisdictions, a daylight-saving zone such as UK or Central European time in others. If the source DB uses UTC and the downstream uses a different timezone, a naive window boundary will include or exclude the wrong rows at day boundaries. Store all timestamps in UTC in the break store; convert to the reporting timezone only in the report output layer. A one-hour error in the window boundary can cause an entire hour&rsquo;s worth of rows to appear as breaks.</p>
           </div>
 
           <nav class="article-nav">
@@ -554,7 +590,7 @@
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

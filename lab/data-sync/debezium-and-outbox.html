@@ -6,7 +6,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Synchronisation &mdash; CDC, Debezium &amp; Outbox &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Production patterns for keeping distributed data in sync: change data capture with Debezium, the transactional outbox pattern, dual-write hazards, idempotent consumers, and the recipes that survive partial failures across financial services data flows.">
+  <meta name="description" content="Production patterns for keeping distributed data in sync: change data capture with Debezium, the transactional outbox pattern, dual-write hazards, idempotent consumers, and the recipes that survive partial failures across business-critical data flows.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Data Synchronisation &mdash; CDC, Debezium &amp; Outbox">
   <meta property="og:description" content="Production CDC and outbox patterns for distributed data sync.">
@@ -17,8 +17,12 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Data Synchronisation &mdash; Production Patterns">
-  <meta name="twitter:description" content="Debezium, outbox, and idempotent consumers for financial services.">
+  <meta name="twitter:description" content="Debezium, outbox, and idempotent consumers for business-critical data flows.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/debezium-and-outbox.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -101,7 +105,7 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Distributed systems hold the same fact in multiple places: a payment lives in the core ledger, a search index, a fraud feature store, and an analytics warehouse. Keeping these in sync is the single most consequential distributed-systems problem in financial services. Get it wrong and the bank shows different balances on the app vs the statement &mdash; and you find out in a complaint.</p>
+          <p>Distributed systems hold the same fact in multiple places: a payment lives in the system-of-record ledger, a search index, a fraud feature store, and an analytics warehouse; an order lives in the order database, the warehouse system, the customer app and the data lake. Keeping these in sync is one of the most consequential distributed-systems problems in any transactional business. Get it wrong and the customer sees a different balance in the app than on the statement, or a different stock level on the website than in the warehouse &mdash; and you find out in a complaint.</p>
           <p>The robust pattern is <strong>change data capture (CDC)</strong>: read the transaction log of the source database, ship the changes through Kafka, apply them downstream. <strong>Debezium</strong> is the de-facto open-source implementation; for IBM Db2, IBM&rsquo;s InfoSphere Data Replication (IIDR) plays the same role.</p>
 
           <div class="callout callout--note">
@@ -355,7 +359,7 @@
 
           <h2 id="reconciliation">Reconciliation</h2>
           <p>Reconciliation is the audit that catches what CDC missed: lost events from a slot reset, applied-twice events from a manual replay, downstream divergence from a bad consumer.</p>
-          <p>Pattern: a daily job hashes a window of source rows and the corresponding downstream rows; any mismatch is an alert. Don&rsquo;t skip this. CDC alone is not an audit story to a regulator.</p>
+          <p>Pattern: a daily job hashes a window of source rows and the corresponding downstream rows; any mismatch is an alert. Don&rsquo;t skip this. CDC alone is not an audit story to an auditor or a regulator.</p>
 
           <h2 id="pitfalls">Common pitfalls</h2>
 
@@ -416,7 +420,7 @@
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

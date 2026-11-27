@@ -67,3 +67,10 @@ document.querySelectorAll('.site-nav a').forEach(link => {
     })
     .catch(() => {});
 })();
+
+// Service worker: cache site assets for fast repeat visits (pages stay network-first).
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}

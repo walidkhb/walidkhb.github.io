@@ -6,7 +6,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Legacy Integration &mdash; SOAP-to-REST API Modernisation &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Wrapping WSDL-defined SOAP services with a REST facade using IBM ACE 12 and IBM API Connect 10: ESQL envelope construction, SOAP fault mapping to RFC 7807, OpenAPI 3.1 contracts, and the strangler fig migration pattern for regulated banking.">
+  <meta name="description" content="Wrapping WSDL-defined SOAP services with a REST facade using IBM ACE 12 and IBM API Connect 10: ESQL envelope construction, SOAP fault mapping to RFC 7807, OpenAPI 3.1 contracts, and the strangler fig migration pattern for regulated enterprises.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Legacy Integration &mdash; SOAP-to-REST API Modernisation &mdash; Lab &mdash; Waleed Albadawi">
   <meta property="og:description" content="IBM ACE ESQL wrapping, IBM API Connect assembly, auth translation from WS-Security to OAuth2, and the strangler fig pattern for SOAP-to-REST modernisation.">
@@ -19,6 +19,10 @@
   <meta name="twitter:title" content="SOAP-to-REST API Modernisation &mdash; Production Patterns">
   <meta name="twitter:description" content="ACE ESQL wrapping, API Connect assembly, WS-Security to OAuth2 translation, and SOAP fault to RFC 7807 mapping.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration/soap-to-rest-modernisation.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -44,12 +48,44 @@
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/lab/legacy-integration/soap-to-rest-modernisation.html",
     "isPartOf": {
@@ -128,9 +164,9 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>The SOAP services that core banking systems expose represent decades of proven business logic. The WSDL contract documents every operation, every input type, and every fault condition &mdash; an asset that most modern REST API implementations do not have. What SOAP lacks, from the perspective of a new digital channel or an Open Banking integration, is: JSON payloads, stateless HTTP verbs, predictable status codes, OAuth2 bearer tokens, and a developer portal that does not require understanding WSDL namespace resolution to start building.</p>
+          <p>The SOAP services that legacy systems of record expose &mdash; core banking, insurance policy administration, telecoms billing, ERP and government case systems &mdash; represent decades of proven business logic. The WSDL contract documents every operation, every input type, and every fault condition &mdash; an asset that most modern REST API implementations do not have. What SOAP lacks, from the perspective of a new digital channel or a partner-facing open API, is: JSON payloads, stateless HTTP verbs, predictable status codes, OAuth2 bearer tokens, and a developer portal that does not require understanding WSDL namespace resolution to start building.</p>
           <p>The decision is not whether to modernise &mdash; it is how. <strong>Wrapping</strong> places a REST facade in front of the existing SOAP service. The SOAP service continues to run unchanged; new consumers see only REST. <strong>Rewriting</strong> replaces the SOAP service with a new implementation. The cost difference is typically 10&times; in engineering time and 30&times; in risk, because a working SOAP service carries implicit tests in every production transaction it has processed. Wrapping is almost always the right first move.</p>
-          <p>Two wrapping mechanisms are relevant in the IBM stack: <strong>ACE ESQL wrapping</strong> (full control, handles any SOAP complexity) and <strong>IBM API Connect assembly policies</strong> (lower effort, appropriate for simpler operations). Both are described here.</p>
+          <p>Two wrapping mechanisms are relevant in the IBM stack: <strong>ACE ESQL wrapping</strong> (full control, handles any SOAP complexity) and <strong>IBM API Connect assembly policies</strong> (lower effort, appropriate for simpler operations). Both are described here; the same split exists on other platforms (a mediation runtime such as Apache Camel versus gateway policies). The running example is a payment-initiation service, but the steps are identical for a policy quote, a billing adjustment or a permit application.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Wrap, don&rsquo;t rewrite</div>
@@ -159,12 +195,12 @@
 
     <span class="tok-c">-- Propagate the REST JSON body to SOAP XML</span>
     <span class="tok-k">DECLARE</span> soapNS  <span class="tok-s">NAMESPACE</span> <span class="tok-s">'http://schemas.xmlsoap.org/soap/envelope/'</span>;
-    <span class="tok-k">DECLARE</span> payNS   <span class="tok-s">NAMESPACE</span> <span class="tok-s">'http://bank.internal/payments/v2'</span>;
+    <span class="tok-k">DECLARE</span> payNS   <span class="tok-s">NAMESPACE</span> <span class="tok-s">'http://example.com/legacy/payments/v2'</span>;
     <span class="tok-k">DECLARE</span> secNS   <span class="tok-s">NAMESPACE</span> <span class="tok-s">'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd'</span>;
 
     <span class="tok-c">-- HTTP SOAPAction header (required for SOAP 1.1 routing)</span>
     <span class="tok-k">SET</span> OutputRoot.HTTPRequestHeader.<span class="tok-s">"SOAPAction"</span> =
-        <span class="tok-s">'"http://bank.internal/payments/v2/InitiatePayment"'</span>;
+        <span class="tok-s">'"http://example.com/legacy/payments/v2/InitiatePayment"'</span>;
     <span class="tok-k">SET</span> OutputRoot.HTTPRequestHeader.<span class="tok-s">"Content-Type"</span> = <span class="tok-s">'text/xml;charset=UTF-8'</span>;
 
     <span class="tok-c">-- WS-Security UsernameToken from ACE credentials store</span>
@@ -308,7 +344,7 @@
           <p>Register the SOAP service as an <em>invoke</em> target in the APIC assembly with basic authentication (the SOAP backend&rsquo;s internal credentials). The APIC gateway holds those credentials in a TLS client profile or a vault secret &mdash; they are never exposed to the REST client. The REST client sees only the OAuth2-protected OpenAPI endpoint.</p>
 
           <h2 id="auth-translation">Auth Translation</h2>
-          <p>SOAP services at Saudi banks most commonly use one of three authentication mechanisms: <strong>WS-Security UsernameToken</strong> (plaintext or password-digest), <strong>BasicAuth over TLS</strong>, or <strong>client certificate (mTLS)</strong>. REST APIs on consumer-facing channels must support OAuth2 Bearer tokens, and those on Open Banking channels must specifically support <strong>FAPI 2.0</strong> (Financial-grade API, Security Profile 2.0) &mdash; a requirement under SAMA&rsquo;s Open Banking Framework.</p>
+          <p>Legacy SOAP services most commonly use one of three authentication mechanisms: <strong>WS-Security UsernameToken</strong> (plaintext or password-digest), <strong>BasicAuth over TLS</strong>, or <strong>client certificate (mTLS)</strong>. REST APIs on consumer-facing channels must support OAuth2 Bearer tokens, and those exposed to third parties under a regulated open-API regime (open banking and open finance are the best-known examples) increasingly must support a high-assurance profile such as <strong>FAPI 2.0</strong> (Financial-grade API, Security Profile 2.0) &mdash; several national open-banking frameworks mandate a FAPI profile.</p>
           <p>The translation is not one-to-one. The REST consumer presents a JWT Bearer token. The wrapper validates the token (signature, expiry, scope) at the API gateway layer. The wrapper then constructs the SOAP authentication header using service account credentials it holds internally &mdash; the caller&rsquo;s identity is not forwarded to the SOAP backend. This is the correct pattern: the backend authenticates the integration layer (trusted network, service credentials), and the integration layer authenticates the caller (JWT, OAuth2).</p>
           <p>For FAPI 2.0 compliance on the REST facade: the API gateway must validate the <code>dpop</code> proof-of-possession header, enforce PKCE in the OAuth2 authorisation code flow, and include the required FAPI response headers (<code>x-fapi-interaction-id</code>, <code>x-fapi-auth-date</code>) in every response. APIC 10.0.7 supports all of these via its built-in OAuth2 provider; configure the FAPI profile in the API security definition, not in custom gateway scripts.</p>
 
@@ -351,7 +387,7 @@
             context.set(<span class="tok-s">'message.status.code'</span>, httpStatus);
             context.set(<span class="tok-s">'message.headers.content-type'</span>, <span class="tok-s">'application/problem+json'</span>);
             context.set(<span class="tok-s">'message.body'</span>, JSON.stringify({
-              type:   <span class="tok-s">'https://www.wbadawi.info/errors/soap-fault'</span>,
+              type:   <span class="tok-s">'https://api.example.com/problems/soap-fault'</span>,
               title:  faultstr,
               status: httpStatus,
               detail: faultcode,
@@ -388,12 +424,12 @@
   <span class="tok-k">title</span>: <span class="tok-s">Payment Initiation API</span>
   <span class="tok-k">version</span>: <span class="tok-s">'1.0.0'</span>
   <span class="tok-k">description</span>: |
-    REST facade for the core-banking payment initiation SOAP service.
+    REST facade for a legacy payment-initiation SOAP service.
     Backed by InitiatePayment SOAP operation (WSDL v2.4).
     All monetary amounts are strings in decimal notation (e.g. "12345.67").
 
 <span class="tok-k">servers</span>:
-  - <span class="tok-k">url</span>: <span class="tok-s">https://api.bank.example/v1</span>
+  - <span class="tok-k">url</span>: <span class="tok-s">https://api.example.com/v1</span>
 
 <span class="tok-k">security</span>:
   - <span class="tok-k">FAPI2Bearer</span>: []
@@ -417,7 +453,7 @@
               <span class="tok-k">type</span>: <span class="tok-s">object</span>
               <span class="tok-k">required</span>: [debtorIban, creditorIban, amount, currency, endToEndId]
               <span class="tok-k">properties</span>:
-                <span class="tok-k">debtorIban</span>:   { <span class="tok-k">type</span>: <span class="tok-s">string</span>, <span class="tok-k">pattern</span>: <span class="tok-s">'^SA[0-9]{2}[0-9A-Z]{18}$'</span> }
+                <span class="tok-k">debtorIban</span>:   { <span class="tok-k">type</span>: <span class="tok-s">string</span>, <span class="tok-k">pattern</span>: <span class="tok-s">'^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$'</span> }
                 <span class="tok-k">creditorIban</span>: { <span class="tok-k">type</span>: <span class="tok-s">string</span> }
                 <span class="tok-k">amount</span>:       { <span class="tok-k">type</span>: <span class="tok-s">string</span>, <span class="tok-k">pattern</span>: <span class="tok-s">'^[0-9]+\.[0-9]{2}$'</span> }
                 <span class="tok-k">currency</span>:     { <span class="tok-k">type</span>: <span class="tok-s">string</span>, <span class="tok-k">minLength</span>: <span class="tok-n">3</span>, <span class="tok-k">maxLength</span>: <span class="tok-n">3</span> }
@@ -452,8 +488,8 @@
       <span class="tok-k">type</span>: <span class="tok-s">oauth2</span>
       <span class="tok-k">flows</span>:
         <span class="tok-k">authorizationCode</span>:
-          <span class="tok-k">authorizationUrl</span>: <span class="tok-s">https://auth.bank.example/oauth2/authorize</span>
-          <span class="tok-k">tokenUrl</span>:         <span class="tok-s">https://auth.bank.example/oauth2/token</span>
+          <span class="tok-k">authorizationUrl</span>: <span class="tok-s">https://auth.example.com/oauth2/authorize</span>
+          <span class="tok-k">tokenUrl</span>:         <span class="tok-s">https://auth.example.com/oauth2/token</span>
           <span class="tok-k">scopes</span>:
             <span class="tok-k">payments:initiate</span>: <span class="tok-s">Initiate a payment on behalf of the account holder</span></code></pre>
           </div>
@@ -484,7 +520,7 @@
             </li>
             <li>
               <h4>Write the OpenAPI 3.1 specification</h4>
-              <p>Author the OpenAPI spec without looking at the WSDL after the initial mapping step. Design the REST API as if the SOAP backend did not exist. Include FAPI 2.0 security definitions if the endpoint is consumer-facing under SAMA Open Banking. Generate a mock server from the spec and distribute it to consuming teams immediately.</p>
+              <p>Author the OpenAPI spec without looking at the WSDL after the initial mapping step. Design the REST API as if the SOAP backend did not exist. Include FAPI 2.0 security definitions if the endpoint is exposed to third parties under an open-banking or similar regulated open-API regime. Generate a mock server from the spec and distribute it to consuming teams immediately.</p>
             </li>
             <li>
               <h4>Build the ACE message flow or APIC assembly</h4>
@@ -581,7 +617,7 @@
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

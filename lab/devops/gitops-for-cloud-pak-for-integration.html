@@ -19,6 +19,10 @@
   <meta name="twitter:title" content="GitOps for IBM Cloud Pak for Integration &mdash; Lab">
   <meta name="twitter:description" content="From push pipelines to pull-based GitOps for ACE, MQ and API Connect on OpenShift. GitLab CI + Argo CD, ten rules, compliance as CI includes.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/devops/gitops-for-cloud-pak-for-integration.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -44,12 +48,44 @@
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/lab/devops/gitops-for-cloud-pak-for-integration.html",
     "isPartOf": {
@@ -133,7 +169,7 @@
           <h2 id="overview">Overview</h2>
           <p>Cloud Pak for Integration puts integration runtimes on Kubernetes. The ACE operator runs integration servers as custom resources. The MQ operator runs queue managers. API Connect publishes products to catalogs. All of it is declarative. That makes GitOps possible. It does not make it happen.</p>
           <p>A common first move to OpenShift keeps the old habits. A pipeline watches one repository. On every push it renders the configuration and applies it to the cluster. Other pipelines are started by hand. API products are published by a separate manual run. It works most days. On the other days it is hard to say what is running, or why.</p>
-          <p>The alternative is a pull model. CI (GitLab CI in the examples) builds and tests. Argo CD, one instance per cluster, reconciles each cluster to its own environment repository. Compliance checks live in shared CI templates. An API registry records every API, its consumers and its SLA. The rest of this article is the detail.</p>
+          <p>The alternative is a pull model. CI (GitLab CI in the examples) builds and tests. Argo CD, one instance per cluster, reconciles each cluster to its own environment repository. Compliance checks live in shared CI templates. An API registry records every API, its consumers and its SLA. The rest of this article is the detail. The examples use IBM&rsquo;s integration stack, but the rules carry over unchanged to any operator-managed integration runtime &mdash; Apache Camel K, MuleSoft Runtime Fabric, Kong, RabbitMQ or Kafka on Kubernetes.</p>
           <p>Two neighbouring articles cover adjacent ground. <a href="tekton-and-argocd.html">Tekton &amp; ArgoCD</a> covers the generic pipeline shape, secrets and image signing. <a href="multi-cluster-gitops.html">Multi-Cluster GitOps</a> covers hub-spoke fleets with ApplicationSet generators. This one is specific to integration runtimes, and it deliberately does <em>not</em> use a hub.</p>
 
           <h2 id="push-defects">What a Push Model Gets Wrong</h2>
@@ -526,9 +562,9 @@
     <span class="tok-p">-</span> { <span class="tok-k">server:</span> <span class="tok-s">https://kubernetes.default.svc</span>, <span class="tok-k">namespace:</span> <span class="tok-s">int-orders</span> }
   <span class="tok-k">clusterResourceWhitelist:</span> []           <span class="tok-c"># no cluster-scoped kinds</span>
   <span class="tok-k">syncWindows:</span>
-    <span class="tok-p">-</span> <span class="tok-k">kind:</span> <span class="tok-s">deny</span>                         <span class="tok-c"># example weekly freeze</span>
-      <span class="tok-k">schedule:</span> <span class="tok-s">'0 18 * * 4'</span>
-      <span class="tok-k">duration:</span> <span class="tok-s">48h</span>
+    <span class="tok-p">-</span> <span class="tok-k">kind:</span> <span class="tok-s">deny</span>                         <span class="tok-c"># example: no weekend releases</span>
+      <span class="tok-k">schedule:</span> <span class="tok-s">'0 18 * * 5'</span>
+      <span class="tok-k">duration:</span> <span class="tok-s">62h</span>
       <span class="tok-k">applications:</span> [<span class="tok-s">'*'</span>]
       <span class="tok-k">manualSync:</span> <span class="tok-n">false</span>                  <span class="tok-c"># false = manual syncs are denied too</span></code></pre>
           </div>
@@ -686,7 +722,7 @@
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

@@ -5,20 +5,24 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Legacy Integration &mdash; Anti-Corruption Layer for Core Banking &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Building an anti-corruption layer between modern domain services and legacy core banking systems using IBM ACE 12 and IBM MQ 9.3: canonical model translation, version negotiation, error isolation, and observability that holds up under production load at a KSA bank.">
+  <title>Legacy Integration &mdash; Anti-Corruption Layer for Legacy Systems of Record &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Building an anti-corruption layer between modern domain services and a legacy system of record (mainframe or packaged core platform) using IBM ACE 12 and IBM MQ 9.3: canonical model translation, version negotiation, error isolation, and observability that holds up under production load.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Legacy Integration &mdash; Anti-Corruption Layer for Core Banking &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="IBM ACE canonical model translation, MQ wire-protocol isolation, version negotiation, and observability for the anti-corruption layer between modern services and legacy core banking.">
+  <meta property="og:title" content="Legacy Integration &mdash; Anti-Corruption Layer for Legacy Systems of Record &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="IBM ACE canonical model translation, MQ wire-protocol isolation, version negotiation, and observability for the anti-corruption layer between modern domain services and a legacy system of record.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/legacy-integration/anti-corruption-layer-core-banking.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Anti-Corruption Layer for Core Banking &mdash; Production Patterns">
-  <meta name="twitter:description" content="Canonical model translation, MQ isolation, version negotiation, and observability for ACL between modern domain services and legacy CBS.">
+  <meta name="twitter:title" content="Anti-Corruption Layer for Legacy Systems of Record &mdash; Production Patterns">
+  <meta name="twitter:description" content="Canonical model translation, MQ isolation, version negotiation, and observability for an ACL between modern domain services and a legacy core.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration/anti-corruption-layer-core-banking.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -37,19 +41,51 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Legacy Integration: Anti-Corruption Layer for Core Banking Domain Isolation",
-    "description": "Building an anti-corruption layer between modern domain services and legacy core banking systems using IBM ACE 12 and IBM MQ 9.3 &mdash; canonical model translation, version negotiation, error isolation, and production observability.",
+    "headline": "Anti-Corruption Layer: Isolating Modern Domains from Legacy Systems of Record",
+    "description": "Building an anti-corruption layer between modern domain services and a legacy system of record using IBM ACE 12 and IBM MQ 9.3 &mdash; canonical model translation, version negotiation, error isolation, and production observability.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-21",
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/lab/legacy-integration/anti-corruption-layer-core-banking.html",
     "isPartOf": {
@@ -90,8 +126,8 @@
         <div>
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../legacy-integration.html">Legacy Integration</a><span>/</span>Anti-Corruption Layer</div>
           <span class="overline">Lab Article</span>
-          <h1>Legacy Integration: Anti-Corruption Layer for Core Banking Domain Isolation</h1>
-          <p class="lead">The anti-corruption layer is not defensive programming &mdash; it is a deliberate architectural boundary that keeps your domain model clean while the legacy core banking system stays exactly as it is. Done right, it is the layer that makes the difference between integration code that is readable in three years and integration code that only the original developer dares to touch.</p>
+          <h1>Anti-Corruption Layer: Isolating Modern Domains from Legacy Systems of Record</h1>
+          <p class="lead">The anti-corruption layer is not defensive programming &mdash; it is a deliberate architectural boundary that keeps your domain model clean while the legacy system of record stays exactly as it is. Done right, it is the layer that makes the difference between integration code that is readable in three years and integration code that only the original developer dares to touch.</p>
         </div>
       </div>
     </div>
@@ -128,40 +164,45 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Eric Evans introduced the Anti-Corruption Layer (ACL) in Domain-Driven Design as the pattern for protecting a well-designed domain model from the influence of a foreign model it must integrate with. In banking, that foreign model is almost always the core banking system (CBS): a legacy platform whose internal message structures, field naming conventions, error codes, and date formats reflect decades of COBOL history rather than any modern domain design. Without an ACL, the CBS model bleeds into every downstream service that integrates with it. Within two or three integration cycles, teams find themselves debating whether <code>TxnAmt01</code> and <code>TxnAmt02</code> mean the same thing or not &mdash; and discovering that the answer depends on which CBS version is running in which environment.</p>
-          <p>An ACL does three things: it <strong>translates</strong> (maps the CBS model to the domain model and back), it <strong>isolates</strong> (changes in the CBS message structure do not propagate to domain services), and it <strong>versions</strong> (multiple CBS versions can coexist in a migration window). What it does not do is add business logic. Translation is mechanical and reversible. Any business rule that belongs in the CBS stays in the CBS; any rule that belongs in the domain service stays there. The ACL contains only mappings, format conversions, and protocol translations.</p>
-          <p>In the IBM integration stack at SAIB, the ACL is implemented as an IBM ACE 12 message flow that sits on the boundary between IBM MQ queues (the CBS communication mechanism) and either REST APIs or Kafka topics (the domain service communication mechanisms). The ACL owns neither the CBS nor the domain service &mdash; it is owned by the integration team and versioned independently of both.</p>
+          <p>Eric Evans introduced the Anti-Corruption Layer (ACL) in Domain-Driven Design as the pattern for protecting a well-designed domain model from the influence of a foreign model it must integrate with. In most established enterprises, that foreign model is a <strong>legacy system of record</strong>: a mainframe application or packaged core platform &mdash; core banking, insurance policy administration, telecoms billing, an ERP, a government registry &mdash; whose internal message structures, field naming conventions, error codes, and date formats reflect decades of COBOL history rather than any modern domain design. Without an ACL, the legacy model bleeds into every downstream service that integrates with it. Within two or three integration cycles, teams find themselves debating whether <code>AMT01</code> and <code>AMT02</code> mean the same thing or not &mdash; and discovering that the answer depends on which release of the legacy core is running in which environment.</p>
+          <p>An ACL does three things: it <strong>translates</strong> (maps the legacy model to the domain model and back), it <strong>isolates</strong> (changes in the legacy message structure do not propagate to domain services), and it <strong>versions</strong> (multiple releases of the legacy core can coexist in a migration window). What it does not do is add business logic. Translation is mechanical and reversible. Any business rule that belongs in the system of record stays there; any rule that belongs in the domain service stays there. The ACL contains only mappings, format conversions, and protocol translations.</p>
+          <p>In a typical IBM integration stack, the ACL is implemented as an IBM ACE 12 message flow that sits on the boundary between IBM MQ queues (the legacy core&rsquo;s communication mechanism) and either REST APIs or Kafka topics (the domain service communication mechanisms). The same shape works with Apache Camel, Kafka Connect or any other mediation runtime. The ACL owns neither the system of record nor the domain service &mdash; it is owned by the integration team and versioned independently of both.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">ACL scope is per-domain, not per-service</div>
-            <p>An ACL is defined by the bounded context it protects, not by the number of services it serves. If five domain services all consume payment events from the same CBS queue, there is one ACL for the payment domain &mdash; not five adapters. Those five services consume from a translated internal event topic; they never touch the CBS message format. Duplication of translation logic is the fastest way to end up with five subtly incompatible interpretations of the same CBS field.</p>
+            <p>An ACL is defined by the bounded context it protects, not by the number of services it serves. If five domain services all consume payment events from the same legacy queue, there is one ACL for the payment domain &mdash; not five adapters. Those five services consume from a translated internal event topic; they never touch the legacy message format. Duplication of translation logic is the fastest way to end up with five subtly incompatible interpretations of the same legacy field.</p>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">The running example is illustrative</div>
+            <p>The examples below use a payment notification because it exercises amounts, dates, statuses and identifiers in one message. Nothing in the pattern is payment-specific: the same translation applies to a policy event from an insurance administration system, a usage record from a telecoms billing platform, an order update from a retail ERP, or a case change from a government registry. All queue names, field names and codes are invented for illustration.</p>
           </div>
 
           <h2 id="why-acl">Why ACL, Not an Adapter</h2>
-          <p>The vocabulary distinction matters in practice. An <strong>adapter</strong> converts between two interfaces without changing the model. A CBS adapter that exposes the CBS&rsquo;s own message model as a REST API is not an ACL &mdash; it just wraps the protocol. The calling service still sees <code>TxnAmt01</code>, <code>TxnDt</code>, and six-character account codes that mean different things depending on account type. The domain model is polluted.</p>
-          <p>An ACL translates the model. The calling service sees <code>amount</code>, <code>valueDate</code>, and <code>accountId</code> in a canonical format that matches the domain&rsquo;s ubiquitous language. The CBS&rsquo;s internal field names, record lengths, and encoding conventions exist only inside the ACL flow and are invisible to the domain services that sit upstream.</p>
+          <p>The vocabulary distinction matters in practice. An <strong>adapter</strong> converts between two interfaces without changing the model. A legacy adapter that exposes the legacy core&rsquo;s own message model as a REST API is not an ACL &mdash; it just wraps the protocol. The calling service still sees <code>AMT01</code>, <code>VALDT</code>, and six-character codes that mean different things depending on record type. The domain model is polluted.</p>
+          <p>An ACL translates the model. The calling service sees <code>amount</code>, <code>valueDate</code>, and <code>accountId</code> in a canonical format that matches the domain&rsquo;s ubiquitous language. The legacy core&rsquo;s internal field names, record lengths, and encoding conventions exist only inside the ACL flow and are invisible to the domain services that sit upstream.</p>
 
           <div class="callout callout--warn">
             <div class="callout__title">Don&rsquo;t confuse the ACL with the domain&rsquo;s own anti-corruption guard</div>
-            <p>Some DDD practitioners implement ACLs inside the domain service itself (a translation class at the entry point of the service). This works for small integrations but creates a maintenance problem: every domain service that integrates with the CBS must maintain its own translation. A single change to the CBS message format requires updates to every service independently. At SAIB, with eight domain services consuming from the same CBS transaction queue, the shared IBM ACE ACL is maintained in one place and all services benefit from the update simultaneously.</p>
+            <p>Some DDD practitioners implement ACLs inside the domain service itself (a translation class at the entry point of the service). This works for small integrations but creates a maintenance problem: every domain service that integrates with the legacy core must maintain its own translation. A single change to the legacy message format requires updates to every service independently. When several domain services consume from the same legacy queue, a shared ACL flow is maintained in one place and all services benefit from the update simultaneously.</p>
           </div>
 
           <h2 id="canonical-model">Canonical Model Design</h2>
-          <p>Before writing a line of ACE ESQL, define the canonical model &mdash; the internal representation that the ACL translates <em>to</em> and that domain services consume from. The canonical model is a JSON Schema (for REST/event consumers) or an AsyncAPI schema (for Kafka consumers). It is not a copy of the CBS message structure and it is not a copy of the ISO 20022 standard (though it should be mappable to ISO 20022 without data loss, since SAMA&rsquo;s IPS mandate requires ISO 20022 for payment clearing).</p>
+          <p>Before writing a line of ACE ESQL, define the canonical model &mdash; the internal representation that the ACL translates <em>to</em> and that domain services consume from. The canonical model is a JSON Schema (for REST/event consumers) or an AsyncAPI schema (for Kafka consumers). It is not a copy of the legacy message structure and it is not a copy of an industry standard &mdash; though it should be mappable to the relevant standard without data loss: ISO 20022 for payments (most clearing schemes now require it), ACORD for insurance, TM Forum&rsquo;s information model for telecoms.</p>
           <p>Canonical model rules that hold up in production:</p>
           <ul>
             <li><strong>Field names are in camelCase English and describe the business concept</strong>, not the technical container. <code>creditAmount</code> not <code>CdtAmt</code> and not <code>TxnAmtCr</code>.</li>
             <li><strong>Monetary amounts are strings with explicit decimal notation</strong> (e.g. <code>"12345.67"</code>), not floating-point numbers. This is non-negotiable: floating-point monetary amounts cause rounding errors that accrue across millions of transactions.</li>
-            <li><strong>Dates use ISO 8601</strong> (<code>2026-11-21</code> for dates, <code>2026-11-21T14:32:00Z</code> for timestamps). The CBS typically uses <code>YYYYMMDD</code> or Julian dates; the conversion is in the ACL, not in the consumer.</li>
-            <li><strong>Identifiers are strings</strong>, not integers, even when the CBS sends them as fixed-width numeric fields. CBS identifiers carry leading zeros that are semantically significant; treating them as integers loses those zeros.</li>
-            <li><strong>Status codes are domain enumerations</strong>, not CBS numeric codes. <code>PENDING</code> not <code>01</code>. The CBS code-to-domain-enum mapping table is maintained in the ACL and version-controlled alongside it.</li>
+            <li><strong>Dates use ISO 8601</strong> (<code>2026-11-21</code> for dates, <code>2026-11-21T14:32:00Z</code> for timestamps). Legacy cores typically use <code>YYYYMMDD</code> or Julian dates; the conversion is in the ACL, not in the consumer.</li>
+            <li><strong>Identifiers are strings</strong>, not integers, even when the legacy core sends them as fixed-width numeric fields. Legacy identifiers carry leading zeros that are semantically significant; treating them as integers loses those zeros.</li>
+            <li><strong>Status codes are domain enumerations</strong>, not legacy numeric codes. <code>PENDING</code> not <code>01</code>. The legacy-code-to-domain-enum mapping table is maintained in the ACL and version-controlled alongside it.</li>
           </ul>
 
           <div class="code-block">
             <div class="code-block__header"><span>canonical-payment-event.schema.json</span><span class="code-block__lang">json</span></div>
 <pre><code>{
   <span class="tok-k">"$schema"</span>: <span class="tok-s">"https://json-schema.org/draft/2020-12/schema"</span>,
-  <span class="tok-k">"$id"</span>: <span class="tok-s">"https://schemas.internal.bank.sa/payments/PaymentCompletedEvent/v2"</span>,
+  <span class="tok-k">"$id"</span>: <span class="tok-s">"https://schemas.example.com/payments/PaymentCompletedEvent/v2"</span>,
   <span class="tok-k">"title"</span>: <span class="tok-s">"PaymentCompletedEvent"</span>,
   <span class="tok-k">"type"</span>: <span class="tok-s">"object"</span>,
   <span class="tok-k">"required"</span>: [<span class="tok-s">"eventId"</span>, <span class="tok-s">"eventTime"</span>, <span class="tok-s">"paymentId"</span>, <span class="tok-s">"status"</span>, <span class="tok-s">"creditAmount"</span>],
@@ -179,33 +220,33 @@
     <span class="tok-k">"debtorIban"</span>:  { <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
     <span class="tok-k">"creditorIban"</span>:{ <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
     <span class="tok-k">"valueDate"</span>:   { <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>, <span class="tok-k">"format"</span>: <span class="tok-s">"date"</span> },
-    <span class="tok-k">"cbsReference"</span>:{ <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>,
-      <span class="tok-t">"description"</span>: <span class="tok-s">"Original CBS txn ref; not surfaced to domain consumers but carried for audit"</span>
+    <span class="tok-k">"sourceReference"</span>:{ <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>,
+      <span class="tok-t">"description"</span>: <span class="tok-s">"Original system-of-record ref; not used by domain consumers but carried for audit"</span>
     }
   },
   <span class="tok-k">"additionalProperties"</span>: <span class="tok-p">false</span>
 }</code></pre>
           </div>
 
-          <p>Note <code>cbsReference</code>: the original CBS transaction reference is <em>carried</em> through the canonical event for audit and reconciliation, but it is not part of the domain model. Domain services must not use it as a primary key or reference. Its presence in the schema makes the traceability requirement explicit and prevents it from being quietly stripped during a later refactoring.</p>
+          <p>Note <code>sourceReference</code>: the original system-of-record reference is <em>carried</em> through the canonical event for audit and reconciliation, but it is not part of the domain model. Domain services must not use it as a primary key or reference. Its presence in the schema makes the traceability requirement explicit and prevents it from being quietly stripped during a later refactoring.</p>
 
           <h2 id="ace-translation">ACE Translation Layer</h2>
-          <p>The ACE translation flow has three responsibilities: read the CBS message from the input queue, translate it to the canonical model, and publish the translated event. The flow does not call any other system and does not hold state. It is designed to be as thin as possible &mdash; any complexity that cannot be eliminated goes into an ESQL subflow that can be unit-tested in isolation.</p>
+          <p>The ACE translation flow has three responsibilities: read the legacy message from the input queue, translate it to the canonical model, and publish the translated event. The flow does not call any other system and does not hold state. It is designed to be as thin as possible &mdash; any complexity that cannot be eliminated goes into an ESQL subflow that can be unit-tested in isolation.</p>
           <p>Structure the ACE project as: one BAR file per domain boundary (not per queue), one main flow per message type, one ESQL module per translation concern. This keeps the deployment unit coherent: a change to the payment domain ACL deploys the payment BAR, not a monolithic integration BAR that touches all domains.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>CbsPaymentTranslator.esql</span><span class="code-block__lang">sql</span></div>
-<pre><code><span class="tok-k">CREATE COMPUTE MODULE</span> CbsPaymentTranslator_Compute
+            <div class="code-block__header"><span>LegacyEventTranslator.esql (illustrative)</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-k">CREATE COMPUTE MODULE</span> LegacyEventTranslator_Compute
 
   <span class="tok-k">CREATE FUNCTION</span> Main() <span class="tok-k">RETURNS BOOLEAN</span>
   <span class="tok-k">BEGIN</span>
 
-    <span class="tok-c">-- Input: BLOB from MQ, parsed via DFDL schema (CbsTxnNotify_v3.xsd)</span>
-    <span class="tok-k">DECLARE</span> cbsMsg <span class="tok-s">REFERENCE TO</span> InputRoot.MRM.CbsTxnNotifyMsg;
+    <span class="tok-c">-- Input: fixed-width bytes from MQ, parsed by a DFDL model (LegacyEventNotify_v3.xsd)</span>
+    <span class="tok-k">DECLARE</span> srcMsg <span class="tok-s">REFERENCE TO</span> InputRoot.DFDL.LegacyEventNotify;
 
-    <span class="tok-c">-- Translate status code: CBS 2-digit numeric → domain enum</span>
+    <span class="tok-c">-- Translate status code: legacy 2-digit numeric → domain enum</span>
     <span class="tok-k">DECLARE</span> domainStatus <span class="tok-s">CHARACTER</span>;
-    <span class="tok-k">SET</span> domainStatus = <span class="tok-k">CASE</span> cbsMsg.TxnStatusCd
+    <span class="tok-k">SET</span> domainStatus = <span class="tok-k">CASE</span> srcMsg.StatusCd
       <span class="tok-k">WHEN</span> <span class="tok-s">'01'</span> <span class="tok-k">THEN</span> <span class="tok-s">'ACCEPTED'</span>
       <span class="tok-k">WHEN</span> <span class="tok-s">'02'</span> <span class="tok-k">THEN</span> <span class="tok-s">'PENDING_SETTLEMENT'</span>
       <span class="tok-k">WHEN</span> <span class="tok-s">'03'</span> <span class="tok-k">THEN</span> <span class="tok-s">'SETTLED'</span>
@@ -216,37 +257,38 @@
 
     <span class="tok-c">-- Unknown status: route to dead-letter with enrichment, never swallow silently</span>
     <span class="tok-k">IF</span> domainStatus <span class="tok-k">IS NULL THEN</span>
-      <span class="tok-k">SET</span> OutputRoot.MQMD.ReplyToQ = <span class="tok-s">'ACL.PAYMENT.DLQ'</span>;
-      <span class="tok-k">SET</span> Environment.Variables.DLQ_REASON = <span class="tok-s">'UNKNOWN_STATUS:'</span> || cbsMsg.TxnStatusCd;
+      <span class="tok-k">SET</span> OutputRoot = InputRoot;  <span class="tok-c">-- keep the original bytes for replay</span>
+      <span class="tok-k">SET</span> OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = <span class="tok-s">'ACL.PAYMENT.DLQ'</span>;
+      <span class="tok-k">SET</span> Environment.Variables.DLQ_REASON = <span class="tok-s">'UNKNOWN_STATUS:'</span> || srcMsg.StatusCd;
       <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out1'</span>;
       <span class="tok-k">RETURN FALSE</span>;
     <span class="tok-k">END IF</span>;
 
-    <span class="tok-c">-- Translate date: CBS YYYYMMDD integer → ISO 8601 string</span>
+    <span class="tok-c">-- Translate date: legacy YYYYMMDD → ISO 8601 string</span>
     <span class="tok-k">DECLARE</span> valueDateStr <span class="tok-s">CHARACTER</span>
-        CAST(SUBSTRING(cbsMsg.ValueDt FROM 1 FOR 4) AS CHARACTER)
+        CAST(SUBSTRING(srcMsg.ValueDt FROM 1 FOR 4) AS CHARACTER)
         || <span class="tok-s">'-'</span>
-        || CAST(SUBSTRING(cbsMsg.ValueDt FROM 5 FOR 2) AS CHARACTER)
+        || CAST(SUBSTRING(srcMsg.ValueDt FROM 5 FOR 2) AS CHARACTER)
         || <span class="tok-s">'-'</span>
-        || CAST(SUBSTRING(cbsMsg.ValueDt FROM 7 FOR 2) AS CHARACTER);
+        || CAST(SUBSTRING(srcMsg.ValueDt FROM 7 FOR 2) AS CHARACTER);
 
-    <span class="tok-c">-- Translate amount: CBS 15-digit packed decimal → "NNNNN.NN" string</span>
-    <span class="tok-k">DECLARE</span> amtWhole   <span class="tok-s">CHARACTER</span> CAST(cbsMsg.TxnAmt01 / 100 AS CHARACTER);
-    <span class="tok-k">DECLARE</span> amtFrac    <span class="tok-s">CHARACTER</span> RIGHT(<span class="tok-s">'0'</span> || CAST(MOD(cbsMsg.TxnAmt01, 100) AS CHARACTER), 2);
+    <span class="tok-c">-- Translate amount: 15-digit integer in minor units → "NNNNN.NN" string</span>
+    <span class="tok-k">DECLARE</span> amtWhole   <span class="tok-s">CHARACTER</span> CAST(srcMsg.Amt01 / 100 AS CHARACTER);
+    <span class="tok-k">DECLARE</span> amtFrac    <span class="tok-s">CHARACTER</span> RIGHT(<span class="tok-s">'0'</span> || CAST(MOD(srcMsg.Amt01, 100) AS CHARACTER), 2);
     <span class="tok-k">DECLARE</span> creditAmt  <span class="tok-s">CHARACTER</span> amtWhole || <span class="tok-s">'.'</span> || amtFrac;
 
     <span class="tok-c">-- Write canonical JSON output</span>
     <span class="tok-k">SET</span> OutputRoot.JSON.Data.eventId     = CAST(UUIDASCHAR AS CHARACTER);
     <span class="tok-k">SET</span> OutputRoot.JSON.Data.eventTime   = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT <span class="tok-s">'yyyy-MM-dd&apos;T&apos;HH:mm:ss&apos;Z&apos;'</span>);
-    <span class="tok-k">SET</span> OutputRoot.JSON.Data.paymentId   = cbsMsg.PayRefNbr;
-    <span class="tok-k">SET</span> OutputRoot.JSON.Data.endToEndId  = TRIM(cbsMsg.E2EId);
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.paymentId   = TRIM(srcMsg.BizRef);
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.endToEndId  = TRIM(srcMsg.E2ERef);
     <span class="tok-k">SET</span> OutputRoot.JSON.Data.status      = domainStatus;
     <span class="tok-k">SET</span> OutputRoot.JSON.Data.creditAmount = creditAmt;
-    <span class="tok-k">SET</span> OutputRoot.JSON.Data.currency    = TRIM(cbsMsg.CcyCd);
-    <span class="tok-k">SET</span> OutputRoot.JSON.Data.debtorIban  = TRIM(cbsMsg.DrIBAN);
-    <span class="tok-k">SET</span> OutputRoot.JSON.Data.creditorIban= TRIM(cbsMsg.CrIBAN);
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.currency    = TRIM(srcMsg.CcyCd);
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.debtorIban  = TRIM(srcMsg.DrAcctId);
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.creditorIban= TRIM(srcMsg.CrAcctId);
     <span class="tok-k">SET</span> OutputRoot.JSON.Data.valueDate   = valueDateStr;
-    <span class="tok-k">SET</span> OutputRoot.JSON.Data.cbsReference = cbsMsg.InternalTxnRef;
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.sourceReference = TRIM(srcMsg.HostRef);
 
     <span class="tok-k">RETURN TRUE</span>;
   <span class="tok-k">END</span>;
@@ -254,12 +296,12 @@
 <span class="tok-k">END MODULE</span>;</code></pre>
           </div>
 
-          <p>Three implementation details above that frequently cause production bugs if missed: <strong>TRIM on character fields</strong> (CBS fixed-width fields carry trailing spaces that corrupt downstream string comparisons), <strong>packed decimal handling</strong> (the CBS sends amounts as integers representing the value times 100; the ACL is responsible for the decimal point, not the consumer), and <strong>null-safe status mapping</strong> (every unmapped status code must be caught explicitly and routed to the DLQ with the original code preserved &mdash; swallowing unknown codes silently is how money goes missing in reconciliation).</p>
+          <p>Three implementation details above that frequently cause production bugs if missed: <strong>TRIM on character fields</strong> (legacy fixed-width fields carry trailing spaces that corrupt downstream string comparisons), <strong>implied-decimal handling</strong> (legacy cores commonly send amounts as integers in minor units &mdash; the value times 100 for a two-decimal currency; the ACL is responsible for the decimal point, not the consumer), and <strong>null-safe status mapping</strong> (every unmapped status code must be caught explicitly and routed to the DLQ with the original code preserved &mdash; swallowing unknown codes silently is how money goes missing in reconciliation).</p>
 
           <h2 id="mq-isolation">MQ Wire-Protocol Isolation</h2>
-          <p>The ACL&rsquo;s MQ topology is as important as the ESQL translation logic. The goal is complete wire-protocol isolation: domain services never connect to CBS queues, and CBS processes never connect to domain queues. The ACL is the only component that holds connections to both.</p>
+          <p>The ACL&rsquo;s MQ topology is as important as the ESQL translation logic. The goal is complete wire-protocol isolation: domain services never connect to legacy queues, and legacy processes never connect to domain queues. The ACL is the only component that holds connections to both.</p>
 
-          <div class="diagram" role="img" aria-label="Anti-corruption layer MQ topology: CBS produces to CBS.TXN.NOTIFY queue, ACE ACL flow reads from CBS queue, translates, and publishes to DOMAIN.PAYMENT.EVENTS topic. Domain services consume only from the domain topic. DLQ receives untranslatable messages.">
+          <div class="diagram" role="img" aria-label="Anti-corruption layer MQ topology: the legacy system of record produces to the LEGACY.EVT.NOTIFY queue, the ACE ACL flow reads from the legacy queue, translates, and publishes to DOMAIN.PAYMENT.EVENTS topic. Domain services consume only from the domain topic. DLQ receives untranslatable messages.">
             <div class="diagram__inner">
               <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
@@ -279,7 +321,7 @@
 
                 <!-- Zone labels -->
                 <rect x="5" y="5" width="230" height="370" rx="6" fill="none" stroke="#2a2a3a" stroke-dasharray="6,3"/>
-                <text x="120" y="24" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">CBS ZONE</text>
+                <text x="120" y="24" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">LEGACY ZONE</text>
 
                 <rect x="250" y="5" width="210" height="370" rx="6" fill="none" stroke="#2a2a3a" stroke-dasharray="6,3"/>
                 <text x="355" y="24" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">ACL ZONE (IBM ACE)</text>
@@ -287,29 +329,29 @@
                 <rect x="475" y="5" width="300" height="370" rx="6" fill="none" stroke="#2a2a3a" stroke-dasharray="6,3"/>
                 <text x="625" y="24" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">DOMAIN ZONE</text>
 
-                <!-- CBS Box -->
+                <!-- System of record box -->
                 <rect x="20" y="40" width="160" height="55" rx="5" fill="#1c1c28" stroke="#fbbf24"/>
-                <text x="100" y="63" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Core Banking System</text>
-                <text x="100" y="78" text-anchor="middle" fill="#71717a" font-size="8">Legacy CBS</text>
+                <text x="100" y="63" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">System of Record</text>
+                <text x="100" y="78" text-anchor="middle" fill="#71717a" font-size="8">Mainframe / packaged core</text>
                 <text x="100" y="88" text-anchor="middle" fill="#71717a" font-size="8">Fixed-format MQ messages</text>
 
-                <!-- CBS Queue -->
+                <!-- Legacy notify queue -->
                 <rect x="30" y="130" width="140" height="45" rx="5" fill="#16161f" stroke="#fbbf24"/>
-                <text x="100" y="149" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">CBS.TXN.NOTIFY</text>
+                <text x="100" y="149" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">LEGACY.EVT.NOTIFY</text>
                 <text x="100" y="163" text-anchor="middle" fill="#71717a" font-size="8">IBM MQ Queue · BLOB</text>
 
-                <!-- CBS → Queue -->
+                <!-- Legacy core → Queue -->
                 <line x1="100" y1="95" x2="100" y2="130" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#acl-arr-purple)"/>
                 <text x="110" y="116" fill="#71717a" font-size="7">PUT</text>
 
-                <!-- CBS Enquiry Queue -->
+                <!-- Legacy enquiry queue -->
                 <rect x="30" y="215" width="140" height="45" rx="5" fill="#16161f" stroke="#fbbf24"/>
-                <text x="100" y="233" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">CBS.ENQUIRY.REQ</text>
+                <text x="100" y="233" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">LEGACY.ENQ.REQ</text>
                 <text x="100" y="247" text-anchor="middle" fill="#71717a" font-size="8">IBM MQ Queue · Request</text>
 
-                <!-- CBS Reply Queue -->
+                <!-- Legacy reply queue -->
                 <rect x="30" y="295" width="140" height="45" rx="5" fill="#16161f" stroke="#fbbf24"/>
-                <text x="100" y="313" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">CBS.ENQUIRY.REPLY</text>
+                <text x="100" y="313" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">LEGACY.ENQ.REPLY</text>
                 <text x="100" y="327" text-anchor="middle" fill="#71717a" font-size="8">IBM MQ Queue · Reply</text>
 
                 <!-- ACE Flow 1: Notify translator -->
@@ -324,11 +366,11 @@
                 <text x="355" y="262" text-anchor="middle" fill="#71717a" font-size="8">REST → MQ req/reply</text>
                 <text x="355" y="274" text-anchor="middle" fill="#71717a" font-size="8">→ canonical response</text>
 
-                <!-- CBS Queue → ACE Flow 1 -->
+                <!-- Legacy queue → ACE Flow 1 -->
                 <line x1="170" y1="152" x2="265" y2="152" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#acl-arr-green)"/>
                 <text x="217" y="145" text-anchor="middle" fill="#71717a" font-size="7">GET</text>
 
-                <!-- CBS Enquiry Queue ↔ ACE Flow 2 -->
+                <!-- Legacy enquiry queue ↔ ACE Flow 2 -->
                 <line x1="170" y1="237" x2="265" y2="258" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#acl-arr-green)"/>
                 <line x1="265" y1="275" x2="170" y2="307" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#acl-arr-purple)"/>
 
@@ -374,37 +416,37 @@
                 <text x="370" y="262" fill="#ef4444" font-size="7">unknown</text>
                 <text x="370" y="272" fill="#ef4444" font-size="7">status/format</text>
 
-                <text x="390" y="368" text-anchor="middle" fill="#71717a" font-size="8">Domain services connect only to domain-zone resources. CBS zone resources are invisible to them.</text>
+                <text x="390" y="368" text-anchor="middle" fill="#71717a" font-size="8">Domain services connect only to domain-zone resources. Legacy-zone resources are invisible to them.</text>
               </svg>
             </div>
-            <div class="diagram__caption">Figure 1 &mdash; ACL MQ topology. The ACL (green zone) is the only component with connections into both the CBS zone (yellow) and the domain zone (blue). Domain services see canonical JSON on Kafka or a canonical REST endpoint &mdash; they have no MQ connection and no knowledge of CBS queue names or message formats.</div>
+            <div class="diagram__caption">Figure 1 &mdash; ACL MQ topology. The ACL (green zone) is the only component with connections into both the legacy zone (yellow) and the domain zone (blue). Domain services see canonical JSON on Kafka or a canonical REST endpoint &mdash; they have no MQ connection and no knowledge of legacy queue names or message formats.</div>
           </div>
 
-          <p>The enquiry bridge is a request-reply flow: a domain service sends a canonical REST request to the ACL, the ACL translates it to a CBS MQ message, sends it to <code>CBS.ENQUIRY.REQ</code> with a correlation ID and a reply-to queue, waits for the reply on <code>CBS.ENQUIRY.REPLY</code>, translates the reply, and returns the canonical REST response. Set a <code>waitInterval</code> on the ACE MQGet node (not a Java sleep) so the flow yields its thread while waiting and does not hold a worker thread for the entire CBS response time.</p>
+          <p>The enquiry bridge is a request-reply flow: a domain service sends a canonical REST request to the ACL, the ACL translates it to a legacy MQ message, sends it to <code>LEGACY.ENQ.REQ</code> with a correlation ID and a reply-to queue, waits for the reply on <code>LEGACY.ENQ.REPLY</code>, translates the reply, and returns the canonical REST response. Set a bounded <code>waitInterval</code> on the ACE MQGet node (not a Java sleep) so the flow gives up deterministically and returns a canonical timeout, rather than holding a worker thread for however long the legacy core takes to answer.</p>
 
           <h2 id="versioning">Version Negotiation</h2>
-          <p>CBS message formats change. The CBS team publishes a new version of the transaction notification message; some fields are renamed, one is removed, two new fields are added. The ACL must handle both the old format (while some CBS nodes are still running the old version) and the new format (once the upgrade completes). This is the CBS version negotiation problem, and it is more common than it should be: a typical KSA bank has three to five CBS versions running simultaneously across production, DR, and regional environments.</p>
-          <p>Implement version negotiation in the ACL using the MQMD <code>Format</code> field, a custom <code>CbsSchemaVersion</code> property in the MQRFH2 header, or &mdash; most reliably &mdash; a version discriminator within the message body itself (a <code>HeaderVersion</code> field that the CBS team agrees to maintain). The ACE flow reads the version discriminator and routes to a versioned ESQL submodule:</p>
+          <p>Legacy message formats change. The team that owns the system of record publishes a new version of a notification message; some fields are renamed, one is removed, two new fields are added. The ACL must handle both the old format (while some nodes or regions still run the old release) and the new format (once the upgrade completes). This is the version negotiation problem, and it is more common than it should be: large enterprises routinely run two or more releases of the same legacy core at once across production, DR, and regional or subsidiary environments.</p>
+          <p>Implement version negotiation in the ACL using the MQMD <code>Format</code> field, a custom <code>SourceSchemaVersion</code> property in the MQRFH2 header, or &mdash; most reliably &mdash; a version discriminator within the message body itself (a <code>HeaderVersion</code> field that the system-of-record team agrees to maintain). The ACE flow reads the version discriminator and routes to a versioned ESQL submodule:</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>CbsVersionRouter.esql</span><span class="code-block__lang">sql</span></div>
-<pre><code><span class="tok-k">CREATE COMPUTE MODULE</span> CbsVersionRouter_Compute
+            <div class="code-block__header"><span>SchemaVersionRouter.esql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-k">CREATE COMPUTE MODULE</span> SchemaVersionRouter_Compute
 
   <span class="tok-k">CREATE FUNCTION</span> Main() <span class="tok-k">RETURNS BOOLEAN</span>
   <span class="tok-k">BEGIN</span>
     <span class="tok-k">DECLARE</span> schemaVer <span class="tok-s">CHARACTER</span>
-        InputRoot.MQRFH2.usr.CbsSchemaVersion;
+        InputRoot.MQRFH2.usr.SourceSchemaVersion;
 
     <span class="tok-c">-- Route to the correct versioned translator subflow</span>
     <span class="tok-k">IF</span> schemaVer = <span class="tok-s">'3'</span> <span class="tok-k">OR</span> schemaVer <span class="tok-k">IS NULL THEN</span>
       <span class="tok-c">-- v3 is current and the default if the header is absent</span>
       <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out1'</span>;
     <span class="tok-k">ELSEIF</span> schemaVer = <span class="tok-s">'4'</span> <span class="tok-k">THEN</span>
-      <span class="tok-c">-- v4 is the new format; run in parallel during CBS upgrade window</span>
+      <span class="tok-c">-- v4 is the new format; run in parallel during the legacy upgrade window</span>
       <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out2'</span>;
     <span class="tok-k">ELSE</span>
       <span class="tok-c">-- Unknown version: DLQ with the version value for diagnosis</span>
-      <span class="tok-k">SET</span> Environment.Variables.DLQ_REASON = <span class="tok-s">'UNKNOWN_CBS_SCHEMA_VERSION:'</span> || schemaVer;
+      <span class="tok-k">SET</span> Environment.Variables.DLQ_REASON = <span class="tok-s">'UNKNOWN_SOURCE_SCHEMA_VERSION:'</span> || schemaVer;
       <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out3'</span>;
     <span class="tok-k">END IF</span>;
 
@@ -414,30 +456,30 @@
 <span class="tok-k">END MODULE</span>;</code></pre>
           </div>
 
-          <p>Maintain version-specific translator submodules until the old CBS version is fully decommissioned and the DLQ has been quiet for 30 days. Only then remove the old submodule. Keep the version routing table in the ACL, not in a property file or a database &mdash; it is part of the integration contract and must be version-controlled alongside the ESQL.</p>
+          <p>Maintain version-specific translator submodules until the old source version is fully decommissioned and the DLQ has been quiet for 30 days. Only then remove the old submodule. Keep the version routing table in the ACL, not in a property file or a database &mdash; it is part of the integration contract and must be version-controlled alongside the ESQL.</p>
 
           <h2 id="error-isolation">Error Isolation</h2>
-          <p>The ACL&rsquo;s error handling policy directly determines whether a CBS failure becomes visible to domain services and their downstream consumers. The goal is complete error isolation: a CBS processing error should never propagate as an unhandled exception into the domain services&rsquo; event stream. What reaches the domain is either a valid canonical event or nothing &mdash; never a half-translated message, never a raw CBS error code.</p>
+          <p>The ACL&rsquo;s error handling policy directly determines whether a legacy-side failure becomes visible to domain services and their downstream consumers. The goal is complete error isolation: a processing error on the legacy side should never propagate as an unhandled exception into the domain services&rsquo; event stream. What reaches the domain is either a valid canonical event or nothing &mdash; never a half-translated message, never a raw legacy error code.</p>
 
           <div class="callout callout--danger">
             <div class="callout__title">Never publish a partially-translated message to the domain topic</div>
-            <p>An ACE ESQL exception during translation (a CBS field that does not conform to the expected format, a null field that the mapping code did not anticipate) must route the original message to the DLQ, not the partially-translated output to the domain topic. A domain service consuming a partially-translated event and writing it to its own database creates a data quality problem that takes days to diagnose in production. The ACL must be transactional: either a fully valid canonical event is published, or the original CBS message goes to the DLQ and an alert fires. Never both, never neither.</p>
+            <p>An ACE ESQL exception during translation (a legacy field that does not conform to the expected format, a null field that the mapping code did not anticipate) must route the original message to the DLQ, not the partially-translated output to the domain topic. A domain service consuming a partially-translated event and writing it to its own database creates a data quality problem that takes days to diagnose in production. The ACL must be transactional: either a fully valid canonical event is published, or the original legacy message goes to the DLQ and an alert fires. Never both, never neither.</p>
           </div>
 
-          <p>Implement the error boundary in ACE using the message flow&rsquo;s exception list node with a DLQ MQOutput node on the failure terminal. The DLQ message must carry: the original CBS message bytes (for reprocessing), the exception text, the timestamp of the failure, and the CBS schema version. These four fields are the minimum needed by the operations team to diagnose and replay a DLQ backlog without involving the application team.</p>
+          <p>Implement the error boundary in ACE using the message flow&rsquo;s exception list node with a DLQ MQOutput node on the failure terminal. The DLQ message must carry: the original message bytes (for reprocessing), the exception text, the timestamp of the failure, and the source schema version. These four fields are the minimum needed by the operations team to diagnose and replay a DLQ backlog without involving the application team.</p>
 
           <div class="callout callout--warn">
             <div class="callout__title">DLQ depth is a business alert, not just an operational metric</div>
-            <p>Every message in the ACL DLQ represents a CBS transaction that was not propagated to the domain. If the payment reconciliation service is consuming from the domain Kafka topic, those DLQ messages are payment events that the reconciliation service has not seen. Set an IBM MQ queue depth alert at a threshold of 10 messages &mdash; not the operational default of 80% queue capacity. At 10 DLQ messages, an on-call engineer investigates; at 1000, the reconciliation job may have already produced incorrect reports.</p>
+            <p>Every message in the ACL DLQ represents a source transaction that was not propagated to the domain. If the payment reconciliation service is consuming from the domain Kafka topic, those DLQ messages are payment events that the reconciliation service has not seen. Set an IBM MQ queue depth alert at a threshold of 10 messages &mdash; not the operational default of 80% queue capacity. At 10 DLQ messages, an on-call engineer investigates; at 1000, the reconciliation job may have already produced incorrect reports.</p>
           </div>
 
           <h2 id="testing">Testing the ACL</h2>
-          <p>The ACL&rsquo;s translation logic is deterministic: the same CBS message always produces the same canonical output. This makes it unusually testable. The standard testing approach is a data-driven contract test suite: a table of CBS message examples (covering every status code, every edge case in the amount or date format, and each CBS schema version) paired with the expected canonical output. Run this suite in CI on every commit to the ACL project.</p>
+          <p>The ACL&rsquo;s translation logic is deterministic: the same legacy message always produces the same canonical output. This makes it unusually testable. The standard testing approach is a data-driven contract test suite: a table of legacy message examples (covering every status code, every edge case in the amount or date format, and each source schema version) paired with the expected canonical output. Run this suite in CI on every commit to the ACL project.</p>
 
           <ol class="step-list">
             <li>
-              <h4>Collect production CBS message examples</h4>
-              <p>Run the ACL in production with a message-capture tap (a monitoring MQ queue that receives a copy of every inbound CBS message). Collect 1000 messages across a 2-week window. This sample will cover real field values, real edge cases, and real status codes that the WSDL or message catalogue did not document. The collected messages become the test fixture.</p>
+              <h4>Collect production message examples</h4>
+              <p>Run the ACL in production with a message-capture tap (a monitoring MQ queue that receives a copy of every inbound legacy message). Collect 1000 messages across a 2-week window. This sample will cover real field values, real edge cases, and real status codes that the WSDL or message catalogue did not document. The collected messages become the test fixture.</p>
             </li>
             <li>
               <h4>Define the expected canonical output for each sample</h4>
@@ -445,39 +487,39 @@
             </li>
             <li>
               <h4>Write the contract test harness</h4>
-              <p>Use the IBM ACE unit test framework (or a lightweight test runner that invokes ACE flows programmatically via the embedded runtime API) to replay each fixture input and assert exact equality with the expected output. The test must fail on any change to the canonical output for an existing input. This is the regression safety net: a CBS schema version upgrade is only safe to deploy when the existing contract tests still pass and the new version-4 tests also pass.</p>
+              <p>Use the IBM ACE unit test framework (or a lightweight test runner that invokes ACE flows programmatically via the embedded runtime API) to replay each fixture input and assert exact equality with the expected output. The test must fail on any change to the canonical output for an existing input. This is the regression safety net: a source schema upgrade is only safe to deploy when the existing contract tests still pass and the new version-4 tests also pass.</p>
             </li>
             <li>
               <h4>Test error handling paths explicitly</h4>
-              <p>Fabricate CBS messages with unknown status codes, truncated fields, null mandatory fields, and amounts exceeding the expected range. Assert that each routes to the DLQ terminal with the correct DLQ reason code. The DLQ path must be tested; it is never covered by the happy-path fixture.</p>
+              <p>Fabricate legacy messages with unknown status codes, truncated fields, null mandatory fields, and amounts exceeding the expected range. Assert that each routes to the DLQ terminal with the correct DLQ reason code. The DLQ path must be tested; it is never covered by the happy-path fixture.</p>
             </li>
             <li>
               <h4>Test version routing</h4>
-              <p>Provide inputs with MQRFH2 headers for each supported CBS schema version and assert that the correct versioned translator is invoked. Provide an unknown schema version and assert that the DLQ terminal fires. Provide a message with no schema version header and assert that the default (current) version is used.</p>
+              <p>Provide inputs with MQRFH2 headers for each supported source schema version and assert that the correct versioned translator is invoked. Provide an unknown schema version and assert that the DLQ terminal fires. Provide a message with no schema version header and assert that the default (current) version is used.</p>
             </li>
             <li>
               <h4>Performance baseline in CI</h4>
-              <p>Run a throughput test in the CI pipeline: 10,000 messages processed sequentially, measuring end-to-end translation time. Record the p99 latency. Any commit that increases p99 by more than 10% fails the build. Translation latency is a production constraint: the CBS sends transaction notifications in bursts; the ACL must drain the queue faster than the CBS fills it.</p>
+              <p>Run a throughput test in the CI pipeline: 10,000 messages processed sequentially, measuring end-to-end translation time. Record the p99 latency. Any commit that increases p99 by more than 10% fails the build. Translation latency is a production constraint: legacy cores emit notifications in bursts (end-of-day batches, month-end runs); the ACL must drain the queue faster than the legacy core fills it.</p>
             </li>
           </ol>
 
           <h2 id="observability">Observability</h2>
-          <p>The ACL has two key operational metrics: <strong>translation throughput</strong> (messages translated per second, with a threshold alert if it falls below the CBS burst rate) and <strong>DLQ depth</strong> (the number of messages that could not be translated). Both are emitted as IBM MQ PCF events and scraped by the monitoring stack. Add a third metric specific to the ACL: <strong>translation lag</strong>, the difference between the timestamp in the CBS message header and the timestamp of the published canonical event. For payment notifications that feed real-time customer-facing products, translation lag above 500ms is an operational incident.</p>
+          <p>The ACL has two key operational metrics: <strong>translation throughput</strong> (messages translated per second, with a threshold alert if it falls below the legacy burst rate) and <strong>DLQ depth</strong> (the number of messages that could not be translated). Both are emitted as IBM MQ PCF events and scraped by the monitoring stack. Add a third metric specific to the ACL: <strong>translation lag</strong>, the difference between the timestamp in the source message header and the timestamp of the published canonical event. For notifications that feed real-time customer-facing products, translation lag above 500ms is an operational incident.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>acl-monitoring.yaml (IBM Instana / Prometheus bridge)</span><span class="code-block__lang">yaml</span></div>
+            <div class="code-block__header"><span>acl-monitoring.yaml (Prometheus-style metrics and alerts)</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-c"># Custom ACL metrics emitted via ACE user-defined statistics</span>
 <span class="tok-k">metrics</span>:
   - <span class="tok-k">name</span>: <span class="tok-s">acl_translations_total</span>
     <span class="tok-k">type</span>: <span class="tok-s">counter</span>
-    <span class="tok-k">labels</span>: [<span class="tok-s">domain</span>, <span class="tok-s">cbs_version</span>, <span class="tok-s">outcome</span>]
+    <span class="tok-k">labels</span>: [<span class="tok-s">domain</span>, <span class="tok-s">source_version</span>, <span class="tok-s">outcome</span>]
     <span class="tok-k">description</span>: <span class="tok-s">Total ACL translation attempts; outcome is 'ok' or 'dlq'</span>
 
   - <span class="tok-k">name</span>: <span class="tok-s">acl_translation_lag_seconds</span>
     <span class="tok-k">type</span>: <span class="tok-s">histogram</span>
     <span class="tok-k">labels</span>: [<span class="tok-s">domain</span>]
     <span class="tok-k">buckets</span>: [0.05, 0.1, 0.25, 0.5, 1.0, 2.5]
-    <span class="tok-k">description</span>: <span class="tok-s">Time from CBS message creation to canonical event publish</span>
+    <span class="tok-k">description</span>: <span class="tok-s">Time from source message creation to canonical event publish</span>
 
   - <span class="tok-k">name</span>: <span class="tok-s">acl_dlq_depth</span>
     <span class="tok-k">type</span>: <span class="tok-s">gauge</span>
@@ -488,12 +530,12 @@
   - <span class="tok-k">name</span>: <span class="tok-s">AclDlqDepthHigh</span>
     <span class="tok-k">condition</span>: <span class="tok-s">acl_dlq_depth{domain="payments"} > 10</span>
     <span class="tok-k">severity</span>: <span class="tok-s">critical</span>
-    <span class="tok-k">message</span>: <span class="tok-s">"Payment ACL DLQ has {{$value}} messages. Check CBS message format for version change."</span>
+    <span class="tok-k">message</span>: <span class="tok-s">"Payment ACL DLQ has {{$value}} messages. Check source message format for a version change."</span>
 
   - <span class="tok-k">name</span>: <span class="tok-s">AclTranslationLagHigh</span>
     <span class="tok-k">condition</span>: <span class="tok-s">histogram_quantile(0.99, acl_translation_lag_seconds{domain="payments"}) > 0.5</span>
     <span class="tok-k">severity</span>: <span class="tok-s">warning</span>
-    <span class="tok-k">message</span>: <span class="tok-s">"Payment ACL p99 translation lag is {{$value}}s. CBS queue may be backing up."</span></code></pre>
+    <span class="tok-k">message</span>: <span class="tok-s">"Payment ACL p99 translation lag is {{$value}}s. Legacy queue may be backing up."</span></code></pre>
           </div>
 
           <h2 id="checklist">Deployment Checklist</h2>
@@ -509,15 +551,15 @@
             </li>
             <li>
               <h4>Configure MQ topology with strict zone separation</h4>
-              <p>Create ACL-specific MQ queue names that domain services cannot resolve (name them in the CBS zone namespace). Grant the ACL service account read access to CBS queues and write access to domain queues. Domain service accounts must have no access to CBS queues. Validate the access control model in a non-production environment before deploying to production.</p>
+              <p>Create ACL-specific MQ queue names that domain services cannot resolve (name them in the legacy-zone namespace). Grant the ACL service account read access to legacy queues and write access to domain queues. Domain service accounts must have no access to legacy queues. Validate the access control model in a non-production environment before deploying to production.</p>
             </li>
             <li>
               <h4>Deploy DLQ and configure depth alerting</h4>
-              <p>Create the domain-specific DLQ (<code>ACL.{DOMAIN}.DLQ</code>) before deploying the ACL. Configure IBM MQ queue depth alerts at threshold 10. Configure the DLQ message format to include the original message bytes, exception text, timestamp, and CBS schema version. Validate the DLQ alert in a test environment by deliberately injecting a message with an unknown status code.</p>
+              <p>Create the domain-specific DLQ (<code>ACL.{DOMAIN}.DLQ</code>) before deploying the ACL. Configure IBM MQ queue depth alerts at threshold 10. Configure the DLQ message format to include the original message bytes, exception text, timestamp, and source schema version. Validate the DLQ alert in a test environment by deliberately injecting a message with an unknown status code.</p>
             </li>
             <li>
               <h4>Deploy in shadow mode alongside the existing adapter (if replacing one)</h4>
-              <p>If the ACL is replacing an existing direct adapter, deploy it in shadow mode first: both the existing adapter and the ACL receive the same CBS messages; compare their outputs for 48 hours before cutting over. Any discrepancy is a defect in the ACL translation logic, not an expected difference. The shadow period is non-negotiable.</p>
+              <p>If the ACL is replacing an existing direct adapter, deploy it in shadow mode first: both the existing adapter and the ACL receive the same legacy messages; compare their outputs for 48 hours before cutting over. Any discrepancy is a defect in the ACL translation logic, not an expected difference. The shadow period is non-negotiable.</p>
             </li>
             <li>
               <h4>Establish translation lag baseline</h4>
@@ -532,7 +574,7 @@
               <tr>
                 <th>Approach</th>
                 <th>Domain model isolation</th>
-                <th>CBS version tolerance</th>
+                <th>Legacy version tolerance</th>
                 <th>Testability</th>
                 <th>Operational complexity</th>
               </tr>
@@ -540,29 +582,29 @@
             <tbody>
               <tr>
                 <td><strong>IBM ACE shared ACL flow</strong></td>
-                <td>Full: domain services have no CBS knowledge</td>
+                <td>Full: domain services have no legacy knowledge</td>
                 <td>Built-in: version routing in the flow, all consumers benefit from updates</td>
                 <td>High: deterministic ESQL is straightforward to unit-test</td>
                 <td>Low: one BAR per domain; central DLQ; single deployment unit</td>
               </tr>
               <tr>
-                <td><strong>Per-service adapter (direct CBS access)</strong></td>
-                <td>None: each service translates its own CBS fields</td>
-                <td>Fragmented: each service handles CBS versions independently</td>
+                <td><strong>Per-service adapter (direct legacy access)</strong></td>
+                <td>None: each service translates its own legacy fields</td>
+                <td>Fragmented: each service handles legacy versions independently</td>
                 <td>Low: translation logic embedded in service business code</td>
-                <td>High: N services must each handle the CBS version upgrade</td>
+                <td>High: N services must each handle the legacy version upgrade</td>
               </tr>
               <tr>
                 <td><strong>ACL inside domain service (DDD in-process)</strong></td>
                 <td>Partial: translation code isolated within the service, but schema tied to it</td>
-                <td>Poor: each service independently updates for a CBS schema change</td>
+                <td>Poor: each service independently updates for a legacy schema change</td>
                 <td>Medium: easier to unit-test than adapter pattern, harder to test cross-service</td>
                 <td>Medium: no shared deployment, but each service team owns the mapping</td>
               </tr>
               <tr>
                 <td><strong>ETL / data pipeline (batch)</strong></td>
                 <td>Full for query scenarios; none for real-time event scenarios</td>
-                <td>Good for batch windows; unacceptable for real-time payment notifications</td>
+                <td>Good for batch windows; unacceptable for real-time notifications</td>
                 <td>High: SQL or Spark transformations are testable</td>
                 <td>Low for batch; high for maintaining both real-time and batch paths</td>
               </tr>
@@ -598,7 +640,7 @@
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Distributed Caching &mdash; Redis Cluster &amp; Sentinel &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Cache topology, consistency models, invalidation strategies, and distributed state management for low-latency financial applications: Redis Cluster, Sentinel, cache patterns (cache-aside, write-through, write-behind), and the operational patterns to avoid cache stampedes.">
+  <meta name="description" content="Cache topology, consistency models, invalidation strategies, and distributed state management for low-latency, high-traffic applications: Redis Cluster, Sentinel, cache patterns (cache-aside, write-through, write-behind), and the operational patterns to avoid cache stampedes.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Distributed Caching &mdash; Redis Cluster &amp; Sentinel">
-  <meta property="og:description" content="Production cache patterns for low-latency financial applications.">
+  <meta property="og:description" content="Production cache patterns for low-latency, high-traffic applications.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/distributed-caching/redis-cluster.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,8 +17,12 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed Caching &mdash; Production Patterns">
-  <meta name="twitter:description" content="Redis Cluster and Sentinel patterns for financial services.">
+  <meta name="twitter:description" content="Redis Cluster and Sentinel patterns for production systems.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/distributed-caching/redis-cluster.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -63,7 +67,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Redis Cluster</div>
           <span class="overline">Lab Article</span>
           <h1>Distributed Caching: Redis Cluster &amp; Sentinel</h1>
-          <p class="lead">Cache patterns (cache-aside, write-through, write-behind), Redis topology choices (Cluster vs Sentinel), invalidation strategies, the cache stampede that has felled more banking platforms than any disk failure, and the operational patterns to keep p99 latency in the millisecond range.</p>
+          <p class="lead">Cache patterns (cache-aside, write-through, write-behind), Redis topology choices (Cluster vs Sentinel), invalidation strategies, the cache stampede that has felled more high-traffic platforms than any disk failure, and the operational patterns to keep p99 latency in the millisecond range.</p>
         </div>
       </div>
     </div>
@@ -101,7 +105,7 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>A distributed cache is a network-accessible, in-memory key/value store shared across application instances. In financial services it solves three problems: <strong>read latency</strong> (sub-millisecond access to reference data), <strong>backend protection</strong> (absorbing read fan-out from a 5x traffic spike), and <strong>session state</strong> (because session stickiness on a load balancer is fragile).</p>
+          <p>A distributed cache is a network-accessible, in-memory key/value store shared across application instances. In any high-traffic system &mdash; banking, retail, telecoms, SaaS &mdash; it solves three problems: <strong>read latency</strong> (sub-millisecond access to reference data), <strong>backend protection</strong> (absorbing read fan-out from a 5x traffic spike), and <strong>session state</strong> (because session stickiness on a load balancer is fragile).</p>
           <p>Redis dominates this space. Two deployment topologies cover almost every requirement: <strong>Sentinel</strong> for HA on a single primary, <strong>Cluster</strong> when data exceeds the memory of one node.</p>
 
           <div class="callout callout--note">
@@ -454,7 +458,7 @@ tls-auth-clients <span class="tok-s">yes</span></code></pre>
           <p>Caching is the right tool for read-heavy workloads with reusable values and tolerable staleness. It is the wrong tool when:</p>
           <ul>
             <li><strong>The data is unique per request.</strong> No reuse, no benefit. Just hit the database.</li>
-            <li><strong>Strong consistency is required.</strong> If the bank cannot show a transaction one second after it&rsquo;s booked, you don&rsquo;t want a cache between the user and the ledger.</li>
+            <li><strong>Strong consistency is required.</strong> If a user must see a transaction, order or balance the instant it is committed, you don&rsquo;t want a cache between the user and the system of record.</li>
             <li><strong>The workload is write-heavy.</strong> Write-through caches add latency without read benefit. Write-behind risks loss.</li>
             <li><strong>The DB is fast enough.</strong> Adding a cache adds a network hop, a cache-coherence problem, and an operational dependency. If the DB serves the read in 2 ms, a 1 ms cache hit is rarely worth the complexity.</li>
           </ul>
@@ -488,7 +492,7 @@ tls-auth-clients <span class="tok-s">yes</span></code></pre>
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

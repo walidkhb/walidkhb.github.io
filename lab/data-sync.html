@@ -17,8 +17,12 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Data Synchronisation &mdash; Lab &mdash; Waleed Albadawi">
-  <meta name="twitter:description" content="Debezium, outbox, and idempotent consumers for financial services.">
+  <meta name="twitter:description" content="Debezium, outbox, and idempotent consumers for business-critical data flows.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -60,7 +64,7 @@
       <div class="breadcrumb"><a href="../technical.html">Lab</a><span>/</span>Data Synchronisation</div>
       <span class="overline">Lab Topic</span>
       <h1>Data Synchronisation</h1>
-      <p class="lead">Change data capture, dual-write patterns, eventual consistency, and keeping distributed financial data in sync across systems &mdash; the patterns that survive partial failures.</p>
+      <p class="lead">Change data capture, dual-write patterns, eventual consistency, and keeping business-critical data in sync across systems of record, channels and analytics &mdash; the patterns that survive partial failures.</p>
     </div>
   </section>
 
@@ -97,7 +101,7 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Cross-Region Replication Patterns</h2>
-          <p class="article-list__excerpt">Active/active vs active/passive multi-region data: conflict resolution strategies, Kafka MirrorMaker 2 with offset translation, Postgres streaming and logical replication, IBM Db2 HADR, and the SAMA data-residency constraints that shape all of it.</p>
+          <p class="article-list__excerpt">Active/active vs active/passive multi-region data: conflict resolution strategies, Kafka MirrorMaker 2 with offset translation, Postgres streaming and logical replication, IBM Db2 HADR, and the data-residency constraints that shape all of it.</p>
           <div class="article-list__tags">
             <span class="skill-tag">MirrorMaker 2</span>
             <span class="skill-tag">PostgreSQL</span>
@@ -117,12 +121,12 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Reconciliation Pipelines for Regulators</h2>
-          <p class="article-list__excerpt">Daily reconciliation that catches CDC drift the application can&rsquo;t see: fingerprinting &amp; hash comparison at scale, automated break investigation and classification, SAMA-aligned audit trails, and the tamper-evident reporting that survives an examination.</p>
+          <p class="article-list__excerpt">Daily reconciliation that catches CDC drift the application can&rsquo;t see: fingerprinting &amp; hash comparison at scale, automated break investigation and classification, audit trails aligned with supervisory expectations, and the tamper-evident regulatory reporting that survives an examination.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Apache Flink</span>
             <span class="skill-tag">Spark</span>
             <span class="skill-tag">Debezium</span>
-            <span class="skill-tag">SAMA TRM</span>
+            <span class="skill-tag">Regulatory Reporting</span>
             <span class="skill-tag">Audit Trail</span>
           </div>
           <div class="article-list__arrow">Read article &rarr;</div>
@@ -137,12 +141,12 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Event-Driven Data Mesh: Domain Ownership via Kafka ACLs and Schema Registry</h2>
-          <p class="article-list__excerpt">Kafka ACLs for domain data ownership, Avro schema with PDPL classification metadata, Kafka Streams GlobalKTable joins across domain boundaries, and the governance model that turns Kafka from a shared bus into a set of domain-owned data products.</p>
+          <p class="article-list__excerpt">Kafka ACLs for domain data ownership, Avro schema with data-protection classification metadata, Kafka Streams GlobalKTable joins across domain boundaries, and the governance model that turns Kafka from a shared bus into a set of domain-owned data products.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Data Mesh</span>
             <span class="skill-tag">Kafka ACLs</span>
             <span class="skill-tag">Avro</span>
-            <span class="skill-tag">PDPL</span>
+            <span class="skill-tag">Data Privacy</span>
             <span class="skill-tag">Kafka Streams</span>
           </div>
           <div class="article-list__arrow">Read article &rarr;</div>
@@ -177,13 +181,13 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Conflict Resolution in Multi-Master Databases: CockroachDB, PostgreSQL &amp; Redis CRDTs</h2>
-          <p class="article-list__excerpt">CockroachDB geo-partition survival goals, PostgreSQL conflict resolution trigger with last-write-wins and merge strategies, Redis 7 PN-Counter Lua for distributed counters, and the SAMA BCP requirements that make multi-master necessary.</p>
+          <p class="article-list__excerpt">CockroachDB geo-partition survival goals, PostgreSQL conflict resolution trigger with last-write-wins and merge strategies, Redis 7 PN-Counter Lua for distributed counters, and the business-continuity requirements that make multi-master necessary.</p>
           <div class="article-list__tags">
             <span class="skill-tag">CockroachDB</span>
             <span class="skill-tag">PostgreSQL</span>
             <span class="skill-tag">Redis CRDT</span>
             <span class="skill-tag">Multi-Master</span>
-            <span class="skill-tag">SAMA BCP</span>
+            <span class="skill-tag">BCP</span>
           </div>
           <div class="article-list__arrow">Read article &rarr;</div>
         </a>
@@ -205,6 +209,6 @@
     </div>
   </footer>
 
-  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/main.js?v=20261127"></script>
 </body>
 </html>

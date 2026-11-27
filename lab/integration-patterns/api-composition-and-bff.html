@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Composition &amp; Backend-for-Frontend &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="API composition patterns and Backend-for-Frontend architecture: IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budget management, BFF caching, and FAPI 2.0 scope enforcement for open banking channels.">
+  <meta name="description" content="API composition patterns and Backend-for-Frontend architecture: IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budget management, BFF caching, and FAPI 2.0 scope enforcement for regulated third-party (open-API) channels.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="API Composition &amp; Backend-for-Frontend &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budgets, and FAPI 2.0 at the BFF layer for regulated banking channels.">
+  <meta property="og:description" content="IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budgets, and FAPI 2.0 at the BFF layer for regulated multi-channel platforms.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/api-composition-and-bff.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,8 +17,12 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="API Composition &amp; Backend-for-Frontend &mdash; Lab">
-  <meta name="twitter:description" content="ACE Fan-Out, Spring CompletableFuture, timeout budget management, and BFF circuit breaking for regulated banking.">
+  <meta name="twitter:description" content="ACE Fan-Out, Spring CompletableFuture, timeout budget management, and BFF circuit breaking for regulated multi-channel platforms.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/api-composition-and-bff.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -38,18 +42,50 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Integration Patterns: API Composition & Backend-for-Frontend",
-    "description": "API composition patterns and Backend-for-Frontend architecture: IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budget management, BFF caching, and FAPI 2.0 scope enforcement for open banking channels.",
+    "description": "API composition patterns and Backend-for-Frontend architecture: IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budget management, BFF caching, and FAPI 2.0 scope enforcement for regulated third-party (open-API) channels.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/lab/integration-patterns/api-composition-and-bff.html",
     "isPartOf": {
@@ -89,7 +125,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>API Composition &amp; BFF</div>
           <span class="overline">Lab Article</span>
           <h1>API Composition &amp; Backend-for-Frontend</h1>
-          <p class="lead">The aggregation problem, BFF architecture for mobile, web, and open banking channels, IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture composition, timeout budget management, and FAPI 2.0 scope enforcement &mdash; grounded in the channel integration challenges of a regulated KSA bank.</p>
+          <p class="lead">The aggregation problem, BFF architecture for mobile, web, and third-party open-API channels, IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture composition, timeout budget management, and FAPI 2.0 scope enforcement &mdash; grounded in the channel integration challenges of a regulated, multi-channel enterprise, with retail banking as the worked example.</p>
         </div>
       </div>
     </div>
@@ -126,7 +162,7 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>The aggregation problem appears the moment a bank has more than one consumer channel and more than one domain service. The mobile app needs an account summary screen &mdash; three fields from the accounts API, one field from the payments API, and a notification badge from the notifications API. The desktop web app needs all fields from all three services plus transaction history from a fourth. The corporate portal needs a bulk view that calls the accounts API in a loop for 200 accounts. The open banking API needs a consent-filtered view with only the fields the customer has authorised the third party to see.</p>
+          <p>The aggregation problem appears the moment an organisation has more than one consumer channel and more than one domain service. Take retail banking as the worked example. The mobile app needs an account summary screen &mdash; three fields from the accounts API, one field from the payments API, and a notification badge from the notifications API. The desktop web app needs all fields from all three services plus transaction history from a fourth. The corporate portal needs a bulk view that calls the accounts API in a loop for 200 accounts. The open banking API needs a consent-filtered view with only the fields the customer has authorised the third party to see.</p>
           <p>The naive solution is to let each channel call each service directly. The result is over-fetching on mobile (the accounts API returns 40 fields; mobile uses 3), under-fetching on desktop (desktop needs account and payment data in a single screen transition, which requires two sequential API calls with a dependency between them), and performance coupling between channels &mdash; the slowest downstream service determines the latency of every channel&rsquo;s most critical screen.</p>
           <p>The Backend-for-Frontend (BFF) pattern addresses this by placing a thin aggregation layer between each channel and the downstream domain services. The BFF is not a domain service &mdash; it has no business logic, no database, and no state. It is an aggregator and transformer that owns the shape of the API contract a specific channel needs. Each channel gets its own BFF, owned by the channel team, not the domain service teams.</p>
 
@@ -136,7 +172,7 @@
           </div>
 
           <h2 id="bff-pattern">BFF Architecture</h2>
-          <p>The BFF architecture at a KSA bank with three primary channels &mdash; mobile, web, and open banking &mdash; produces three BFF services. Each is independently deployable, independently scalable, and independently versioned. The domain services are unaware of the BFF layer; they expose their APIs to any authenticated caller and the BFF is just another caller.</p>
+          <p>An organisation with three primary channels &mdash; mobile, web, and a third-party open API (open banking, in the worked example) &mdash; ends up with three BFF services. Each is independently deployable, independently scalable, and independently versioned. The domain services are unaware of the BFF layer; they expose their APIs to any authenticated caller and the BFF is just another caller.</p>
           <p>The BFF owns: aggregation (calling multiple downstream services and assembling a single response), transformation (renaming fields, converting types, filtering optional fields not needed by the channel), partial result handling (deciding what to return when a downstream is degraded), and caching (storing reference data that the channel reads frequently).</p>
           <p>The BFF does not own: authentication of end users (that stays at the API gateway, Kong 3.7 in this stack), rate limiting (Kong plugin), TLS termination (OpenShift route or Kong), or domain validation (the domain service). Kong terminates the inbound TLS and enforces the OAuth 2.0 / FAPI 2.0 token validation before the request reaches the BFF. The BFF receives an already-authenticated request carrying the token claims and acts on them.</p>
 
@@ -195,7 +231,7 @@
                 <text x="327" y="275" text-anchor="middle" fill="#71717a" font-size="8">Spring Boot 3.3</text>
                 <text x="327" y="290" text-anchor="middle" fill="#71717a" font-size="8">FAPI 2.0 consent filter</text>
                 <text x="327" y="305" text-anchor="middle" fill="#71717a" font-size="8">AIS vs PIS scopes</text>
-                <text x="327" y="319" text-anchor="middle" fill="#71717a" font-size="8">SAMA rate plans</text>
+                <text x="327" y="319" text-anchor="middle" fill="#71717a" font-size="8">partner rate plans</text>
 
                 <!-- Domain services right column -->
                 <rect x="450" y="60" width="140" height="50" rx="6" fill="#16161f" stroke="#c8a660"/>
@@ -294,7 +330,7 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>MobileBffCompositionService.java &mdash; CompletableFuture + Resilience4j</span><span class="code-block__lang">java</span></div>
-<pre><code><span class="tok-k">package</span> info.bank.bff.mobile.service;
+<pre><code><span class="tok-k">package</span> com.example.bff.mobile.service;
 
 <span class="tok-k">import</span> io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 <span class="tok-k">import</span> java.util.concurrent.CompletableFuture;
@@ -366,7 +402,7 @@
           </div>
 
           <h2 id="open-banking-bff">Open Banking BFF</h2>
-          <p>The Open Banking BFF has compliance requirements that the mobile and web BFFs do not. SAMA&rsquo;s Open Banking framework mandates FAPI 2.0 security profiles for third-party provider (TPP) access. The BFF layer is the correct place to enforce consent scope filtering, not the downstream domain services.</p>
+          <p>The Open Banking BFF has compliance requirements that the mobile and web BFFs do not. Regulated open-API regimes &mdash; open banking is the best-known &mdash; increasingly mandate a FAPI security profile for third-party provider (TPP) access. The BFF layer is the correct place to enforce consent scope filtering, not the downstream domain services.</p>
           <p>When a TPP presents an AIS (Account Information Service) token, the Open Banking BFF must return only the fields the customer has consented to share, regardless of what the Accounts API would return for a full authenticated session. The Accounts API has no concept of per-TPP consent &mdash; it returns all data for the authenticated customer. The BFF reads the consent record from the consent store and applies field-level filtering before the response leaves the BFF.</p>
 
           <div class="code-block">
@@ -452,7 +488,7 @@
           <p>Reference data that the BFF reads on every request and that changes infrequently is a strong caching candidate at the BFF layer. Account metadata &mdash; IBAN, account name, product type &mdash; is stable for hours between changes; caching it at the BFF eliminates a downstream call on every dashboard load.</p>
           <p>The caching strategy for the Mobile BFF: Caffeine in-process cache for per-customer reference data with a 5-minute TTL and a stale-while-revalidate window. For the Web BFF running in IBM ACE, use ACE&rsquo;s built-in <code>GlobalCache</code> node backed by an embedded WebSphere eXtreme Scale partition; this cache is shared across all ACE instances in the integration server group.</p>
           <p>Cache invalidation via event: when the Accounts API publishes an <code>account.updated</code> Kafka event, the BFF consumes it and evicts the cached entry for the affected <code>customerId</code>. This keeps the cache coherent without a short TTL that would increase downstream load. The event consumer in the BFF is a lightweight Spring Kafka consumer; it does not participate in the request path.</p>
-          <p>Per-channel cache TTL: the mobile BFF caches reference data for 5 minutes; the open banking BFF caches reference data for 1 minute (TPP-visible data has a tighter freshness requirement under SAMA&rsquo;s Open Banking framework). Never cache consent records at the BFF &mdash; consent changes must be reflected immediately, and a 5-minute-stale consent cache would return data a customer has revoked.</p>
+          <p>Per-channel cache TTL: the mobile BFF caches reference data for 5 minutes; the open banking BFF caches reference data for 1 minute (TPP-visible data typically carries a tighter freshness expectation under open-banking rules). Never cache consent records at the BFF &mdash; consent changes must be reflected immediately, and a 5-minute-stale consent cache would return data a customer has revoked.</p>
 
           <h2 id="pitfalls">Pitfalls</h2>
 
@@ -508,7 +544,7 @@
             <li>Correlation ID (<code>X-Correlation-ID</code> and <code>traceparent</code>) propagated to all downstream calls from every BFF request.</li>
             <li>BFF-layer reference data cache configured with per-channel TTLs; cache invalidation wired to upstream change events via Kafka consumer.</li>
             <li>Consent records never cached; Open Banking BFF applies consent scope filtering on every request using a freshly fetched consent record.</li>
-            <li>FAPI 2.0 token validation at Kong; BFF reads token claims and applies scope filtering (AIS vs PIS); SAMA rate plans enforced at Kong plugin, not in BFF code.</li>
+            <li>FAPI 2.0 token validation at Kong; BFF reads token claims and applies scope filtering (AIS vs PIS); partner rate plans enforced at the Kong plugin, not in BFF code.</li>
             <li>N+1 call patterns audited and eliminated; bulk-fetch endpoints requested from domain service teams before BFF goes to production.</li>
             <li>Consumer-driven contract tests (Pact) between each channel and its BFF; CI pipeline breaks on contract violation.</li>
             <li>No domain logic (eligibility rules, limit calculations, business validations) in any BFF; code review checklist includes explicit domain-logic check.</li>
@@ -543,7 +579,7 @@
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

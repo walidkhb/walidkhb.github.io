@@ -6,7 +6,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Security: Vault PKI &amp; cert-manager &mdash; Zero-Touch Certificate Lifecycle &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="How to eliminate manual certificate spreadsheets from a regulated bank's API estate: HashiCorp Vault PKI engine, cert-manager ClusterIssuers, RFC 8705 cert-bound OAuth tokens, zero-restart TLS rotation, and SAMA CSF alignment.">
+  <meta name="description" content="How to eliminate manual certificate spreadsheets from a regulated organisation's API estate: HashiCorp Vault PKI engine, cert-manager ClusterIssuers, RFC 8705 cert-bound OAuth tokens, zero-restart TLS rotation, and regulatory control alignment.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="API Security: Vault PKI &amp; cert-manager &mdash; Zero-Touch Certificate Lifecycle &mdash; Lab &mdash; Waleed Albadawi">
   <meta property="og:description" content="Vault PKI, cert-manager, and RFC 8705 cert-bound tokens &mdash; automated certificate lifecycle for financial APIs.">
@@ -16,9 +16,13 @@
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Vault PKI &amp; cert-manager: Certificate Lifecycle for Banking APIs">
-  <meta name="twitter:description" content="Automated TLS rotation, cert-bound OAuth tokens, and SAMA compliance with Vault and cert-manager.">
+  <meta name="twitter:title" content="Vault PKI &amp; cert-manager: Certificate Lifecycle for Regulated APIs">
+  <meta name="twitter:description" content="Automated TLS rotation, cert-bound OAuth tokens, and regulatory compliance with Vault and cert-manager.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/api-security/vault-pki-and-cert-manager.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -38,18 +42,50 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "API Security: Vault PKI &amp; cert-manager &mdash; Zero-Touch Certificate Lifecycle",
-    "description": "Automated TLS certificate lifecycle for regulated banking APIs: HashiCorp Vault PKI engine, cert-manager ClusterIssuers, zero-restart rotation, RFC 8705 cert-bound tokens, and SAMA CSF alignment.",
+    "description": "Automated TLS certificate lifecycle for regulated APIs: HashiCorp Vault PKI engine, cert-manager ClusterIssuers, zero-restart rotation, RFC 8705 cert-bound tokens, and regulatory control alignment.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-26",
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/lab/api-security/vault-pki-and-cert-manager.html",
     "isPartOf": {
@@ -89,7 +125,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>Vault PKI &amp; cert-manager</div>
           <span class="overline">Lab Article</span>
           <h1>API Security: Vault PKI &amp; cert-manager &mdash; Zero-Touch Certificate Lifecycle</h1>
-          <p class="lead">How to eliminate manual certificate spreadsheets from a regulated bank&rsquo;s API estate: HashiCorp Vault PKI engine, cert-manager ClusterIssuers, zero-restart TLS rotation, RFC 8705 cert-bound OAuth tokens, and SAMA Cybersecurity Framework alignment.</p>
+          <p class="lead">How to eliminate manual certificate spreadsheets from a regulated organisation&rsquo;s API estate: HashiCorp Vault PKI engine, cert-manager ClusterIssuers, zero-restart TLS rotation, RFC 8705 cert-bound OAuth tokens, and alignment with financial-sector cryptography controls.</p>
         </div>
       </div>
     </div>
@@ -111,7 +147,7 @@
             <li><a href="#partner-certs">Partner cert lifecycle</a></li>
             <li><a href="#oauth-binding">OAuth mTLS token binding</a></li>
             <li><a href="#monitoring">Expiry monitoring</a></li>
-            <li><a href="#sama">SAMA CSF alignment</a></li>
+            <li><a href="#compliance">Regulatory control alignment</a></li>
             <li><a href="#checklist">Production checklist</a></li>
           </ul>
         </aside>
@@ -127,8 +163,8 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Every bank that has deployed mTLS for partner API access has also, somewhere, a spreadsheet. It tracks certificate Common Names, expiry dates, the partner contact email, and whoever last rotated the cert &mdash; in free-text fields, maintained manually, updated when someone remembers. When a cert expires at 2am on a Thursday before the Eid holiday and the spreadsheet says it was renewed six months ago by someone who left the organisation, the incident is already in progress.</p>
-          <p>This article is about eliminating that spreadsheet. The tools are HashiCorp Vault&rsquo;s PKI secrets engine (issuing short-lived certs from an intermediate CA it controls) and cert-manager (reconciling Kubernetes Certificate objects, automating renewal before expiry, and injecting rotated secrets without a pod restart). Together, they move certificate lifecycle from a manual calendar event to an automated control loop &mdash; one that runs continuously, produces audit evidence, and satisfies the SAMA Cybersecurity Framework&rsquo;s cryptographic key management requirements.</p>
+          <p>Almost every organisation that has deployed mTLS for partner API access also has, somewhere, a spreadsheet. It tracks certificate Common Names, expiry dates, the partner contact email, and whoever last rotated the cert &mdash; in free-text fields, maintained manually, updated when someone remembers. When a cert expires at 2am on the eve of a long public holiday and the spreadsheet says it was renewed six months ago by someone who left the organisation, the incident is already in progress.</p>
+          <p>This article is about eliminating that spreadsheet. The tools are HashiCorp Vault&rsquo;s PKI secrets engine (issuing short-lived certs from an intermediate CA it controls) and cert-manager (reconciling Kubernetes Certificate objects, automating renewal before expiry, and injecting rotated secrets without a pod restart). Together, they move certificate lifecycle from a manual calendar event to an automated control loop &mdash; one that runs continuously, produces audit evidence, and satisfies the cryptographic key management requirements found in financial-sector security frameworks.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Scope</div>
@@ -216,7 +252,7 @@
 
           <p>A few key decisions baked into this architecture:</p>
           <ul>
-            <li><strong>Short-lived leaf certs (90 days max).</strong> Vault issues 90-day certificates by default with renewal triggered at 30 days remaining. A common banking pattern is 30-day certs for internal east-west mTLS and 90-day certs for external partner APIs, matching the SAMA-recommended rotation cadence for transient credentials.</li>
+            <li><strong>Short-lived leaf certs (90 days max).</strong> Vault issues 90-day certificates by default with renewal triggered at 30 days remaining. A common pattern in regulated environments is 30-day certs for internal east-west mTLS and 90-day certs for external partner APIs &mdash; frequent enough that rotation is routine rather than an event.</li>
             <li><strong>Intermediate CA in Vault, root CA offline.</strong> The root CA private key never lives in Vault&rsquo;s storage. The root signs the intermediate CA cert once; thereafter the intermediate issues all leaf certs. If Vault is compromised, the root CA can revoke the intermediate and reissue.</li>
             <li><strong>No pod restarts on cert rotation.</strong> cert-manager updates the Kubernetes TLS Secret in-place. The application either uses projected volumes (which update automatically) or an inotify-triggered reload hook. No deployment rollout, no downtime, no change window required.</li>
           </ul>
@@ -231,9 +267,8 @@ vault secrets enable <span class="tok-k">-path</span>=<span class="tok-s">pki_in
 
 <span class="tok-c"># Generate intermediate CA CSR (Vault holds the private key)</span>
 vault write <span class="tok-k">-format</span>=json pki_int/intermediate/generate/internal \
-  common_name=<span class="tok-s">"Example Bank Intermediate CA 2026"</span> \
-  organization=<span class="tok-s">"Example Bank"</span> \
-  country=<span class="tok-s">"SA"</span> \
+  common_name=<span class="tok-s">"Example Org Intermediate CA 2026"</span> \
+  organization=<span class="tok-s">"Example Org"</span> \
   key_type=<span class="tok-s">"rsa"</span> \
   key_bits=<span class="tok-n">4096</span> \
   | jq <span class="tok-k">-r</span> <span class="tok-s">'.data.csr'</span> &gt; intermediate.csr
@@ -246,13 +281,13 @@ vault write pki_int/intermediate/set-signed certificate=<span class="tok-s">@int
 
 <span class="tok-c"># Configure issuing and CRL URLs (internal hostnames, not public)</span>
 vault write pki_int/config/urls \
-  issuing_certificates=<span class="tok-s">"https://vault.internal.bank.example/v1/pki_int/ca"</span> \
-  crl_distribution_points=<span class="tok-s">"https://vault.internal.bank.example/v1/pki_int/crl"</span> \
-  ocsp_servers=<span class="tok-s">"https://vault.internal.bank.example/v1/pki_int/ocsp"</span>
+  issuing_certificates=<span class="tok-s">"https://vault.internal.example.com/v1/pki_int/ca"</span> \
+  crl_distribution_points=<span class="tok-s">"https://vault.internal.example.com/v1/pki_int/crl"</span> \
+  ocsp_servers=<span class="tok-s">"https://vault.internal.example.com/v1/pki_int/ocsp"</span>
 
 <span class="tok-c"># Define an issuing role for internal service certs (max 30 days)</span>
 vault write pki_int/roles/internal-services \
-  allowed_domains=<span class="tok-s">"svc.cluster.local,internal.bank.example"</span> \
+  allowed_domains=<span class="tok-s">"svc.cluster.local,internal.example.com"</span> \
   allow_subdomains=<span class="tok-k">true</span> \
   allow_glob_domains=<span class="tok-k">false</span> \
   max_ttl=<span class="tok-s">"720h"</span> \
@@ -262,7 +297,7 @@ vault write pki_int/roles/internal-services \
 
 <span class="tok-c"># Define an issuing role for external partner certs (max 90 days)</span>
 vault write pki_int/roles/partner-apis \
-  allowed_domains=<span class="tok-s">"api.bank.example"</span> \
+  allowed_domains=<span class="tok-s">"api.example.com"</span> \
   allow_subdomains=<span class="tok-k">true</span> \
   max_ttl=<span class="tok-s">"2160h"</span> \
   key_usage=<span class="tok-s">"DigitalSignature,KeyEncipherment"</span> \
@@ -271,7 +306,7 @@ vault write pki_int/roles/partner-apis \
 
           <div class="callout callout--warn">
             <div class="callout__title">CRL and OCSP must be reachable from workloads</div>
-            <p>If a service validates its peer&rsquo;s client certificate and performs CRL/OCSP checks, the distribution point URL must be reachable from the workload&rsquo;s network segment. In a KSA bank with strict network segmentation between payment zones and management networks, verify that the Vault OCSP URL is routable from every zone that does mTLS before deploying cert validation that fails hard on revocation check failure.</p>
+            <p>If a service validates its peer&rsquo;s client certificate and performs CRL/OCSP checks, the distribution point URL must be reachable from the workload&rsquo;s network segment. In a regulated environment with strict network segmentation between payment zones and management networks, verify that the Vault OCSP URL is routable from every zone that does mTLS before deploying cert validation that fails hard on revocation check failure.</p>
           </div>
 
           <h2 id="cert-manager">cert-manager issuer</h2>
@@ -285,7 +320,7 @@ vault write pki_int/roles/partner-apis \
   <span class="tok-k">name</span>: <span class="tok-s">vault-pki-int</span>
 <span class="tok-k">spec</span>:
   <span class="tok-k">vault</span>:
-    <span class="tok-k">server</span>: <span class="tok-s">https://vault.internal.bank.example</span>
+    <span class="tok-k">server</span>: <span class="tok-s">https://vault.internal.example.com</span>
     <span class="tok-k">path</span>: <span class="tok-s">pki_int/sign/internal-services</span>   <span class="tok-c"># role name matches vault write pki_int/roles/...</span>
     <span class="tok-k">caBundle</span>: <span class="tok-s">LS0tLS1CRUd...</span>                 <span class="tok-c"># base64 of Vault&rsquo;s TLS CA cert</span>
     <span class="tok-k">auth</span>:
@@ -344,14 +379,13 @@ path <span class="tok-s">"pki_int/crl"</span> {
   <span class="tok-k">duration</span>: <span class="tok-s">720h</span>                               <span class="tok-c"># 30 days &mdash; internal service cert</span>
   <span class="tok-k">renewBefore</span>: <span class="tok-s">168h</span>                            <span class="tok-c"># Renew at 7 days remaining (23 days in)</span>
   <span class="tok-k">subject</span>:
-    <span class="tok-k">organizations</span>: [<span class="tok-s">"Example Bank"</span>]
+    <span class="tok-k">organizations</span>: [<span class="tok-s">"Example Org"</span>]
     <span class="tok-k">organizationalUnits</span>: [<span class="tok-s">"Payments Platform"</span>]
-    <span class="tok-k">countries</span>: [<span class="tok-s">"SA"</span>]
   <span class="tok-k">commonName</span>: <span class="tok-s">payments-api.payments.svc.cluster.local</span>
   <span class="tok-k">dnsNames</span>:
     - <span class="tok-s">payments-api.payments.svc.cluster.local</span>
     - <span class="tok-s">payments-api.payments.svc</span>
-    - <span class="tok-s">payments-api.internal.bank.example</span>
+    - <span class="tok-s">payments-api.internal.example.com</span>
   <span class="tok-k">usages</span>:
     - <span class="tok-s">digital signature</span>
     - <span class="tok-s">key encipherment</span>
@@ -377,13 +411,13 @@ path <span class="tok-s">"pki_int/crl"</span> {
             <tbody>
               <tr><td><strong>7 days</strong></td><td>24h</td><td>Internal east-west (Istio sidecar)</td><td>Minimal blast radius on compromise; higher Vault API call rate</td></tr>
               <tr><td><strong>30 days</strong></td><td>168h (7d)</td><td>Internal service mTLS (non-Istio)</td><td>Balanced rotation cadence; low Vault load; renews while service is live</td></tr>
-              <tr><td><strong>90 days</strong></td><td>720h (30d)</td><td>External partner APIs; ingress TLS</td><td>Partner systems get 30-day notice; SAMA-acceptable rotation cadence</td></tr>
+              <tr><td><strong>90 days</strong></td><td>720h (30d)</td><td>External partner APIs; ingress TLS</td><td>Partner systems get 30-day notice; widely accepted rotation cadence</td></tr>
               <tr><td><strong>1 year</strong></td><td>2160h (90d)</td><td>Legacy system client certs</td><td>Long-lived cert for systems that cannot hot-reload; revocation must be tested</td></tr>
             </tbody>
           </table>
 
           <h2 id="rotation">Zero-restart rotation</h2>
-          <p>cert-manager writes the new certificate and private key into the Kubernetes TLS Secret before the old cert expires. The question is how the application picks up the new material without a pod restart &mdash; because in production, especially for stateful payment services, a pod restart means a pod disruption budget event, and that requires a change window under SAMA TRM.</p>
+          <p>cert-manager writes the new certificate and private key into the Kubernetes TLS Secret before the old cert expires. The question is how the application picks up the new material without a pod restart &mdash; because in production, especially for stateful payment services, a pod restart means a pod disruption budget event, and that requires a change window under most regulated change-management policies.</p>
           <p>There are three patterns, in order of preference:</p>
 
           <ol class="step-list">
@@ -400,7 +434,7 @@ path <span class="tok-s">"pki_int/crl"</span> {
               <strong>Istio / Envoy SDS (for service mesh).</strong> If the service is running inside Istio, the Envoy sidecar receives cert updates via the Secret Discovery Service (SDS). cert-manager integrated with istio-csr delivers Istio workload certificates with 24-hour TTL. The service never touches the cert directly; Envoy handles all TLS and cert rotation transparently.
             </li>
             <li>
-              <strong>Application-level reload (last resort).</strong> Some applications (Kong Gateway, Nginx Plus, HAProxy) expose a reload API or a signal-based reload that re-reads the cert on disk without dropping connections. Wire an inotify watch on the cert file to trigger the reload API call. This pattern is documented in the Kong cert hot-reload playbook.
+              <strong>Application-level reload (last resort).</strong> Some applications (Kong Gateway, Nginx Plus, HAProxy) expose a reload API or a signal-based reload that re-reads the cert on disk without dropping connections. Wire an inotify watch on the cert file to trigger the reload API call. Check the gateway vendor&rsquo;s documentation for the supported hot-reload path.
             </li>
           </ol>
 
@@ -410,14 +444,14 @@ path <span class="tok-s">"pki_int/crl"</span> {
           </div>
 
           <h2 id="partner-certs">Partner cert lifecycle</h2>
-          <p>External partner certs are different from internal service certs in one critical respect: the partner holds the private key, not Vault. The bank&rsquo;s role is to trust the partner&rsquo;s CA, register the partner&rsquo;s client certificate, and maintain a revocation capability.</p>
-          <p>The operational workflow for a new partner (TPP onboarding under SAMA Open Banking, for example) is:</p>
+          <p>External partner certs are different from internal service certs in one critical respect: the partner holds the private key, not Vault. The API provider&rsquo;s role is to trust the partner&rsquo;s CA, register the partner&rsquo;s client certificate, and maintain a revocation capability.</p>
+          <p>The operational workflow for a new partner (TPP onboarding under an Open Banking scheme, for example) is:</p>
 
           <ol>
             <li>Partner submits a CSR or self-signed certificate through the developer portal.</li>
-            <li>Operations verifies the partner&rsquo;s identity (out-of-band, per SAMA TPP registration policy).</li>
+            <li>Operations verifies the partner&rsquo;s identity (out-of-band, per the scheme&rsquo;s or your own partner registration policy).</li>
             <li>The certificate is added to the Kong Gateway&rsquo;s mTLS trusted CA bundle or the API Management platform&rsquo;s partner trust store.</li>
-            <li>cert-manager is not involved for the partner&rsquo;s <em>client</em> cert &mdash; only for the bank&rsquo;s <em>server</em> cert that the partner validates.</li>
+            <li>cert-manager is not involved for the partner&rsquo;s <em>client</em> cert &mdash; only for the provider&rsquo;s <em>server</em> cert that the partner validates.</li>
             <li>An expiry record is created in the cert lifecycle tracker (not a spreadsheet &mdash; see below).</li>
           </ol>
 
@@ -425,7 +459,7 @@ path <span class="tok-s">"pki_int/crl"</span> {
 
           <div class="callout callout--danger">
             <div class="callout__title">Revocation must be tested, not assumed</div>
-            <p>When a partner cert needs to be revoked &mdash; on a suspected compromise, on partner offboarding, or on a SAMA directive to suspend a TPP &mdash; the operational path must be pre-tested. Add the partner cert to the revocation list and verify that the next request from that cert is rejected at the gateway within the CRL refresh interval (typically 5 minutes with Kong). A revocation that only works in the post-incident review is not a revocation capability.</p>
+            <p>When a partner cert needs to be revoked &mdash; on a suspected compromise, on partner offboarding, or on a regulator or scheme directive to suspend a TPP &mdash; the operational path must be pre-tested. Add the partner cert to the revocation list and verify that the next request from that cert is rejected at the gateway within the CRL refresh interval (typically 5 minutes with Kong). A revocation that only works in the post-incident review is not a revocation capability.</p>
           </div>
 
           <h2 id="oauth-binding">OAuth mTLS token binding</h2>
@@ -435,7 +469,7 @@ path <span class="tok-s">"pki_int/crl"</span> {
           <div class="code-block">
             <div class="code-block__header"><span>cert-bound-token-claim.json</span><span class="code-block__lang">json</span></div>
 <pre><code>{
-  <span class="tok-k">"iss"</span>: <span class="tok-s">"https://idp.bank.example/realms/openbanking"</span>,
+  <span class="tok-k">"iss"</span>: <span class="tok-s">"https://idp.example.com/realms/openbanking"</span>,
   <span class="tok-k">"sub"</span>: <span class="tok-s">"svc:payments-aggregator"</span>,
   <span class="tok-k">"aud"</span>: <span class="tok-s">"accounts-api"</span>,
   <span class="tok-k">"scope"</span>: <span class="tok-s">"accounts.read payments.initiate"</span>,
@@ -480,7 +514,7 @@ path <span class="tok-s">"pki_int/crl"</span> {
 <span class="tok-c"># External partner endpoint scraping (separate deployment)</span>
 <span class="tok-k">extraEnv</span>:
   - <span class="tok-k">name</span>: <span class="tok-s">WATCH_REMOTE_ENDPOINTS</span>
-    <span class="tok-k">value</span>: <span class="tok-s">"tpp-a.partner.sa:443,tpp-b.partner.sa:443"</span></code></pre>
+    <span class="tok-k">value</span>: <span class="tok-s">"tpp-a.partner.example:443,tpp-b.partner.example:443"</span></code></pre>
           </div>
 
           <p>The Prometheus alert rules generated automatically by the Helm chart cover 30-day warning and 7-day critical thresholds. Add a third alert for 1-day remaining &mdash; this fires when rotation failed for some reason and a manual intervention is needed before expiry:</p>
@@ -490,39 +524,39 @@ path <span class="tok-s">"pki_int/crl"</span> {
             <p>The key metric is <code>x509_cert_expires_in_seconds</code> labelled by <code>secret_name</code> and <code>secret_namespace</code>. A stat panel showing &ldquo;certs expiring in &lt; 30 days&rdquo; as a count, red when non-zero, is the VP-visible indicator. The ops team monitors the time-series version; leadership sees the count. A count permanently at zero means automation is working.</p>
           </div>
 
-          <h2 id="sama">SAMA CSF alignment</h2>
-          <p>SAMA&rsquo;s Cybersecurity Framework (CSF) Domain 3 (Cybersecurity Operations) and Domain 4 (Third-Party Cybersecurity) both touch certificate management. The specific controls that automated cert lifecycle directly satisfies:</p>
+          <h2 id="compliance">Regulatory control alignment</h2>
+          <p>Financial-sector security frameworks &mdash; SAMA&rsquo;s Cybersecurity Framework, PCI DSS v4.0, the EU&rsquo;s DORA, and baseline guidance such as NIST SP 800-57 &mdash; all contain cryptographic key and certificate management controls. Numbering and wording differ; the control themes are consistent. The themes that automated cert lifecycle directly satisfies:</p>
 
           <table>
             <thead>
-              <tr><th>CSF Control</th><th>Requirement (summary)</th><th>How automation satisfies it</th></tr>
+              <tr><th>Control theme</th><th>Requirement (summary)</th><th>How automation satisfies it</th></tr>
             </thead>
             <tbody>
               <tr>
-                <td><strong>3-9-1</strong></td>
+                <td><strong>Key management procedure</strong></td>
                 <td>Cryptographic key management procedure covering generation, storage, rotation, and revocation</td>
                 <td>Vault PKI policy is the documented procedure; AppRole auth log is the audit trail; Certificate CRDs are the rotation schedule</td>
               </tr>
               <tr>
-                <td><strong>3-9-2</strong></td>
+                <td><strong>Rotation &amp; expiry</strong></td>
                 <td>Certificates rotated at defined intervals; expired certificates prohibited</td>
                 <td>cert-manager&rsquo;s renewBefore guarantees rotation before expiry; x509-exporter Prometheus alert fires before any cert can expire undetected</td>
               </tr>
               <tr>
-                <td><strong>3-9-4</strong></td>
+                <td><strong>Revocation</strong></td>
                 <td>Revocation capability tested and documented</td>
                 <td>Vault CRL is immediately updated on <code>vault write pki_int/revoke</code>; Kong CRL refresh interval is 5 minutes; revocation runbook is the test evidence</td>
               </tr>
               <tr>
-                <td><strong>4-2-3</strong></td>
+                <td><strong>Third-party certificates</strong></td>
                 <td>Third-party (TPP/partner) certificate expiry tracked and communicated with advance notice</td>
-                <td>x509-exporter scrapes partner endpoints; 30-day Prometheus alert triggers partner notification workflow in ServiceNow</td>
+                <td>x509-exporter scrapes partner endpoints; 30-day Prometheus alert triggers the partner notification workflow in the ITSM tool</td>
               </tr>
             </tbody>
           </table>
 
           <div class="callout callout--warn">
-            <div class="callout__title">SAMA audit artefact: Certificate inventory report</div>
+            <div class="callout__title">Audit artefact: certificate inventory report</div>
             <p>Auditors ask for a certificate inventory showing every cert in scope, its expiry date, and evidence of the last rotation. The <code>kubectl get certificates -A -o wide</code> output, combined with <code>kubectl get certificaterequests -A</code> for the rotation history, is the audit artefact. Export it to a PDF report as part of the quarterly PKI review. Vault&rsquo;s audit log (<code>vault audit list</code>) provides the sign request history with timestamps, satisfying the &ldquo;how was each cert issued?&rdquo; question.</p>
           </div>
 
@@ -534,19 +568,19 @@ path <span class="tok-s">"pki_int/crl"</span> {
               <strong>Vault PKI engine and intermediate CA (Sprint 1).</strong> Enable the <code>pki_int</code> mount. Generate the intermediate CA CSR. Work with the InfoSec team to sign it against the offline root CA. Import and configure issuing/CRL URLs. Define the <code>internal-services</code> and <code>partner-apis</code> roles. Deploy the Vault AppRole for cert-manager. <em>Exit criteria:</em> <code>vault write pki_int/sign/internal-services csr=... | openssl x509 -text</code> produces a valid cert signed by the intermediate CA.
             </li>
             <li>
-              <strong>cert-manager ClusterIssuer and pilot Certificate (Sprint 2).</strong> Install cert-manager 1.15 (if not already present; it comes bundled with OpenShift 4.15). Create the ClusterIssuer. Write one Certificate CRD for a non-critical service (the internal metrics endpoint is a safe candidate). Verify the TLS Secret is created, the cert is valid, and the expiry is as configured. <em>Exit criteria:</em> <code>kubectl describe certificate &lt;name&gt;</code> shows <code>Certificate is up to date and has not expired</code>.
+              <strong>cert-manager ClusterIssuer and pilot Certificate (Sprint 2).</strong> Install cert-manager 1.15 (on OpenShift 4.15, via the cert-manager Operator for Red Hat OpenShift). Create the ClusterIssuer. Write one Certificate CRD for a non-critical service (the internal metrics endpoint is a safe candidate). Verify the TLS Secret is created, the cert is valid, and the expiry is as configured. <em>Exit criteria:</em> <code>kubectl describe certificate &lt;name&gt;</code> shows <code>Certificate is up to date and has not expired</code>.
             </li>
             <li>
               <strong>Rotation without restart (Sprint 3).</strong> For each service category (Nginx-based, Spring Boot, Kong plugin), implement and test the reload mechanism: projected volume for Envoy/Istio, Stakater Reloader for stateless services, inotify hook for legacy. Run a forced renewal (<code>kubectl cert-manager renew &lt;cert-name&gt;</code>) and verify the new cert appears in the pod without a restart. <em>Exit criteria:</em> Prometheus metric <code>certmanager_certificate_expiration_timestamp_seconds</code> updates without a pod restart event in the namespace.
             </li>
             <li>
-              <strong>Partner cert monitoring (Sprint 4).</strong> Deploy x509-certificate-exporter with the Helm values above. Import the partner endpoint list from the existing spreadsheet. Validate that expiry metrics appear in Grafana. Wire the 30-day warning alert to the ServiceNow incident workflow that sends partner notification emails. <em>Exit criteria:</em> One test partner cert with a short TTL triggers the alert and creates a ServiceNow ticket.
+              <strong>Partner cert monitoring (Sprint 4).</strong> Deploy x509-certificate-exporter with the Helm values above. Import the partner endpoint list from the existing spreadsheet. Validate that expiry metrics appear in Grafana. Wire the 30-day warning alert to the ITSM workflow (ServiceNow, Jira Service Management or similar) that sends partner notification emails. <em>Exit criteria:</em> One test partner cert with a short TTL triggers the alert and creates a ticket.
             </li>
             <li>
               <strong>RFC 8705 cert-bound tokens (Sprint 5, FAPI-required services only).</strong> Enable tls_client_auth on the Keycloak 24 client config for each FAPI 2.0-scoped API consumer. Update the Kong OIDC plugin configuration to pass the client cert thumbprint to the JWT validator. Write a negative test: token acquired with cert A, presented with cert B, verify 401. <em>Exit criteria:</em> FAPI Conformance Suite test <code>fapi1-advanced-final-client-clientAuthentication-mtls</code> passes.
             </li>
             <li>
-              <strong>Decommission the spreadsheet and SAMA audit evidence package (Sprint 6).</strong> Export the final cert inventory from <code>kubectl get certificates -A -o wide</code>. Add it to the PKI governance document as the new authoritative source. Schedule the quarterly cert review as a Grafana dashboard review rather than a spreadsheet audit. Archive the spreadsheet. File the Vault audit log excerpt in the SAMA TRM evidence folder. <em>Exit criteria:</em> Zero manually tracked certs in scope; SAMA evidence folder updated; spreadsheet access removed from the shared drive.
+              <strong>Decommission the spreadsheet and build the audit evidence package (Sprint 6).</strong> Export the final cert inventory from <code>kubectl get certificates -A -o wide</code>. Add it to the PKI governance document as the new authoritative source. Schedule the quarterly cert review as a Grafana dashboard review rather than a spreadsheet audit. Archive the spreadsheet. File the Vault audit log excerpt in the compliance evidence repository. <em>Exit criteria:</em> Zero manually tracked certs in scope; evidence repository updated; spreadsheet retired and access removed.
             </li>
           </ol>
 
@@ -579,7 +613,7 @@ path <span class="tok-s">"pki_int/crl"</span> {
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

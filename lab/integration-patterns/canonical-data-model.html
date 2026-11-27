@@ -5,20 +5,24 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Canonical Data Model: Designing a Bank-Wide Mapping Layer &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="How to design, version, and govern a canonical data model that eliminates N&times;M format mappings across a KSA bank's integration estate: entity taxonomy, Java implementation, IBM ACE and Apache Camel wiring, schema evolution strategy, and the governance model that keeps it alive in production.">
+  <title>Canonical Data Model: Designing an Enterprise-Wide Mapping Layer &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="How to design, version, and govern a canonical data model that eliminates N&times;M format mappings across an enterprise integration estate: entity taxonomy, Java implementation, IBM ACE and Apache Camel wiring, schema evolution strategy, and the governance model that keeps it alive in production.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Canonical Data Model: Designing a Bank-Wide Mapping Layer &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Entity taxonomy, versioning, IBM ACE and Apache Camel wiring, and the governance model that keeps a canonical model alive when SAMA publishes a spec update.">
+  <meta property="og:title" content="Canonical Data Model: Designing an Enterprise-Wide Mapping Layer &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Entity taxonomy, versioning, IBM ACE and Apache Camel wiring, and the governance model that keeps a canonical model alive when a regulator or standards body publishes a spec update.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/canonical-data-model.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Canonical Data Model: Designing a Bank-Wide Mapping Layer">
-  <meta name="twitter:description" content="Eliminate N&times;M format mappings across a KSA bank's integration estate with a governed canonical data model.">
+  <meta name="twitter:title" content="Canonical Data Model: Designing an Enterprise-Wide Mapping Layer">
+  <meta name="twitter:description" content="Eliminate N&times;M format mappings across an enterprise integration estate with a governed canonical data model.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/canonical-data-model.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -37,18 +41,50 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Canonical Data Model: Designing a Bank-Wide Mapping Layer",
+    "headline": "Canonical Data Model: Designing an Enterprise-Wide Mapping Layer",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-13",
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/lab/integration-patterns/canonical-data-model.html",
     "isPartOf": {
@@ -56,7 +92,7 @@
       "name": "Integration Design Patterns &mdash; Lab &mdash; Waleed Albadawi",
       "url": "https://www.wbadawi.info/lab/integration-patterns.html"
     },
-    "description": "How to design, version, and govern a canonical data model that eliminates N&times;M format mappings across a KSA bank's integration estate: entity taxonomy, Java implementation, IBM ACE and Apache Camel wiring, schema evolution strategy, and the governance model that keeps it alive in production.",
+    "description": "How to design, version, and govern a canonical data model that eliminates N&times;M format mappings across an enterprise integration estate: entity taxonomy, Java implementation, IBM ACE and Apache Camel wiring, schema evolution strategy, and the governance model that keeps it alive in production.",
     "proficiencyLevel": "Expert",
     "audience": {
       "@type": "Audience",
@@ -93,8 +129,8 @@
         <div>
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>Canonical Data Model</div>
           <span class="overline">Lab Article</span>
-          <h1>Canonical Data Model: Designing a Bank-Wide Mapping Layer</h1>
-          <p class="lead">Eliminating the N&times;M mapping explosion across ISO 20022, SWIFT MT, SAMA Open Banking, and legacy core formats: entity taxonomy design, schema versioning, IBM ACE and Apache Camel wiring, and the governance model that keeps the canonical alive when regulators ship an update.</p>
+          <h1>Canonical Data Model: Designing an Enterprise-Wide Mapping Layer</h1>
+          <p class="lead">Eliminating the N&times;M mapping explosion across industry standards, partner APIs, and legacy core formats &mdash; with payments (ISO 20022, SWIFT MT, open-banking APIs) as the worked example: entity taxonomy design, schema versioning, IBM ACE and Apache Camel wiring, and the governance model that keeps the canonical alive when regulators ship an update.</p>
         </div>
       </div>
     </div>
@@ -125,7 +161,7 @@
         <article class="lab-article__body">
 
           <div class="article-meta">
-            <span class="article-meta__item"><strong>Stack:</strong> Java 21 / Jackson 2.17 / IBM ACE 12 / Apache Camel 4 / ISO 20022 / SWIFT MT / SAMA Open Banking</span>
+            <span class="article-meta__item"><strong>Stack:</strong> Java 21 / Jackson 2.17 / IBM ACE 12 / Apache Camel 4 / ISO 20022 / SWIFT MT / Open Banking APIs</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
             <span class="article-meta__item"><strong>Published:</strong> Sep 13, 2026</span>
@@ -133,17 +169,17 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>A canonical data model (CDM) is the internal language your integration layer speaks fluently before converting to anything external. The concept is older than modern messaging standards &mdash; the <em>Canonical Data Model</em> pattern appears in Gregor Hohpe&rsquo;s <em>Enterprise Integration Patterns</em> catalogue, and variations of it predate ISO 20022 by decades. What changes in a KSA bank in 2026 is the pressure: SAMA IPS for domestic payments, BUNA for GCC cross-border, CBPR+ pacs.008 for SWIFT international, pain.001 from corporate treasury portals, SAMA Open Banking APIs for TPP-initiated payments, and whatever proprietary format the legacy core still emits. Each of those formats has its own schema, its own party model, its own date conventions, its own optional-field semantics.</p>
+          <p>A canonical data model (CDM) is the internal language your integration layer speaks fluently before converting to anything external. The concept is older than modern messaging standards &mdash; the <em>Canonical Data Model</em> pattern appears in Gregor Hohpe&rsquo;s <em>Enterprise Integration Patterns</em> catalogue, and variations of it predate ISO 20022 by decades. What has changed is the pressure. Take payments, the worked example in this article: a single institution may connect to a domestic instant-payment scheme, a regional cross-border scheme, SWIFT CBPR+ (pacs.008) for international traffic, pain.001 files from corporate treasury portals, open-banking APIs for third-party-initiated payments, and whatever proprietary format the legacy core still emits. Insurers face the same shape with ACORD messages, broker portals and policy administration systems; telecoms operators with TM Forum Open APIs, billing and network inventory; retailers with EDI, marketplaces and the ERP. Each of those formats has its own schema, its own party model, its own date conventions, its own optional-field semantics.</p>
           <p>Without a canonical model, each new format connection adds mappings to every other format it touches. With one, each format connects to the canonical layer once. The arithmetic is simple; the discipline required to execute it is not.</p>
-          <p>This article covers what a production-ready CDM looks like for a KSA commercial bank: the entity taxonomy, the Java implementation that ACE and Camel both consume, the versioning strategy that survives SAMA spec updates, and the governance model that prevents the canonical from drifting into incoherence as teams add fields over time.</p>
+          <p>This article covers what a production-ready CDM looks like, using a payment domain as the worked example: the entity taxonomy, the Java implementation that ACE and Camel both consume, the versioning strategy that survives scheme and regulatory spec updates, and the governance model that prevents the canonical from drifting into incoherence as teams add fields over time.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Scope: payment and account messages</div>
-            <p>This article focuses on the <strong>payment domain</strong> of the CDM: credit transfers, direct debits, payment status messages, and the account and party entities they reference. The same design principles apply to a securities CDM or a customer data CDM, but the ISO 20022 and SAMA-specific elements described here are payment-domain specific. Start with payments because they have the highest mapping complexity and the clearest regulatory consequences for getting it wrong.</p>
+            <p>This article focuses on the <strong>payment domain</strong> of the CDM: credit transfers, direct debits, payment status messages, and the account and party entities they reference. The same design principles apply to a securities CDM, a customer CDM, a policy CDM in insurance or an order CDM in retail, but the ISO 20022 and scheme-specific elements described here are payment-domain specific. In any industry, start with the domain that has the highest mapping complexity and the clearest consequences for getting it wrong.</p>
           </div>
 
           <h2 id="nm-problem">The N&times;M mapping problem</h2>
-          <p>The naive integration approach is to build point-to-point translators: MT103 &rarr; pacs.008, pain.001 &rarr; internal payment, SAMA Open Banking payment initiation &rarr; internal payment, and so on. With three source formats and three target formats, that is nine translators. When a fourth source format arrives &mdash; say, a bulk file format from a new corporate client using ISO 20022 pain.001.001.11 when your existing route handles pain.001.001.09 &mdash; you add translators to all existing targets, not one.</p>
+          <p>The naive integration approach is to build point-to-point translators: MT103 &rarr; pacs.008, pain.001 &rarr; internal payment, open-banking payment initiation &rarr; internal payment, and so on. With three source formats and three target formats, that is nine translators. When a fourth source format arrives &mdash; say, a bulk file format from a new corporate client using ISO 20022 pain.001.001.11 when your existing route handles pain.001.001.09 &mdash; you add translators to all existing targets, not one.</p>
 
           <div class="diagram" role="img" aria-label="N-M mapping explosion versus canonical hub-and-spoke">
             <div class="diagram__inner">
@@ -171,19 +207,19 @@
 
                 <rect x="10" y="160" width="100" height="36" rx="5" fill="#16161f" stroke="#ef4444"/>
                 <text x="60" y="175" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">OB initiation</text>
-                <text x="60" y="189" text-anchor="middle" fill="#71717a" font-size="8">SAMA Open Banking</text>
+                <text x="60" y="189" text-anchor="middle" fill="#71717a" font-size="8">Open Banking API</text>
 
                 <!-- Target boxes -->
                 <rect x="220" y="40" width="100" height="36" rx="5" fill="#16161f" stroke="#ef4444"/>
-                <text x="270" y="55" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">IPS pacs.008</text>
-                <text x="270" y="69" text-anchor="middle" fill="#71717a" font-size="8">SAMA</text>
+                <text x="270" y="55" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">Instant pacs.008</text>
+                <text x="270" y="69" text-anchor="middle" fill="#71717a" font-size="8">domestic scheme</text>
 
                 <rect x="220" y="100" width="100" height="36" rx="5" fill="#16161f" stroke="#ef4444"/>
-                <text x="270" y="115" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">BUNA pacs.008</text>
-                <text x="270" y="129" text-anchor="middle" fill="#71717a" font-size="8">GCC</text>
+                <text x="270" y="115" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">X-border pacs.008</text>
+                <text x="270" y="129" text-anchor="middle" fill="#71717a" font-size="8">regional scheme</text>
 
                 <rect x="220" y="160" width="100" height="36" rx="5" fill="#16161f" stroke="#ef4444"/>
-                <text x="270" y="175" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">Core banking</text>
+                <text x="270" y="175" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">Legacy core</text>
                 <text x="270" y="189" text-anchor="middle" fill="#71717a" font-size="8">proprietary</text>
 
                 <!-- Mesh arrows (9 lines) -->
@@ -214,7 +250,7 @@
 
                 <rect x="390" y="160" width="100" height="36" rx="5" fill="#16161f" stroke="#4a9eff"/>
                 <text x="440" y="175" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">OB initiation</text>
-                <text x="440" y="189" text-anchor="middle" fill="#71717a" font-size="8">SAMA Open Banking</text>
+                <text x="440" y="189" text-anchor="middle" fill="#71717a" font-size="8">Open Banking API</text>
 
                 <!-- CDM hub -->
                 <rect x="510" y="90" width="110" height="70" rx="8" fill="#0f0f16" stroke="#c8a660" stroke-width="2"/>
@@ -224,15 +260,15 @@
 
                 <!-- Targets -->
                 <rect x="640" y="40" width="100" height="36" rx="5" fill="#16161f" stroke="#a78bfa"/>
-                <text x="690" y="55" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">IPS pacs.008</text>
-                <text x="690" y="69" text-anchor="middle" fill="#71717a" font-size="8">SAMA</text>
+                <text x="690" y="55" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Instant pacs.008</text>
+                <text x="690" y="69" text-anchor="middle" fill="#71717a" font-size="8">domestic scheme</text>
 
                 <rect x="640" y="100" width="100" height="36" rx="5" fill="#16161f" stroke="#a78bfa"/>
-                <text x="690" y="115" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">BUNA pacs.008</text>
-                <text x="690" y="129" text-anchor="middle" fill="#71717a" font-size="8">GCC</text>
+                <text x="690" y="115" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">X-border pacs.008</text>
+                <text x="690" y="129" text-anchor="middle" fill="#71717a" font-size="8">regional scheme</text>
 
                 <rect x="640" y="160" width="100" height="36" rx="5" fill="#16161f" stroke="#a78bfa"/>
-                <text x="690" y="175" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Core banking</text>
+                <text x="690" y="175" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">Legacy core</text>
                 <text x="690" y="189" text-anchor="middle" fill="#71717a" font-size="8">proprietary</text>
 
                 <!-- Arrows to CDM hub -->
@@ -266,11 +302,11 @@
             </li>
             <li>
               <h4>Never put routing logic in the canonical schema</h4>
-              <p>The scheme field (<code>IPS</code>, <code>BUNA</code>, <code>SWIFT</code>) belongs in the CDM because it is derived from enrichment, not from any single source format. But the routing <em>decision</em> &mdash; the ContentBasedRouter that reads that field &mdash; lives in the flow, not in the schema. The canonical describes a payment; the flow decides where it goes.</p>
+              <p>The scheme field (<code>INSTANT</code>, <code>REGIONAL</code>, <code>SWIFT</code>) belongs in the CDM because it is derived from enrichment, not from any single source format. But the routing <em>decision</em> &mdash; the ContentBasedRouter that reads that field &mdash; lives in the flow, not in the schema. The canonical describes a payment; the flow decides where it goes.</p>
             </li>
             <li>
               <h4>Version explicitly and early</h4>
-              <p>The first version of the CDM is <code>v1</code> from day one, even if you never expect to change it. SAMA will update their IPS spec, ISO 20022 will publish a new message version, and the core banking vendor will add a field. When that happens, you want a versioned namespace in the schema, not a flag day migration.</p>
+              <p>The first version of the CDM is <code>v1</code> from day one, even if you never expect to change it. The payment scheme will update its rulebook, ISO 20022 will publish a new message version, and the vendor of the legacy core will add a field. When that happens, you want a versioned namespace in the schema, not a flag day migration.</p>
             </li>
             <li>
               <h4>The CDM is never serialised as a public interface</h4>
@@ -284,9 +320,9 @@
           </div>
 
           <h2 id="entity-taxonomy">Entity taxonomy</h2>
-          <p>The payment CDM for a KSA bank needs to model six entity categories. The diagram below shows the hierarchy and which external formats contribute to each.</p>
+          <p>A payment CDM needs to model six entity categories. The diagram below shows the hierarchy and which external formats contribute to each.</p>
 
-          <div class="diagram" role="img" aria-label="CDM entity taxonomy for a KSA bank payment domain">
+          <div class="diagram" role="img" aria-label="CDM entity taxonomy for a payment domain">
             <div class="diagram__inner">
               <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <!-- Payment root -->
@@ -339,8 +375,8 @@
                 <line x1="400" y1="160" x2="420" y2="210" stroke="#ef4444" stroke-width="1" stroke-dasharray="4,3"/>
 
                 <!-- Source format labels -->
-                <text x="390" y="305" text-anchor="middle" fill="#71717a" font-size="9">Sources: MT103 &middot; pain.001 &middot; SAMA OB &middot; pacs.008 inbound</text>
-                <text x="390" y="322" text-anchor="middle" fill="#71717a" font-size="9">Targets: pacs.008 (IPS/BUNA) &middot; proprietary core &middot; pain.002 status</text>
+                <text x="390" y="305" text-anchor="middle" fill="#71717a" font-size="9">Sources: MT103 &middot; pain.001 &middot; Open Banking API &middot; pacs.008 inbound</text>
+                <text x="390" y="322" text-anchor="middle" fill="#71717a" font-size="9">Targets: pacs.008 (instant / cross-border) &middot; legacy core &middot; pain.002 status</text>
               </svg>
             </div>
             <div class="diagram__caption">Figure 2 &mdash; Payment CDM entity hierarchy. Each leaf object maps cleanly to one conceptual domain: identity, parties, amount, routing, remittance, and enrichment metadata added at runtime.</div>
@@ -354,7 +390,7 @@
                 <th>CDM Field</th>
                 <th>MT103 source</th>
                 <th>pain.001 source</th>
-                <th>SAMA OB source</th>
+                <th>Open Banking API source</th>
                 <th>Risk if absent</th>
               </tr>
             </thead>
@@ -364,28 +400,28 @@
                 <td><code>:50A:</code> or derived from <code>:50K:</code></td>
                 <td><code>DbtrAcct/Id/IBAN</code></td>
                 <td><code>initiatingParty.iban</code></td>
-                <td>SAMA IPS will reject pacs.008 &mdash; mandatory</td>
+                <td>Instant scheme rejects pacs.008 &mdash; mandatory</td>
               </tr>
               <tr>
                 <td><code>creditorIban</code></td>
                 <td><code>:59A:</code> or BBAN lookup required</td>
                 <td><code>CdtrAcct/Id/IBAN</code></td>
                 <td><code>creditorAccount.iban</code></td>
-                <td>SAMA IPS reject; manual repair cycle</td>
+                <td>Scheme reject; manual repair cycle</td>
               </tr>
               <tr>
                 <td><code>purposeCode</code></td>
                 <td>Not present &mdash; must be derived from payment type</td>
                 <td><code>Purp/Cd</code></td>
                 <td><code>localInstrument</code> mapping required</td>
-                <td>SAMA IPS reject if missing for IPS route</td>
+                <td>Scheme reject where the rulebook mandates it</td>
               </tr>
               <tr>
                 <td><code>uetr</code></td>
                 <td><code>:121:</code> block3 (SWIFT gpi)</td>
                 <td>Not present &mdash; generate new UUID</td>
                 <td>Not present &mdash; generate</td>
-                <td>SWIFT gpi tracking broken; not a SAMA reject</td>
+                <td>SWIFT gpi tracking broken; not a scheme reject</td>
               </tr>
               <tr>
                 <td><code>chargeBearing</code></td>
@@ -409,7 +445,7 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>CanonicalPayment.java &mdash; root CDM object</span><span class="code-block__lang">java</span></div>
-<pre><code><span class="tok-k">package</span> <span class="tok-n">com.acmebank.cdm.payment.v2</span>;
+<pre><code><span class="tok-k">package</span> <span class="tok-n">com.example.cdm.payment.v2</span>;
 
 <span class="tok-k">import</span> com.fasterxml.jackson.annotation.JsonInclude;
 <span class="tok-k">import</span> com.fasterxml.jackson.annotation.JsonProperty;
@@ -417,7 +453,7 @@
 <span class="tok-k">import</span> java.time.LocalDate;
 <span class="tok-k">import</span> java.time.OffsetDateTime;
 
-<span class="tok-p">@XmlRootElement(namespace = <span class="tok-s">"http://acmebank.com/cdm/payment/v2"</span>)</span>
+<span class="tok-p">@XmlRootElement(namespace = <span class="tok-s">"https://example.com/cdm/payment/v2"</span>)</span>
 <span class="tok-p">@XmlAccessorType(XmlAccessType.FIELD)</span>
 <span class="tok-p">@JsonInclude(JsonInclude.Include.NON_NULL)</span>
 <span class="tok-k">public class</span> CanonicalPayment {
@@ -441,10 +477,10 @@
     <span class="tok-k">private</span> <span class="tok-t">String</span>               chargeBearing; <span class="tok-c">// SHAR | CRED | DEBT</span>
 
     <span class="tok-c">// Routing (populated by enrichment, not inbound parse)</span>
-    <span class="tok-k">private</span> <span class="tok-t">PaymentScheme</span>  scheme;      <span class="tok-c">// IPS | BUNA | SWIFT | INTERNAL</span>
+    <span class="tok-k">private</span> <span class="tok-t">PaymentScheme</span>  scheme;      <span class="tok-c">// INSTANT | REGIONAL | SWIFT | INTERNAL</span>
     <span class="tok-k">private</span> <span class="tok-t">String</span>         priority;    <span class="tok-c">// HIGH | NORM | BULK</span>
-    <span class="tok-k">private</span> <span class="tok-t">String</span>         purposeCode; <span class="tok-c">// SAMA IPS purpose code list</span>
-    <span class="tok-k">private</span> <span class="tok-t">String</span>         sttlmMtd;    <span class="tok-c">// CLRG for IPS, INGA for BUNA</span>
+    <span class="tok-k">private</span> <span class="tok-t">String</span>         purposeCode; <span class="tok-c">// ISO 20022 external purpose code</span>
+    <span class="tok-k">private</span> <span class="tok-t">String</span>         sttlmMtd;    <span class="tok-c">// CLRG | INDA | INGA, per scheme rulebook</span>
 
     <span class="tok-c">// Remittance</span>
     <span class="tok-k">private</span> <span class="tok-t">String</span> remittanceUnstructured;
@@ -462,24 +498,24 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>CanonicalParty.java &mdash; party value object</span><span class="code-block__lang">java</span></div>
-<pre><code><span class="tok-k">package</span> <span class="tok-n">com.acmebank.cdm.payment.v2</span>;
+<pre><code><span class="tok-k">package</span> <span class="tok-n">com.example.cdm.payment.v2</span>;
 
 <span class="tok-k">import</span> jakarta.xml.bind.annotation.*;
 
-<span class="tok-p">@XmlType(namespace = <span class="tok-s">"http://acmebank.com/cdm/payment/v2"</span>)</span>
+<span class="tok-p">@XmlType(namespace = <span class="tok-s">"https://example.com/cdm/payment/v2"</span>)</span>
 <span class="tok-k">public class</span> CanonicalParty {
 
     <span class="tok-k">private</span> <span class="tok-t">String</span> name;
     <span class="tok-k">private</span> <span class="tok-t">String</span> iban;
     <span class="tok-k">private</span> <span class="tok-t">String</span> bic;
-    <span class="tok-k">private</span> <span class="tok-t">String</span> nationalId;   <span class="tok-c">// Saudi national ID or Iqama, if present</span>
+    <span class="tok-k">private</span> <span class="tok-t">String</span> nationalId;   <span class="tok-c">// national ID or residence-permit no., if present</span>
     <span class="tok-k">private</span> <span class="tok-t">String</span> lei;          <span class="tok-c">// LEI for corporate creditors (pacs.008 v10)</span>
     <span class="tok-k">private</span> <span class="tok-t">String</span> addressLine1;
     <span class="tok-k">private</span> <span class="tok-t">String</span> addressCity;
     <span class="tok-k">private</span> <span class="tok-t">String</span> addressCountry; <span class="tok-c">// ISO 3166-1 alpha-2</span>
 
-    <span class="tok-c">// Note: address fields are optional for IPS domestic payments but</span>
-    <span class="tok-c">// mandatory for BUNA cross-border and SWIFT MT103 originator.</span>
+    <span class="tok-c">// Note: address fields are optional for many domestic instant payments</span>
+    <span class="tok-c">// but mandatory on most cross-border routes and for the MT103 originator.</span>
     <span class="tok-c">// Outbound adapters assert requirements; inbound adapters populate what they have.</span>
 
     <span class="tok-c">// Getters and setters omitted for brevity</span>
@@ -492,11 +528,11 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>Mt103ToCdmAdapter.java &mdash; ACE JavaCompute node</span><span class="code-block__lang">java</span></div>
-<pre><code><span class="tok-k">package</span> <span class="tok-n">com.acmebank.ace.adapter</span>;
+<pre><code><span class="tok-k">package</span> <span class="tok-n">com.example.ace.adapter</span>;
 
 <span class="tok-k">import</span> com.ibm.broker.javacompute.MbJavaComputeNode;
 <span class="tok-k">import</span> com.ibm.broker.plugin.*;
-<span class="tok-k">import</span> com.acmebank.cdm.payment.v2.*;
+<span class="tok-k">import</span> com.example.cdm.payment.v2.*;
 
 <span class="tok-k">public class</span> Mt103ToCdmAdapter <span class="tok-k">extends</span> MbJavaComputeNode {
 
@@ -563,12 +599,12 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>Pain001ToCdmConverter.java &mdash; Camel TypeConverter</span><span class="code-block__lang">java</span></div>
-<pre><code><span class="tok-k">package</span> <span class="tok-n">com.acmebank.camel.converter</span>;
+<pre><code><span class="tok-k">package</span> <span class="tok-n">com.example.camel.converter</span>;
 
 <span class="tok-k">import</span> org.apache.camel.Converter;
 <span class="tok-k">import</span> org.apache.camel.TypeConverters;
 <span class="tok-k">import</span> org.w3c.dom.Document;
-<span class="tok-k">import</span> com.acmebank.cdm.payment.v2.*;
+<span class="tok-k">import</span> com.example.cdm.payment.v2.*;
 <span class="tok-k">import</span> iso.std.iso._20022.tech.xsd.pain_001_001._11.*;
 
 <span class="tok-p">@Converter(generateLoader = true)</span>
@@ -608,7 +644,7 @@
         cdm.setCurrency(cdtTrf.getAmt().getInstdAmt().getCcy());
         cdm.setValueDate(pmtInf.getReqdExctnDt().getDt());
 
-        <span class="tok-c">// Purpose code (mandatory for IPS)</span>
+        <span class="tok-c">// Purpose code (mandatory on some instant schemes)</span>
         <span class="tok-k">if</span> (cdtTrf.getPurp() != <span class="tok-k">null</span>) {
             cdm.setPurposeCode(cdtTrf.getPurp().getCd());
         }
@@ -633,16 +669,16 @@
           <h2 id="versioning">Schema versioning</h2>
           <p>A CDM that cannot evolve safely is a CDM that will be abandoned and replaced with a new ad-hoc model when the first incompatible change arrives. Version the CDM explicitly from day one using namespace versioning, not field-level flags.</p>
 
-          <p>The namespace for the payment CDM follows the pattern <code>http://acmebank.com/cdm/payment/v{N}</code>. A major version increment (v1 &rarr; v2) signals a breaking change: a mandatory field added, a field removed, or a field renamed. All flows must be migrated before the old namespace is retired. A minor change (adding an optional field) does not require a version increment &mdash; JSON serialisation ignores unknown fields by default (<code>@JsonIgnoreProperties(ignoreUnknown = true)</code>), and JAXB similarly ignores unexpected elements.</p>
+          <p>The namespace for the payment CDM follows the pattern <code>https://example.com/cdm/payment/v{N}</code>. A major version increment (v1 &rarr; v2) signals a breaking change: a mandatory field added, a field removed, or a field renamed. All flows must be migrated before the old namespace is retired. A minor change (adding an optional field) does not require a version increment &mdash; JSON serialisation ignores unknown fields by default (<code>@JsonIgnoreProperties(ignoreUnknown = true)</code>), and JAXB similarly ignores unexpected elements.</p>
 
           <div class="callout callout--warn">
-            <div class="callout__title">SAMA spec updates trigger CDM minor versions</div>
-            <p>When SAMA publishes an update to the IPS Technical Specifications that adds a new mandatory field to pacs.008 &mdash; as happened with the <code>SuplmtryData</code> element for enhanced traceability &mdash; the CDM must carry that field from ingest to outbound generation. If the field is not yet present in the CDM, the outbound pacs.008 adapter cannot populate it. Adding an optional field to the CDM at a minor version means all flows pick up the field without a migration; the pacs.008 adapter begins populating it; and no existing flows break. Document every minor CDM change in a changelog tied to the SAMA circular that prompted it.</p>
+            <div class="callout__title">Scheme spec updates trigger CDM minor versions</div>
+            <p>When a payment scheme publishes a rulebook or technical-specification update that adds a new mandatory element to pacs.008 &mdash; supplementary data (<code>SplmtryData</code>) for enhanced traceability is a typical example &mdash; the CDM must carry that field from ingest to outbound generation. If the field is not yet present in the CDM, the outbound pacs.008 adapter cannot populate it. Adding an optional field to the CDM at a minor version means all flows pick up the field without a migration; the pacs.008 adapter begins populating it; and no existing flows break. Document every minor CDM change in a changelog tied to the scheme release note or regulatory circular that prompted it.</p>
           </div>
 
           <p>The versioning strategy for the CDM module in Maven:</p>
           <ul>
-            <li><code>cdm-payment-1.0.0</code> &mdash; initial payment CDM; Java package <code>com.acmebank.cdm.payment.v1</code></li>
+            <li><code>cdm-payment-1.0.0</code> &mdash; initial payment CDM; Java package <code>com.example.cdm.payment.v1</code></li>
             <li><code>cdm-payment-1.1.0</code> &mdash; add optional <code>lei</code> to <code>CanonicalParty</code> for pacs.008 v10 creditor LEI requirement</li>
             <li><code>cdm-payment-2.0.0</code> &mdash; breaking: remove deprecated <code>legacyRef</code> field; rename <code>instrId</code> to <code>srcRef</code></li>
           </ul>
@@ -724,7 +760,7 @@
             <tbody>
               <tr>
                 <td><strong>Adapter unit test</strong></td>
-                <td>Every source format field maps correctly to the CDM field; edge cases (absent optional fields, maximum-length values, Arabic names)</td>
+                <td>Every source format field maps correctly to the CDM field; edge cases (absent optional fields, maximum-length values, non-Latin names)</td>
                 <td>JUnit 5 &middot; AssertJ &middot; test message corpus</td>
                 <td>Every build</td>
               </tr>
@@ -736,7 +772,7 @@
               </tr>
               <tr>
                 <td><strong>Outbound adapter test</strong></td>
-                <td>CDM produces a valid pacs.008, MT103, or core-format message; schema validation against SAMA XSD overlay</td>
+                <td>CDM produces a valid pacs.008, MT103, or core-format message; schema validation against the scheme&rsquo;s XSD overlay</td>
                 <td>JUnit 5 &middot; XMLUnit 2 &middot; Saxon EE</td>
                 <td>Every build</td>
               </tr>
@@ -753,26 +789,26 @@
                 <td>On CDM module version change</td>
               </tr>
               <tr>
-                <td><strong>SAMA sandbox end-to-end</strong></td>
-                <td>Full pipeline produces a pacs.008 accepted by SAMA IPS sandbox; reject path returns correct pacs.002</td>
-                <td>SAMA IPS sandbox &middot; manual sign-off before release</td>
+                <td><strong>Scheme sandbox end-to-end</strong></td>
+                <td>Full pipeline produces a pacs.008 accepted by the scheme&rsquo;s participant sandbox; reject path returns correct pacs.002</td>
+                <td>Scheme sandbox &middot; manual sign-off before release</td>
                 <td>Pre-release &middot; quarterly regression</td>
               </tr>
             </tbody>
           </table>
 
           <div class="callout callout--danger">
-            <div class="callout__title">The Arabic name roundtrip test you must run before go-live</div>
-            <p>The most common silent failure in a CDM pipeline is Arabic character handling. The test is simple: take a payment with an Arabic name in the debtor and creditor name fields, run it through the full pipeline from MT103 inbound to pacs.008 outbound, and verify that the Arabic characters appear correctly in the pacs.008 output. Then take the same payment, route it back through the SWIFT parallel-run path (pacs.008 &rarr; MT103 generation), and verify that the transliteration result is acceptable for SWIFT delivery. If you skip this test, you will discover the failure in production on the first Arabic-name payment, which is not where you want to discover it.</p>
+            <div class="callout__title">The non-Latin name roundtrip test you must run before go-live</div>
+            <p>The most common silent failure in a CDM pipeline is non-Latin character handling &mdash; Arabic, Cyrillic, Chinese, Devanagari. The test is simple: take a payment with a non-Latin name in the debtor and creditor name fields, run it through the full pipeline from inbound to pacs.008 outbound, and verify that the characters appear correctly in the pacs.008 output. Then take the same payment, route it back through the SWIFT parallel-run path (pacs.008 &rarr; MT103 generation), and verify that the transliteration result is acceptable for SWIFT delivery. If you skip this test, you will discover the failure in production on the first non-Latin-name payment, which is not where you want to discover it.</p>
           </div>
 
           <h2 id="governance">Governance model</h2>
-          <p>A CDM without a governance model is a CDM that is abandoned. The pattern that works at KSA banks with multiple integration teams is a lightweight Architecture Decision Record (ADR) process for CDM changes, owned by a named Integration Architect, with a mandated review before any breaking change is deployed.</p>
+          <p>A CDM without a governance model is a CDM that is abandoned. The pattern that works in organisations with multiple integration teams is a lightweight Architecture Decision Record (ADR) process for CDM changes, owned by a named Integration Architect, with a mandated review before any breaking change is deployed.</p>
 
           <ol class="step-list">
             <li>
               <h4>Designate a CDM owner</h4>
-              <p>One named Integration Architect owns the CDM schema and is the approver for any pull request that changes the CDM module. This person monitors SAMA specification updates, ISO 20022 schema version releases, and the SWIFT CBPR+ coexistence schedule. Without a named owner, changes drift in as &ldquo;temporary&rdquo; fields that become permanent.</p>
+              <p>One named Integration Architect owns the CDM schema and is the approver for any pull request that changes the CDM module. This person monitors scheme and regulator specification updates, ISO 20022 schema version releases, and the SWIFT CBPR+ release calendar. Without a named owner, changes drift in as &ldquo;temporary&rdquo; fields that become permanent.</p>
             </li>
             <li>
               <h4>Require a CDM Change Request for breaking changes</h4>
@@ -780,26 +816,26 @@
             </li>
             <li>
               <h4>Maintain a CDM changelog</h4>
-              <p>A plain-text changelog in the CDM module root, tied to the Maven version, lists every change with the SAMA circular or business requirement that prompted it. When the SAMA examiner asks why a field was added in v1.2, the changelog is the answer.</p>
+              <p>A plain-text changelog in the CDM module root, tied to the Maven version, lists every change with the regulatory circular, scheme release or business requirement that prompted it. When an auditor or examiner asks why a field was added in v1.2, the changelog is the answer.</p>
             </li>
             <li>
               <h4>Run a quarterly CDM alignment review</h4>
-              <p>Every quarter, the CDM owner reviews the SAMA IPS Technical Specifications and the CBPR+ coexistence schedule for upcoming changes. If a spec update is coming in the next six months that will require a CDM change, the change request is raised now, not when the spec takes effect. A six-month lead time for a minor CDM change is more than enough; a two-week lead time is not.</p>
+              <p>Every quarter, the CDM owner reviews upcoming scheme specification releases and the SWIFT CBPR+ release calendar for changes. If a spec update is coming in the next six months that will require a CDM change, the change request is raised now, not when the spec takes effect. A six-month lead time for a minor CDM change is more than enough; a two-week lead time is not.</p>
             </li>
             <li>
               <h4>Track CDM adoption per flow</h4>
-              <p>A simple spreadsheet or Confluence table lists each integration flow, the CDM version it consumes, and the last review date. This is the migration tracking tool: when CDM v2.0.0 ships, any flow still on v1.x is visible. Without this, you discover after a go-live incident that a flow never upgraded.</p>
+              <p>A simple spreadsheet or wiki table lists each integration flow, the CDM version it consumes, and the last review date. This is the migration tracking tool: when CDM v2.0.0 ships, any flow still on v1.x is visible. Without this, you discover after a go-live incident that a flow never upgraded.</p>
             </li>
           </ol>
 
           <h2 id="production-reality">What production tells you</h2>
-          <p>Three patterns consistently emerge in production CDM deployments at KSA banks that documentation does not prepare you for:</p>
+          <p>Three patterns consistently emerge in production CDM deployments that documentation does not prepare you for:</p>
 
           <p><strong>The CDM grows faster than you expect.</strong> The first version of the CDM carries the fields that the initial three or four source formats need. By the time you have ten active integration flows, the CDM has twenty fields that were added as &ldquo;temporary&rdquo; enrichment data, three fields that are populated by only one flow and are <code>null</code> for everything else, and two fields with overlapping semantics added by different teams. Schedule a quarterly CDM review from day one; by the time the first review is due, you will have something worth reviewing.</p>
 
-          <p><strong>The enrichment pipeline is where most production failures originate.</strong> The source adapter failures &mdash; badly formatted input, missing mandatory fields &mdash; are caught early and are easy to triage. The enrichment failures are harder: a BBAN-to-IBAN resolution service that returns 200 but with an empty body, a purpose code lookup that times out on a particular payment type, a risk scoring engine that returns a score of zero for a payment that should have been flagged. Build structured error logging at each enrichment step that includes the CDM field being populated, the external service called, and the response received. Without this, enrichment failures are reported as &ldquo;payment rejected by SAMA&rdquo; with no trail leading back to the enrichment step that left the CDM in an incomplete state.</p>
+          <p><strong>The enrichment pipeline is where most production failures originate.</strong> The source adapter failures &mdash; badly formatted input, missing mandatory fields &mdash; are caught early and are easy to triage. The enrichment failures are harder: a BBAN-to-IBAN resolution service that returns 200 but with an empty body, a purpose code lookup that times out on a particular payment type, a risk scoring engine that returns a score of zero for a payment that should have been flagged. Build structured error logging at each enrichment step that includes the CDM field being populated, the external service called, and the response received. Without this, enrichment failures are reported as &ldquo;payment rejected by the scheme&rdquo; with no trail leading back to the enrichment step that left the CDM in an incomplete state.</p>
 
-          <p><strong>Audit replay is more important than you realise before you need it.</strong> The ability to take a stored canonical form from six months ago and replay it through the current outbound adapter &mdash; to reproduce exactly what was sent to SAMA IPS on a specific date &mdash; is a SAMA examination requirement, not an engineering nicety. If the CDM has changed in a breaking way between the original transmission and the replay date, the replay either fails or produces an incorrect message. Versioning the CDM and storing the CDM version alongside each archived message is the minimum required. Some teams go further and store the outbound XSD version alongside each message; this is worthwhile for a bank running both pacs.008 v09 and pacs.008 v10 in the same estate during the CBPR+ coexistence period.</p>
+          <p><strong>Audit replay is more important than you realise before you need it.</strong> The ability to take a stored canonical form from six months ago and replay it through the current outbound adapter &mdash; to reproduce exactly what was sent to a scheme on a specific date &mdash; is a routine audit and supervisory expectation in regulated industries, not an engineering nicety. If the CDM has changed in a breaking way between the original transmission and the replay date, the replay either fails or produces an incorrect message. Versioning the CDM and storing the CDM version alongside each archived message is the minimum required. Some teams go further and store the outbound XSD version alongside each message; this is worthwhile for any institution running more than one pacs.008 version at once &mdash; for example one version for a domestic scheme and another for cross-border traffic.</p>
 
           <nav class="article-nav">
             <a href="../integration-patterns.html">
@@ -830,7 +866,7 @@
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

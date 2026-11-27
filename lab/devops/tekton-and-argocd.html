@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DevOps &amp; Platform Engineering &mdash; Tekton &amp; ArgoCD &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Production CI/CD and platform engineering for integration platforms in regulated environments: Tekton pipelines, ArgoCD GitOps, environment promotion, secrets management, and the operational patterns that make integration releases reliable in financial services.">
+  <meta name="description" content="Production CI/CD and platform engineering for integration platforms in regulated environments: Tekton pipelines, ArgoCD GitOps, environment promotion, secrets management, and the operational patterns that make integration releases reliable in regulated industries.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="DevOps &amp; Platform Engineering &mdash; Tekton &amp; ArgoCD">
-  <meta property="og:description" content="GitOps and Tekton patterns for integration platform CI/CD in financial services.">
+  <meta property="og:description" content="GitOps and Tekton patterns for integration platform CI/CD in regulated environments.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/devops/tekton-and-argocd.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -19,6 +19,10 @@
   <meta name="twitter:title" content="DevOps &amp; Platform Engineering &mdash; Production Patterns">
   <meta name="twitter:description" content="Tekton, ArgoCD, GitOps for regulated environments.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/devops/tekton-and-argocd.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -63,7 +67,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform</a><span>/</span>Tekton &amp; ArgoCD</div>
           <span class="overline">Lab Article</span>
           <h1>DevOps &amp; Platform Engineering</h1>
-          <p class="lead">Production CI/CD for integration platforms in regulated environments: Tekton pipelines, ArgoCD GitOps, environment promotion, secrets, observability, and the operational patterns that make integration releases routine in regulated financial services.</p>
+          <p class="lead">Production CI/CD for integration platforms in regulated environments: Tekton pipelines, ArgoCD GitOps, environment promotion, secrets, observability, and the operational patterns that make integration releases routine in regulated industries such as finance, healthcare and telecoms.</p>
         </div>
       </div>
     </div>
@@ -101,7 +105,7 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Integration platforms in financial services have CI/CD problems that vanilla microservice teams don&rsquo;t face: BAR files for IBM ACE, Kafka topics that can&rsquo;t be re-created without data loss, MQ queues that need clustering aware of network zones, OAuth clients that need IdP configuration synchronised with deployments, and a regulator who wants every change traced to an approver.</p>
+          <p>Integration platforms in regulated enterprises have CI/CD problems that vanilla microservice teams don&rsquo;t face: BAR files for IBM ACE, Kafka topics that can&rsquo;t be re-created without data loss, MQ queues that need clustering aware of network zones, OAuth clients that need IdP configuration synchronised with deployments, and a regulator who wants every change traced to an approver.</p>
           <p>The pattern that holds: <strong>GitOps for state, Tekton for events</strong>. Git is the single source of truth for what should be deployed; Tekton runs the pipelines that build artifacts; ArgoCD reconciles the cluster to git. Promotions happen by merging a PR, not by a kubectl from a developer&rsquo;s laptop.</p>
 
           <div class="callout callout--note">
@@ -171,7 +175,7 @@
             <div class="diagram__caption">Figure 1 &mdash; CI builds artifacts, GitOps reconciles state, environments promote via PR</div>
           </div>
 
-          <p>The crucial property: <strong>nothing reaches a cluster except via git</strong>. No <code>kubectl apply</code> from a laptop, no manual oc rsh-and-edit. Every change is a commit; every commit has an author and a reviewer. This is what regulators care about and what most banks fail to implement consistently.</p>
+          <p>The crucial property: <strong>nothing reaches a cluster except via git</strong>. No <code>kubectl apply</code> from a laptop, no manual oc rsh-and-edit. Every change is a commit; every commit has an author and a reviewer. This is what regulators and auditors care about, and what many organisations fail to implement consistently.</p>
 
           <h2 id="tekton">Tekton</h2>
           <p>Tekton is Kubernetes-native CI: pipelines and tasks are CRDs, runs are pods. The benefit over Jenkins is operational &mdash; the runtime is the cluster you already operate &mdash; and the cost is that Tekton is a primitive; you build the pipeline yourself.</p>
@@ -232,7 +236,7 @@
       <span class="tok-k">runAfter</span>: [<span class="tok-s">sign-image</span>]
       <span class="tok-k">taskRef</span>: { <span class="tok-k">name</span>: <span class="tok-s">git-pr-bump</span> }
       <span class="tok-k">params</span>:
-        - { <span class="tok-k">name</span>: <span class="tok-s">env-repo</span>, <span class="tok-k">value</span>: <span class="tok-s">https://git/.../env-dev</span> }
+        - { <span class="tok-k">name</span>: <span class="tok-s">env-repo</span>, <span class="tok-k">value</span>: <span class="tok-s">https://git.example.com/platform/env-dev</span> }
         - { <span class="tok-k">name</span>: <span class="tok-s">image</span>,    <span class="tok-k">value</span>: $(params.image) }</code></pre>
           </div>
 
@@ -251,13 +255,13 @@
 <span class="tok-k">spec</span>:
   <span class="tok-k">project</span>: <span class="tok-s">integration</span>
   <span class="tok-k">source</span>:
-    <span class="tok-k">repoURL</span>: <span class="tok-s">https://git/acme/env-prod</span>
+    <span class="tok-k">repoURL</span>: <span class="tok-s">https://git.example.com/platform/env-prod</span>
     <span class="tok-k">targetRevision</span>: <span class="tok-s">main</span>
     <span class="tok-k">path</span>: <span class="tok-s">apps/payments</span>
     <span class="tok-k">helm</span>:
       <span class="tok-k">valueFiles</span>: [<span class="tok-s">values.prod.yaml</span>]
   <span class="tok-k">destination</span>:
-    <span class="tok-k">server</span>: <span class="tok-s">https://prod-cluster</span>
+    <span class="tok-k">server</span>: <span class="tok-s">https://api.prod.k8s.example.com:6443</span>
     <span class="tok-k">namespace</span>: <span class="tok-s">payments</span>
   <span class="tok-k">syncPolicy</span>:
     <span class="tok-k">automated</span>:
@@ -412,7 +416,7 @@
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

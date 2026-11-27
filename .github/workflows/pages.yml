@@ -1,8 +1,10 @@
 name: Deploy to GitHub Pages
 
+# The site is published by GitHub Pages directly from the `main` branch
+# (Settings > Pages > Deploy from a branch), so this workflow does not run on
+# push. It previously listened to `master`, which does not exist. Keep it as a
+# manual fallback only if the Pages source is switched to "GitHub Actions".
 on:
-  push:
-    branches: ["master"]
   workflow_dispatch:
 
 permissions:

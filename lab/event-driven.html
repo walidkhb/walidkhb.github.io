@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Event-Driven Architecture &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Articles on event-driven architecture for financial services: Kafka, IBM MQ, schema design, idempotency, exactly-once processing, and the operational patterns behind real-time payment and trading platforms.">
+  <meta name="description" content="Articles on event-driven architecture for regulated, high-volume enterprises: Kafka, IBM MQ, schema design, idempotency, exactly-once processing, and the operational patterns behind real-time transaction platforms.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Event-Driven Architecture &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Articles on event-driven architecture for financial services.">
+  <meta property="og:description" content="Articles on event-driven architecture for regulated, high-volume enterprises.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,8 +17,12 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Event-Driven Architecture &mdash; Lab &mdash; Waleed Albadawi">
-  <meta name="twitter:description" content="Articles on event-driven architecture for financial services.">
+  <meta name="twitter:description" content="Articles on event-driven architecture for regulated, high-volume enterprises.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -60,7 +64,7 @@
       <div class="breadcrumb"><a href="../technical.html">Lab</a><span>/</span>Event-Driven Architecture</div>
       <span class="overline">Lab Topic</span>
       <h1>Event-Driven Architecture</h1>
-      <p class="lead">Event sourcing, pub/sub, broker design, schema evolution, and async processing patterns for real-time financial systems &mdash; from real-time payments to trading and core banking integration.</p>
+      <p class="lead">Event sourcing, pub/sub, broker design, schema evolution, and async processing patterns for real-time transactional systems &mdash; from instant payments and order processing to legacy system-of-record integration.</p>
     </div>
   </section>
 
@@ -97,7 +101,7 @@
             <span>~15 min read</span>
           </div>
           <h2 class="article-list__title">Strimzi on Private OpenShift &mdash; Regulated</h2>
-          <p class="article-list__excerpt">Running Strimzi (and Red Hat AMQ Streams) Kafka on private, air-gapped OCP in a regulated bank: operator topology, listeners, OAuth via internal IdP, mTLS with the internal CA, NetworkPolicies, multi-AZ HA, and MirrorMaker 2 DR.</p>
+          <p class="article-list__excerpt">Running Strimzi (and Red Hat AMQ Streams) Kafka on private, air-gapped OCP in a regulated enterprise: operator topology, listeners, OAuth via an internal IdP, mTLS with an internal CA, NetworkPolicies, multi-AZ HA, and MirrorMaker 2 DR.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Strimzi</span>
             <span class="skill-tag">AMQ Streams</span>
@@ -117,13 +121,13 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Event Sourcing &amp; CQRS in Payments</h2>
-          <p class="article-list__excerpt">When event sourcing is worth the cost: event store design, CQRS projection patterns, ISO 20022 schema alignment, snapshotting, idempotency guarantees, SAMA audit trail requirements, and the Kafka-backed read model that scales.</p>
+          <p class="article-list__excerpt">When event sourcing is worth the cost, worked through a payment lifecycle: event store design, CQRS projection patterns, ISO 20022 schema alignment, snapshotting, idempotency guarantees, regulatory audit-trail requirements, and the Kafka-backed read model that scales.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Event Sourcing</span>
             <span class="skill-tag">CQRS</span>
             <span class="skill-tag">Axon Framework</span>
             <span class="skill-tag">ISO 20022</span>
-            <span class="skill-tag">SAMA Compliance</span>
+            <span class="skill-tag">Audit Trail</span>
           </div>
           <div class="article-list__arrow">Read article &rarr;</div>
         </a>
@@ -137,11 +141,11 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Saga Patterns for Distributed Transactions</h2>
-          <p class="article-list__excerpt">Choreography vs orchestration sagas, compensating transactions, idempotent saga steps, and recovery patterns for multi-step IPS payment workflows &mdash; including the pivot-point, the dead-letter queue, and the SAMA audit trail.</p>
+          <p class="article-list__excerpt">Choreography vs orchestration sagas, compensating transactions, idempotent saga steps, and recovery patterns for multi-step workflows such as instant payments, order fulfilment and bookings &mdash; including the pivot point, the dead-letter queue, and the audit trail.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Saga Pattern</span>
             <span class="skill-tag">Axon Framework</span>
-            <span class="skill-tag">IPS Payments</span>
+            <span class="skill-tag">Instant Payments</span>
             <span class="skill-tag">Compensating Transactions</span>
             <span class="skill-tag">Distributed Systems</span>
           </div>
@@ -157,7 +161,7 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Dead Letter Queues and Message Replay: Kafka DLT and IBM MQ Dead-Letter Handling</h2>
-          <p class="article-list__excerpt">Kafka @RetryableTopic, IBM MQ AMQMDLQ handler rules, poison message classification, idempotent replay service, ISO 20022 failure routing, and the DLQ observability patterns that surface errors before they become SAMA incidents.</p>
+          <p class="article-list__excerpt">Kafka @RetryableTopic, IBM MQ AMQMDLQ handler rules, poison message classification, idempotent replay service, ISO 20022 failure routing, and the DLQ observability patterns that surface errors before they become regulatory incidents.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Kafka</span>
             <span class="skill-tag">IBM MQ</span>
@@ -177,13 +181,13 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">AsyncAPI 3.0 Contracts for Kafka Channel Governance</h2>
-          <p class="article-list__excerpt">Contract-first event channel design: AsyncAPI 3.0 spec structure for payment topics, PDPL classification metadata with CI enforcement, Confluent Schema Registry alignment, Spring Cloud Stream code generation, channel versioning strategy, and the ownership model that keeps 60 Kafka topics from becoming a fragile mesh of implicit contracts.</p>
+          <p class="article-list__excerpt">Contract-first event channel design: AsyncAPI 3.0 spec structure for business-event topics, data-protection classification metadata with CI enforcement, Confluent Schema Registry alignment, Spring Cloud Stream code generation, channel versioning strategy, and the ownership model that keeps dozens of Kafka topics from becoming a fragile mesh of implicit contracts.</p>
           <div class="article-list__tags">
             <span class="skill-tag">AsyncAPI 3.0</span>
             <span class="skill-tag">Kafka</span>
             <span class="skill-tag">Schema Registry</span>
             <span class="skill-tag">Spring Cloud Stream</span>
-            <span class="skill-tag">PDPL</span>
+            <span class="skill-tag">Data Privacy</span>
           </div>
           <div class="article-list__arrow">Read article &rarr;</div>
         </a>
@@ -196,13 +200,13 @@
             <span class="article-list__meta-divider">&middot;</span>
             <span>~12 min read</span>
           </div>
-          <h2 class="article-list__title">The Obligation Ledger Pattern: Modelling Court and Regulatory Holds Without Stacking Core Holds</h2>
-          <p class="article-list__excerpt">Record obligations rather than money, project one reconciled core hold per asset, keep hash-chained order streams, and certify connectors against duplicate delivery and reversal storms.</p>
+          <h2 class="article-list__title">The Obligation Ledger Pattern: Tracking Holds and Reservations Without Stacking Them in the System of Record</h2>
+          <p class="article-list__excerpt">When many parties place holds, reservations or restrictions on the same balance, stock or quota: record obligations rather than the resource, project one reconciled hold per resource into the system of record, keep hash-chained claim streams, and certify connectors against duplicate delivery and reversal storms.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Obligation Ledger</span>
             <span class="skill-tag">Event Sourcing</span>
             <span class="skill-tag">Reconciliation</span>
-            <span class="skill-tag">Legal Orders</span>
+            <span class="skill-tag">Reservations</span>
           </div>
           <div class="article-list__arrow">Read article &rarr;</div>
         </a>
@@ -224,6 +228,6 @@
     </div>
   </footer>
 
-  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/main.js?v=20261127"></script>
 </body>
 </html>

@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Security &mdash; Service Mesh mTLS at Scale &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Istio and Linkerd patterns for east-west mTLS at production scale: SPIFFE identity, certificate rotation, AuthorizationPolicy, performance overhead, and the zero-trust controls that satisfy SAMA auditors in a KSA bank.">
+  <meta name="description" content="Istio and Linkerd patterns for east-west mTLS at production scale: SPIFFE identity, certificate rotation, AuthorizationPolicy, performance overhead, and the zero-trust controls that satisfy financial-sector auditors.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="API Security &mdash; Service Mesh mTLS at Scale &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Istio &amp; Linkerd east-west mTLS: SPIFFE, cert rotation, zero-trust policy, and production operations at KSA bank scale.">
+  <meta property="og:description" content="Istio &amp; Linkerd east-west mTLS: SPIFFE, cert rotation, zero-trust policy, and production operations at regulated-enterprise scale.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/api-security/service-mesh-mtls-at-scale.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -19,6 +19,10 @@
   <meta name="twitter:title" content="API Security &mdash; Service Mesh mTLS at Scale">
   <meta name="twitter:description" content="Istio &amp; Linkerd east-west mTLS, SPIFFE identity, cert rotation, and zero-trust policy for regulated financial services.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/api-security/service-mesh-mtls-at-scale.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -38,18 +42,50 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "API Security: Service Mesh mTLS at Scale",
-    "description": "Istio and Linkerd patterns for east-west mTLS at production scale: SPIFFE identity, certificate rotation, AuthorizationPolicy, performance overhead, and the zero-trust controls that satisfy SAMA auditors.",
+    "description": "Istio and Linkerd patterns for east-west mTLS at production scale: SPIFFE identity, certificate rotation, AuthorizationPolicy, performance overhead, and the zero-trust controls that satisfy financial-sector auditors.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-08-22",
     "author": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "publisher": {
       "@type": "Person",
       "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
+      "url": "https://www.wbadawi.info/",
+      "@id": "https://www.wbadawi.info/#person",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://www.wbadawi.info/#photo",
+        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
+        "width": 400,
+        "height": 400,
+        "caption": "Waleed Albadawi, technology executive, Riyadh"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/walidkhb",
+        "https://github.com/walidkhb",
+        "https://x.com/walidkhelbadawi",
+        "https://medium.com/@walidkhb"
+      ]
     },
     "url": "https://www.wbadawi.info/lab/api-security/service-mesh-mtls-at-scale.html",
     "isPartOf": {
@@ -89,7 +125,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>Service Mesh mTLS at Scale</div>
           <span class="overline">Lab Article</span>
           <h1>API Security: Service Mesh mTLS at Scale</h1>
-          <p class="lead">Istio and Linkerd patterns for east-west mutual TLS at production scale &mdash; SPIFFE workload identity, automated certificate rotation, AuthorizationPolicy enforcement, identity propagation across service chains, and the operational model that keeps latency under control while satisfying a SAMA zero-trust audit.</p>
+          <p class="lead">Istio and Linkerd patterns for east-west mutual TLS at production scale &mdash; SPIFFE workload identity, automated certificate rotation, AuthorizationPolicy enforcement, identity propagation across service chains, and the operational model that keeps latency under control while satisfying a regulator&rsquo;s zero-trust audit.</p>
         </div>
       </div>
     </div>
@@ -127,7 +163,7 @@
 
           <h2 id="overview">Overview</h2>
           <p>North-south mTLS &mdash; mutual TLS between your perimeter API gateway and external callers &mdash; is well understood and routinely audited. East-west mTLS is the harder problem: securing service-to-service traffic inside the cluster, where the assumption of a trusted network still dominates despite every zero-trust framework condemning it.</p>
-          <p>In a SAMA-regulated bank running 80&ndash;150 microservices on OpenShift or Kubernetes, east-west traffic carries payment instructions, customer PII, credit decisions, and inter-system state transfers. SAMA&rsquo;s Technology Risk Management framework classifies inter-service communication of core banking data as an attack surface that must be encrypted and mutually authenticated, not merely firewalled. A service mesh is the production-grade answer to that requirement &mdash; but deploying one at scale without understanding the operational cost creates its own incidents.</p>
+          <p>In a regulated organisation running a hundred or so microservices on OpenShift or Kubernetes &mdash; a bank, an insurer, a payments processor &mdash; east-west traffic carries payment instructions, customer PII, credit decisions, and inter-system state transfers. Zero-trust guidance (NIST SP 800-207) and the financial-sector frameworks that build on it (SAMA&rsquo;s Cyber Security Framework, the EBA ICT guidelines, DORA, PCI DSS) treat inter-service traffic carrying system-of-record data as an attack surface that must be encrypted and mutually authenticated, not merely firewalled. A service mesh is the production-grade answer to that requirement &mdash; but deploying one at scale without understanding the operational cost creates its own incidents.</p>
           <p>This article covers Istio and Linkerd: what they do under the hood, how to configure east-west mTLS correctly, how certificate rotation works at scale, and where each system fails if you don&rsquo;t operate it deliberately.</p>
 
           <div class="callout callout--note">
@@ -193,8 +229,8 @@
                 <text x="390" y="290" text-anchor="middle" fill="#71717a" font-size="9">App speaks plaintext to localhost:15001 &middot; sidecar intercepts &amp; upgrades to mTLS</text>
                 <text x="390" y="308" text-anchor="middle" fill="#71717a" font-size="9">Both sides verify SPIFFE SVID against trust domain CA before handshake completes</text>
 
-                <text x="90" y="270" text-anchor="middle" fill="#4a9eff" font-size="8">spiffe://bank.example/ns/payments/sa/payments-svc</text>
-                <text x="690" y="270" text-anchor="middle" fill="#fbbf24" font-size="8">spiffe://bank.example/ns/accounts/sa/accounts-svc</text>
+                <text x="90" y="270" text-anchor="middle" fill="#4a9eff" font-size="8">spiffe://example.org/ns/payments/sa/payments-svc</text>
+                <text x="690" y="270" text-anchor="middle" fill="#fbbf24" font-size="8">spiffe://example.org/ns/accounts/sa/accounts-svc</text>
               </svg>
             </div>
             <div class="diagram__caption">Figure 1 &mdash; East-west mTLS via Envoy sidecar proxies &mdash; app containers speak plaintext locally; the mesh handles identity and encryption</div>
@@ -202,7 +238,7 @@
 
           <h2 id="istio-architecture">Istio architecture</h2>
           <p>Istio&rsquo;s control plane is <code>istiod</code>, a single binary that consolidates three formerly separate components: Pilot (xDS config distribution), Citadel (certificate issuance), and Galley (config validation). The data plane is Envoy, injected as a sidecar into every application pod.</p>
-          <p>The identity lifecycle works like this: when a pod starts, the kubelet passes a service account token to the Envoy sidecar via the <code>istio-token</code> projected volume. The sidecar presents this token to <code>istiod</code>; <code>istiod</code> validates it against the Kubernetes API and issues a short-lived X.509 SVID (SPIFFE Verifiable Identity Document) signed by the mesh CA. The SVID encodes the SPIFFE ID in the SAN (Subject Alternative Name) field &mdash; for example <code>spiffe://bank.example/ns/payments/sa/payments-svc</code>. When the sidecar opens a connection to another workload, it presents this SVID; the remote sidecar verifies the SVID against the trust bundle and checks that the SPIFFE ID is permitted by the <code>AuthorizationPolicy</code>.</p>
+          <p>The identity lifecycle works like this: when a pod starts, the kubelet passes a service account token to the Envoy sidecar via the <code>istio-token</code> projected volume. The sidecar presents this token to <code>istiod</code>; <code>istiod</code> validates it against the Kubernetes API and issues a short-lived X.509 SVID (SPIFFE Verifiable Identity Document) signed by the mesh CA. The SVID encodes the SPIFFE ID in the SAN (Subject Alternative Name) field &mdash; for example <code>spiffe://example.org/ns/payments/sa/payments-svc</code>. When the sidecar opens a connection to another workload, it presents this SVID; the remote sidecar verifies the SVID against the trust bundle and checks that the SPIFFE ID is permitted by the <code>AuthorizationPolicy</code>.</p>
           <p>Istio distributes configuration via xDS (Envoy&rsquo;s discovery service protocol): Listener Discovery Service, Route Discovery Service, Cluster Discovery Service, and Endpoint Discovery Service. The sidecar maintains a gRPC stream to <code>istiod</code> and receives config pushes when policy or topology changes. This is stateful &mdash; if <code>istiod</code> restarts, sidecars continue operating on the last-received config and reconnect to the new <code>istiod</code> instance without traffic disruption.</p>
 
           <h2 id="strict-vs-permissive">STRICT vs PERMISSIVE mode</h2>
@@ -236,7 +272,7 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">PERMISSIVE mode voids your zero-trust compliance claim</div>
-            <p>PERMISSIVE mode exists solely as a migration tool &mdash; a way to let non-mesh workloads communicate with mesh workloads during a phased rollout. A namespace that remains in PERMISSIVE mode indefinitely accepts plaintext connections from any source, including a compromised pod that has bypassed sidecar injection. If SAMA&rsquo;s examination team tests east-west traffic and finds plaintext accepted, no amount of architectural diagrams showing &ldquo;zero trust&rdquo; will satisfy the finding. PERMISSIVE mode should appear in your cluster only with a named workload exception and a remediation date attached.</p>
+            <p>PERMISSIVE mode exists solely as a migration tool &mdash; a way to let non-mesh workloads communicate with mesh workloads during a phased rollout. A namespace that remains in PERMISSIVE mode indefinitely accepts plaintext connections from any source, including a compromised pod that has bypassed sidecar injection. If a regulator&rsquo;s examination team or an internal red team tests east-west traffic and finds plaintext accepted, no amount of architectural diagrams showing &ldquo;zero trust&rdquo; will satisfy the finding. PERMISSIVE mode should appear in your cluster only with a named workload exception and a remediation date attached.</p>
           </div>
 
           <div class="callout callout--note">
@@ -257,7 +293,7 @@ kubectl exec -n payments deploy/payments-svc -c istio-proxy -- \
   openssl x509 -noout -text | grep -A2 <span class="tok-s">"Subject Alternative Name"</span>
 
 <span class="tok-c"># Expected output:</span>
-<span class="tok-c">#   URI:spiffe://bank.example/ns/payments/sa/payments-svc</span>
+<span class="tok-c">#   URI:spiffe://example.org/ns/payments/sa/payments-svc</span>
 
 <span class="tok-c"># Check SVID expiry on a live sidecar</span>
 istioctl proxy-config secret deploy/payments-svc -n payments \
@@ -267,7 +303,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
   base64 -d | openssl x509 -noout -dates</code></pre>
           </div>
 
-          <p>For clusters that need cross-cluster or cross-cloud identity (for example, a bank DR site on a second OpenShift cluster), SPIRE (the SPIFFE Reference Implementation) provides a federated trust model: each cluster runs a SPIRE Server, and the servers federate by exchanging trust bundles out-of-band. Istio can be configured to use SPIRE as its certificate authority via the <code>ExternalCertificateAuthority</code> plugin.</p>
+          <p>For clusters that need cross-cluster or cross-cloud identity (for example, a disaster-recovery site on a second OpenShift cluster), SPIRE (the SPIFFE Reference Implementation) provides a federated trust model: each cluster runs a SPIRE Server, and the servers federate by exchanging trust bundles out-of-band. Istio can be configured to use SPIRE as its certificate authority via the <code>ExternalCertificateAuthority</code> plugin.</p>
 
           <h2 id="cert-rotation">Certificate rotation</h2>
           <p>Certificate rotation at scale is the most operationally sensitive part of a service mesh deployment. The failure mode is subtle: if a certificate expires before the sidecar has rotated it, connections from that workload fail with TLS handshake errors. At 200 pods and a 24-hour cert TTL, rotation events happen continuously &mdash; which is fine until the rotation mechanism itself breaks.</p>
@@ -326,15 +362,15 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
 <span class="tok-k">data</span>:
   <span class="tok-k">mesh</span>: |
     <span class="tok-k">certificates</span>:
-      <span class="tok-k">workloadCertTtl</span>: <span class="tok-s">3600s</span>          <span class="tok-c"># 1-hour SVID TTL (SAMA-preferred short rotation)</span>
+      <span class="tok-k">workloadCertTtl</span>: <span class="tok-s">3600s</span>          <span class="tok-c"># 1-hour SVID TTL (short rotation for regulated workloads)</span>
       <span class="tok-k">workloadCertGracePeriodRatio</span>: <span class="tok-s">0.5</span>  <span class="tok-c"># rotate at 50% lifetime = 30 min overlap</span>
-    <span class="tok-k">trustDomain</span>: <span class="tok-s">bank.example</span>
+    <span class="tok-k">trustDomain</span>: <span class="tok-s">example.org</span>
     <span class="tok-k">ca</span>:
       <span class="tok-k">workloadCertKeySize</span>: <span class="tok-n">2048</span>
       <span class="tok-k">caRSACertificateKeySize</span>: <span class="tok-n">4096</span></code></pre>
           </div>
 
-          <p>For intermediate CA rotation (rotating the CA that signs SVIDs, not individual SVIDs), use cert-manager with an <code>Issuer</code> chain: a root CA stored in Vault PKI, an intermediate CA issued via <code>cert-manager</code> into the <code>istio-system</code> namespace, and Istio configured to use the intermediate. When the intermediate rotates, cert-manager handles the re-issuance; Istio picks up the new signing chain without restart. This is the pattern required for SAMA annual key rotation compliance.</p>
+          <p>For intermediate CA rotation (rotating the CA that signs SVIDs, not individual SVIDs), use cert-manager with an <code>Issuer</code> chain: a root CA stored in Vault PKI, an intermediate CA issued via <code>cert-manager</code> into the <code>istio-system</code> namespace, and Istio configured to use the intermediate. When the intermediate rotates, cert-manager handles the re-issuance; Istio picks up the new signing chain without restart. This is the pattern that makes a periodic (typically annual) CA key rotation policy achievable without an outage.</p>
 
           <h2 id="authz-policy">Authorization policies</h2>
           <p>mTLS proves identity; <code>AuthorizationPolicy</code> enforces intent. Without authorization policies, a service holding a valid SVID can call any other service in the mesh. That is not zero trust &mdash; that is authenticated, but not authorized.</p>
@@ -372,7 +408,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
   <span class="tok-p">{}</span>    <span class="tok-c"># empty spec = deny all; ALLOW rules above are additive exceptions</span></code></pre>
           </div>
 
-          <p>The <strong>deny-all default</strong> is the critical piece. Without it, all authenticated workloads can call accounts-svc. Start with a deny-all in each namespace and add explicit ALLOW rules per caller. This is the allow-list model that SAMA&rsquo;s zero-trust guidance requires.</p>
+          <p>The <strong>deny-all default</strong> is the critical piece. Without it, all authenticated workloads can call accounts-svc. Start with a deny-all in each namespace and add explicit ALLOW rules per caller. This is the allow-list model that zero-trust guidance expects and that auditors look for.</p>
 
           <ol class="step-list">
             <li>Enable sidecar injection on all namespaces that carry regulated data: <code>kubectl label namespace payments istio-injection=enabled</code>. Add Kyverno admission policy to deny injection-less pods.</li>
@@ -380,7 +416,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
             <li>Switch each namespace to <code>STRICT</code> mode once 100% of pods show a healthy sidecar. Use <code>istioctl analyze</code> to confirm no plaintext paths remain before switching.</li>
             <li>Add a deny-all <code>AuthorizationPolicy</code> to each namespace and incrementally add explicit ALLOW rules, validating with smoke tests after each addition.</li>
             <li>Configure cert-manager with the Vault intermediate CA chain, reduce SVID TTL to 3600s, and verify rotation by watching <code>istio_agent_cert_expiry_timestamp</code> in Prometheus.</li>
-            <li>Enable Istio access logging to a centralized log platform (Elasticsearch, Splunk) for SAMA audit trail. Log fields must include <code>source.principal</code>, <code>destination.principal</code>, <code>request.path</code>, <code>response.code</code>, and <code>start_time</code>.</li>
+            <li>Enable Istio access logging to a centralized log platform (Elasticsearch, Splunk) for the audit trail. Log fields must include <code>source.principal</code>, <code>destination.principal</code>, <code>request.path</code>, <code>response.code</code>, and <code>start_time</code>.</li>
           </ol>
 
           <h2 id="linkerd">Linkerd as an alternative</h2>
@@ -403,7 +439,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
             </tbody>
           </table>
 
-          <p>For a SAMA-regulated bank on RHOCP (Red Hat OpenShift Container Platform), the default choice is OSSM (OpenShift Service Mesh, built on Istio + Kiali + Jaeger + Prometheus). It is Red Hat&rsquo;s supported product, it satisfies vendor-support requirements in SAMA&rsquo;s IT governance framework, and its upgrade lifecycle is managed alongside RHOCP. Linkerd is the right choice for a team that finds Istio&rsquo;s operational complexity prohibitive, has non-RHOCP Kubernetes, and is running a lower-criticality tier of services where the thinner feature set is acceptable.</p>
+          <p>For a regulated organisation standardised on RHOCP (Red Hat OpenShift Container Platform), the default choice is OSSM (OpenShift Service Mesh, built on Istio + Kiali + Jaeger + Prometheus). It is Red Hat&rsquo;s supported product, it satisfies the vendor-support requirements that regulated IT governance frameworks typically impose on production platforms, and its upgrade lifecycle is managed alongside RHOCP. Linkerd is the right choice for a team that finds Istio&rsquo;s operational complexity prohibitive, has non-RHOCP Kubernetes, and is running a lower-criticality tier of services where the thinner feature set is acceptable.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>linkerd-inject.yaml</span><span class="code-block__lang">yaml</span></div>
@@ -439,7 +475,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
 
           <h2 id="performance">Performance overhead</h2>
           <p>Service mesh mTLS adds latency at two points: the TLS handshake on connection establishment, and the encryption/decryption overhead on each request. In practice, connection pools mean that the handshake cost is amortized over many requests; the encryption overhead is the dominant factor.</p>
-          <p>Benchmarking Istio with Envoy sidecar against a baseline (no mesh) on a payment processing microservice at representative banking load (500 RPS, 2 KB payload, gRPC):</p>
+          <p>Indicative figures from benchmarking Istio with Envoy sidecar against a baseline (no mesh) on a payment-processing style microservice at a representative load (500 RPS, 2 KB payload, gRPC) &mdash; run your own benchmark before sizing:</p>
 
           <table>
             <thead>
@@ -453,7 +489,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
             </tbody>
           </table>
 
-          <p>The overhead is real but acceptable: ~0.9 ms at p50, ~2.4 ms at p99 for Istio. At SAMA&rsquo;s IPS payment latency requirements (end-to-end under 2 seconds), this is not the constraint. Where it matters is high-frequency internal loops &mdash; a 10,000 RPS service-to-service call where each hop adds 2 ms is a 20 ms penalty on a chain with ten hops.</p>
+          <p>The overhead is real but acceptable: ~0.9 ms at p50, ~2.4 ms at p99 for Istio. Against a typical instant-payment scheme latency budget (end-to-end in the low seconds), this is not the constraint. Where it matters is high-frequency internal loops &mdash; a 10,000 RPS service-to-service call where each hop adds 2 ms is a 20 ms penalty on a chain with ten hops.</p>
 
           <div class="callout callout--warn">
             <div class="callout__title">Sidecar resource allocation must be in the pod spec</div>
@@ -467,7 +503,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
             <li>Deny-all <code>AuthorizationPolicy</code> in every regulated namespace. Explicit ALLOW rules per caller/path/method.</li>
             <li>SVID TTL at 3600s. Grace period ratio at 0.5 (30-minute overlap). Prometheus alert on <code>istio_agent_cert_expiry_timestamp &lt; now + 600s</code>.</li>
             <li>Intermediate CA signed by Vault PKI. cert-manager managing intermediate renewal. Root CA stored offline or in HSM.</li>
-            <li>Trust domain set to a bank-specific value (e.g. <code>bank.example</code>), not the default <code>cluster.local</code> (cluster.local is widely reused and reduces SPIFFE ID uniqueness in multi-cluster federation).</li>
+            <li>Trust domain set to an organisation-specific value (e.g. <code>example.org</code>), not the default <code>cluster.local</code> (cluster.local is widely reused and reduces SPIFFE ID uniqueness in multi-cluster federation).</li>
             <li>Istio access logs shipped to centralized SIEM. Fields: source principal, destination principal, request path, response code, duration, start time.</li>
             <li>Kiali (or Linkerd Viz) deployed and accessible only to network ops team. No public exposure.</li>
             <li>mTLS status visible in monitoring. Dashboard shows: % namespaces in STRICT, % pods meshed, cert expiry horizon, <code>AuthorizationPolicy</code> deny rate.</li>
@@ -503,7 +539,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

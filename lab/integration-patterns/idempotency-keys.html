@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Idempotency Keys at Scale &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Production-grade idempotency for payment and transactional APIs: key design, storage choices (Redis vs Postgres vs hybrid), TTL and eviction, replay semantics, the request-fingerprint problem, and why every banking write API needs them by default.">
+  <meta name="description" content="Production-grade idempotency for payment and transactional APIs: key design, storage choices (Redis vs Postgres vs hybrid), TTL and eviction, replay semantics, the request-fingerprint problem, and why every transactional write API needs them by default.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Idempotency Keys at Scale &mdash; Banking API Patterns">
-  <meta property="og:description" content="Production idempotency keys for payment and transactional APIs in regulated banking: design, storage, TTL, replay semantics.">
+  <meta property="og:title" content="Idempotency Keys at Scale &mdash; Transactional API Patterns">
+  <meta property="og:description" content="Production idempotency keys for payment and transactional APIs in regulated industries: design, storage, TTL, replay semantics.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/idempotency-keys.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,8 +17,12 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Idempotency Keys at Scale">
-  <meta name="twitter:description" content="Production idempotency keys for payment and transactional APIs in regulated banking.">
+  <meta name="twitter:description" content="Production idempotency keys for payment and transactional APIs in regulated industries.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/integration-patterns/idempotency-keys.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -102,11 +106,11 @@
 
           <h2 id="overview">Overview</h2>
           <p>Every payment API in production gets retried. Networks drop packets, gateways time out, mobile clients lose connectivity mid-request, batch jobs replay yesterday&rsquo;s queue. The retry is unavoidable. The question is whether the retry produces a second payment or a second look at the first one.</p>
-          <p><strong>Idempotency keys</strong> are the contract that turns a retried <code>POST</code> into a safe operation. The client sends a unique key with each new request; the server records the first outcome under that key and returns the same outcome for any subsequent request with the same key. Done correctly, the customer charges once even if the network told the merchant the request failed five times in a row. Done incorrectly, the customer is charged five times and the bank discovers it in a complaint queue two weeks later.</p>
+          <p><strong>Idempotency keys</strong> are the contract that turns a retried <code>POST</code> into a safe operation. The client sends a unique key with each new request; the server records the first outcome under that key and returns the same outcome for any subsequent request with the same key. Done correctly, the customer charges once even if the network told the merchant the request failed five times in a row. Done incorrectly, the customer is charged five times and the provider discovers it in a complaint queue two weeks later.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">The default for every write endpoint</div>
-            <p>If a banking API can move money, change account state, submit a transfer, or trigger a downstream effect that costs money to undo, it requires idempotency keys. This is not an optimisation. It is the minimum viable contract for a write endpoint that crosses a network in a regulated environment.</p>
+            <p>If an API can move money, change account state, submit a transfer or an order, or trigger a downstream effect that costs money to undo, it requires idempotency keys. This is not an optimisation. It is the minimum viable contract for a write endpoint that crosses a network in a regulated environment.</p>
           </div>
 
           <h2 id="why">Why retries are not optional</h2>
@@ -126,7 +130,7 @@
           <div class="code-block">
             <div class="code-block__header"><span>POST /v1/payments</span><span class="code-block__lang">http</span></div>
 <pre><code><span class="tok-k">POST</span> /v1/payments HTTP/1.1
-Host: api.bank.example
+Host: api.example.com
 <span class="tok-k">Authorization</span>: Bearer <span class="tok-s">eyJ...</span>
 <span class="tok-k">Idempotency-Key</span>: <span class="tok-s">7f9c3b2e-4a91-4d2c-88f1-2e0f3a1b9c67</span>
 <span class="tok-k">Content-Type</span>: application/json
@@ -134,8 +138,8 @@ Host: api.bank.example
 
 {
   <span class="tok-k">"amount"</span>: <span class="tok-s">"125.00"</span>,
-  <span class="tok-k">"currency"</span>: <span class="tok-s">"SAR"</span>,
-  <span class="tok-k">"creditor_iban"</span>: <span class="tok-s">"SA0380000000608010167519"</span>,
+  <span class="tok-k">"currency"</span>: <span class="tok-s">"EUR"</span>,
+  <span class="tok-k">"creditor_iban"</span>: <span class="tok-s">"DE89370400440532013000"</span>,
   <span class="tok-k">"reference"</span>: <span class="tok-s">"INV-44219"</span>
 }</code></pre>
           </div>
@@ -181,7 +185,7 @@ Host: api.bank.example
           </div>
 
           <h2 id="storage">Storage choices</h2>
-          <p>Three storage shapes, each with a different operational profile. The right choice depends on traffic volume, retention requirements, and how the bank already operates the relevant infrastructure.</p>
+          <p>Three storage shapes, each with a different operational profile. The right choice depends on traffic volume, retention requirements, and how the organisation already operates the relevant infrastructure.</p>
 
           <div class="diagram" role="img" aria-label="Three idempotency storage architectures: Redis cache, Postgres table, and hybrid Redis-with-Postgres-backing">
             <div class="diagram__inner">
@@ -236,7 +240,7 @@ Host: api.bank.example
 
           <p><strong>Postgres only.</strong> Durable and auditable. The idempotency table is a system of record; the unique constraint on the key is enforced atomically; the row carries the request fingerprint, response, and timestamps for the audit story. The cost is throughput &mdash; every <code>POST</code> becomes a database round-trip on the hot path. Acceptable for moderate-volume transactional APIs; can become a bottleneck for high-RPS endpoints.</p>
 
-          <p><strong>Hybrid.</strong> Redis as the hot cache, Postgres as the durable record. Reads check Redis first, fall back to Postgres on miss, populate Redis for next time. Writes go to Postgres synchronously and Redis on success. This is the production default for any payment-grade API at the volume of a national bank: the latency profile of Redis with the audit and durability of Postgres, at the cost of operational complexity and the need to keep the two stores consistent under partial failures.</p>
+          <p><strong>Hybrid.</strong> Redis as the hot cache, Postgres as the durable record. Reads check Redis first, fall back to Postgres on miss, populate Redis for next time. Writes go to Postgres synchronously and Redis on success. This is the production default for any payment-grade API at the volume of a large payment provider: the latency profile of Redis with the audit and durability of Postgres, at the cost of operational complexity and the need to keep the two stores consistent under partial failures.</p>
 
           <h2 id="flow">The end-to-end flow</h2>
 
@@ -311,11 +315,11 @@ Host: api.bank.example
           </div>
 
           <h2 id="ttl">TTL &amp; cleanup</h2>
-          <p>Idempotency keys do not need to live forever. The retry window for a real client is minutes to hours. The audit window is longer &mdash; in regulated banking, often years &mdash; but the storage requirement for the two is different.</p>
+          <p>Idempotency keys do not need to live forever. The retry window for a real client is minutes to hours. The audit window is longer &mdash; in regulated industries, often years &mdash; but the storage requirement for the two is different.</p>
 
           <ul>
             <li><strong>Hot retention (Redis): 24 hours.</strong> Long enough to catch every legitimate retry from any reasonable client. Short enough that Redis memory stays bounded.</li>
-            <li><strong>Cold retention (Postgres): 7 years for payment APIs.</strong> Aligns with SAMA&rsquo;s record retention expectations for payment evidence. The table is partitioned by month and old partitions are detached to cold storage.</li>
+            <li><strong>Cold retention (Postgres): 7 years for payment APIs.</strong> Aligns with typical regulatory record-retention expectations for payment evidence; confirm the period your jurisdiction requires. The table is partitioned by month and old partitions are detached to cold storage.</li>
             <li><strong>Cleanup job.</strong> A scheduled job deletes Redis entries past TTL (Redis does this for you with <code>EXPIRE</code>) and detaches Postgres partitions older than the retention boundary. Never <code>DELETE</code> from a high-volume idempotency table during business hours; partition pruning is the only sustainable strategy.</li>
           </ul>
 
@@ -347,7 +351,7 @@ Host: api.bank.example
 
           <div class="callout callout--warn">
             <div class="callout__title">Forgetting the failure case</div>
-            <p>A failed first request &mdash; downstream timeout, bank core unavailable, validation error after partial work &mdash; needs explicit handling. Should the same key be retryable after the failure? Usually yes, but only if the failure was clean. If money may have moved, the retry is unsafe. Mark the row <code>failed</code> with the reason and require a different key for the retry.</p>
+            <p>A failed first request &mdash; downstream timeout, legacy core unavailable, validation error after partial work &mdash; needs explicit handling. Should the same key be retryable after the failure? Usually yes, but only if the failure was clean. If money may have moved, the retry is unsafe. Mark the row <code>failed</code> with the reason and require a different key for the retry.</p>
           </div>
 
           <div class="callout callout--note">
@@ -358,7 +362,7 @@ Host: api.bank.example
           <h2 id="when-not">When idempotency keys are not enough</h2>
           <ul>
             <li><strong>Multi-step workflows.</strong> A payment that requires authorisation, capture, and clearing is three operations, each with its own idempotency requirement. A single key on the orchestrator is not enough &mdash; each downstream step needs its own. Use a saga pattern with per-step keys derived from the orchestration key.</li>
-            <li><strong>External callbacks and webhooks.</strong> When the bank calls a third party (e.g., an SMS provider, a fraud-screening service), the bank is now the client of someone else&rsquo;s API. Generate idempotency keys for those calls too. The same logic applies in reverse.</li>
+            <li><strong>External callbacks and webhooks.</strong> When your platform calls a third party (e.g., an SMS provider, a fraud-screening service), your platform is now the client of someone else&rsquo;s API. Generate idempotency keys for those calls too. The same logic applies in reverse.</li>
             <li><strong>Cross-system consistency.</strong> Idempotency makes a single API call safe to retry. It does not make distributed transactions safe. For multi-system writes, combine idempotency keys with the transactional outbox pattern (covered in the <a href="../data-sync/debezium-and-outbox.html">Data Synchronisation</a> article) and explicit reconciliation.</li>
             <li><strong>Read endpoints.</strong> <code>GET</code> requests are idempotent by definition. Adding an <code>Idempotency-Key</code> to them is wasted work and confuses caches and proxies that already cache reads correctly.</li>
           </ul>
@@ -392,7 +396,7 @@ Host: api.bank.example
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

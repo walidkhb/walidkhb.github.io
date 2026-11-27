@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Streaming &mdash; Kafka Streams &amp; Flink &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Real-time stream processing for financial services: Kafka Streams and Apache Flink, windowing, joins, exactly-once stateful processing, IBM Event Streams in production, and the operational patterns behind real-time payments and fraud detection.">
+  <meta name="description" content="Real-time stream processing with Kafka Streams and Apache Flink: windowing, joins, exactly-once stateful processing, managed Kafka distributions in production, and the operational patterns behind fraud detection, real-time screening, telemetry and other latency-critical pipelines.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Data Streaming &mdash; Kafka Streams &amp; Flink &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Stream processing patterns for real-time fraud detection and payments.">
+  <meta property="og:description" content="Stream processing patterns for fraud detection, real-time screening and other latency-critical pipelines.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/kafka-streams-and-flink.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,8 +17,12 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Data Streaming &mdash; Production Patterns">
-  <meta name="twitter:description" content="Stream processing for real-time financial services.">
+  <meta name="twitter:description" content="Kafka Streams and Flink patterns for real-time, stateful event processing.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/kafka-streams-and-flink.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +30,7 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -63,7 +67,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Kafka Streams &amp; Flink</div>
           <span class="overline">Lab Article</span>
           <h1>Data Streaming: Kafka Streams &amp; Flink</h1>
-          <p class="lead">Real-time stream processing for fraud detection, real-time payments, and market data: windowing, stateful joins, exactly-once processing, the trade-offs between Kafka Streams and Apache Flink, and the operational patterns behind streams that run for months without intervention.</p>
+          <p class="lead">Real-time stream processing for fraud detection, transaction screening, IoT telemetry, and live operational metrics: windowing, stateful joins, exactly-once processing, the trade-offs between Kafka Streams and Apache Flink, and the operational patterns behind streams that run for months without intervention.</p>
         </div>
       </div>
     </div>
@@ -101,12 +105,12 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Stream processing transforms an unbounded sequence of events into derived facts in real time. The three killer applications in financial services are <strong>fraud detection</strong> (sliding-window aggregation over card authorisations), <strong>real-time payment screening</strong> (joining payment events against sanctions lists), and <strong>market data enrichment</strong> (deriving VWAP, position, P&amp;L from tick streams).</p>
-          <p>Two engines dominate: <strong>Kafka Streams</strong> (a library that runs inside your application) and <strong>Apache Flink</strong> (a separate runtime cluster). IBM packages Kafka as <strong>Event Streams</strong>; the streaming patterns are the same.</p>
+          <p>Stream processing transforms an unbounded sequence of events into derived facts in real time. The recurring applications cut across industries: <strong>fraud and abuse detection</strong> (sliding-window aggregation over card authorisations, logins or orders), <strong>real-time screening</strong> (joining transaction or shipment events against watch lists), and <strong>continuous enrichment and metrics</strong> (deriving live inventory, sensor health or pricing aggregates from high-frequency streams). The running example below is card fraud, but the same topology applies to account takeover in e-commerce, SIM-swap detection in telecoms, or claims velocity in insurance.</p>
+          <p>Two engines dominate: <strong>Kafka Streams</strong> (a library that runs inside your application) and <strong>Apache Flink</strong> (a separate runtime cluster). Kafka itself ships in several distributions &mdash; Apache Kafka, Confluent, Amazon MSK, IBM Event Streams, Red Hat Streams for Apache Kafka; the streaming patterns are the same on all of them.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Streaming vs ETL</div>
-            <p>If you can wait until the end of the day to know the answer, run a batch ETL. Streaming exists for the cases where the answer must be ready in milliseconds: declining a fraudulent card, blocking a sanctioned payment, recalculating a counterparty&rsquo;s exposure before the next trade. Don&rsquo;t stream what a nightly job can do.</p>
+            <p>If you can wait until the end of the day to know the answer, run a batch ETL. Streaming exists for the cases where the answer must be ready in milliseconds: declining a fraudulent card, blocking a sanctioned shipment, throttling an abusive client before the next request. Don&rsquo;t stream what a nightly job can do.</p>
           </div>
 
           <h2 id="streams-vs-flink">Streams vs Flink</h2>
@@ -308,7 +312,7 @@ num.stream.threads=<span class="tok-n">8</span>
 
 <span class="tok-c"># State store tuning</span>
 state.dir=<span class="tok-s">/var/lib/kafka-streams</span>
-rocksdb.config.setter=<span class="tok-s">com.acmebank.streams.RocksTuner</span>
+rocksdb.config.setter=<span class="tok-s">com.example.streams.RocksTuner</span>
 
 <span class="tok-c"># Restore tuning &mdash; speeds up rebalance recovery</span>
 num.standby.replicas=<span class="tok-n">1</span>
@@ -432,7 +436,7 @@ acceptable.recovery.lag=<span class="tok-n">10000</span></code></pre>
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/main.js?v=20261127"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');
