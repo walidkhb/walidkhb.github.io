@@ -13,6 +13,7 @@ if (menuToggle && nav) {
   menuToggle.addEventListener('click', () => {
     const isOpen = nav.classList.toggle('open');
     menuToggle.setAttribute('aria-expanded', isOpen);
+    menuToggle.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
   });
 
   nav.querySelectorAll('a').forEach(link => {
@@ -23,7 +24,13 @@ if (menuToggle && nav) {
   });
 }
 
-// Scroll-triggered fade-in animations
+// Scroll-triggered fade-in animations. Content is visible by default; the
+// hidden state only applies once this script runs (html.js), and anything
+// already on screen is revealed immediately so nothing flickers.
+document.querySelectorAll('.fade-in').forEach(el => {
+  if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+});
+document.documentElement.classList.add('js');
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
@@ -35,14 +42,7 @@ const observer = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-// Active navigation highlighting
-const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-document.querySelectorAll('.site-nav a').forEach(link => {
-  const href = link.getAttribute('href');
-  if (href === currentPage) {
-    link.classList.add('active');
-  }
-});
+// Active navigation state is written into the page by scripts/sync_layout.py.
 
 // "Also published on Medium" — injected from medium-links.json so publishing a
 // post to Medium (and recording its URL there) lights up the link automatically.
