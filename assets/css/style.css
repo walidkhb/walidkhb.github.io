@@ -2260,3 +2260,39 @@ main p a:not([class]):hover, main li a:not([class]):hover, main dd a:not([class]
   text-decoration-color: currentColor;
 }
 .breadcrumb a { text-decoration: underline; text-decoration-color: var(--color-accent-border); text-underline-offset: 3px; }
+
+/* Value to the organisation (home) */
+.value-strip {
+  padding: 3rem 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+.value-strip__heading {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin: 0 0 2rem;
+}
+.value-strip__grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2rem;
+}
+.value-strip__item { border-top: 2px solid var(--color-accent); padding-top: 1rem; }
+.value-strip__title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  color: var(--color-accent);
+  margin: 0 0 0.5rem;
+}
+.value-strip__text { font-size: 0.9375rem; line-height: 1.6; color: var(--color-text-secondary); margin: 0; }
+@media (max-width: 1024px) { .value-strip__grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px) { .value-strip__grid { grid-template-columns: 1fr; gap: 1.5rem; } }
