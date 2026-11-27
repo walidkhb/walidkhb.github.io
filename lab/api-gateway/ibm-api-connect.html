@@ -160,7 +160,7 @@
                 <!-- Backend -->
                 <rect x="610" y="160" width="130" height="60" rx="6" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
                 <text x="675" y="185" text-anchor="middle" fill="#e4e4e7" font-size="12" font-weight="600">Backend</text>
-                <text x="675" y="202" text-anchor="middle" fill="#71717a" font-size="10">core / micro-services</text>
+                <text x="675" y="202" text-anchor="middle" fill="#71717a" font-size="10">SoR / micro-services</text>
 
                 <!-- API Manager (top) -->
                 <rect x="200" y="20" width="160" height="70" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
@@ -325,7 +325,7 @@
           </ol>
 
           <h3>CLI: end-to-end publish</h3>
-          <p>The pattern below is what runs in CI for every catalog promotion. Token, org, and catalog vary by environment; everything else is the same.</p>
+          <p>The pattern below is a typical CI step for each catalog promotion. Token, org, and catalog vary by environment; everything else is the same.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>publish.sh</span><span class="code-block__lang">bash</span></div>
@@ -338,16 +338,16 @@ apic login --server <span class="tok-s">manager.api.example.com</span> \
 apic validate <span class="tok-s">payments-api.yaml</span>
 
 <span class="tok-c"># 3. Push API and Product into the org draft area</span>
-apic apis:publish <span class="tok-s">payments-api.yaml</span>      --org <span class="tok-s">acme-bank</span>
-apic products:publish <span class="tok-s">payments-product.yaml</span> --org <span class="tok-s">acme-bank</span>
+apic apis:publish <span class="tok-s">payments-api.yaml</span>      --org <span class="tok-s">example-org</span>
+apic products:publish <span class="tok-s">payments-product.yaml</span> --org <span class="tok-s">example-org</span>
 
 <span class="tok-c"># 4. Stage to the target catalog (no live traffic yet)</span>
 apic products:publish <span class="tok-s">payments-product.yaml</span> \
-  --org <span class="tok-s">acme-bank</span> --catalog <span class="tok-s">production</span> --stage
+  --org <span class="tok-s">example-org</span> --catalog <span class="tok-s">production</span> --stage
 
 <span class="tok-c"># 5. Promote to active after smoke tests pass</span>
 apic products:publish <span class="tok-s">payments-product.yaml</span> \
-  --org <span class="tok-s">acme-bank</span> --catalog <span class="tok-s">production</span></code></pre>
+  --org <span class="tok-s">example-org</span> --catalog <span class="tok-s">production</span></code></pre>
           </div>
 
           <div class="callout callout--warn">
@@ -365,7 +365,7 @@ apic products:publish <span class="tok-s">payments-product.yaml</span> \
   <span class="tok-k">title</span>: <span class="tok-s">Payments Lookup</span>
   <span class="tok-k">version</span>: <span class="tok-s">1.2.0</span>
 <span class="tok-k">servers</span>:
-  - <span class="tok-k">url</span>: <span class="tok-s">https://api.acme-bank.com/payments/v1</span>
+  - <span class="tok-k">url</span>: <span class="tok-s">https://api.example.com/payments/v1</span>
 
 <span class="tok-k">x-ibm-configuration</span>:
   <span class="tok-k">cors</span>: { <span class="tok-k">enabled</span>: <span class="tok-n">false</span> }
@@ -394,7 +394,7 @@ apic products:publish <span class="tok-s">payments-product.yaml</span> \
           <span class="tok-k">version</span>: <span class="tok-s">2.0.0</span>
           <span class="tok-k">title</span>: <span class="tok-s">verify-bearer</span>
           <span class="tok-k">oauth-provider-settings-ref</span>:
-            <span class="tok-k">name</span>: <span class="tok-s">acme-keycloak-introspect</span>
+            <span class="tok-k">name</span>: <span class="tok-s">keycloak-introspect</span>
           <span class="tok-k">supported-oauth-components</span>: [ <span class="tok-s">OAuthValidateRequest</span> ]
 
       <span class="tok-c"># Plan-level quota; key derives from client_id + plan id</span>
@@ -410,11 +410,11 @@ apic products:publish <span class="tok-s">payments-product.yaml</span> \
             - { <span class="tok-k">clear</span>: <span class="tok-s">message.headers.authorization</span> }
             - { <span class="tok-k">clear</span>: <span class="tok-s">message.headers.x-ibm-client-secret</span> }
 
-      <span class="tok-c"># Forward to the internal core service</span>
+      <span class="tok-c"># Forward to the internal backend service</span>
       - <span class="tok-k">invoke</span>:
           <span class="tok-k">version</span>: <span class="tok-s">2.0.0</span>
           <span class="tok-k">title</span>: <span class="tok-s">backend</span>
-          <span class="tok-k">target-url</span>: <span class="tok-s">https://payments-core.svc.internal/v1$(request.path)</span>
+          <span class="tok-k">target-url</span>: <span class="tok-s">https://payments-backend.svc.internal/v1$(request.path)</span>
           <span class="tok-k">timeout</span>: <span class="tok-n">30</span>
           <span class="tok-k">verb</span>: <span class="tok-s">keep</span>
           <span class="tok-k">cache-response</span>: <span class="tok-s">protocol</span>
@@ -442,11 +442,11 @@ apic products:publish <span class="tok-s">payments-product.yaml</span> \
 
           <div class="code-block">
             <div class="code-block__header"><span>oauth-introspect-provider.yaml</span><span class="code-block__lang">yaml</span></div>
-<pre><code><span class="tok-k">name</span>: <span class="tok-s">acme-keycloak-introspect</span>
+<pre><code><span class="tok-k">name</span>: <span class="tok-s">keycloak-introspect</span>
 <span class="tok-k">title</span>: <span class="tok-s">Keycloak Token Introspection</span>
 <span class="tok-k">provider-type</span>: <span class="tok-s">third_party</span>
 <span class="tok-k">third-party-config</span>:
-  <span class="tok-k">introspection-endpoint</span>: <span class="tok-s">https://idp.acme-bank.com/realms/prod/protocol/openid-connect/token/introspect</span>
+  <span class="tok-k">introspection-endpoint</span>: <span class="tok-s">https://idp.example.com/realms/prod/protocol/openid-connect/token/introspect</span>
   <span class="tok-k">authentication-method</span>: <span class="tok-s">client-secret-basic</span>
   <span class="tok-k">client-id</span>: <span class="tok-s">datapower-rs</span>
   <span class="tok-k">client-secret</span>: <span class="tok-s">$(env.IDP_CLIENT_SECRET)</span>
@@ -492,8 +492,8 @@ apic products:publish <span class="tok-s">payments-product.yaml</span> \
     <span class="tok-k">title</span>: <span class="tok-s">verify-jwt</span>
     <span class="tok-k">jwt</span>: <span class="tok-s">request.headers.authorization</span>
     <span class="tok-k">output-claims</span>: <span class="tok-s">decoded.claims</span>
-    <span class="tok-k">jwk</span>: <span class="tok-s">https://idp.acme-bank.com/realms/prod/protocol/openid-connect/certs</span>
-    <span class="tok-k">iss-claim</span>: <span class="tok-s">"https://idp.acme-bank.com/realms/prod"</span>
+    <span class="tok-k">jwk</span>: <span class="tok-s">https://idp.example.com/realms/prod/protocol/openid-connect/certs</span>
+    <span class="tok-k">iss-claim</span>: <span class="tok-s">"https://idp.example.com/realms/prod"</span>
     <span class="tok-k">aud-claim</span>: <span class="tok-s">"payments-api"</span>
     <span class="tok-k">verify-crypto</span>: <span class="tok-s">true</span></code></pre>
           </div>
@@ -547,7 +547,7 @@ apic products:publish <span class="tok-s">payments-product.yaml</span> \
           </div>
 
           <h2 id="ha">HA topology</h2>
-          <p>Production deployments run active/active across two data centres. Each DC has its own DataPower peer group; API Manager and Portal sit in one DC with a warm standby. Analytics is a stretched cluster.</p>
+          <p>A typical production deployment runs active/active across two data centres. Each DC has its own DataPower peer group; API Manager and Portal sit in one DC with a warm standby. Analytics is a stretched cluster.</p>
 
           <div class="diagram" role="img" aria-label="High availability topology with two data centres, each running an active DataPower peer group behind a global load balancer">
             <div class="diagram__inner">
@@ -639,13 +639,13 @@ apic products:publish <span class="tok-s">payments-product.yaml</span> \
           </div>
 
           <h3>Forwarding events to a SIEM</h3>
-          <p>DataPower writes to its own analytics endpoint, but most banks also need events in Splunk or QRadar for security correlation. The pattern: a <code>log</code> target on the gateway publishes to a syslog endpoint, which feeds the SIEM. Don&rsquo;t try to make the SIEM the primary store &mdash; analytics ingest patterns are different.</p>
+          <p>DataPower writes to its own analytics endpoint, but most regulated organisations also need events in a SIEM such as Splunk or QRadar for security correlation. The pattern: a <code>log</code> target on the gateway publishes to a syslog endpoint, which feeds the SIEM. Don&rsquo;t try to make the SIEM the primary store &mdash; analytics ingest patterns are different.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>log-target-splunk.cfg</span><span class="code-block__lang">datapower</span></div>
 <pre><code><span class="tok-k">log target</span> splunk-tcp
   <span class="tok-k">type</span>          syslog-tcp
-  <span class="tok-k">remote-host</span>   splunk-hec.acme-bank.com
+  <span class="tok-k">remote-host</span>   siem-syslog.example.com
   <span class="tok-k">remote-port</span>   <span class="tok-n">514</span>
   <span class="tok-k">format</span>        json
   <span class="tok-k">event</span>         apic-gw-error
@@ -666,7 +666,7 @@ apic products:publish <span class="tok-s">payments-product.yaml</span> \
 
           <div class="callout callout--danger">
             <div class="callout__title">OAuth introspection without caching</div>
-            <p>Default <code>cache-ttl: 0</code> means every request introspects against the IdP. At 1 000 RPS that&rsquo;s 1 000 IdP calls/sec &mdash; the IdP becomes the bottleneck and the bank&rsquo;s auth service falls over before the gateway breaks a sweat. Always set a non-zero TTL; reserve <code>0</code> for revocation-sensitive endpoints only.</p>
+            <p>Default <code>cache-ttl: 0</code> means every request introspects against the IdP. At 1 000 RPS that&rsquo;s 1 000 IdP calls/sec &mdash; the IdP becomes the bottleneck and the shared auth service falls over before the gateway breaks a sweat. Always set a non-zero TTL; reserve <code>0</code> for revocation-sensitive endpoints only.</p>
           </div>
 
           <div class="callout callout--warn">
@@ -684,7 +684,7 @@ apic products:publish <span class="tok-s">payments-product.yaml</span> \
           <ul>
             <li><strong>Traffic is internal east-west only.</strong> A service mesh (Istio, Linkerd) gives you mTLS, observability, and traffic policy without the licensing cost or operational footprint of DataPower.</li>
             <li><strong>You need request-stream rewriting at the byte level.</strong> Envoy or NGINX with custom Lua/Wasm gives you primitives DataPower doesn&rsquo;t expose. DataPower&rsquo;s strength is policy, not raw stream manipulation.</li>
-            <li><strong>The use case is webhook ingestion.</strong> Webhook receivers benefit from an event-driven runtime (Kafka + a small consumer) more than a synchronous gateway. Forcing webhooks through API Connect adds latency without buying you policy enforcement that matters at the edge of the bank.</li>
+            <li><strong>The use case is webhook ingestion.</strong> Webhook receivers benefit from an event-driven runtime (Kafka + a small consumer) more than a synchronous gateway. Forcing webhooks through API Connect adds latency without buying you policy enforcement that matters at the edge of the enterprise.</li>
             <li><strong>You don&rsquo;t have an IBM relationship.</strong> The cost only makes sense alongside other IBM software (MQ, ACE, DataPower, Cloud Pak for Integration). As a standalone purchase the value-for-money argument is hard to win against Kong, Apigee, or AWS API Gateway.</li>
           </ul>
 

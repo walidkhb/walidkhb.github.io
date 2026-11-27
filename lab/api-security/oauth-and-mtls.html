@@ -208,7 +208,7 @@
           <div class="code-block">
             <div class="code-block__header"><span>get-service-token.sh</span><span class="code-block__lang">bash</span></div>
 <pre><code><span class="tok-c"># client_secret_basic: id:secret in HTTP Basic; bytes don&rsquo;t leak in logs</span>
-curl -sS <span class="tok-s">https://idp.acme-bank.com/realms/prod/protocol/openid-connect/token</span> \
+curl -sS <span class="tok-s">https://idp.example.com/realms/prod/protocol/openid-connect/token</span> \
   -u <span class="tok-s">"$CLIENT_ID:$CLIENT_SECRET"</span> \
   -d <span class="tok-s">"grant_type=client_credentials"</span> \
   -d <span class="tok-s">"scope=accounts.read"</span> \
@@ -225,8 +225,8 @@ curl -sS <span class="tok-s">https://idp.acme-bank.com/realms/prod/protocol/open
 <pre><code><span class="tok-c"># 1. Browser redirect to AS</span>
 GET /authorize?
   response_type=<span class="tok-s">code</span>
-  &amp;client_id=<span class="tok-s">acme-mobile-app</span>
-  &amp;redirect_uri=<span class="tok-s">https://app.acme-bank.com/callback</span>
+  &amp;client_id=<span class="tok-s">example-mobile-app</span>
+  &amp;redirect_uri=<span class="tok-s">https://app.example.com/callback</span>
   &amp;scope=<span class="tok-s">openid accounts.read payments.write</span>
   &amp;state=<span class="tok-s">7fd92e1...</span>             <span class="tok-c"># CSRF protection</span>
   &amp;code_challenge=<span class="tok-s">E9Melh...</span>     <span class="tok-c"># SHA-256 of verifier</span>
@@ -235,21 +235,21 @@ GET /authorize?
 
 <span class="tok-c"># 2. After auth, AS redirects back</span>
 HTTP/1.1 302 Found
-Location: <span class="tok-s">https://app.acme-bank.com/callback?code=eyJhbGc...&amp;state=7fd92e1...</span>
+Location: <span class="tok-s">https://app.example.com/callback?code=eyJhbGc...&amp;state=7fd92e1...</span>
 
 <span class="tok-c"># 3. Client exchanges code + verifier for tokens</span>
 POST /token
   grant_type=<span class="tok-s">authorization_code</span>
-  &amp;client_id=<span class="tok-s">acme-mobile-app</span>
+  &amp;client_id=<span class="tok-s">example-mobile-app</span>
   &amp;code=<span class="tok-s">eyJhbGc...</span>
-  &amp;redirect_uri=<span class="tok-s">https://app.acme-bank.com/callback</span>
+  &amp;redirect_uri=<span class="tok-s">https://app.example.com/callback</span>
   &amp;code_verifier=<span class="tok-s">dBjftJeZ...</span>     <span class="tok-c"># original random string</span></code></pre>
           </div>
 
           <p>PKCE is mandatory in OAuth 2.1, even for confidential clients. <code>code_challenge_method=S256</code> only; <code>plain</code> is unsafe.</p>
 
           <h2 id="mtls">mTLS</h2>
-          <p>Mutual TLS authenticates both sides at the transport layer. The bank presents a server certificate as usual; the partner presents a client certificate signed by a CA the bank trusts.</p>
+          <p>Mutual TLS authenticates both sides at the transport layer. The API provider presents a server certificate as usual; the partner presents a client certificate signed by a CA the provider trusts.</p>
           <ul>
             <li><strong>For external partners:</strong> mTLS is the contract. No client cert &rarr; no connection. The cert is the credential.</li>
             <li><strong>For internal east-west traffic:</strong> mTLS via service mesh (Istio, Linkerd) is the modern default. Operations run mTLS for everything; developers don&rsquo;t see it.</li>
@@ -260,7 +260,7 @@ POST /token
             <div class="code-block__header"><span>nginx-mtls.conf</span><span class="code-block__lang">nginx</span></div>
 <pre><code>server {
     listen <span class="tok-n">443</span> ssl;
-    server_name <span class="tok-s">api.acme-bank.com</span>;
+    server_name <span class="tok-s">api.example.com</span>;
 
     ssl_certificate           <span class="tok-s">/etc/ssl/server.crt</span>;
     ssl_certificate_key       <span class="tok-s">/etc/ssl/server.key</span>;
@@ -282,7 +282,7 @@ POST /token
 
           <div class="callout callout--warn">
             <div class="callout__title">Cert lifecycle is the operational pain</div>
-            <p>mTLS works perfectly until a cert expires at 2am on a bank holiday. Build automated rotation (cert-manager, Vault PKI), alert on expiry &gt; 30 days out, and require automation for partner cert rotation, not email exchanges. The mTLS protocol is not the problem; cert lifecycle is.</p>
+            <p>mTLS works perfectly until a cert expires at 2am on a public holiday. Build automated rotation (cert-manager, Vault PKI), alert on expiry &gt; 30 days out, and require automation for partner cert rotation, not email exchanges. The mTLS protocol is not the problem; cert lifecycle is.</p>
           </div>
 
           <h2 id="jwt">JWT validation</h2>

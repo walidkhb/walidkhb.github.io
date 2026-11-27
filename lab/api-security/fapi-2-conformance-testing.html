@@ -6,7 +6,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Passing FAPI 2.0 Open Banking Conformance: Architecture Choices and Test Automation &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="A practical guide to passing FAPI 2.0 Open Banking conformance: single-deployable versus split authorisation and resource servers, gateway and application mTLS responsibilities, a rule-to-enforcement matrix for FAPI 2.0 and KSA-style profiles, headless conformance runs in CI, strict versus compatibility modes, common failure points and a checklist.">
+  <meta name="description" content="A practical guide to passing FAPI 2.0 Open Banking conformance: single-deployable versus split authorisation and resource servers, gateway and application mTLS responsibilities, a rule-to-enforcement matrix for FAPI 2.0 and national market profiles, headless conformance runs in CI, strict versus compatibility modes, common failure points and a checklist.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Passing FAPI 2.0 Open Banking Conformance: Architecture Choices and Test Automation">
   <meta property="og:description" content="Topology trade-offs, gateway and app mTLS, a rule-to-enforcement matrix, headless conformance runs in CI, strict versus compatibility modes and the failure points that catch most teams.">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Passing FAPI 2.0 Open Banking Conformance: Architecture Choices and Test Automation",
-    "description": "A practical guide to passing FAPI 2.0 Open Banking conformance: single-deployable versus split authorisation and resource servers, gateway and application mTLS responsibilities, a rule-to-enforcement matrix for FAPI 2.0 and KSA-style profiles, headless conformance runs in CI, strict versus compatibility modes, common failure points and a checklist.",
+    "description": "A practical guide to passing FAPI 2.0 Open Banking conformance: single-deployable versus split authorisation and resource servers, gateway and application mTLS responsibilities, a rule-to-enforcement matrix for FAPI 2.0 and national market profiles, headless conformance runs in CI, strict versus compatibility modes, common failure points and a checklist.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-12",
     "author": {
@@ -91,7 +91,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>FAPI 2.0 Conformance Testing</div>
           <span class="overline">Lab Article</span>
           <h1>Passing FAPI 2.0 Open Banking Conformance: Architecture Choices and Test Automation</h1>
-          <p class="lead">Reading the FAPI 2.0 profile is the easy part. Passing a conformance suite is harder: every clause needs one place in code where it is enforced, and a test that proves it. This guide covers the deployable topology, how to split mTLS between gateway and application, a rule-to-enforcement matrix for FAPI 2.0 and KSA-style Open Banking profiles, running the conformance suite headlessly in CI, and the failure points that catch most teams.</p>
+          <p class="lead">Reading the FAPI 2.0 profile is the easy part. Passing a conformance suite is harder: every clause needs one place in code where it is enforced, and a test that proves it. This guide covers the deployable topology, how to split mTLS between gateway and application, a rule-to-enforcement matrix for FAPI 2.0 and national Open Banking market profiles, running the conformance suite headlessly in CI, and the failure points that catch most teams.</p>
         </div>
       </div>
     </div>
@@ -127,8 +127,8 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>The <a href="fapi-2-open-banking.html">previous article</a> covered what FAPI 2.0 asks for. This one covers what it takes to <em>prove</em> a platform delivers it. The scope is the bank side of an Open Banking standard: an authorisation server (AS), account information APIs and payment initiation APIs. The bar is a conformance suite &mdash; the OpenID Foundation FAPI 2.0 plans, a regulator&rsquo;s functional suite, or both &mdash; that plays the third-party provider (TPP) and probes every rule in the profile.</p>
-          <p>The examples use a KSA-style profile because it layers market-specific rules on top of FAPI 2.0: parameterised consent scopes, signed request and response bodies, refresh tokens bound to the consent lifetime. The patterns apply to any FAPI 2.0 market profile.</p>
+          <p>The <a href="fapi-2-open-banking.html">previous article</a> covered what FAPI 2.0 asks for. This one covers what it takes to <em>prove</em> a platform delivers it. The scope is the ASPSP (account provider) side of an Open Banking standard: an authorisation server (AS), account information APIs and payment initiation APIs. The bar is a conformance suite &mdash; the OpenID Foundation FAPI 2.0 plans, a regulator&rsquo;s functional suite, or both &mdash; that plays the third-party provider (TPP) and probes every rule in the profile.</p>
+          <p>The examples use a market profile that layers specific rules on top of FAPI 2.0 &mdash; parameterised consent scopes, signed request and response bodies, refresh tokens bound to the consent lifetime &mdash; as several national Open Banking standards do. The patterns apply to any FAPI 2.0 market profile.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Conformance is a test of enforcement, not of features</div>
@@ -194,7 +194,7 @@
           </div>
 
           <p><strong>A. Single deployable.</strong> The AS, the resource APIs and the consent store ship as one application. In FAPI, the consent ties everything together: the PAR request references it, the scope carries its ID, the token is bound to it, and the resource API checks it on every call. In one process, a revoked consent is revoked for the token endpoint and the resource API in the same transaction, and there is no service-to-service trust to configure. Keep the packages strict inside &mdash; <code>authz</code>, <code>common</code> (signing, schema validation, error model), <code>consent</code>, one package per API family &mdash; so a later split follows existing seams.</p>
-          <p><strong>B. Split AS and RS.</strong> The AS is a separate service, often a product or an identity platform the bank already runs, and the resource APIs call a consent service or introspect tokens. This scales each side independently and lets a central identity team own the AS. The cost is every new hop: service credentials, introspection latency, and cache coherence on consent status. A resource server that caches consent status for 60 seconds will happily serve a revoked consent for 60 seconds, and some conformance tests check exactly that.</p>
+          <p><strong>B. Split AS and RS.</strong> The AS is a separate service, often a product or an identity platform the organisation already runs, and the resource APIs call a consent service or introspect tokens. This scales each side independently and lets a central identity team own the AS. The cost is every new hop: service credentials, introspection latency, and cache coherence on consent status. A resource server that caches consent status for 60 seconds will happily serve a revoked consent for 60 seconds, and some conformance tests check exactly that.</p>
 
           <table>
             <thead>
@@ -219,7 +219,7 @@
             <div class="code-block__header"><span>gateway.conf</span><span class="code-block__lang">nginx</span></div>
 <pre><code><span class="tok-k">server</span> {
     <span class="tok-k">listen</span> <span class="tok-n">443</span> ssl;
-    <span class="tok-k">server_name</span> <span class="tok-s">as.bank.example</span>;
+    <span class="tok-k">server_name</span> <span class="tok-s">as.aspsp.example</span>;
 
     <span class="tok-k">ssl_protocols</span> TLSv1.2 TLSv1.3;
     <span class="tok-c"># FAPI-permitted TLS 1.2 suites only</span>
@@ -252,7 +252,7 @@
 
           <table>
             <thead>
-              <tr><th>FAPI 2.0 / KSA-style rule</th><th>Typical enforcement point</th><th>How a violation is answered</th></tr>
+              <tr><th>FAPI 2.0 / market-profile rule</th><th>Typical enforcement point</th><th>How a violation is answered</th></tr>
             </thead>
             <tbody>
               <tr><td><strong>PAR mandatory</strong> (RFC 9126)</td><td>Filter on <code>/authorize</code> rejects any request without a <code>request_uri</code> issued by <code>/par</code></td><td><code>invalid_request</code>; loose query parameters ignored</td></tr>
@@ -339,7 +339,7 @@
           </div>
 
           <h3>Consent-parameterised scopes</h3>
-          <p>In KSA-style and several other Open Banking profiles, the scope is not just <code>accounts</code>. It is <code>accounts:&lt;ConsentId&gt;</code>. That turns the scope into a pointer, and a pointer must be checked: it exists, it is in the right state, and it is owned by the calling client. Skip the ownership check and one TPP can authorise against another TPP&rsquo;s consent.</p>
+          <p>In several national Open Banking profiles, the scope is not just <code>accounts</code>. It is <code>accounts:&lt;ConsentId&gt;</code>. That turns the scope into a pointer, and a pointer must be checked: it exists, it is in the right state, and it is owned by the calling client. Skip the ownership check and one TPP can authorise against another TPP&rsquo;s consent.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>ConsentScopeValidator.java</span><span class="code-block__lang">java</span></div>

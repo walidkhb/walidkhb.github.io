@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Security: FAPI 2.0 &amp; Open Banking Security &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="FAPI 2.0 security profile implementation for SAMA Open Banking Phase 2: PAR, DPoP, mTLS-bound tokens, RAR, JARM &mdash; Keycloak 24, Kong 3.7, Spring Security 6.3, IBM API Connect 10.0.7, and production patterns for regulated Saudi banks.">
+  <meta name="description" content="FAPI 2.0 security profile implementation for Open Banking: PAR, DPoP, mTLS-bound tokens, RAR, JARM &mdash; Keycloak 24, Kong 3.7, Spring Security 6.3, IBM API Connect 10.0.7, and production patterns for regulated ASPSPs.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="API Security: FAPI 2.0 &amp; Open Banking Security &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="FAPI 2.0 for SAMA Open Banking Phase 2: PAR, DPoP, mTLS-bound tokens, RAR, JARM &mdash; Keycloak 24, Kong 3.7, IBM API Connect.">
+  <meta property="og:description" content="FAPI 2.0 for Open Banking account access and payment initiation: PAR, DPoP, mTLS-bound tokens, RAR, JARM &mdash; Keycloak 24, Kong 3.7, IBM API Connect.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/api-security/fapi-2-open-banking.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="API Security: FAPI 2.0 &amp; Open Banking Security">
-  <meta name="twitter:description" content="FAPI 2.0 implementation for SAMA Open Banking Phase 2 &mdash; PAR, DPoP, mTLS-bound tokens, RAR, JARM in production.">
+  <meta name="twitter:description" content="FAPI 2.0 implementation for Open Banking &mdash; PAR, DPoP, mTLS-bound tokens, RAR, JARM in production.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/api-security/fapi-2-open-banking.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "API Security: FAPI 2.0 & Open Banking Security",
-    "description": "FAPI 2.0 security profile implementation for SAMA Open Banking Phase 2: PAR, DPoP, mTLS-bound tokens, RAR, JARM, and production patterns for regulated Saudi banks.",
+    "description": "FAPI 2.0 security profile implementation for Open Banking: PAR, DPoP, mTLS-bound tokens, RAR, JARM, and production patterns for regulated ASPSPs.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
     "author": {
@@ -89,7 +89,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>FAPI 2.0 &amp; Open Banking</div>
           <span class="overline">Lab Article</span>
           <h1>API Security: FAPI 2.0 &amp; Open Banking Security</h1>
-          <p class="lead">Financial-grade API Security Profile 2.0 for SAMA Open Banking Phase 2 &mdash; Pushed Authorization Requests, DPoP sender-constrained tokens, mTLS binding, Rich Authorization Requests, and JARM, implemented on Keycloak 24, Kong 3.7, Spring Security 6.3, and IBM API Connect 10.0.7 in a KSA regulated bank.</p>
+          <p class="lead">Financial-grade API Security Profile 2.0 for Open Banking account access and payment initiation &mdash; Pushed Authorization Requests, DPoP sender-constrained tokens, mTLS binding, Rich Authorization Requests, and JARM, with reference configuration for Keycloak 24, Kong 3.7, Spring Security 6.3, and IBM API Connect 10.0.7.</p>
         </div>
       </div>
     </div>
@@ -110,7 +110,7 @@
             <li><a href="#rar">Rich Authorization Requests</a></li>
             <li><a href="#keycloak-config">Keycloak 24 configuration</a></li>
             <li><a href="#kong-apic">Kong &amp; IBM APIC enforcement</a></li>
-            <li><a href="#sama-alignment">SAMA Phase 2 alignment</a></li>
+            <li><a href="#api-classes">Open Banking API classes</a></li>
             <li><a href="#checklist">Production checklist</a></li>
           </ul>
         </aside>
@@ -118,7 +118,7 @@
         <article class="lab-article__body">
 
           <div class="article-meta">
-            <span class="article-meta__item"><strong>Stack:</strong> Keycloak 24 / Kong 3.7 / Spring Security 6.3 / IBM API Connect 10.0.7 / SAMA Open Banking Phase 2</span>
+            <span class="article-meta__item"><strong>Stack:</strong> Keycloak 24 / Kong 3.7 / Spring Security 6.3 / IBM API Connect 10.0.7 / Open Banking (AIS, PIS, CoF)</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~16 min</span>
             <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
@@ -127,7 +127,7 @@
 
           <h2 id="overview">Overview</h2>
           <p>OAuth 2.0 was designed as a delegated authorization framework for consumer web applications. A user grants a third-party app access to their Google calendar &mdash; the threat model assumes the access token is short-lived, the damage from theft is bounded, and replay attacks are mitigated by HTTPS. That threat model is wrong for payment initiation. A stolen payment authorization token replayed once drains an account. A tampered redirect parameter redirects the authorization code to an attacker. An insufficient proof-of-possession model means a token stolen from one client can be used by any bearer.</p>
-          <p>FAPI 2.0 (Financial-grade API Security Profile 2.0) is an OpenID Foundation specification that profiles OAuth 2.1 specifically for high-value financial API use cases. It mandates the controls that fill the gaps OAuth 2.0 leaves open: Pushed Authorization Requests to prevent parameter tampering, DPoP or mTLS to bind tokens to the client that requested them, Pushed Authorization Requests for request integrity, Rich Authorization Requests for fine-grained consent, and JARM for signed authorization responses. SAMA Open Banking Phase 2 mandates FAPI 2.0 as the security baseline for all Third Party Provider (TPP) access &mdash; AIS, PIS, and Confirmation of Funds.</p>
+          <p>FAPI 2.0 (Financial-grade API Security Profile 2.0) is an OpenID Foundation specification that profiles OAuth 2.1 specifically for high-value financial API use cases. It mandates the controls that fill the gaps OAuth 2.0 leaves open: Pushed Authorization Requests to prevent parameter tampering, DPoP or mTLS to bind tokens to the client that requested them, Pushed Authorization Requests for request integrity, Rich Authorization Requests for fine-grained consent, and JARM for signed authorization responses. Open Banking schemes in a growing number of jurisdictions reference FAPI profiles as the security baseline for Third Party Provider (TPP) access &mdash; account information (AIS), payment initiation (PIS), and Confirmation of Funds (CoF).</p>
 
           <div class="callout callout--note">
             <div class="callout__title">FAPI 2.0 is a profile of OAuth 2.1 &mdash; not a replacement</div>
@@ -135,11 +135,11 @@
           </div>
 
           <h2 id="fapi2-requirements">FAPI 2.0 Requirements</h2>
-          <p>FAPI 2.0 is defined in two parts: the Security Profile (FAPI2SP) and the Message Signing profile (FAPI2MS). For SAMA Open Banking, both apply. The normative requirements that distinguish FAPI 2.0 from a standard OAuth 2.1 deployment:</p>
+          <p>FAPI 2.0 is defined in two parts: the Security Profile (FAPI2SP) and the Message Signing profile (FAPI2MS). Where a scheme requires signed requests and responses for non-repudiation, both apply. The normative requirements that distinguish FAPI 2.0 from a standard OAuth 2.1 deployment:</p>
 
           <table>
             <thead>
-              <tr><th>Requirement</th><th>RFC / Spec</th><th>What it prevents</th><th>SAMA mandate</th></tr>
+              <tr><th>Requirement</th><th>RFC / Spec</th><th>What it prevents</th><th>Typical scheme status</th></tr>
             </thead>
             <tbody>
               <tr><td>PKCE &mdash; S256 only</td><td>RFC 7636</td><td>Authorization code interception</td><td>Mandatory</td></tr>
@@ -161,36 +161,37 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">PAR <code>request_uri</code> is single-use and expires in 90 seconds</div>
-            <p>The <code>request_uri</code> returned by the PAR endpoint is designed to be used exactly once. If a user abandons the flow and the TPP retries, it must POST to <code>/par</code> again and obtain a fresh <code>request_uri</code>. A reused <code>request_uri</code> indicates either a replay attack or a buggy client implementation &mdash; the authorization server must reject it and the event must be logged as a security alert with the TPP identity, IP address, and timestamp. Under SAMA&rsquo;s TPRM requirements, this log is evidence for TPP security incident reporting.</p>
+            <p>The <code>request_uri</code> returned by the PAR endpoint is designed to be used exactly once. If a user abandons the flow and the TPP retries, it must POST to <code>/par</code> again and obtain a fresh <code>request_uri</code>. A reused <code>request_uri</code> indicates either a replay attack or a buggy client implementation &mdash; the authorization server must reject it and the event must be logged as a security alert with the TPP identity, IP address, and timestamp. Under most schemes&rsquo; incident-reporting rules, this log is evidence for TPP security incident reporting.</p>
           </div>
 
           <div class="code-block">
             <div class="code-block__header"><span>par-pis-request.http</span><span class="code-block__lang">http</span></div>
-<pre><code><span class="tok-c"># Step 1: POST authorization_details to PAR endpoint</span>
+<pre><code><span class="tok-c"># Step 1: POST authorization_details to PAR endpoint (client auth: private_key_jwt)</span>
 POST /par HTTP/1.1
-Host: auth.openbanking.bank.example
+Host: auth.aspsp.example
 Content-Type: application/x-www-form-urlencoded
-Authorization: Basic dHBwLWNsaWVudC1pZDpjbGllbnQtc2VjcmV0
 
 <span class="tok-k">response_type</span>=code
 &amp;<span class="tok-k">client_id</span>=tpp-client-id
-&amp;<span class="tok-k">redirect_uri</span>=https%3A%2F%2Ftpp.example.sa%2Fcallback
+&amp;<span class="tok-k">client_assertion_type</span>=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer
+&amp;<span class="tok-k">client_assertion</span>=eyJhbGciOiJQUzI1NiJ9...
+&amp;<span class="tok-k">redirect_uri</span>=https%3A%2F%2Ftpp.example.com%2Fcallback
 &amp;<span class="tok-k">scope</span>=openid+payments
 &amp;<span class="tok-k">code_challenge</span>=s256-challenge-value
 &amp;<span class="tok-k">code_challenge_method</span>=S256
 &amp;<span class="tok-k">authorization_details</span>=%5B%7B
-  <span class="tok-s">"type"</span>%3A<span class="tok-s">"sama_payment_initiation"</span>%2C
+  <span class="tok-s">"type"</span>%3A<span class="tok-s">"payment_initiation"</span>%2C
   <span class="tok-s">"actions"</span>%3A%5B<span class="tok-s">"initiate"</span>%5D%2C
-  <span class="tok-s">"locations"</span>%3A%5B<span class="tok-s">"https%3A%2F%2Fapi.openbanking.bank.example%2Fpis"</span>%5D%2C
+  <span class="tok-s">"locations"</span>%3A%5B<span class="tok-s">"https%3A%2F%2Fapi.aspsp.example%2Fpis"</span>%5D%2C
   <span class="tok-s">"instructedAmount"</span>%3A%7B
     <span class="tok-s">"amount"</span>%3A<span class="tok-s">"500.00"</span>%2C
-    <span class="tok-s">"currency"</span>%3A<span class="tok-s">"SAR"</span>
+    <span class="tok-s">"currency"</span>%3A<span class="tok-s">"GBP"</span>
   %7D%2C
   <span class="tok-s">"creditorAccount"</span>%3A%7B
-    <span class="tok-s">"iban"</span>%3A<span class="tok-s">"SA44 2000 0001 2345 6789 1234"</span>
+    <span class="tok-s">"iban"</span>%3A<span class="tok-s">"GB53XMPL00000012345678"</span>
   %7D%2C
   <span class="tok-s">"debtorAccount"</span>%3A%7B
-    <span class="tok-s">"iban"</span>%3A<span class="tok-s">"SA03 8000 0000 6080 1016 7519"</span>
+    <span class="tok-s">"iban"</span>%3A<span class="tok-s">"GB92XMPL00000087654321"</span>
   %7D
 %7D%5D
 
@@ -207,7 +208,7 @@ Content-Type: application/json
 GET /authorize?client_id=tpp-client-id
   &amp;request_uri=urn%3Aietf%3Aparams%3Aoauth%3Arequest_uri%3Abwc4JQ-ESc0w8wM7M9K7w5sNe3vh
   HTTP/1.1
-Host: auth.openbanking.bank.example</code></pre>
+Host: auth.aspsp.example</code></pre>
           </div>
 
           <div class="diagram" role="img" aria-label="FAPI 2.0 authorization flow: PAR, consent, JARM, DPoP token, resource access">
@@ -324,7 +325,7 @@ Host: auth.openbanking.bank.example</code></pre>
 {
   <span class="tok-s">"jti"</span>: <span class="tok-s">"e1e24b80-7d1d-4f6a-9cb0-2a5b3c1d4e5f"</span>,  <span class="tok-c">// unique nonce; must be cached + rejected if replayed</span>
   <span class="tok-s">"htm"</span>: <span class="tok-s">"GET"</span>,                                   <span class="tok-c">// must match actual HTTP method</span>
-  <span class="tok-s">"htu"</span>: <span class="tok-s">"https://api.openbanking.bank.example/pis/v1/payment-consents"</span>,  <span class="tok-c">// no query string</span>
+  <span class="tok-s">"htu"</span>: <span class="tok-s">"https://api.aspsp.example/pis/v1/payment-consents"</span>,  <span class="tok-c">// no query string</span>
   <span class="tok-s">"iat"</span>: <span class="tok-n">1725494400</span>,                              <span class="tok-c">// issued-at; server rejects if skew > 60s</span>
   <span class="tok-s">"ath"</span>: <span class="tok-s">"base64url(sha256(access_token_bytes))"</span>   <span class="tok-c">// RFC 9449 §4.3: bind proof to specific token</span>
 }
@@ -337,7 +338,7 @@ http
       .decoder(NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build())
     )
     .opaqueToken(opaque -&gt; opaque
-      .introspectionUri(<span class="tok-s">"https://auth.openbanking.bank.example/realms/openbanking/protocol/openid-connect/token/introspect"</span>)
+      .introspectionUri(<span class="tok-s">"https://auth.aspsp.example/realms/openbanking/protocol/openid-connect/token/introspect"</span>)
       .introspectionClientCredentials(clientId, clientSecret)
     )
   )
@@ -355,11 +356,11 @@ http
 
           <h2 id="mtls-binding">mTLS-Bound Tokens</h2>
           <p>mTLS sender-constraining (RFC 8705) is an alternative to DPoP &mdash; stronger in some respects, more operationally demanding in others. Instead of a per-request DPoP proof, the TPP presents its TLS client certificate during the token request. The authorization server computes a thumbprint of the certificate (<code>x5t#S256</code>: SHA-256 of the DER-encoded certificate) and embeds it in the access token&rsquo;s <code>cnf</code> claim. The resource server extracts the certificate from the TLS session (via the <code>X-Client-Cert</code> header at Kong, injected by the TLS terminator) and verifies the thumbprint matches the token&rsquo;s <code>cnf.x5t#S256</code>.</p>
-          <p>The security model is stronger than DPoP in that the binding is established at the TLS layer before the HTTP request reaches the application &mdash; a stolen access token is useless without the private key of the client certificate. The operational cost is higher: every TPP must have a client certificate provisioned, renewed, and revoked through a certificate management process, and the certificate infrastructure must integrate with SAMA&rsquo;s TPRM TPP registration process.</p>
+          <p>The security model is stronger than DPoP in that the binding is established at the TLS layer before the HTTP request reaches the application &mdash; a stolen access token is useless without the private key of the client certificate. The operational cost is higher: every TPP must have a client certificate provisioned, renewed, and revoked through a certificate management process, and the certificate infrastructure must integrate with the scheme&rsquo;s TPP registration and directory process.</p>
 
           <table>
             <thead>
-              <tr><th>Feature</th><th>What it prevents</th><th>Client complexity</th><th>Server complexity</th><th>SAMA mandate</th></tr>
+              <tr><th>Feature</th><th>What it prevents</th><th>Client complexity</th><th>Server complexity</th><th>Typical scheme status</th></tr>
             </thead>
             <tbody>
               <tr><td>PAR</td><td>Request parameter tampering in browser redirect</td><td>Low &mdash; extra POST before redirect</td><td>Medium &mdash; PAR endpoint, request_uri storage</td><td>Mandatory</td></tr>
@@ -371,9 +372,9 @@ http
           </table>
 
           <h2 id="rar">Rich Authorization Requests (RAR)</h2>
-          <p>Standard OAuth 2.0 scopes are coarse-grained: <code>openid payments accounts</code> grants blanket access to all of the TPP&rsquo;s payment and account operations. SAMA Open Banking Phase 2 requires granular consent that specifies the exact accounts, amounts, and operations covered by each authorization. RAR (RFC 9396) adds the <code>authorization_details</code> parameter to carry a structured JSON array of consent objects with rich, resource-specific semantics.</p>
-          <p>Each <code>authorization_details</code> object carries: <code>type</code> (the resource type identifier, e.g. <code>sama_account_information</code> or <code>sama_payment_initiation</code>), <code>actions</code> (what operations are permitted), <code>locations</code> (the resource server URLs that may receive the token), and resource-specific fields (amount, currency, account identifiers for PIS; account list for AIS). The authorization server embeds the consented <code>authorization_details</code> into the access token, and the resource server validates on every call that the requested operation is within the consented scope.</p>
-          <p>SAMA&rsquo;s consent model defines three consent states: <code>pending</code> (created, awaiting PSU authorization), <code>authorised</code> (PSU approved), <code>rejected</code> (PSU declined or expired), and <code>revoked</code> (PSU or TPP explicitly cancelled). The resource server must check the consent status on every API call, not just at token issuance &mdash; a consent can be revoked mid-session.</p>
+          <p>Standard OAuth 2.0 scopes are coarse-grained: <code>openid payments accounts</code> grants blanket access to all of the TPP&rsquo;s payment and account operations. Payment initiation under Open Banking requires granular consent that specifies the exact accounts, amounts, and operations covered by each authorization. RAR (RFC 9396) adds the <code>authorization_details</code> parameter to carry a structured JSON array of consent objects with rich, resource-specific semantics.</p>
+          <p>Each <code>authorization_details</code> object carries: <code>type</code> (the resource type identifier, e.g. <code>account_information</code> or <code>payment_initiation</code>, as named by your scheme), <code>actions</code> (what operations are permitted), <code>locations</code> (the resource server URLs that may receive the token), and resource-specific fields (amount, currency, account identifiers for PIS; account list for AIS). The authorization server embeds the consented <code>authorization_details</code> into the access token, and the resource server validates on every call that the requested operation is within the consented scope.</p>
+          <p>A typical Open Banking consent model defines four consent states: <code>pending</code> (created, awaiting PSU authorization), <code>authorised</code> (PSU approved), <code>rejected</code> (PSU declined or expired), and <code>revoked</code> (PSU or TPP explicitly cancelled). The resource server must check the consent status on every API call, not just at token issuance &mdash; a consent can be revoked mid-session.</p>
 
           <h2 id="keycloak-config">Keycloak 24 FAPI 2.0 Configuration</h2>
           <p>Keycloak 24 ships a built-in FAPI 2.0 Security Profile realm policy that can be enabled via Admin Console or the REST API. It configures the realm to enforce PKCE S256, require PAR, enable JARM, and validate DPoP proofs. The client policy engine applies these checks to all clients in the realm that are tagged as FAPI 2.0 clients.</p>
@@ -385,12 +386,12 @@ http
   <span class="tok-s">"enabled"</span>: <span class="tok-n">true</span>,
   <span class="tok-s">"sslRequired"</span>: <span class="tok-s">"all"</span>,
   <span class="tok-s">"accessTokenLifespan"</span>: <span class="tok-n">300</span>,
-  <span class="tok-s">"ssoSessionMaxLifespan"</span>: <span class="tok-n">7776000</span>,    <span class="tok-c">// 90 days for AIS per SAMA</span>
+  <span class="tok-s">"ssoSessionMaxLifespan"</span>: <span class="tok-n">7776000</span>,    <span class="tok-c">// 90 days; align with the scheme&rsquo;s AIS consent rules</span>
 
   <span class="tok-s">"clientPolicies"</span>: {
     <span class="tok-s">"policies"</span>: [
       {
-        <span class="tok-s">"name"</span>: <span class="tok-s">"sama-fapi2-policy"</span>,
+        <span class="tok-s">"name"</span>: <span class="tok-s">"fapi2-tpp-policy"</span>,
         <span class="tok-s">"enabled"</span>: <span class="tok-n">true</span>,
         <span class="tok-s">"conditions"</span>: [
           { <span class="tok-s">"condition"</span>: <span class="tok-s">"client-roles"</span>,
@@ -446,10 +447,10 @@ http
           <h2 id="kong-apic">Kong &amp; IBM API Connect Enforcement</h2>
           <p>The authorization server (Keycloak) issues FAPI 2.0-compliant tokens. The API gateway (Kong 3.7 or IBM API Connect 10.0.7) enforces token validity, DPoP binding, consent scope, and rate plans on every API call from TPPs. The gateway sits between the internet and the resource server &mdash; no API call reaches the resource server without passing through Kong&rsquo;s plugin chain.</p>
           <p>Kong&rsquo;s OIDC plugin performs token introspection against Keycloak on every request. The response includes the <code>cnf</code> claim (DPoP or mTLS binding), the <code>authorization_details</code> (RAR consent), and the <code>sub</code> (TPP identity). A custom Lua plugin validates that the DPoP proof in the <code>DPoP</code> header matches the <code>cnf.jkt</code> thumbprint in the introspected token. IBM API Connect accomplishes the same via a GatewayScript assembly policy that reads the introspection response and validates the cnf claim.</p>
-          <p>Rate plans in IBM API Connect are tied to the SAMA consent type: an AIS (Account Information Service) plan allows high-frequency reads (up to 4 calls per second per TPP per account), while a PIS (Payment Initiation Service) plan is throttled more aggressively (10 payment initiations per minute per TPP) and requires the payment amount to be within the consented limit from the <code>authorization_details</code>.</p>
+          <p>Rate plans in IBM API Connect are tied to the consent type: an AIS (Account Information Service) plan allows high-frequency reads (for example, up to 4 calls per second per TPP per account), while a PIS (Payment Initiation Service) plan is throttled more aggressively (for example, 10 payment initiations per minute per TPP) and requires the payment amount to be within the consented limit from the <code>authorization_details</code>.</p>
 
-          <h2 id="sama-alignment">SAMA Open Banking Phase 2 Alignment</h2>
-          <p>SAMA Open Banking Phase 2 defines three API classes and distinct security requirements for each. AIS (Account Information Service) allows TPPs to read account data &mdash; balances, transactions, statements &mdash; with consent lasting up to 90 days and access tokens valid for up to 5 minutes per call. PIS (Payment Initiation Service) is single-consent, single-use: the authorization covers exactly one payment, the access token is single-use and expires after it has been used to submit the payment instruction, and the consent expires as soon as the payment reaches a terminal state. CoF (Confirmation of Funds) confirms whether a specified amount is available in an account without initiating any transaction &mdash; consent is typically longer-lived for merchant use cases.</p>
+          <h2 id="api-classes">Mapping Controls to Open Banking API Classes</h2>
+          <p>Most Open Banking schemes define three API classes with distinct security requirements. The values below are a representative baseline &mdash; each scheme (UK, EU, Brazil, Australia, Saudi Arabia and others) sets its own limits, so parameterise rather than hard-code. AIS (Account Information Service) allows TPPs to read account data &mdash; balances, transactions, statements &mdash; with consent lasting a bounded period (90 days is a common baseline) and access tokens valid for around 5 minutes. PIS (Payment Initiation Service) is single-consent, single-use: the authorization covers exactly one payment, the access token is single-use and expires after it has been used to submit the payment instruction, and the consent expires as soon as the payment reaches a terminal state. CoF (Confirmation of Funds) confirms whether a specified amount is available in an account without initiating any transaction &mdash; consent is typically longer-lived for merchant use cases.</p>
 
           <table>
             <thead>
@@ -462,16 +463,16 @@ http
             </tbody>
           </table>
 
-          <p>SAMA&rsquo;s TPRM (Third-Party Risk Management) requirements mandate that TPPs are registered through the SAMA Open Banking Directory before they can onboard to any ASPSP (Account Servicing Payment Service Provider). TPP registration produces a client ID, a software statement assertion (SSA) signed by the SAMA directory, and optionally a client certificate for mTLS binding. The ASPSP&rsquo;s Dynamic Client Registration (DCR) endpoint accepts the SSA and creates the OAuth 2.0 client in Keycloak automatically &mdash; no manual client provisioning.</p>
+          <p>Directory-based schemes require TPPs to register with the scheme&rsquo;s central directory before they can onboard to any ASPSP (Account Servicing Payment Service Provider). TPP registration produces a software ID, a software statement assertion (SSA) signed by the directory, and optionally a client certificate for mTLS binding. The ASPSP&rsquo;s Dynamic Client Registration (DCR) endpoint accepts the SSA and creates the OAuth 2.0 client in Keycloak automatically &mdash; no manual client provisioning.</p>
 
           <h2 id="checklist">Production Checklist</h2>
 
           <ol class="step-list">
             <li><strong>Audit your OAuth 2.0 foundation first.</strong> Ensure token introspection works, refresh token rotation is enabled, and all existing scopes map to a resource server. FAPI 2.0 controls layer on top &mdash; a weak OAuth foundation magnifies vulnerabilities rather than containing them.</li>
             <li><strong>Enable PAR in Keycloak.</strong> Set <code>par.request.uri.lifespan</code> to 90 seconds. Instrument the PAR endpoint to log every request with TPP identity, IP, and request_uri jti. Alert on reuse of any request_uri.</li>
-            <li><strong>Choose DPoP or mTLS binding (or both).</strong> DPoP is lower-friction for TPP onboarding; mTLS is stronger and easier to enforce at the TLS layer. If your TPP onboarding process can provision client certificates, prefer mTLS; otherwise DPoP with a robust jti cache is SAMA-compliant.</li>
+            <li><strong>Choose DPoP or mTLS binding (or both).</strong> DPoP is lower-friction for TPP onboarding; mTLS is stronger and easier to enforce at the TLS layer. If your TPP onboarding process can provision client certificates, prefer mTLS; otherwise DPoP with a robust jti cache satisfies the FAPI 2.0 sender-constraining requirement.</li>
             <li><strong>Deploy the jti replay prevention cache.</strong> Redis Cluster with TTL equal to the DPoP proof validity window (60&ndash;300 seconds). Instrument cache hit rate &mdash; a hit on a jti that is not from a known legitimate retry is a security event.</li>
-            <li><strong>Implement RAR consent model.</strong> Define <code>authorization_details</code> types for AIS, PIS, and CoF matching SAMA Open Banking schema. Build a consent store (persistent, queryable by TPP + PSU + status). Expose a consent query endpoint. Embed approved <code>authorization_details</code> in the token introspection response.</li>
+            <li><strong>Implement RAR consent model.</strong> Define <code>authorization_details</code> types for AIS, PIS, and CoF matching your scheme&rsquo;s published schema. Build a consent store (persistent, queryable by TPP + PSU + status). Expose a consent query endpoint. Embed approved <code>authorization_details</code> in the token introspection response.</li>
             <li><strong>Configure JARM in Keycloak.</strong> Generate a dedicated RSA-4096 JARM signing key. Set <code>response_mode=jwt</code> as the required response mode for all FAPI 2.0 clients. Verify that TPP clients correctly parse and validate the JARM JWT before extracting the authorization code.</li>
             <li><strong>Configure Kong DPoP validation plugin.</strong> Validate DPoP proof on every resource server request (not just at token issuance). Forward the client certificate header (<code>X-Client-Cert</code>) from the TLS terminator for mTLS binding validation.</li>
           </ol>
@@ -486,10 +487,10 @@ http
             <li>Consent status checked on every API call, not just at token issuance.</li>
             <li>AIS access token lifetime: 300 s; PIS token single-use enforced at resource server.</li>
             <li>Keycloak client policies applying FAPI 2.0 profile to all TPP clients; manual client creation blocked.</li>
-            <li>Dynamic Client Registration active; SAMA directory SSA validated before client creation.</li>
+            <li>Dynamic Client Registration active; scheme directory SSA validated before client creation.</li>
             <li>TPP identity (client_id, SSA subject) logged in every audit event (PAR, auth, token, resource access).</li>
             <li>Implicit grant, ROPC, and plain PKCE blocked at realm policy level.</li>
-            <li>Kong rate plans differentiated by consent type (AIS vs PIS); PIS rate plan aligned with SAMA API class limits.</li>
+            <li>Kong rate plans differentiated by consent type (AIS vs PIS); PIS rate plan aligned with the scheme&rsquo;s API class limits.</li>
           </ol>
 
           <nav class="article-nav">

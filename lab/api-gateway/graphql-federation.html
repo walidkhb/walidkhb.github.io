@@ -129,7 +129,7 @@
           <p>GraphQL has won the developer-experience argument for internal API platforms &mdash; strong typing, self-documenting schemas, and client-driven query shaping are genuine productivity improvements over REST for frontend and mobile teams. The hard question is not whether to adopt GraphQL. It is whether to adopt it as a monolith or as a federated supergraph, and that decision is fundamentally about how domain ownership is structured across your engineering teams.</p>
           <p>A monolithic GraphQL schema is owned by whoever last touched it. Every team that needs to expose a new entity or field must either wait for a central team to merge their change or accept co-ownership of a schema that spans domains they do not understand. This works at low team count; it breaks at scale. When your accounts domain team, your payments domain team, and your notifications team each have independent release cycles, independent deployment pipelines, and independent on-call rotations, they cannot all be blocked by a shared schema gateway that only one team owns.</p>
           <p>Apollo Federation 2 resolves this by splitting the schema. Each domain publishes a <strong>subgraph</strong> &mdash; a GraphQL schema covering only the types that domain owns &mdash; and the <strong>Apollo Router</strong> composes those subgraphs into a unified <strong>supergraph</strong> at runtime. Consumers query the supergraph and receive a single response; the Router plans and executes the query across however many subgraphs are involved, transparently.</p>
-          <p>REST still serves edge traffic. GraphQL is not a replacement for REST for SAMA Open Banking APIs, ISO 20022 payment initiation, or machine-to-machine integrations where the consumer is a third-party fintech with a fixed contract. Federation sits inside the perimeter &mdash; between Kong at the edge and the domain microservices behind it. Kong handles authentication, rate limiting, and WAF for all traffic; the Apollo Router handles GraphQL routing for the subset of that traffic that arrives as GraphQL operations.</p>
+          <p>REST still serves edge traffic. GraphQL is not a replacement for REST for Open Banking APIs, ISO 20022 payment initiation, or machine-to-machine integrations where the consumer is a third-party fintech with a fixed contract. Federation sits inside the perimeter &mdash; between Kong at the edge and the domain microservices behind it. Kong handles authentication, rate limiting, and WAF for all traffic; the Apollo Router handles GraphQL routing for the subset of that traffic that arrives as GraphQL operations.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Federation is an API contract, not just a routing problem</div>
@@ -147,7 +147,7 @@
             <li><code>@requires(fields: "...")</code> &mdash; the inverse: declares that a resolver for a given field requires specific fields from the entity (potentially owned by another subgraph) to be fetched first.</li>
             <li><code>@shareable</code> &mdash; marks a non-entity type as resolvable by multiple subgraphs. Useful for value types shared between domain teams (e.g. a <code>Money</code> scalar or a <code>Currency</code> enum used by both payments and accounts).</li>
           </ul>
-          <p>Query planning is deterministic given the same supergraph schema and operation. The Router computes a plan, executes fetch operations against subgraphs in parallel where there are no dependencies, and sequences them where <code>@requires</code> chains create a dependency order. At typical bank-internal scale &mdash; &lt;500 rps on the internal GraphQL surface &mdash; plan computation adds under 2 ms of overhead per request; this becomes relevant at 5&ndash;10K rps if plan caching is not enabled.</p>
+          <p>Query planning is deterministic given the same supergraph schema and operation. The Router computes a plan, executes fetch operations against subgraphs in parallel where there are no dependencies, and sequences them where <code>@requires</code> chains create a dependency order. At typical enterprise-internal scale &mdash; &lt;500 rps on the internal GraphQL surface &mdash; plan computation adds under 2 ms of overhead per request; this becomes relevant at 5&ndash;10K rps if plan caching is not enabled.</p>
 
           <div class="diagram" role="img" aria-label="Client sends GraphQL operation to Apollo Router; Router plans and fans out to three subgraphs: Accounts, Payments, Notifications; each subgraph resolves its own types and returns data to the Router, which stitches and returns a unified response">
             <div class="diagram__inner">
@@ -235,9 +235,9 @@
 
           <h2 id="subgraph-design">Domain Subgraph Design</h2>
           <p>The cardinal rule of subgraph design: one domain team owns one subgraph. The payments team owns the payments subgraph. They define its schema, they deploy it on their pipeline, and they are on-call when it fails. The Apollo Router does not care which namespace the subgraph runs in or which team deployed it &mdash; it only needs a reachable HTTPS endpoint and a registered SDL.</p>
-          <p>For a banking integration platform, three subgraphs cover the primary internal API surface:</p>
+          <p>Taking a retail-banking integration platform as the running example, three subgraphs cover the primary internal API surface:</p>
           <ul>
-            <li><strong>Accounts subgraph</strong> &mdash; owns <code>Account</code>, <code>Balance</code>, and <code>Statement</code>. The entity key is <code>iban</code> (the IBAN string, validated against Saudi IBAN format). Downstream: core banking balance enquiry service via synchronous REST. Latency SLO: p99 &lt;250 ms.</li>
+            <li><strong>Accounts subgraph</strong> &mdash; owns <code>Account</code>, <code>Balance</code>, and <code>Statement</code>. The entity key is <code>iban</code> (the IBAN string, validated per ISO 13616 &mdash; country format and mod-97 check digits). Downstream: the system-of-record balance enquiry service via synchronous REST. Latency SLO: p99 &lt;250 ms.</li>
             <li><strong>Payments subgraph</strong> &mdash; owns <code>Transaction</code>, <code>PaymentLimit</code>, and the ISO 20022 pain.001/camt.053 wrapper types. Entity key: <code>transactionId</code> (UUID). Cross-reference to <code>Account</code> via <code>@external</code> + <code>@requires</code>: a transaction resolver needs the source account&rsquo;s IBAN, which the accounts subgraph owns, before calling the payment execution engine. The <code>@provides</code> directive on <code>Transaction.sourceAccount</code> tells the Router it can skip a round-trip to Accounts if the account&rsquo;s IBAN is already in the fetch result.</li>
             <li><strong>Notifications subgraph</strong> &mdash; owns <code>Alert</code>, <code>NotificationPreference</code>, and <code>Channel</code>. Entity key: <code>userId</code>. Mutations here are fire-and-forget; the subgraph publishes to an internal Kafka topic rather than waiting for delivery confirmation. The Router treats the mutation as resolved once the subgraph returns the Kafka publish acknowledgement.</li>
           </ul>
@@ -267,12 +267,12 @@
 <span class="tok-c"># Value type shared across subgraphs — no cross-subgraph fetch needed</span>
 <span class="tok-k">type</span> <span class="tok-n">Money</span> @shareable {
   amount:   <span class="tok-n">Decimal!</span>
-  currency: <span class="tok-n">String!</span>   <span class="tok-c"># ISO 4217, e.g. "SAR"</span>
+  currency: <span class="tok-n">String!</span>   <span class="tok-c"># ISO 4217, e.g. "EUR"</span>
 }
 
 <span class="tok-k">type</span> <span class="tok-n">PaymentLimit</span> @key(fields: <span class="tok-s">"limitId"</span>) {
   limitId:   <span class="tok-n">ID!</span>
-  channel:   <span class="tok-n">String!</span>   <span class="tok-c"># SARIE, SWIFT, IPS</span>
+  channel:   <span class="tok-n">String!</span>   <span class="tok-c"># RTGS, SWIFT, INSTANT</span>
   daily:     <span class="tok-n">Money!</span>
   perTx:     <span class="tok-n">Money!</span>
 }
@@ -298,7 +298,7 @@
 
           <h2 id="router-config">Apollo Router Configuration on OpenShift</h2>
           <p>The Apollo Router runs as a Kubernetes <code>Deployment</code> on OpenShift. Unlike the Apollo Gateway (the Node.js predecessor), the Router is a compiled Rust binary with significantly lower latency and memory overhead. A single Router pod handles approximately 2 000 rps at p99 &lt;10 ms plan + execution overhead; run at least 3 replicas with a <code>PodDisruptionBudget</code> of max-unavailable 1.</p>
-          <p>The Router reads its configuration from a <code>router.yaml</code> mounted as a ConfigMap. The supergraph schema comes from one of two sources: <strong>Managed Federation</strong> (Router polls GraphOS for schema updates &mdash; requires outbound connectivity to Apollo&rsquo;s cloud, which may conflict with SAMA data-residency requirements) or <strong>schema file mount</strong> (the supergraph SDL is compiled by Rover CLI in the CI pipeline and mounted as a ConfigMap, updated on every subgraph push). The self-hosted path is preferred in a regulated environment where external SaaS dependencies at the data plane are controlled.</p>
+          <p>The Router reads its configuration from a <code>router.yaml</code> mounted as a ConfigMap. The supergraph schema comes from one of two sources: <strong>Managed Federation</strong> (Router polls GraphOS for schema updates &mdash; requires outbound connectivity to Apollo&rsquo;s cloud, which may conflict with data-residency requirements) or <strong>schema file mount</strong> (the supergraph SDL is compiled by Rover CLI in the CI pipeline and mounted as a ConfigMap, updated on every subgraph push). The self-hosted path is preferred in a regulated environment where external SaaS dependencies at the data plane are controlled.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>router.yaml</span><span class="code-block__lang">yaml</span></div>
@@ -317,8 +317,8 @@
   <span class="tok-k">router</span>:
     <span class="tok-k">jwt</span>:
       <span class="tok-k">jwks</span>:
-        - <span class="tok-k">url</span>: <span class="tok-s">"https://idp.internal.bank.example/.well-known/jwks.json"</span>
-          <span class="tok-k">issuer</span>: <span class="tok-s">"https://idp.internal.bank.example"</span>
+        - <span class="tok-k">url</span>: <span class="tok-s">"https://idp.internal.example.com/.well-known/jwks.json"</span>
+          <span class="tok-k">issuer</span>: <span class="tok-s">"https://idp.internal.example.com"</span>
       <span class="tok-k">header_name</span>: <span class="tok-s">"Authorization"</span>
       <span class="tok-k">header_value_prefix</span>: <span class="tok-s">"Bearer "</span>
 
@@ -383,7 +383,7 @@
           <h2 id="rate-limiting">GraphQL-Aware Rate Limiting</h2>
           <p>Standard rate limiting counts requests. GraphQL rate limiting must count <em>cost</em>. A single GraphQL operation can be trivial (fetch one scalar field) or catastrophic (recursive fragments fetching thousands of nested objects). Treating both the same at the IP or token level misses the actual load profile.</p>
           <p>The Kong <code>graphql-proxy-cache-advanced</code> plugin and the upstream <code>graphql-rate-limiting-advanced</code> plugin (Kong Enterprise) implement <strong>field-level complexity scoring</strong>: each field in the schema is assigned a cost weight. The plugin computes the total cost of an incoming operation before execution and rejects it if the cost exceeds the per-client budget.</p>
-          <p>Cost configuration principles for a banking API:</p>
+          <p>Cost configuration principles for a financial API:</p>
           <ul>
             <li>Scalar fields: cost 1. A query for a single account balance costs roughly as much as the number of scalar fields selected.</li>
             <li>List fields: cost = multiplier &times; child cost. <code>transactionHistory(first: 100)</code> with 5 scalar fields costs 500 points. Set a default multiplier of 10 for unspecified list fields; require clients to pass explicit <code>first</code>/<code>limit</code> arguments and reject operations that omit them.</li>
@@ -442,7 +442,7 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">Never expose supergraph introspection in production without authentication</div>
-            <p>GraphQL introspection returns the complete supergraph schema &mdash; every type, every field, every argument, every directive, across all subgraphs. In a banking API this is a detailed map of your data model, your domain structure, and your regulatory data classifications. Set <code>supergraph.introspection: false</code> in <code>router.yaml</code> for all non-development environments. If developer tooling (Apollo Studio, Insomnia) requires introspection, expose a separate authenticated introspection endpoint behind a VPN or bastion that is not reachable from the internet or from production workloads.</p>
+            <p>GraphQL introspection returns the complete supergraph schema &mdash; every type, every field, every argument, every directive, across all subgraphs. In a financial-services API this is a detailed map of your data model, your domain structure, and your regulatory data classifications. Set <code>supergraph.introspection: false</code> in <code>router.yaml</code> for all non-development environments. If developer tooling (Apollo Studio, Insomnia) requires introspection, expose a separate authenticated introspection endpoint behind a VPN or bastion that is not reachable from the internet or from production workloads.</p>
           </div>
 
           <h2 id="observability">Federation Observability</h2>
@@ -461,7 +461,7 @@
           <p>The Router collects <code>@cacheControl</code> hints from all subgraph responses, computes the minimum <code>maxAge</code> across the merged result, and emits a <code>Cache-Control</code> response header. Upstream CDN (Kong proxy cache or Nginx) then caches the response for that duration.</p>
           <ul>
             <li><strong>Reference data (currency list, bank codes):</strong> <code>maxAge: 3600, scope: PUBLIC</code>. Safe to cache at the CDN layer.</li>
-            <li><strong>Account balances:</strong> <code>maxAge: 30, scope: PRIVATE</code>. The 30-second TTL is the minimum that prevents hammering the core banking system; the PRIVATE scope prevents CDN caching and restricts to client-side or Kong per-consumer cache.</li>
+            <li><strong>Account balances:</strong> <code>maxAge: 30, scope: PRIVATE</code>. The 30-second TTL is the minimum that prevents hammering the backend system of record; the PRIVATE scope prevents CDN caching and restricts to client-side or Kong per-consumer cache.</li>
             <li><strong>Transaction history:</strong> <code>maxAge: 60, scope: PRIVATE</code>. Slightly stale history is acceptable for the account statement view; real-time transaction status uses a separate query without caching.</li>
             <li><strong>Mutations:</strong> no cache headers. The Router does not cache mutation responses.</li>
           </ul>

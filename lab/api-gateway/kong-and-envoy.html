@@ -6,7 +6,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kong &amp; Envoy at the Edge &mdash; Open-Source Gateway Strategies &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="A production-grade walkthrough of Kong Gateway and Envoy Proxy for financial services: architecture trade-offs, FAPI 2.0 and mTLS configuration, migration patterns from commercial gateways, and the topology decisions that survive a SAMA security audit.">
+  <meta name="description" content="A production-grade walkthrough of Kong Gateway and Envoy Proxy for financial services: architecture trade-offs, FAPI 2.0 and mTLS configuration, migration patterns from commercial gateways, and the topology decisions that survive a regulatory security audit.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Kong &amp; Envoy at the Edge &mdash; Open-Source Gateway Strategies &mdash; Lab &mdash; Waleed Albadawi">
   <meta property="og:description" content="Production-grade walkthrough of Kong Gateway and Envoy Proxy for financial services: FAPI 2.0, mTLS, rate limiting, and migration from commercial gateways.">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Kong &amp; Envoy at the Edge: Open-Source Gateway Strategies for Financial Services",
-    "description": "A production-grade walkthrough of Kong Gateway and Envoy Proxy for financial services: architecture trade-offs, FAPI 2.0 and mTLS configuration, migration patterns from commercial gateways, and the topology decisions that survive a SAMA security audit.",
+    "description": "A production-grade walkthrough of Kong Gateway and Envoy Proxy for financial services: architecture trade-offs, FAPI 2.0 and mTLS configuration, migration patterns from commercial gateways, and the topology decisions that survive a regulatory security audit.",
     "url": "https://www.wbadawi.info/lab/api-gateway/kong-and-envoy.html",
     "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
     "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
@@ -125,7 +125,7 @@
           <h2 id="overview">Overview</h2>
           <p>The commercial API gateway market has narrowed around a small set of vendors &mdash; IBM, MuleSoft, Apigee &mdash; whose products were designed for a world where the gateway was a monolithic appliance and the API portfolio was owned by a central team. Cloud-native architectures have eroded both assumptions. Service teams deploy independently, traffic patterns are heterogeneous, and the gateway is no longer a single enforcement point but one of several places where policy lives.</p>
           <p>Kong and Envoy are the two open-source runtimes that have gained production traction in regulated environments. They are not interchangeable: Kong is a purpose-built API gateway with a plugin model and a management layer. Envoy is a general-purpose L7 proxy designed to be programmed by a control plane. Both can enforce TLS, authentication, and rate limits at the edge &mdash; but they do it differently, and the right choice depends on where policy needs to live and who needs to author it.</p>
-          <p>This article covers both, with enough depth on configuration that you can deploy either in a bank environment and have it pass a security review.</p>
+          <p>This article covers both, with enough depth on configuration that you can deploy either in a regulated environment and have it pass a security review.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Scope</div>
@@ -234,7 +234,7 @@
 
           <div class="callout callout--note">
             <div class="callout__title">Envoy &amp; WASM plugins</div>
-            <p>Envoy supports WebAssembly (Wasm) extensions via the proxy-wasm ABI. This allows custom filters compiled to Wasm to run inside Envoy&rsquo;s filter chain without forking the binary. For bank-specific policy enforcement (custom PEP logic, SAMA-specific audit headers), a Wasm filter avoids the overhead of an external authorisation call while keeping the core binary unmodified.</p>
+            <p>Envoy supports WebAssembly (Wasm) extensions via the proxy-wasm ABI. This allows custom filters compiled to Wasm to run inside Envoy&rsquo;s filter chain without forking the binary. For organisation-specific policy enforcement (custom PEP logic, regulator-mandated audit headers), a Wasm filter avoids the overhead of an external authorisation call while keeping the core binary unmodified.</p>
           </div>
 
           <h2 id="comparison">Kong vs Envoy: when each wins</h2>
@@ -288,10 +288,10 @@
             </tbody>
           </table>
 
-          <p>The practical answer for a typical bank environment: use Kong at the network edge (external partner APIs, SAMA Open Banking endpoints) and Istio/Envoy for east-west service mesh. Kong enforces the consumer contract &mdash; auth, quota, transformations; Istio enforces the service-to-service contract &mdash; mTLS identity, circuit breaking, traffic policy.</p>
+          <p>The practical answer for a typical regulated environment: use Kong at the network edge (external partner APIs, Open Banking endpoints) and Istio/Envoy for east-west service mesh. Kong enforces the consumer contract &mdash; auth, quota, transformations; Istio enforces the service-to-service contract &mdash; mTLS identity, circuit breaking, traffic policy.</p>
 
           <h2 id="security">Security configuration</h2>
-          <p>Two security requirements surface in every SAMA security audit for an open-source gateway: <strong>mTLS for all external partner traffic</strong> and <strong>FAPI 2.0-compliant OAuth</strong> for open banking endpoints. Neither is configured out of the box; both require deliberate plugin or filter chain setup.</p>
+          <p>Two security requirements surface in almost every financial-sector security audit of an open-source gateway: <strong>mTLS for all external partner traffic</strong> and <strong>FAPI 2.0-compliant OAuth</strong> for open banking endpoints. Neither is configured out of the box; both require deliberate plugin or filter chain setup.</p>
 
           <h3>Kong: mTLS termination and client certificate verification</h3>
           <p>Kong terminates TLS on its proxy listeners. Mutual TLS requires configuring a CA certificate in Kong and attaching it to the relevant service or route. The <code>mtls-auth</code> plugin (Kong Enterprise) or the <code>request-termination</code> + Nginx <code>ssl_verify_client</code> combination (OSS) enforces client certificate presence and validity.</p>
@@ -310,13 +310,13 @@
 
 <span class="tok-c"># Step 2: define the service and route</span>
 <span class="tok-k">services</span>:
-  - <span class="tok-k">name</span>: <span class="tok-s">payments-core</span>
+  - <span class="tok-k">name</span>: <span class="tok-s">payments-backend</span>
     <span class="tok-k">url</span>: <span class="tok-s">https://payments.svc.internal/v1</span>
     <span class="tok-k">tls_verify</span>: <span class="tok-n">true</span>
     <span class="tok-k">ca_certificates</span>: [ <span class="tok-s">internal-ca-01</span> ]
     <span class="tok-k">routes</span>:
       - <span class="tok-k">name</span>: <span class="tok-s">partner-payments-route</span>
-        <span class="tok-k">hosts</span>: [ <span class="tok-s">api.acme-bank.com</span> ]
+        <span class="tok-k">hosts</span>: [ <span class="tok-s">api.example.com</span> ]
         <span class="tok-k">paths</span>: [ <span class="tok-s">/partner/payments</span> ]
         <span class="tok-k">protocols</span>: [ <span class="tok-s">https</span> ]
     <span class="tok-k">plugins</span>:
@@ -329,7 +329,7 @@
           <span class="tok-k">authenticated_group_by</span>: <span class="tok-s">DN</span>        <span class="tok-c"># map cert DN to Kong consumer</span></code></pre>
           </div>
 
-          <p>The <code>authenticated_group_by: DN</code> setting is load-bearing for partner onboarding. It maps the Distinguished Name of the client certificate to a Kong consumer, which means rate-limit plugins downstream can count requests per partner without requiring an additional API key exchange. This is the standard pattern for SAMA Open Banking B2B channels where the partner cert <em>is</em> the identity credential.</p>
+          <p>The <code>authenticated_group_by: DN</code> setting is load-bearing for partner onboarding. It maps the Distinguished Name of the client certificate to a Kong consumer, which means rate-limit plugins downstream can count requests per partner without requiring an additional API key exchange. This is the standard pattern for Open Banking and other B2B channels where the partner cert <em>is</em> the identity credential.</p>
 
           <h3>Kong: OIDC / FAPI 2.0 with the openid-connect plugin</h3>
           <p>The <code>openid-connect</code> plugin (Kong Enterprise) handles token introspection, JWT validation, and PAR (Pushed Authorisation Request) flows required by FAPI 2.0. Configure it with <code>proof_of_possession_mtls: true</code> to enforce the certificate-bound access token requirement from FAPI 2.0.</p>
@@ -340,13 +340,13 @@
   - <span class="tok-k">name</span>: <span class="tok-s">openid-connect</span>
     <span class="tok-k">route</span>: <span class="tok-s">open-banking-accounts-route</span>
     <span class="tok-k">config</span>:
-      <span class="tok-k">issuer</span>: <span class="tok-s">https://idp.acme-bank.com/realms/ob-prod/.well-known/openid-configuration</span>
+      <span class="tok-k">issuer</span>: <span class="tok-s">https://idp.example.com/realms/ob-prod/.well-known/openid-configuration</span>
       <span class="tok-k">client_id</span>: <span class="tok-s">kong-rs</span>
       <span class="tok-k">client_secret</span>: <span class="tok-s">{vault://env/KONG_IDP_SECRET}</span>     <span class="tok-c"># never inline secrets</span>
       <span class="tok-k">auth_methods</span>:
         - <span class="tok-s">bearer</span>
         - <span class="tok-s">introspection</span>
-      <span class="tok-k">introspection_endpoint</span>: <span class="tok-s">https://idp.acme-bank.com/realms/ob-prod/protocol/openid-connect/token/introspect</span>
+      <span class="tok-k">introspection_endpoint</span>: <span class="tok-s">https://idp.example.com/realms/ob-prod/protocol/openid-connect/token/introspect</span>
       <span class="tok-k">introspection_endpoint_auth_method</span>: <span class="tok-s">client_secret_basic</span>
       <span class="tok-k">cache_introspection</span>: <span class="tok-n">true</span>
       <span class="tok-k">introspection_hint</span>: <span class="tok-s">access_token</span>
@@ -365,7 +365,7 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">Vault references, not inline secrets</div>
-            <p>The <code>{vault://env/KONG_IDP_SECRET}</code> syntax is Kong&rsquo;s native vault reference. It resolves at runtime from an environment variable or a HashiCorp Vault / AWS Secrets Manager backend. Never paste a client secret into a <code>kong.yaml</code> that lives in a Git repository &mdash; even an internal one. A SAMA security audit will flag hardcoded secrets in configuration files as a critical finding.</p>
+            <p>The <code>{vault://env/KONG_IDP_SECRET}</code> syntax is Kong&rsquo;s native vault reference. It resolves at runtime from an environment variable or a HashiCorp Vault / AWS Secrets Manager backend. Never paste a client secret into a <code>kong.yaml</code> that lives in a Git repository &mdash; even an internal one. Any financial-sector security audit will flag hardcoded secrets in configuration files as a critical finding.</p>
           </div>
 
           <h2 id="rate-limiting">Rate limiting in Kong</h2>
@@ -438,7 +438,7 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">Never cut over a payment API on a Friday</div>
-            <p>Payment APIs carry SAMA oversight obligations. A cut-over that causes even a brief outage on a settlement window is a regulatory incident. Schedule payment API migrations for mid-week, mid-morning, with the core banking team on standby, and a tested rollback procedure that gets you back to the old gateway in under 5 minutes.</p>
+            <p>Payment APIs carry regulatory oversight obligations in almost every jurisdiction. A cut-over that causes even a brief outage on a settlement window is a regulatory incident. Schedule payment API migrations for mid-week, mid-morning, with the team that owns the backend system of record on standby, and a tested rollback procedure that gets you back to the old gateway in under 5 minutes.</p>
           </div>
 
           <h2 id="topology">Production topology</h2>
@@ -493,7 +493,7 @@
                 <rect x="590" y="20" width="170" height="135" rx="6" fill="none" stroke="#4a9eff" stroke-dasharray="4 3"/>
                 <text x="675" y="40" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">Upstream Services</text>
                 <rect x="600" y="50" width="140" height="35" rx="3" fill="#1c1c28" stroke="#4a9eff"/>
-                <text x="670" y="67" text-anchor="middle" fill="#e4e4e7" font-size="10">payments-core</text>
+                <text x="670" y="67" text-anchor="middle" fill="#e4e4e7" font-size="10">payments-backend</text>
                 <text x="670" y="80" text-anchor="middle" fill="#71717a" font-size="8">Envoy sidecar (mTLS)</text>
                 <rect x="600" y="95" width="140" height="35" rx="3" fill="#1c1c28" stroke="#4a9eff"/>
                 <text x="670" y="112" text-anchor="middle" fill="#e4e4e7" font-size="10">accounts-api</text>
@@ -556,7 +556,7 @@
 
           <div class="callout callout--note">
             <div class="callout__title">SIEM forwarding</div>
-            <p>Send Kong access logs to your SIEM (Splunk, QRadar) via the <code>tcp-log</code> or <code>http-log</code> plugin, not by tail-following pod stdout. Pod stdout is ephemeral; the log plugin writes to an endpoint that is available even during pod restarts. For SAMA audit purposes, you need a durable, tamper-evident audit log of every request that crosses the regulated boundary &mdash; pod logs alone do not satisfy this.</p>
+            <p>Send Kong access logs to your SIEM (Splunk, QRadar) via the <code>tcp-log</code> or <code>http-log</code> plugin, not by tail-following pod stdout. Pod stdout is ephemeral; the log plugin writes to an endpoint that is available even during pod restarts. For regulatory audit purposes, you need a durable, tamper-evident audit log of every request that crosses the regulated boundary &mdash; pod logs alone do not satisfy this.</p>
           </div>
 
           <h2 id="pitfalls">Common pitfalls</h2>
@@ -582,7 +582,7 @@
           </div>
 
           <h2 id="decision">Decision framework</h2>
-          <p>The question is not whether Kong or Envoy is the &ldquo;better&rdquo; gateway &mdash; it is which tool best fits the specific enforcement point and the team operating it. In a regulated bank the decision looks like this:</p>
+          <p>The question is not whether Kong or Envoy is the &ldquo;better&rdquo; gateway &mdash; it is which tool best fits the specific enforcement point and the team operating it. In a regulated organisation the decision typically looks like this:</p>
 
           <table>
             <thead>
@@ -590,7 +590,7 @@
             </thead>
             <tbody>
               <tr>
-                <td>External partner APIs (SAMA Open Banking, ISO 20022 connectors)</td>
+                <td>External partner APIs (Open Banking, ISO 20022 connectors)</td>
                 <td><strong>Kong Gateway</strong></td>
                 <td>Consumer management, mTLS-cert-to-consumer mapping, per-consumer rate limits, and a developer portal are native. FAPI 2.0 OIDC plugin exists.</td>
               </tr>
@@ -617,7 +617,7 @@
             </tbody>
           </table>
 
-          <p>Neither tool eliminates the need for an API lifecycle process &mdash; catalogue, versioning, consumer onboarding, rate-limit contracts. Kong provides a lightweight version of that process out of the box. Envoy does not. If the teams consuming your APIs are internal and operate in the same Kubernetes cluster, the Istio-only model is clean and low overhead. If you have external partners, SAMA-mandated open banking endpoints, or a developer community, Kong&rsquo;s consumer model is the differentiator, and the cost of running it alongside Istio is justified.</p>
+          <p>Neither tool eliminates the need for an API lifecycle process &mdash; catalogue, versioning, consumer onboarding, rate-limit contracts. Kong provides a lightweight version of that process out of the box. Envoy does not. If the teams consuming your APIs are internal and operate in the same Kubernetes cluster, the Istio-only model is clean and low overhead. If you have external partners, regulator-mandated Open Banking endpoints, or a developer community, Kong&rsquo;s consumer model is the differentiator, and the cost of running it alongside Istio is justified.</p>
 
           <nav class="article-nav">
             <a href="../api-gateway.html">
