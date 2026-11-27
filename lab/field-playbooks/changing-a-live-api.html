@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -45,56 +46,62 @@
     "description": "How to keep an API changing while its consumers keep working: an agreed list of breaking changes, additive design, per-consumer usage reports, consumer contract tests, expand-migrate-contract, and retirement by evidence.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-16",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/field-playbooks/changing-a-live-api.html"
     },
     "url": "https://www.wbadawi.info/lab/field-playbooks/changing-a-live-api.html",
+    "inLanguage": "en",
+    "wordCount": 953,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Field Playbooks &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Field Playbooks — Technical Lab",
       "url": "https://www.wbadawi.info/lab/field-playbooks.html"
     },
-    "proficiencyLevel": "Expert",
-    "articleSection": "Field Playbooks"
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Field Playbooks",
+        "item": "https://www.wbadawi.info/lab/field-playbooks.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Changing a Live API Without Breaking Its Consumers",
+        "item": "https://www.wbadawi.info/lab/field-playbooks/changing-a-live-api.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -129,7 +136,13 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../field-playbooks.html">Field Playbooks</a><span>/</span>Changing a Live API</div>
           <span class="overline">Lab Playbook</span>
           <h1>Changing a Live API Without Breaking Its Consumers</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-11-16">16 November 2026</time></span>
+            <span>4 min read</span>
+          </div>
           <p class="lead">One consumer needs a change. Two others fail the next morning. Freezing the API is not the answer. Six tactics that let a provider keep moving, with proof of who would be affected before anything is released.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -160,9 +173,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Applies to:</strong> OpenAPI &middot; API gateway analytics &middot; Contract tests in CI</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers &amp; team leads</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~8 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Nov 16, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="problem">The problem</h2>
@@ -224,15 +234,15 @@ batch-reports   v1                0  never         -</code></pre>
           <p>When a change cannot be additive, split it into three releases.</p>
           <ol class="step-list">
             <li>
-              <h4>Expand</h4>
+              <h3>Expand</h3>
               <p>Add the new field or behaviour next to the old one. Both work. Nothing breaks.</p>
             </li>
             <li>
-              <h4>Migrate</h4>
+              <h3>Migrate</h3>
               <p>Consumers move one by one, in their own releases. The usage report shows progress.</p>
             </li>
             <li>
-              <h4>Contract</h4>
+              <h3>Contract</h3>
               <p>Remove the old form only when usage has been zero for an agreed period.</p>
             </li>
           </ol>
@@ -251,23 +261,23 @@ batch-reports   v1                0  never         -</code></pre>
           <h2 id="deprecate">Tactic 6: Retire by evidence, not by announcement</h2>
           <ol class="step-list">
             <li>
-              <h4>Mark it</h4>
+              <h3>Mark it</h3>
               <p>Flag the operation or field as deprecated in the contract. Return a response header that says so, with the removal date.</p>
             </li>
             <li>
-              <h4>Tell the consumers who still use it</h4>
+              <h3>Tell the consumers who still use it</h3>
               <p>By name, from the usage report, with what to change.</p>
             </li>
             <li>
-              <h4>Watch usage fall</h4>
+              <h3>Watch usage fall</h3>
               <p>Chase the ones that do not move. Escalate with numbers.</p>
             </li>
             <li>
-              <h4>Rehearse the removal</h4>
+              <h3>Rehearse the removal</h3>
               <p>Switch the old form off in the test environments first, then for short planned windows, before removing it for good.</p>
             </li>
             <li>
-              <h4>Remove it</h4>
+              <h3>Remove it</h3>
               <p>When usage has been zero for the agreed period.</p>
             </li>
           </ol>
@@ -284,27 +294,43 @@ batch-reports   v1                0  never         -</code></pre>
           <h2 id="checklist">Checklist</h2>
           <ol class="step-list">
             <li>
-              <h4>Publish the list of breaking changes</h4>
+              <h3>Publish the list of breaking changes</h3>
               <p>And the rule that consumers must ignore unknown fields and handle unknown codes.</p>
             </li>
             <li>
-              <h4>Turn on usage reporting per consumer and version</h4>
+              <h3>Turn on usage reporting per consumer and version</h3>
               <p>Keep at least 90 days.</p>
             </li>
             <li>
-              <h4>Collect contract expectations from the largest consumers</h4>
+              <h3>Collect contract expectations from the largest consumers</h3>
               <p>Run them in the provider pipeline.</p>
             </li>
             <li>
-              <h4>Use expand, migrate, contract for the next non-additive change</h4>
+              <h3>Use expand, migrate, contract for the next non-additive change</h3>
               <p>With the removal date agreed up front.</p>
             </li>
             <li>
-              <h4>Retire one old version using the evidence steps</h4>
+              <h3>Retire one old version using the evidence steps</h3>
               <p>One completed retirement makes the next one routine.</p>
             </li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="onboarding-consumers-in-days.html"><span class="lab-related__kicker">Lab &middot; Field Playbooks</span><span class="lab-related__name">Onboarding a New API Consumer in Days, Not Months</span></a></li>
+              <li><a class="lab-related__link" href="../event-driven/asyncapi-kafka-contracts.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">AsyncAPI 3.0 Contracts for Kafka Channel Governance</span></a></li>
+              <li><a class="lab-related__link" href="../devops/progressive-delivery-flagger-argo-rollouts.html"><span class="lab-related__kicker">Lab &middot; DevOps &amp; Platform Engineering</span><span class="lab-related__name">Progressive Delivery: Flagger, Argo Rollouts &amp; Feature Flags</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="onboarding-consumers-in-days.html">
               <div class="article-nav__label">&larr; Previous</div>

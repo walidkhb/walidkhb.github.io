@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -78,9 +79,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">May 3, 2026</span>
+            <span class="article-list__date-pub">3 May 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>6 min read</span>
           </div>
           <h2 class="article-list__title">Data Synchronisation: Debezium &amp; Outbox</h2>
           <p class="article-list__excerpt">The dual-write problem and how to solve it: change data capture with Debezium, the transactional outbox pattern, idempotent downstreams, schema drift, and the reconciliation that catches the edge cases.</p>
@@ -98,9 +99,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Jul 18, 2026</span>
+            <span class="article-list__date-pub">18 July 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>13 min read</span>
           </div>
           <h2 class="article-list__title">Cross-Region Replication Patterns</h2>
           <p class="article-list__excerpt">Active/active vs active/passive multi-region data: conflict resolution strategies, Kafka MirrorMaker 2 with offset translation, Postgres streaming and logical replication, IBM Db2 HADR, and the data-residency constraints that shape all of it.</p>
@@ -118,9 +119,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Aug 29, 2026</span>
+            <span class="article-list__date-pub">29 August 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>12 min read</span>
           </div>
           <h2 class="article-list__title">Reconciliation Pipelines for Regulators</h2>
           <p class="article-list__excerpt">Daily reconciliation that catches CDC drift the application can&rsquo;t see: fingerprinting &amp; hash comparison at scale, automated break investigation and classification, audit trails aligned with supervisory expectations, and the tamper-evident regulatory reporting that survives an examination.</p>
@@ -138,9 +139,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Sep 5, 2026</span>
+            <span class="article-list__date-pub">5 September 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>14 min read</span>
           </div>
           <h2 class="article-list__title">Event-Driven Data Mesh: Domain Ownership via Kafka ACLs and Schema Registry</h2>
           <p class="article-list__excerpt">Kafka ACLs for domain data ownership, Avro schema with data-protection classification metadata, Kafka Streams GlobalKTable joins across domain boundaries, and the governance model that turns Kafka from a shared bus into a set of domain-owned data products.</p>
@@ -158,9 +159,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Oct 24, 2026</span>
+            <span class="article-list__date-pub">24 October 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>12 min read</span>
           </div>
           <h2 class="article-list__title">Idempotent Consumers &amp; Exactly-Once Semantics: Payment Deduplication at Scale</h2>
           <p class="article-list__excerpt">At-least-once delivery guarantees duplicates will arrive&mdash;the question is whether your consumers handle them. Database idempotency tables, Redis SET NX deduplication, Kafka EOS transactional producers, ISO 20022 UETR as the authoritative key, and the monitoring that proves the layer is working in production.</p>
@@ -178,9 +179,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Sep 5, 2026</span>
+            <span class="article-list__date-pub">5 September 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>14 min read</span>
           </div>
           <h2 class="article-list__title">Conflict Resolution in Multi-Master Databases: CockroachDB, PostgreSQL &amp; Redis CRDTs</h2>
           <p class="article-list__excerpt">CockroachDB geo-partition survival goals, PostgreSQL conflict resolution trigger with last-write-wins and merge strategies, Redis 7 PN-Counter Lua for distributed counters, and the business-continuity requirements that make multi-master necessary.</p>
@@ -197,6 +198,23 @@
       </div>
     </div>
   </section>
+
+  <!-- lab-meta:further -->
+  <section class="lab-further" aria-labelledby="further-reading">
+    <div class="container container--narrow">
+      <h2 id="further-reading">Further reading</h2>
+      <p class="lab-further__intro">Official documentation and specifications behind the articles above. The articles are reference architectures with illustrative code; these sources are authoritative.</p>
+      <ul class="lab-further__list">
+            <li><a href="https://debezium.io/documentation/">Debezium documentation</a></li>
+            <li><a href="https://kafka.apache.org/documentation/#georeplication">Apache Kafka &mdash; geo-replication with MirrorMaker 2</a></li>
+            <li><a href="https://www.postgresql.org/docs/current/warm-standby.html">PostgreSQL &mdash; log-shipping and streaming replication</a></li>
+            <li><a href="https://patroni.readthedocs.io/">Patroni documentation</a></li>
+            <li><a href="https://www.ibm.com/docs/en/db2">IBM Db2 documentation (HADR)</a></li>
+            <li><a href="https://www.cockroachlabs.com/docs/">CockroachDB documentation</a></li>
+      </ul>
+    </div>
+  </section>
+  <!-- /lab-meta:further -->
 
   </main>
 

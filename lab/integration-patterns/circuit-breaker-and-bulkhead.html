@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -53,56 +54,62 @@
     "description": "Production-grade circuit breaker and bulkhead patterns using Resilience4j 2 in regulated, mission-critical integration with IBM ACE and Spring Boot.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-10-17",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/integration-patterns/circuit-breaker-and-bulkhead.html"
     },
     "url": "https://www.wbadawi.info/lab/integration-patterns/circuit-breaker-and-bulkhead.html",
+    "inLanguage": "en",
+    "wordCount": 3359,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Integration Patterns &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Integration Design Patterns — Technical Lab",
       "url": "https://www.wbadawi.info/lab/integration-patterns.html"
     },
-    "proficiencyLevel": "Advanced",
-    "dependencies": "Resilience4j 2.x, Spring Boot 3.x, IBM ACE 12, Micrometer, Prometheus"
+    "proficiencyLevel": "Advanced"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Integration Design Patterns",
+        "item": "https://www.wbadawi.info/lab/integration-patterns.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Circuit Breaker & Bulkhead: Resilience4j for Mission-Critical Integration",
+        "item": "https://www.wbadawi.info/lab/integration-patterns/circuit-breaker-and-bulkhead.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -137,7 +144,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Patterns</a><span>/</span>Circuit Breaker &amp; Bulkhead</div>
           <span class="overline">Lab Article</span>
           <h1>Circuit Breaker &amp; Bulkhead: Resilience4j for Mission-Critical Integration</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-10-17">17 October 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>15 min read</span>
+          </div>
           <p class="lead">The patterns that stop one slow downstream &mdash; a payment-scheme gateway, a legacy core, a fraud engine &mdash; from taking down your entire platform: Resilience4j 2 circuit breaker state machine configuration, thread-pool versus semaphore bulkhead trade-offs, IBM ACE message flow hardening, fallback design for payment APIs, and the Micrometer metrics that prove the defence is actually working &mdash; not just deployed.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -170,9 +184,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Resilience4j 2.2 / Spring Boot 3.3 / IBM ACE 12 / Micrometer / Prometheus</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Oct 17, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -294,8 +305,8 @@
         <span class="tok-k">recordExceptions:</span>
           <span class="tok-p">-</span> <span class="tok-s">java.io.IOException</span>
           <span class="tok-p">-</span> <span class="tok-s">java.util.concurrent.TimeoutException</span>
-          <span class="tok-p">-</span> <span class="tok-s">feign.FeignException.ServiceUnavailable</span>
-          <span class="tok-p">-</span> <span class="tok-s">feign.FeignException.GatewayTimeout</span>
+          <span class="tok-p">-</span> <span class="tok-s">feign.FeignException$ServiceUnavailable</span>   <span class="tok-c"># nested class: binary name uses $</span>
+          <span class="tok-p">-</span> <span class="tok-s">feign.FeignException$GatewayTimeout</span>
         <span class="tok-k">ignoreExceptions:</span>
           <span class="tok-p">-</span> <span class="tok-s">com.example.integration.exception.ValidationException</span>  <span class="tok-c"># business errors, not infra</span>
           <span class="tok-p">-</span> <span class="tok-s">com.example.integration.exception.InsufficientFundsException</span>
@@ -558,31 +569,31 @@
 
           <ol class="step-list">
             <li>
-              <h4>Identify every downstream dependency and its failure profile</h4>
+              <h3>Identify every downstream dependency and its failure profile</h3>
               <p>Map each downstream: what HTTP endpoints does it expose, what is its published SLA, what is its actual P99 latency in production, what does it return on degradation (5xx, timeout, partial response)? Score each one by impact if it fails or slows. The scheme gateway, the legacy core and the fraud engine are always in the top tier for a payments platform.</p>
             </li>
             <li>
-              <h4>Set per-dependency thresholds from observed baselines</h4>
+              <h3>Set per-dependency thresholds from observed baselines</h3>
               <p>Do not use generic defaults. Query your existing APM or Prometheus for the actual P99 and failure rate baseline for each downstream over the last 30 days. Set <code>slowCallDurationThreshold</code> at 2&times; the observed P99, and <code>failureRateThreshold</code> at 3&times; the baseline failure rate. This prevents false-positive trips during normal load spikes.</p>
             </li>
             <li>
-              <h4>Implement and test fallback behaviour before enabling the circuit breaker</h4>
+              <h3>Implement and test fallback behaviour before enabling the circuit breaker</h3>
               <p>The fallback is the hardest part. Test it in isolation first: mock the circuit breaker in an open state and verify that the fallback produces the correct response, logs the correct structured event, and increments the correct metric. A fallback that silently swallows exceptions is worse than no fallback.</p>
             </li>
             <li>
-              <h4>Deploy in shadow mode for one sprint</h4>
+              <h3>Deploy in shadow mode for one sprint</h3>
               <p>Configure the circuit breaker with an extremely high threshold (e.g., 99% failure rate) and observe the failure rate metric without allowing it to actually trip. This validates that the metric collection is correct and that your threshold choices are calibrated before the breaker can cause production impact.</p>
             </li>
             <li>
-              <h4>Enable Prometheus alerts and verify delivery</h4>
+              <h3>Enable Prometheus alerts and verify delivery</h3>
               <p>The <code>CircuitBreakerOpen</code> alert must fire and reach the on-call engineer within 60 seconds of the first trip. Test this in a non-production environment by deliberately misconfiguring a downstream and confirming end-to-end alert delivery through your paging tool or the NOC alerting channel.</p>
             </li>
             <li>
-              <h4>Add bulkheads after circuit breakers are stable</h4>
+              <h3>Add bulkheads after circuit breakers are stable</h3>
               <p>Do not add both at the same time. Circuit breakers change observable behaviour (fast-fail responses); bulkheads add a concurrency limit that might start rejecting requests at peak load if sized incorrectly. Tune circuit breakers first over two to three weeks of production data, then introduce bulkheads with conservative (high) limits and tighten over time.</p>
             </li>
             <li>
-              <h4>Document the operational runbook for each open breaker</h4>
+              <h3>Document the operational runbook for each open breaker</h3>
               <p>Every circuit breaker instance needs a runbook entry: what does it protect, what is the fallback behaviour, how does an operator force the breaker back to CLOSED, and what downstream health check must return green before closing manually. In regulated industries this runbook is also an audit artefact for any critical third-party or network-connected integration.</p>
             </li>
           </ol>
@@ -612,6 +623,23 @@
             <li><strong>Message consumers without retry infrastructure.</strong> A Kafka consumer protected by a circuit breaker that opens will stop processing messages and leave the consumer group lagging. This is only acceptable if there is a dead-letter queue and a replay mechanism. Without those, an open breaker on a consumer is a silent queue buildup that becomes a larger problem when the breaker eventually closes.</li>
           </ul>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="scatter-gather-aggregation.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Scatter-Gather: Multi-Source Aggregation Across Fragmented Systems of Record</span></a></li>
+              <li><a class="lab-related__link" href="../field-playbooks/timeouts-and-unknown-outcomes.html"><span class="lab-related__kicker">Lab &middot; Field Playbooks</span><span class="lab-related__name">The Call Timed Out. Did It Work? Handling Unknown Outcomes Without Double Posting</span></a></li>
+              <li><a class="lab-related__link" href="idempotency-keys.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Idempotency Keys at Scale</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/circuit-breaker-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Circuit Breakers Are Not Optional: The Resilience Decision Every Integration Leader Defers Until Something Falls Over</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../integration-patterns.html">
               <div class="article-nav__label">&larr; Back</div>

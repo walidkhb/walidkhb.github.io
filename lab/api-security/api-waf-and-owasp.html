@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -45,54 +46,62 @@
     "description": "API WAF and OWASP API Security Top 10 (2023) mitigation: Kong 3.7 OAS validation, AWS WAF v2, OWASP CRS 4.0 with ModSecurity 3, IBM API Connect 10.0.7 — production patterns for regulated financial APIs.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/api-security/api-waf-and-owasp.html"
     },
     "url": "https://www.wbadawi.info/lab/api-security/api-waf-and-owasp.html",
+    "inLanguage": "en",
+    "wordCount": 3242,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "API Security &mdash; Lab &mdash; Waleed Albadawi",
+      "@type": "CollectionPage",
+      "name": "API Security — Technical Lab",
       "url": "https://www.wbadawi.info/lab/api-security.html"
-    }
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "API Security",
+        "item": "https://www.wbadawi.info/lab/api-security.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "API Security: API WAF & OWASP API Top 10",
+        "item": "https://www.wbadawi.info/lab/api-security/api-waf-and-owasp.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -127,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>API WAF &amp; OWASP API Top 10</div>
           <span class="overline">Lab Article</span>
           <h1>API Security: API WAF &amp; OWASP API Top 10</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-09-05">5 September 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>14 min read</span>
+          </div>
           <p class="lead">OWASP API Security Top 10 (2023) threat model and mitigation layers for regulated financial APIs &mdash; Kong 3.7 OAS validation, OWASP ModSecurity CRS 4.0, AWS WAF v2, IBM API Connect 10.0.7, bot detection, and WAF incident response aligned to financial-sector cybersecurity frameworks such as SAMA&rsquo;s CSF, PCI DSS and DORA.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -158,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Kong 3.7 / AWS WAF v2 / OWASP CRS 4.0 / IBM API Connect 10.0.7 / ModSecurity 3</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -303,58 +316,55 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>kong-waf-plugins.yaml</span><span class="code-block__lang">yaml</span></div>
-<pre><code><span class="tok-c"># Kong OAS Validation plugin &mdash; request + response validation</span>
-- <span class="tok-k">name</span>: <span class="tok-s">oas-validation</span>
+<pre><code><span class="tok-c"># Kong OAS Validation plugin - request + response validation</span>
+- <span class="tok-k">name</span>: oas-validation
   <span class="tok-k">config</span>:
-    <span class="tok-k">api_spec_encoded</span>: <span class="tok-n">false</span>
-    <span class="tok-k">api_spec</span>: <span class="tok-s">"https://specs.example.com/open-banking/pis/v1/openapi.yaml"</span>
-    <span class="tok-k">validate_request_body</span>: <span class="tok-n">true</span>
-    <span class="tok-k">validate_request_header_params</span>: <span class="tok-n">true</span>
-    <span class="tok-k">validate_request_query_params</span>: <span class="tok-n">true</span>
-    <span class="tok-k">validate_request_uri_params</span>: <span class="tok-n">true</span>
-    <span class="tok-k">validate_response_body</span>: <span class="tok-n">true</span>      <span class="tok-c"># blocks BOPLA (excess data exposure)</span>
-    <span class="tok-k">notify_only_request_body_validation_failure</span>: <span class="tok-n">false</span>
-    <span class="tok-k">notify_only_response_body_validation_failure</span>: <span class="tok-n">true</span>   <span class="tok-c"># log but don't block on response (perf)</span>
-    <span class="tok-k">include_base_path</span>: <span class="tok-n">false</span>
-    <span class="tok-k">query_param_checks</span>:
-      <span class="tok-k">allowed_params_in_spec_only</span>: <span class="tok-n">true</span>   <span class="tok-c"># reject undocumented query params</span>
+    <span class="tok-k">api_spec_encoded</span>: false
+    <span class="tok-k">api_spec</span>: <span class="tok-s">"&lt;contents of the PIS OpenAPI document&gt;"</span>   <span class="tok-c"># the spec itself, not a URL</span>
+    <span class="tok-k">validate_request_body</span>: true
+    <span class="tok-k">validate_request_header_params</span>: true
+    <span class="tok-k">validate_request_query_params</span>: true
+    <span class="tok-k">validate_request_uri_params</span>: true
+    <span class="tok-k">validate_response_body</span>: true      <span class="tok-c"># catches excess data only if schemas forbid additionalProperties</span>
+    <span class="tok-k">notify_only_request_validation_failure</span>: false
+    <span class="tok-k">notify_only_response_body_validation_failure</span>: true   <span class="tok-c"># log but don't block on response (perf)</span>
+    <span class="tok-k">include_base_path</span>: false
+    <span class="tok-k">query_parameter_check</span>: true       <span class="tok-c"># reject query params not declared in the spec</span>
 
-<span class="tok-c"># Rate-limiting-advanced &mdash; sliding window per TPP consumer</span>
-- <span class="tok-k">name</span>: <span class="tok-s">rate-limiting-advanced</span>
+<span class="tok-c"># Rate-limiting-advanced - sliding window per TPP consumer</span>
+- <span class="tok-k">name</span>: rate-limiting-advanced
   <span class="tok-k">config</span>:
     <span class="tok-k">limit</span>: [<span class="tok-n">10</span>, <span class="tok-n">100</span>, <span class="tok-n">2000</span>]             <span class="tok-c"># per minute, per hour, per day</span>
     <span class="tok-k">window_size</span>: [<span class="tok-n">60</span>, <span class="tok-n">3600</span>, <span class="tok-n">86400</span>]
-    <span class="tok-k">identifier</span>: <span class="tok-s">consumer</span>
+    <span class="tok-k">identifier</span>: consumer
     <span class="tok-k">sync_rate</span>: <span class="tok-n">10</span>                        <span class="tok-c"># sync to Redis every 10 s</span>
-    <span class="tok-k">namespace</span>: <span class="tok-s">pis-rate</span>
-    <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>
+    <span class="tok-k">namespace</span>: pis-rate
+    <span class="tok-k">strategy</span>: redis
     <span class="tok-k">redis</span>:
-      <span class="tok-k">host</span>: <span class="tok-s">redis-cluster.infra.svc</span>
+      <span class="tok-k">host</span>: redis-cluster.infra.svc
       <span class="tok-k">port</span>: <span class="tok-n">6379</span>
-      <span class="tok-k">ssl</span>: <span class="tok-n">true</span>
-    <span class="tok-k">hide_client_headers</span>: <span class="tok-n">false</span>           <span class="tok-c"># TPPs need X-RateLimit-* headers for compliance</span>
+      <span class="tok-k">ssl</span>: true
+    <span class="tok-k">hide_client_headers</span>: false           <span class="tok-c"># TPPs need X-RateLimit-* headers for compliance</span>
 
-<span class="tok-c"># Bot detection &mdash; user-agent and fingerprint checks</span>
-- <span class="tok-k">name</span>: <span class="tok-s">bot-detection</span>
+<span class="tok-c"># Bot detection - patterns are regular expressions matched against User-Agent.</span>
+<span class="tok-c"># Deny scanner signatures only: TPP back ends legitimately use HTTP libraries.</span>
+- <span class="tok-k">name</span>: bot-detection
   <span class="tok-k">config</span>:
     <span class="tok-k">deny</span>:
-      - <span class="tok-s">"*(curl|wget|python-requests|go-http-client|libwww-perl)*"</span>    <span class="tok-c"># scanner UAs</span>
-      - <span class="tok-s">"*(masscan|nikto|nmap|sqlmap|dirb|dirbuster)*"</span>
+      - <span class="tok-s">"(?i)(masscan|nikto|nmap|sqlmap|dirbuster|dirb)"</span>
     <span class="tok-k">allow</span>:
-      - <span class="tok-s">"*(kong-.*|internal-monitor)*"</span>
+      - <span class="tok-s">"^internal-monitor/"</span>
 
 <span class="tok-c"># Request-size-limiting</span>
-- <span class="tok-k">name</span>: <span class="tok-s">request-size-limiting</span>
+- <span class="tok-k">name</span>: request-size-limiting
   <span class="tok-k">config</span>:
     <span class="tok-k">allowed_payload_size</span>: <span class="tok-n">128</span>            <span class="tok-c"># kilobytes; PIS payload is small</span>
-    <span class="tok-k">size_unit</span>: <span class="tok-s">kilobytes</span>
-    <span class="tok-k">require_content_length</span>: <span class="tok-n">true</span>
+    <span class="tok-k">size_unit</span>: kilobytes
+    <span class="tok-k">require_content_length</span>: true
 
-<span class="tok-c"># IP restriction &mdash; block Tor exit nodes (updated daily via threat intel feed)</span>
-- <span class="tok-k">name</span>: <span class="tok-s">ip-restriction</span>
+<span class="tok-c"># IP restriction - an allow list alone denies every other source address</span>
+- <span class="tok-k">name</span>: ip-restriction
   <span class="tok-k">config</span>:
-    <span class="tok-k">deny</span>:
-      - <span class="tok-s">"0.0.0.0/0"</span>                        <span class="tok-c"># default deny-all (override with allow list for TPP IP ranges)</span>
     <span class="tok-k">allow</span>:
       - <span class="tok-s">"10.0.0.0/8"</span>                       <span class="tok-c"># internal services</span>
       - <span class="tok-s">"203.0.113.0/24"</span>                   <span class="tok-c"># example: registered TPP range (RFC 5737 doc block)</span></code></pre>
@@ -367,46 +377,46 @@
           <div class="code-block">
             <div class="code-block__header"><span>crs-config.conf</span><span class="code-block__lang">apache</span></div>
 <pre><code><span class="tok-c"># ModSecurity CRS 4.0 configuration for an Open Banking API</span>
-SecRuleEngine On                          <span class="tok-c"># blocking mode; use DetectionOnly during tuning</span>
-SecAuditEngine RelevantOnly               <span class="tok-c"># log only blocked/anomalous requests</span>
+<span class="tok-c"># Apache/ModSecurity directives take no trailing comments: keep comments on their own lines.</span>
+
+<span class="tok-c"># Blocking mode; use DetectionOnly while tuning</span>
+SecRuleEngine On
+<span class="tok-c"># Log only blocked or anomalous requests</span>
+SecAuditEngine RelevantOnly
 SecAuditLog /var/log/modsecurity/audit.log
 SecAuditLogParts ABCEFHIJKZ
 
-<span class="tok-c"># Paranoia Level 1 &mdash; low false positives for API traffic</span>
+<span class="tok-c"># Blocking paranoia level 1 - fewest false positives for API traffic</span>
+<span class="tok-c"># (CRS 4 renamed tx.paranoia_level to tx.blocking_paranoia_level)</span>
 SecAction \
-  "id:900000,phase:1,nolog,pass,setvar:tx.paranoia_level=1"
+  <span class="tok-s">"id:900000,phase:1,nolog,pass,t:none,setvar:tx.blocking_paranoia_level=1"</span>
 
-<span class="tok-c"># Detection anomaly threshold (score above this triggers alert/block)</span>
+<span class="tok-c"># Anomaly score thresholds (a score at or above these blocks the request)</span>
 SecAction \
-  "id:900110,phase:1,nolog,pass,\
-   setvar:tx.inbound_anomaly_score_threshold=5,\
-   setvar:tx.outbound_anomaly_score_threshold=4"
+  <span class="tok-s">"id:900110,phase:1,nolog,pass,t:none,\</span>
+   setvar:tx.inbound_anomaly_score_threshold=<span class="tok-n">5</span>,\
+   setvar:tx.outbound_anomaly_score_threshold=<span class="tok-n">4</span><span class="tok-s">"</span>
 
-<span class="tok-c"># API-specific: allow FAPI / Open Banking headers without triggering header injection rules</span>
-SecRuleUpdateTargetByTag "attack-injection-http" \
-  "!REQUEST_HEADERS:x-fapi-interaction-id"
-SecRuleUpdateTargetByTag "attack-injection-http" \
-  "!REQUEST_HEADERS:x-jws-signature"
-SecRuleUpdateTargetByTag "attack-injection-http" \
-  "!REQUEST_HEADERS:x-idempotency-key"
+<span class="tok-c"># FAPI / Open Banking headers: exclude them from the protocol-attack rules</span>
+SecRuleUpdateTargetByTag <span class="tok-s">"attack-protocol"</span> <span class="tok-s">"!REQUEST_HEADERS:x-fapi-interaction-id"</span>
+SecRuleUpdateTargetByTag <span class="tok-s">"attack-protocol"</span> <span class="tok-s">"!REQUEST_HEADERS:x-jws-signature"</span>
+SecRuleUpdateTargetByTag <span class="tok-s">"attack-protocol"</span> <span class="tok-s">"!REQUEST_HEADERS:x-idempotency-key"</span>
 
-<span class="tok-c"># Exclusion for non-Latin (e.g. Arabic) name fields that may trigger PL2 rules</span>
-SecRuleUpdateTargetById 942100 \
-  "!REQUEST_BODY:creditor.name"
-SecRuleUpdateTargetById 942100 \
-  "!REQUEST_BODY:debtor.name"
+<span class="tok-c"># Free-text name fields (for example Arabic names) can trip SQLi detection (942100).</span>
+<span class="tok-c"># JSON bodies are parsed into ARGS named json.&lt;path&gt;.</span>
+SecRuleUpdateTargetById <span class="tok-n">942100</span> <span class="tok-s">"!ARGS:json.creditor.name"</span>
+SecRuleUpdateTargetById <span class="tok-n">942100</span> <span class="tok-s">"!ARGS:json.debtor.name"</span>
 
-<span class="tok-c"># Enable SSRF detection rules (PL1 includes 931100, 931110, 931120)</span>
-<span class="tok-c"># Covers webhook URL parameters that could trigger internal SSRF</span>
-SecRuleEngine On
+<span class="tok-c"># URL parameters such as webhook callbacks are covered by the RFI rules (931xxx)</span>
+<span class="tok-c"># and by the SSRF rules added in CRS 4 - nothing extra to enable here.</span>
 
 <span class="tok-c"># Content-Type enforcement for JSON APIs</span>
-SecRule REQUEST_METHOD "!@streq GET" \
-  "id:990001,phase:1,deny,status:415,log,\
-   msg:'Expected Content-Type application/json',\
-   chain"
-  SecRule REQUEST_HEADERS:Content-Type "!@beginsWith application/json" \
-    "t:lowercase"</code></pre>
+SecRule REQUEST_METHOD <span class="tok-s">"!@streq GET"</span> \
+  <span class="tok-s">"id:990001,phase:1,deny,status:415,log,\</span>
+   msg:<span class="tok-s">'Expected Content-Type application/json'</span>,\
+   chain<span class="tok-s">"</span>
+  SecRule REQUEST_HEADERS:Content-Type <span class="tok-s">"!@beginsWith application/json"</span> \
+    <span class="tok-s">"t:lowercase"</span></code></pre>
           </div>
 
           <h2 id="bot-detection">Bot Detection and Rate Limit Bypass Prevention</h2>
@@ -430,7 +440,7 @@ SecRule REQUEST_METHOD "!@streq GET" \
               <tr><td>API4</td><td>Unrestricted Resource Consumption</td><td>Yes</td><td>Resource-type rate limits</td><td>rate-limiting-advanced</td><td>Volumetric spike above consent-class limit</td></tr>
               <tr><td>API5</td><td>Broken Function Level Authorization</td><td>Partially</td><td>Role-based function access; admin endpoint auth</td><td>ACL + OAS Validation</td><td>Non-admin token on admin-path</td></tr>
               <tr><td>API6</td><td>Unrestricted Access to Sensitive Business Flows</td><td>Partially</td><td>Business-flow rate limits; step validation</td><td>rate-limiting-advanced + bot-detection</td><td>Automation velocity pattern</td></tr>
-              <tr><td>API7</td><td>Server-Side Request Forgery</td><td>Yes</td><td>Validate webhook URLs against allowlist</td><td>CRS 4.0 rule 931100</td><td>Internal IP or metadata endpoint in URL param</td></tr>
+              <tr><td>API7</td><td>Server-Side Request Forgery</td><td>Yes</td><td>Validate webhook URLs against allowlist</td><td>CRS 4.0 RFI (931xxx) rules and the SSRF rules added in CRS 4</td><td>Internal IP or metadata endpoint in URL param</td></tr>
               <tr><td>API8</td><td>Security Misconfiguration</td><td>Partially</td><td>Harden config; disable debug; enforce TLS</td><td>OAS Validation + CRS</td><td>Debug params; non-HTTPS; unlisted endpoint access</td></tr>
               <tr><td>API9</td><td>Improper Inventory Management</td><td>Partially</td><td>API inventory; deprecation policy</td><td>OAS Validation (reject unknown paths)</td><td>Requests to undocumented paths</td></tr>
               <tr><td>API10</td><td>Unsafe Consumption of APIs</td><td>No</td><td>Validate &amp; sanitise third-party API responses</td><td>Response Transformer (content-type check)</td><td>Unexpected content-type from upstream</td></tr>
@@ -442,7 +452,7 @@ SecRule REQUEST_METHOD "!@streq GET" \
           <ol class="step-list">
             <li><strong>Map OWASP API Top 10 to your API estate.</strong> For each item, identify which APIs are exposed to the relevant threat, what the current mitigation is, and what the gap is. BOLA and API10 gaps are application-layer responsibilities &mdash; assign owners in the API team, not the security team alone.</li>
             <li><strong>Enable OAS Validation on all external routes.</strong> Request body, query parameters, and URI parameters. Response body validation in notification-only mode initially. Move to blocking mode for response validation after a 30-day baseline period confirms no false positives.</li>
-            <li><strong>Deploy CRS 4.0 in detection-only mode first.</strong> Run for 30 days, catalogue false positives by rule ID, write exclusions for Open Banking header formats and non-Latin character fields. Switch to blocking mode only after FP rate is below 0.01% of legitimate traffic.</li>
+            <li><strong>Deploy CRS 4.0 in detection-only mode first.</strong> Run for 30 days, catalogue false positives by rule ID, write exclusions for Open Banking header formats and non-Latin character fields. Switch to blocking mode only once the false-positive rate is below a threshold you have agreed with the business (for example, 0.01% of legitimate traffic).</li>
             <li><strong>Set rate limits per consent class.</strong> For example, PIS: 10 initiations per TPP per minute. AIS: 4 calls per second per TPP per account. CoF: 30 calls per minute per merchant. Rate limits must be enforced in a distributed counter (Redis) &mdash; a per-Kong-node counter is trivially bypassed by sending traffic to multiple nodes.</li>
             <li><strong>Configure SIEM integration.</strong> All WAF block events, CRS score-threshold events, and BOLA anomaly events must reach the SIEM with TPP client_id, source IP, rule ID, request URI, and timestamp. Regulatory examinations expect a complete security event log attributable to specific registered TPPs.</li>
             <li><strong>Establish a false-positive SLA.</strong> 30 minutes from detection to WAF rule exclusion for a confirmed FP affecting a registered TPP. False positive triage must be part of the on-call runbook, not an ad-hoc process. Document every exclusion with rule ID, justification, approver, and date.</li>
@@ -464,6 +474,23 @@ SecRule REQUEST_METHOD "!@streq GET" \
             <li>Undocumented path access logged and alerted; &gt;5 requests / 60 s triggers SIEM alert.</li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="../api-gateway/rate-limiting-and-throttling.html"><span class="lab-related__kicker">Lab &middot; API Gateway</span><span class="lab-related__name">Rate Limiting &amp; Throttling at Scale</span></a></li>
+              <li><a class="lab-related__link" href="fapi-2-open-banking.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: FAPI 2.0 &amp; Open Banking Security</span></a></li>
+              <li><a class="lab-related__link" href="oauth-and-mtls.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: OAuth 2.1 &amp; mTLS</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/api-waf-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">API WAF and the OWASP API Top 10: The Security Decision Your CISO and CTO Both Have to Own</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="fapi-2-open-banking.html">
               <div class="article-nav__label">&larr; Previous</div>

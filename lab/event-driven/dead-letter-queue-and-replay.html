@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,58 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Event-Driven: Dead Letter Queue Design & Event Replay Patterns",
+    "headline": "Dead Letter Queue Design & Event Replay Patterns",
     "description": "Dead letter queue topology patterns for Kafka and IBM MQ, poison message classification, event replay with idempotency guarantees, and DLQ observability — production patterns for regulated, high-volume messaging.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/event-driven/dead-letter-queue-and-replay.html"
     },
     "url": "https://www.wbadawi.info/lab/event-driven/dead-letter-queue-and-replay.html",
+    "inLanguage": "en",
+    "wordCount": 3386,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Event-Driven Architecture &mdash; Lab &mdash; Waleed Albadawi",
+      "@type": "CollectionPage",
+      "name": "Event-Driven Architecture — Technical Lab",
       "url": "https://www.wbadawi.info/lab/event-driven.html"
-    }
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Event-Driven Architecture",
+        "item": "https://www.wbadawi.info/lab/event-driven.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Dead Letter Queue Design & Event Replay Patterns",
+        "item": "https://www.wbadawi.info/lab/event-driven/dead-letter-queue-and-replay.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -127,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Dead Letter Queue &amp; Replay</div>
           <span class="overline">Lab Article</span>
           <h1>Dead Letter Queue Design &amp; Event Replay Patterns</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-09-05">5 September 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>15 min read</span>
+          </div>
           <p class="lead">The poison message problem, DLQ topology for Kafka 3.7 and IBM MQ 9.3, message failure classification, replay with idempotency guarantees, and the handling regulators expect for failed payment, claim or order messages &mdash; with ISO 20022 payments as the worked example.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -158,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Kafka 3.7 / IBM MQ 9.3 / Strimzi / Spring Boot 3.3</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -249,10 +262,10 @@
       <span class="tok-k">properties</span>:
         <span class="tok-k">isolation.level</span>: <span class="tok-s">read_committed</span>
         <span class="tok-k">max.poll.records</span>: <span class="tok-n">50</span>
-        <span class="tok-k">max.poll.interval.ms</span>: <span class="tok-n">30000</span>   <span class="tok-c"># tight bound — prevents broker treating consumer as dead during slow processing</span>
+        <span class="tok-k">max.poll.interval.ms</span>: <span class="tok-n">30000</span>   <span class="tok-c"># must exceed max.poll.records x worst-case processing time, or the group rebalances mid-batch</span>
     <span class="tok-k">listener</span>:
       <span class="tok-k">ack-mode</span>: <span class="tok-s">MANUAL_IMMEDIATE</span>
-      <span class="tok-k">missing-topics-fatal</span>: <span class="tok-n">true</span>     <span class="tok-c"># fail fast if DLT topic not pre-provisioned</span>
+      <span class="tok-k">missing-topics-fatal</span>: <span class="tok-n">true</span>     <span class="tok-c"># fail fast if a subscribed topic does not exist (create DLT topics up front too)</span>
 
 <span class="tok-c"># Strimzi KafkaTopic CR for DLT (apply separately via GitOps)</span>
 <span class="tok-c"># metadata.name: payments.events.v1-dlt</span>
@@ -268,40 +281,28 @@
           <p>IBM MQ&rsquo;s DLQ is a first-class concept in the queue manager. Every queue manager has a single dead letter queue configured via the <code>DEADQ</code> attribute. Messages are moved to the DLQ by the queue manager itself when they cannot be delivered &mdash; for example, when the destination queue is full, the message has expired, or the message exceeds the maximum message length. Consumer-driven failure (a message the application cannot process) requires the application to explicitly move the message to the DLQ after exceeding its retry threshold.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>AMQMDLQ.conf &mdash; MQ DLQ handler configuration</span><span class="code-block__lang">properties</span></div>
-<pre><code><span class="tok-c"># IBM MQ Dead Letter Queue Handler (AMQMDLQ) configuration</span>
-<span class="tok-c"># Run as: runmqdlq APP.DEAD.LETTER.QUEUE QM1 < AMQMDLQ.conf</span>
+            <div class="code-block__header"><span>AMQMDLQ.rules &mdash; MQ DLQ handler rules table</span><span class="code-block__lang">dlq rules</span></div>
+<pre><code><span class="tok-c">* IBM MQ dead-letter queue handler rules table</span>
+<span class="tok-c">* Run as: runmqdlq APP.DEAD.LETTER.QUEUE QM1 &lt; AMQMDLQ.rules</span>
+<span class="tok-c">* Comment lines start with an asterisk; each rule is one line (continue with +).</span>
 
-<span class="tok-c"># --- Global parameters ---</span>
-<span class="tok-k">INPUTQ</span>(<span class="tok-s">APP.DEAD.LETTER.QUEUE</span>)          <span class="tok-c"># DLQ name, must match ALTER QMGR DEADQ()</span>
-<span class="tok-k">INPUTQM</span>(<span class="tok-s">QM1</span>)                         <span class="tok-c"># queue manager name</span>
-<span class="tok-k">WAIT</span>(<span class="tok-s">YES</span>)                                <span class="tok-c"># wait for new messages; don't exit when queue empty</span>
-<span class="tok-k">RETRYINT</span>(<span class="tok-s">60</span>)                             <span class="tok-c"># retry interval in seconds for action(retry)</span>
+<span class="tok-c">* Control data: input queue (must match ALTER QMGR DEADQ), queue manager,</span>
+<span class="tok-c">* keep waiting for new messages, retry interval in seconds for ACTION(RETRY)</span>
+INPUTQ(APP.DEAD.LETTER.QUEUE) INPUTQM(QM1) WAIT(YES) RETRYINT(<span class="tok-n">60</span>)
 
-<span class="tok-c"># --- Rules (evaluated in order; first match wins) ---</span>
+<span class="tok-c">* Rule 1: payment-gateway messages rejected on authorisation -&gt; regulatory hold queue, never discard</span>
+REASON(MQRC_NOT_AUTHORIZED) FORMAT(MQSTR) APPLNAME(PAYGW*) +
+  ACTION(FWD) FWDQ(APP.PAYMENT.REGULATORY.HOLD) FWDQM(QM1)
 
-<span class="tok-c"># Rule 1: messages from the payment gateway apps → regulatory hold queue, never auto-delete</span>
-<span class="tok-k">REASON</span>(<span class="tok-s">MQRC_NOT_AUTHORIZED</span>)
-<span class="tok-k">FORMAT</span>(<span class="tok-s">MQSTR</span>)
-<span class="tok-k">APPLNAME</span>(<span class="tok-s">PAYGW*</span>)
-<span class="tok-k">ACTION</span>(<span class="tok-s">FWD</span>)                              <span class="tok-c"># forward — do not discard</span>
-<span class="tok-k">FWDQ</span>(<span class="tok-s">APP.PAYMENT.REGULATORY.HOLD</span>)
-<span class="tok-k">FWDQM</span>(<span class="tok-s">QM1</span>)
+<span class="tok-c">* Rule 2: destination queue full -&gt; retry the put up to 5 times, RETRYINT apart.</span>
+<span class="tok-c">* If the retries fail, the handler moves on to the next matching rule (rule 4).</span>
+REASON(MQRC_Q_FULL) ACTION(RETRY) RETRY(<span class="tok-n">5</span>)
 
-<span class="tok-c"># Rule 2: Queue-full condition — retry up to 5 times before forwarding to ops queue</span>
-<span class="tok-k">REASON</span>(<span class="tok-s">MQRC_Q_FULL</span>)
-<span class="tok-k">RETRY</span>(<span class="tok-s">5</span>)
-<span class="tok-k">ACTION</span>(<span class="tok-s">RETRY</span>)
+<span class="tok-c">* Rule 3: destination put-inhibited (often during maintenance) -&gt; retry as well</span>
+REASON(MQRC_PUT_INHIBITED) ACTION(RETRY) RETRY(<span class="tok-n">5</span>)
 
-<span class="tok-c"># Rule 3: Expired messages — log reason code and discard (expiry is by design)</span>
-<span class="tok-k">REASON</span>(<span class="tok-s">MQRC_EXPIRY_ERROR</span>)
-<span class="tok-k">ACTION</span>(<span class="tok-s">DISCARD</span>)
-
-<span class="tok-c"># Rule 4: All other reasons → forward to ops monitoring queue</span>
-<span class="tok-k">REASON</span>(<span class="tok-s">*</span>)
-<span class="tok-k">ACTION</span>(<span class="tok-s">FWD</span>)
-<span class="tok-k">FWDQ</span>(<span class="tok-s">APP.OPS.DEAD.MESSAGES</span>)
-<span class="tok-k">FWDQM</span>(<span class="tok-s">QM1</span>)</code></pre>
+<span class="tok-c">* Rule 4: everything else -&gt; ops monitoring queue for manual investigation</span>
+ACTION(FWD) FWDQ(APP.OPS.DEAD.MESSAGES) FWDQM(QM1)</code></pre>
           </div>
 
           <p>MQ DLQ reason codes to monitor explicitly: <code>MQRC_Q_FULL</code> (2053) indicates a backed-up destination; <code>MQRC_NOT_AUTHORIZED</code> (2035) indicates an ACL misconfiguration; <code>MQRC_MSG_TOO_BIG_FOR_Q</code> (2030) indicates a message size limit violation that requires a schema or application change. Each reason code has a different remediation path and should trigger a different alert severity.</p>
@@ -525,6 +526,23 @@
             <li>Test the DLQ handler with failure injection: schema validation failure, transient downstream 503, business rule violation, and regulatory hold scenarios in a lower environment before production rollout.</li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="../data-sync/idempotent-consumer-exactly-once.html"><span class="lab-related__kicker">Lab &middot; Data Synchronisation</span><span class="lab-related__name">Idempotent Consumers &amp; Exactly-Once Semantics: Payment Deduplication at Scale</span></a></li>
+              <li><a class="lab-related__link" href="kafka-and-mq.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">Event-Driven Architecture: Kafka &amp; IBM MQ</span></a></li>
+              <li><a class="lab-related__link" href="../field-playbooks/first-30-minutes-of-an-incident.html"><span class="lab-related__kicker">Lab &middot; Field Playbooks</span><span class="lab-related__name">The First 30 Minutes of an Integration Incident</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/dead-letter-queue-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Dead Letter Queues: The Messaging Decision That Separates Resilient Platforms from Brittle Ones</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="saga-patterns-distributed-transactions.html">
               <div class="article-nav__label">&larr; Previous</div>

@@ -6,7 +6,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scatter-Gather: Multi-Source Aggregation Across Fragmented Systems of Record &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Building a production-grade scatter-gather layer that assembles one response from several systems of record under a hard latency budget: parallel fan-out, timeout budgets, partial-result handling, IBM ACE and Spring Boot implementations, and the caching strategies that keep cached p99 latency under 300ms. Worked example: an open-banking account-information API.">
+  <meta name="description" content="Building a production-grade scatter-gather layer that assembles one response from several systems of record under a hard latency budget: parallel fan-out, timeout budgets, partial-result handling, IBM ACE and Spring Boot implementations, and the caching strategy that serves repeat calls without a fan-out. Worked example: an open-banking account-information API.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Scatter-Gather: Multi-Source Aggregation Across Fragmented Systems of Record &mdash; Lab &mdash; Waleed Albadawi">
   <meta property="og:description" content="Fan-out, timeout budgets, partial results, and caching &mdash; building an aggregation layer that assembles one consistent response from fragmented systems of record.">
@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -42,62 +43,69 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Scatter-Gather: Multi-Source Aggregation Across Fragmented Systems of Record",
+    "description": "Building a production-grade scatter-gather layer that assembles one response from several systems of record under a hard latency budget: parallel fan-out, timeout budgets, partial-result handling, IBM ACE and Spring Boot implementations, and the caching strategy that serves repeat calls without a fan-out. Worked example: an open-banking account-information API.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-14",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/integration-patterns/scatter-gather-aggregation.html"
     },
     "url": "https://www.wbadawi.info/lab/integration-patterns/scatter-gather-aggregation.html",
+    "inLanguage": "en",
+    "wordCount": 3879,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Integration Design Patterns &mdash; Lab &mdash; Waleed Albadawi",
+      "@type": "CollectionPage",
+      "name": "Integration Design Patterns — Technical Lab",
       "url": "https://www.wbadawi.info/lab/integration-patterns.html"
     },
-    "description": "Building a production-grade scatter-gather layer that assembles one response from several systems of record under a hard latency budget: parallel fan-out, timeout budgets, partial-result handling, IBM ACE and Spring Boot implementations, and the caching strategies that keep cached p99 latency under 300ms. Worked example: an open-banking account-information API.",
     "proficiencyLevel": "Expert",
     "audience": {
       "@type": "Audience",
       "audienceType": "Software Engineers, Integration Architects"
     }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Integration Design Patterns",
+        "item": "https://www.wbadawi.info/lab/integration-patterns.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Scatter-Gather: Multi-Source Aggregation Across Fragmented Systems of Record",
+        "item": "https://www.wbadawi.info/lab/integration-patterns/scatter-gather-aggregation.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -132,7 +140,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>Scatter-Gather Aggregation</div>
           <span class="overline">Lab Article</span>
           <h1>Scatter-Gather: Multi-Source Aggregation Across Fragmented Systems of Record</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-11-14">14 November 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>17 min read</span>
+          </div>
           <p class="lead">Fanning out queries across a fragmented estate &mdash; a legacy system of record, a modern core, a card processor, an investment platform &mdash; and assembling one consistent response under a hard wall-clock budget: timeout allocation, partial-result semantics, IBM ACE and Spring Boot wiring, and the caching layer that makes it survivable in production. The worked example is an open-banking account-information API; the same mechanics serve a telecoms customer view, an insurer&rsquo;s policy portfolio or a citizen record assembled across agencies.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -165,9 +180,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> IBM ACE 12 / Spring Boot 3 / Resilience4j 2 / Redis 7 / Open Banking APIs / CompletableFuture</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Nov 14, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -251,8 +263,8 @@
                 <text x="297" y="195" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Product Registry Lookup</text>
                 <text x="297" y="208" text-anchor="middle" fill="#71717a" font-size="8">derive target list</text>
                 <rect x="225" y="223" width="145" height="30" rx="5" fill="#1c1c28" stroke="#fbbf24"/>
-                <text x="297" y="241" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Fan-out / Fan-in</text>
-                <text x="297" y="253" text-anchor="middle" fill="#71717a" font-size="8">CompletableFuture / ACE async</text>
+                <text x="297" y="241" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Parallel fan-out</text>
+                <text x="297" y="253" text-anchor="middle" fill="#71717a" font-size="8">CompletableFuture / ACE aggregation</text>
 
                 <!-- Downstream systems -->
                 <rect x="460" y="40" width="150" height="55" rx="6" fill="#16161f" stroke="#4a9eff"/>
@@ -320,70 +332,83 @@
           </div>
 
           <h2 id="ace-implementation">IBM ACE implementation</h2>
-          <p>IBM ACE 12 implements scatter-gather through its <code>Fan-out</code> and <code>Fan-in</code> message flow nodes, introduced as a production-ready pattern in ACE 12.0.6. The <code>Fan-out</code> node dispatches a copy of the incoming message to N parallel flows simultaneously; each flow processes its branch independently; the <code>Fan-in</code> node aggregates the results when either all branches complete or the fan-in timeout expires.</p>
+          <p>IBM ACE has no single &ldquo;fan-out&rdquo; node. It implements scatter-gather with its <strong>aggregation nodes</strong> &mdash; <code>AggregateControl</code>, <code>AggregateRequest</code> and <code>AggregateReply</code> &mdash; which correlate asynchronous request/reply branches through IBM MQ, or with the <strong>Group nodes</strong> &mdash; <code>GroupScatter</code>, <code>GroupGather</code> and <code>GroupComplete</code> &mdash; which do the same job for asynchronous request nodes such as <code>HTTPAsyncRequest</code>/<code>HTTPAsyncResponse</code> and keep the group state in the integration server rather than on MQ queues. The walk-through below uses the aggregation nodes, because the legacy-core branch is MQ request/reply; the assembly logic is the same with the Group nodes. Check node properties against the IBM documentation for your ACE release.</p>
 
           <ol class="step-list">
             <li>
-              <h4>Product registry lookup (Compute node)</h4>
-              <p>A <code>Compute</code> node or <code>DatabaseRetrieve</code> node queries the product registry for the consented customer. The result is a list of system codes (<code>LEGACY</code>, <code>DIGITAL</code>, <code>CARD</code>, <code>INVEST</code>) stored in a local environment variable. This list drives the dynamic fan-out in the next node.</p>
+              <h3>Product registry lookup (Compute node)</h3>
+              <p>A <code>Compute</code> or <code>DatabaseRetrieve</code> node queries the product registry for the consented customer and stores the target system codes (<code>LEGACY</code>, <code>DIGITAL</code>, <code>CARD</code>, <code>INVEST</code>) in the <code>LocalEnvironment</code>. The same list is cached against the request so the reply side can work out which systems did not answer.</p>
             </li>
             <li>
-              <h4>Fan-out node configuration</h4>
-              <p>Configure the <code>Fan-out</code> node with a <em>distributor</em> expression that iterates over the system-code list. Set the <code>Fan-out mode</code> to <code>Parallel</code>. Each branch receives a copy of the original request message plus the system code for that branch injected into the local environment tree.</p>
+              <h3>Start the aggregation (AggregateControl node)</h3>
+              <p>The <code>AggregateControl</code> node marks the start of an aggregation and carries its <code>Timeout</code>. That property is set in whole seconds, so a 2,400ms ceiling cannot be expressed exactly: set it to 2 seconds and size every branch timeout inside it. If the legacy core&rsquo;s p99 does not fit inside that window, that is a signal to use the Spring Boot implementation below, where millisecond budgets are natural.</p>
             </li>
             <li>
-              <h4>Per-branch adapter subflows</h4>
-              <p>Each branch routes via a <code>RouteToLabel</code> node to a system-specific subflow. The legacy-core subflow translates the request to the core&rsquo;s fixed-length message format via DFDL and calls it over MQ; the digital core subflow calls a REST API; the card subflow calls a SOAP/XML gateway. Each subflow normalises its response to the canonical account schema before returning to the fan-in node.</p>
+              <h3>Dynamic fan-out (Compute + RouteToLabel)</h3>
+              <p>A <code>Compute</code> node propagates one request per system on the target list &mdash; via <code>RouteToLabel</code> and <code>Label</code> nodes, or <code>PROPAGATE TO TERMINAL</code> to one output terminal per branch. Because the aggregation counts only the requests actually sent, a customer with no investment holdings never waits for the investment platform.</p>
             </li>
             <li>
-              <h4>Per-branch timeout configuration</h4>
-              <p>Wrap each branch&rsquo;s outbound call in an ACE <code>Timeout Control</code> flow with the per-system timeout value. When a timeout fires, the timeout flow propagates a structured error message to the fan-in node using the <code>Failure</code> terminal &mdash; not a Java exception. The fan-in node must be configured to accept failure messages as valid partial inputs.</p>
+              <h3>Per-branch requests (MQOutput + AggregateRequest)</h3>
+              <p>Each branch builds its request and sends it with an <code>MQOutput</code> node wired to an <code>AggregateRequest</code> node, whose <code>Folder name</code> property (<code>LEGACY</code>, <code>DIGITAL</code>, <code>CARD</code>, <code>INVEST</code>) labels the reply. The legacy-core adapter translates the request to the core&rsquo;s fixed-length format with DFDL; adapters for REST or SOAP back ends sit behind their own request queues, so every branch looks like MQ request/reply to the aggregation. Each adapter normalises its response to the canonical account schema.</p>
             </li>
             <li>
-              <h4>Fan-in aggregation</h4>
-              <p>Configure the <code>Fan-in</code> node to aggregate results as they arrive. Set the fan-in timeout to 2,400ms (the hard ceiling). Configure <code>Allow partial completion</code> to <code>true</code> &mdash; this is the flag that determines whether a timed-out or erroring branch causes the entire aggregation to fail or allows the available results to proceed. For an account-information API, partial is almost always the right choice.</p>
+              <h3>Per-branch timeouts</h3>
+              <p>Give each adapter its own timeout below the aggregation timeout &mdash; the request node&rsquo;s timeout for HTTP back ends, message expiry plus a bounded reply wait for MQ &mdash; and have it reply with a structured error (<code>status: ERROR</code> or <code>TIMEOUT</code>) rather than stay silent. That lets the assembly tell &ldquo;answered with an error&rdquo; from &ldquo;did not answer at all&rdquo;.</p>
             </li>
             <li>
-              <h4>Response assembly (Compute node)</h4>
-              <p>A final <code>Compute</code> node iterates over the aggregated results, identifies which branches succeeded and which timed out or failed, and assembles the API&rsquo;s JSON response. It appends a <code>partialData</code> flag and per-system <code>status</code> field when any branch did not return a full result &mdash; use the standard&rsquo;s degraded-response indicator where it defines one, and add one where it does not.</p>
+              <h3>Collect replies (AggregateReply node)</h3>
+              <p>Replies arrive on the reply queue through an <code>MQInput</code> node and the <code>AggregateReply</code> node correlates them. When every reply is in, it propagates the combined message on its <code>Out</code> terminal; when the <code>AggregateControl</code> timeout expires first, it propagates whatever has arrived on its <code>Timeout</code> terminal. Wire both paths to the assembly &mdash; the timeout path through a small <code>Compute</code> node that sets a partial flag &mdash; so a slow branch yields a flagged partial response, not an error. Replies that arrive after the timeout leave through the <code>Unknown</code> terminal: log them.</p>
+            </li>
+            <li>
+              <h3>Response assembly (Compute node)</h3>
+              <p>A final <code>Compute</code> node walks the aggregated reply tree (<code>InputRoot.ComIbmAggregateReplyBody</code>, one folder per branch), copies the accounts from the branches that succeeded, and assembles the API&rsquo;s JSON response. It appends a <code>partialData</code> flag and the degraded systems when any branch did not return a full result &mdash; use the standard&rsquo;s degraded-response indicator where it defines one, and add one where it does not.</p>
             </li>
           </ol>
 
           <div class="code-block">
-            <div class="code-block__header"><span>AccountAggregator.esql &mdash; ACE fan-in result assembly</span><span class="code-block__lang">esql</span></div>
-<pre><code><span class="tok-k">CREATE COMPUTE MODULE</span> AssembleAggregatedAccounts
-  <span class="tok-k">CREATE FUNCTION</span> Main() <span class="tok-k">RETURNS</span> BOOLEAN
+            <div class="code-block__header"><span>AccountAggregator.esql &mdash; assembling the AggregateReply output</span><span class="code-block__lang">esql</span></div>
+<pre><code><span class="tok-c">-- Reply flow: MQInput (reply queue) -&gt; AggregateReply</span>
+<span class="tok-c">--   Out terminal     -&gt; AssembleAggregatedAccounts (every branch answered)</span>
+<span class="tok-c">--   Timeout terminal -&gt; MarkPartial -&gt; AssembleAggregatedAccounts (what arrived in time)</span>
+<span class="tok-k">CREATE</span> <span class="tok-k">COMPUTE</span> <span class="tok-k">MODULE</span> AssembleAggregatedAccounts
+  <span class="tok-k">CREATE</span> <span class="tok-k">FUNCTION</span> Main() <span class="tok-k">RETURNS</span> <span class="tok-k">BOOLEAN</span>
   <span class="tok-k">BEGIN</span>
-    <span class="tok-k">DECLARE</span> partial   <span class="tok-k">BOOLEAN</span>  FALSE;
-    <span class="tok-k">DECLARE</span> acctIndex <span class="tok-k">INTEGER</span> 1;
-    <span class="tok-k">DECLARE</span> branch    <span class="tok-k">REFERENCE TO</span> InputRoot.XMLNSC.FanInOutput.Branch[1];
+    <span class="tok-c">-- Each reply sits under a folder named by its AggregateRequest node's</span>
+    <span class="tok-c">-- Folder name property: LEGACY, DIGITAL, CARD or INVEST.</span>
+    <span class="tok-k">DECLARE</span> partial   <span class="tok-k">BOOLEAN</span> COALESCE(Environment.Variables.AggregationTimedOut, <span class="tok-k">FALSE</span>);
+    <span class="tok-k">DECLARE</span> acctIndex <span class="tok-k">INTEGER</span> <span class="tok-n">1</span>;
+    <span class="tok-k">DECLARE</span> reply     <span class="tok-k">REFERENCE</span> <span class="tok-k">TO</span> InputRoot.ComIbmAggregateReplyBody.*[<span class="tok-n">1</span>];
 
-    <span class="tok-k">WHILE</span> LASTMOVE(branch) <span class="tok-k">DO</span>
-      <span class="tok-k">IF</span> branch.status = <span class="tok-s">'SUCCESS'</span> <span class="tok-k">THEN</span>
-        <span class="tok-c">-- Copy canonical account list from this branch into output</span>
-        <span class="tok-k">DECLARE</span> acct <span class="tok-k">REFERENCE TO</span> branch.CanonicalAccounts.Account[1];
+    <span class="tok-k">SET</span> OutputRoot.Properties = InputRoot.Properties;
+    <span class="tok-k">CREATE</span> <span class="tok-k">LASTCHILD</span> <span class="tok-k">OF</span> OutputRoot <span class="tok-k">DOMAIN</span>(<span class="tok-s">'JSON'</span>);
+    <span class="tok-k">CREATE</span> <span class="tok-k">FIELD</span> OutputRoot.JSON.Data.accounts <span class="tok-k">IDENTITY</span> (JSON.Array)accounts;
+    <span class="tok-k">CREATE</span> <span class="tok-k">FIELD</span> OutputRoot.JSON.Data.meta.respondedSystems <span class="tok-k">IDENTITY</span> (JSON.Array)respondedSystems;
+
+    <span class="tok-k">WHILE</span> LASTMOVE(reply) <span class="tok-k">DO</span>
+      <span class="tok-k">IF</span> reply.JSON.Data.status = <span class="tok-s">'SUCCESS'</span> <span class="tok-k">THEN</span>
+        <span class="tok-k">CREATE</span> <span class="tok-k">LASTCHILD</span> <span class="tok-k">OF</span> OutputRoot.JSON.Data.meta.respondedSystems
+          <span class="tok-k">NAME</span> <span class="tok-s">'Item'</span> <span class="tok-k">VALUE</span> FIELDNAME(reply);
+        <span class="tok-c">-- Copy the canonical accounts this branch returned</span>
+        <span class="tok-k">DECLARE</span> acct <span class="tok-k">REFERENCE</span> <span class="tok-k">TO</span> reply.JSON.Data.accounts.Item[<span class="tok-n">1</span>];
         <span class="tok-k">WHILE</span> LASTMOVE(acct) <span class="tok-k">DO</span>
           <span class="tok-k">SET</span> OutputRoot.JSON.Data.accounts.Item[acctIndex] = acct;
-          <span class="tok-k">SET</span> acctIndex = acctIndex + 1;
-          <span class="tok-k">MOVE</span> acct NEXTSIBLING;
-        <span class="tok-k">END WHILE</span>;
-      <span class="tok-k">ELSEIF</span> branch.status = <span class="tok-s">'TIMEOUT'</span>
-          <span class="tok-k">OR</span> branch.status = <span class="tok-s">'ERROR'</span> <span class="tok-k">THEN</span>
-        <span class="tok-k">SET</span> partial = TRUE;
-        <span class="tok-c">-- Log the degraded system for the response metadata</span>
-        <span class="tok-k">SET</span> OutputRoot.JSON.Data.meta.degradedSystems[] = branch.systemCode;
-      <span class="tok-k">END IF</span>;
-      <span class="tok-k">MOVE</span> branch NEXTSIBLING;
-    <span class="tok-k">END WHILE</span>;
+          <span class="tok-k">SET</span> acctIndex = acctIndex + <span class="tok-n">1</span>;
+          <span class="tok-k">MOVE</span> acct <span class="tok-k">NEXTSIBLING</span> <span class="tok-k">REPEAT</span> <span class="tok-k">NAME</span>;
+        <span class="tok-k">END</span> <span class="tok-k">WHILE</span>;
+      <span class="tok-k">ELSE</span>
+        <span class="tok-k">SET</span> partial = <span class="tok-k">TRUE</span>;   <span class="tok-c">-- the branch answered with ERROR or TIMEOUT</span>
+      <span class="tok-k">END</span> <span class="tok-k">IF</span>;
+      <span class="tok-k">MOVE</span> reply <span class="tok-k">NEXTSIBLING</span>;
+    <span class="tok-k">END</span> <span class="tok-k">WHILE</span>;
 
-    <span class="tok-k">SET</span> OutputRoot.JSON.Data.meta.partialData = partial;
+    <span class="tok-c">-- A branch that never answered has no folder at all: the degraded systems are</span>
+    <span class="tok-c">-- the cached target list minus respondedSystems (added by the next node).</span>
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.meta.partialData    = partial;
     <span class="tok-k">SET</span> OutputRoot.JSON.Data.meta.queryTimestamp =
-        CAST(CURRENT_TIMESTAMP <span class="tok-k">AS CHARACTER</span> FORMAT <span class="tok-s">'IU'</span>);
-
-    <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out1'</span>;
-    <span class="tok-k">RETURN</span> FALSE;
+        <span class="tok-k">CAST</span>(CURRENT_TIMESTAMP <span class="tok-k">AS</span> <span class="tok-k">CHARACTER</span> <span class="tok-k">FORMAT</span> <span class="tok-s">'IU'</span>);
+    <span class="tok-k">RETURN</span> <span class="tok-k">TRUE</span>;
   <span class="tok-k">END</span>;
-<span class="tok-k">END MODULE</span>;</code></pre>
+<span class="tok-k">END</span> <span class="tok-k">MODULE</span>;</code></pre>
           </div>
 
           <h2 id="spring-boot-impl">Spring Boot implementation</h2>
@@ -392,11 +417,13 @@
           <div class="code-block">
             <div class="code-block__header"><span>AccountAggregationService.java &mdash; virtual-thread scatter-gather</span><span class="code-block__lang">java</span></div>
 <pre><code><span class="tok-k">@Service</span>
-<span class="tok-k">public class</span> <span class="tok-t">AccountAggregationService</span> {
+<span class="tok-k">public</span> <span class="tok-k">class</span> <span class="tok-t">AccountAggregationService</span> {
 
-    <span class="tok-k">private final</span> <span class="tok-t">ProductRegistryClient</span> registry;
-    <span class="tok-k">private final</span> <span class="tok-t">Map</span>&lt;<span class="tok-t">SystemCode</span>, <span class="tok-t">AccountSourceAdapter</span>&gt; adapters;
-    <span class="tok-k">private final</span> <span class="tok-t">AggregationCache</span> cache;
+    <span class="tok-k">private</span> <span class="tok-k">final</span> <span class="tok-t">ProductRegistryClient</span> registry;
+    <span class="tok-k">private</span> <span class="tok-k">final</span> <span class="tok-t">Map</span>&lt;<span class="tok-t">SystemCode</span>, <span class="tok-t">AccountSourceAdapter</span>&gt; adapters;
+    <span class="tok-k">private</span> <span class="tok-k">final</span> <span class="tok-t">AggregationCache</span> cache;
+    <span class="tok-c">// One shared executor: cheap with virtual threads, but never create one per request</span>
+    <span class="tok-k">private</span> <span class="tok-k">final</span> <span class="tok-t">ExecutorService</span> fanOut = <span class="tok-t">Executors</span>.newVirtualThreadPerTaskExecutor();
 
     <span class="tok-k">public</span> <span class="tok-t">AggregatedAccountResponse</span> aggregate(<span class="tok-t">String</span> consentId, <span class="tok-t">String</span> customerId) {
         <span class="tok-k">var</span> targets = registry.getProductSystems(customerId); <span class="tok-c">// e.g. [LEGACY, DIGITAL, CARD]</span>
@@ -408,10 +435,14 @@
         <span class="tok-k">var</span> all = <span class="tok-t">CompletableFuture</span>.allOf(futures.toArray(<span class="tok-k">new</span> <span class="tok-t">CompletableFuture</span>[<span class="tok-n">0</span>]));
 
         <span class="tok-k">try</span> {
-            all.get(<span class="tok-n">2_400</span>, <span class="tok-t">TimeUnit</span>.MILLISECONDS); <span class="tok-c">// hard ceiling</span>
+            all.get(2_400, <span class="tok-t">TimeUnit</span>.MILLISECONDS); <span class="tok-c">// hard ceiling</span>
         } <span class="tok-k">catch</span> (<span class="tok-t">TimeoutException</span> e) {
-            all.cancel(<span class="tok-k">false</span>); <span class="tok-c">// cancel remaining; collect completed below</span>
-        } <span class="tok-k">catch</span> (<span class="tok-t">InterruptedException</span> | <span class="tok-t">ExecutionException</span> ignored) {}
+            <span class="tok-c">// per-call timeouts normally fire first; stragglers are reported as TIMEOUT below</span>
+        } <span class="tok-k">catch</span> (<span class="tok-t">InterruptedException</span> e) {
+            <span class="tok-t">Thread</span>.currentThread().interrupt();
+        } <span class="tok-k">catch</span> (<span class="tok-t">ExecutionException</span> e) {
+            <span class="tok-c">// not expected: every branch converts its own failure into a SystemResult</span>
+        }
 
         <span class="tok-k">return</span> assembleResult(targets, futures);
     }
@@ -419,24 +450,29 @@
     <span class="tok-k">private</span> <span class="tok-t">CompletableFuture</span>&lt;<span class="tok-t">SystemResult</span>&gt; fetchWithTimeout(
             <span class="tok-t">SystemCode</span> system, <span class="tok-t">String</span> customerId, <span class="tok-t">String</span> consentId) {
 
+        <span class="tok-k">var</span> adapter = adapters.get(system);
         <span class="tok-k">return</span> <span class="tok-t">CompletableFuture</span>
-            .supplyAsync(() -&gt; adapters.get(system).fetchAccounts(customerId, consentId),
-                <span class="tok-t">Executors</span>.newVirtualThreadPerTaskExecutor())
-            .orTimeout(adapters.get(system).getTimeoutMs(), <span class="tok-t">TimeUnit</span>.MILLISECONDS)
+            .supplyAsync(() -&gt; adapter.fetchAccounts(customerId, consentId), fanOut)
+            .orTimeout(adapter.getTimeoutMs(), <span class="tok-t">TimeUnit</span>.MILLISECONDS)
             .handle((result, ex) -&gt; ex == <span class="tok-k">null</span>
                 ? <span class="tok-k">new</span> <span class="tok-t">SystemResult</span>(system, result, <span class="tok-t">Status</span>.SUCCESS)
                 : <span class="tok-k">new</span> <span class="tok-t">SystemResult</span>(system, <span class="tok-k">null</span>,
-                    ex <span class="tok-k">instanceof</span> <span class="tok-t">TimeoutException</span> ? <span class="tok-t">Status</span>.TIMEOUT : <span class="tok-t">Status</span>.ERROR));
+                    unwrap(ex) <span class="tok-k">instanceof</span> <span class="tok-t">TimeoutException</span> ? <span class="tok-t">Status</span>.TIMEOUT : <span class="tok-t">Status</span>.ERROR));
+    }
+
+    <span class="tok-k">private</span> <span class="tok-k">static</span> <span class="tok-t">Throwable</span> unwrap(<span class="tok-t">Throwable</span> ex) {
+        <span class="tok-k">return</span> (ex <span class="tok-k">instanceof</span> <span class="tok-t">CompletionException</span> &amp;&amp; ex.getCause() != <span class="tok-k">null</span>) ? ex.getCause() : ex;
     }
 
     <span class="tok-k">private</span> <span class="tok-t">AggregatedAccountResponse</span> assembleResult(
             <span class="tok-t">List</span>&lt;<span class="tok-t">SystemCode</span>&gt; targets,
             <span class="tok-t">List</span>&lt;<span class="tok-t">CompletableFuture</span>&lt;<span class="tok-t">SystemResult</span>&gt;&gt; futures) {
 
-        <span class="tok-k">var</span> results = futures.stream()
-            .map(f -&gt; f.isDone() &amp;&amp; !f.isCancelled() &amp;&amp; !f.isCompletedExceptionally()
-                ? f.join()
-                : <span class="tok-k">new</span> <span class="tok-t">SystemResult</span>(null, <span class="tok-k">null</span>, <span class="tok-t">Status</span>.TIMEOUT))
+        <span class="tok-c">// Pair futures with targets by index, so a branch that has not finished</span>
+        <span class="tok-c">// is still reported against the right system.</span>
+        <span class="tok-k">var</span> results = <span class="tok-t">IntStream</span>.range(<span class="tok-n">0</span>, targets.size())
+            .mapToObj(i -&gt; futures.get(i).getNow(
+                <span class="tok-k">new</span> <span class="tok-t">SystemResult</span>(targets.get(i), <span class="tok-k">null</span>, <span class="tok-t">Status</span>.TIMEOUT)))
             .toList();
 
         <span class="tok-k">var</span> accounts = results.stream()
@@ -449,7 +485,7 @@
             .map(r -&gt; r.system().name())
             .toList();
 
-        <span class="tok-k">return new</span> <span class="tok-t">AggregatedAccountResponse</span>(accounts, !degraded.isEmpty(), degraded);
+        <span class="tok-k">return</span> <span class="tok-k">new</span> <span class="tok-t">AggregatedAccountResponse</span>(accounts, !degraded.isEmpty(), degraded);
     }
 }</code></pre>
           </div>
@@ -462,7 +498,7 @@
           <h2 id="partial-results">Partial result handling</h2>
           <p>The partial result decision is the hardest business call in a scatter-gather implementation, and it must be made explicitly &mdash; not defaulted by the engineering team. The choices are:</p>
           <ul>
-            <li><strong>Return available + flag degraded:</strong> The response includes accounts from the systems that responded successfully. A <code>meta.partialData: true</code> flag and a <code>meta.degradedSystems</code> array tell the TPP which systems did not respond. Most open-banking standards accommodate this; confirm what yours requires during a declared degraded period.</li>
+            <li><strong>Return available + flag degraded:</strong> The response includes accounts from the systems that responded successfully. A <code>meta.partialData: true</code> flag and a <code>meta.degradedSystems</code> array tell the TPP which systems did not respond. Check whether your standard defines its own partial-data indicator, and what it requires during a declared degraded period.</li>
             <li><strong>Fail the entire request:</strong> If any mandatory system (e.g. the primary legacy core) does not respond, return a 503 with a Retry-After header. Use this for systems that hold accounts the customer is likely querying specifically &mdash; not a justified default for the investment platform if only 20% of customers have investment accounts.</li>
             <li><strong>Serve from stale cache:</strong> If a fresh partial result is unacceptable but a stale complete result from a prior successful query is acceptable, serve the cache entry and flag its age. This requires a cache TTL policy and a consent-aware cache key (covered in the next section).</li>
           </ul>
@@ -486,7 +522,7 @@
         <span class="tok-k">slowCallRateThreshold</span>: <span class="tok-n">60</span>
         <span class="tok-k">slowCallDurationThreshold</span>: <span class="tok-s">"1800ms"</span>
         <span class="tok-k">waitDurationInOpenState</span>: <span class="tok-s">"30s"</span>
-        <span class="tok-k">permittedCallsInHalfOpenState</span>: <span class="tok-n">3</span>
+        <span class="tok-k">permittedNumberOfCallsInHalfOpenState</span>: <span class="tok-n">3</span>
         <span class="tok-k">automaticTransitionFromOpenToHalfOpenEnabled</span>: <span class="tok-n">true</span>
 
       <span class="tok-k">digital-core-adapter</span>:
@@ -494,7 +530,7 @@
         <span class="tok-k">failureRateThreshold</span>: <span class="tok-n">60</span>         <span class="tok-c"># digital core is reliable: open at 60%</span>
         <span class="tok-k">slowCallDurationThreshold</span>: <span class="tok-s">"300ms"</span>
         <span class="tok-k">waitDurationInOpenState</span>: <span class="tok-s">"15s"</span>
-        <span class="tok-k">permittedCallsInHalfOpenState</span>: <span class="tok-n">5</span>
+        <span class="tok-k">permittedNumberOfCallsInHalfOpenState</span>: <span class="tok-n">5</span>
         <span class="tok-k">automaticTransitionFromOpenToHalfOpenEnabled</span>: <span class="tok-n">true</span>
 
       <span class="tok-k">card-adapter</span>:
@@ -502,7 +538,7 @@
         <span class="tok-k">failureRateThreshold</span>: <span class="tok-n">50</span>
         <span class="tok-k">slowCallDurationThreshold</span>: <span class="tok-s">"500ms"</span>
         <span class="tok-k">waitDurationInOpenState</span>: <span class="tok-s">"20s"</span>
-        <span class="tok-k">permittedCallsInHalfOpenState</span>: <span class="tok-n">3</span>
+        <span class="tok-k">permittedNumberOfCallsInHalfOpenState</span>: <span class="tok-n">3</span>
         <span class="tok-k">automaticTransitionFromOpenToHalfOpenEnabled</span>: <span class="tok-n">true</span>
 
   <span class="tok-k">timelimiter</span>:
@@ -516,7 +552,7 @@
           </div>
 
           <h2 id="caching">Response caching</h2>
-          <p>Open Banking account queries have a characteristic usage pattern: a customer opens their finance app, grants consent, and the TPP calls the account listing once per session startup, then periodically in the background. The same aggregated result is requested multiple times in a short window. Caching the assembled result &mdash; not individual downstream results &mdash; at a 60-second TTL is the highest-leverage performance optimisation available, reducing the fan-out call rate by 70&ndash;90% in a typical Open Banking session.</p>
+          <p>Open Banking account queries have a characteristic usage pattern: a customer opens their finance app, grants consent, and the TPP calls the account listing once per session startup, then periodically in the background. The same aggregated result is requested multiple times in a short window. Caching the assembled result &mdash; not individual downstream results &mdash; at a 60-second TTL is usually the highest-leverage performance optimisation available: when a TPP polls the same consent several times in a minute, all but the first call are served without a fan-out. Measure the hit rate on your own traffic before relying on it for capacity planning.</p>
           <p>Cache key design for Open Banking must incorporate the consent ID, not just the customer ID. A single customer may have multiple active consents from different TPPs, each with a different account scope. The cache key must be <code>consent:{consentId}:accounts</code>. The TTL must be bounded by the consent expiry &mdash; a consent expiring in 30 seconds must not be served from a 60-second-old cache entry that pre-dates the expiry.</p>
           <p>Partial results should be cached with a flag and a shorter TTL. If the legacy core was unreachable during the aggregation and you cached a partial result, the next request should re-attempt the fan-out sooner than it would for a complete result. Use a 15-second TTL for partial results versus 60 seconds for complete.</p>
 
@@ -526,7 +562,7 @@
             <li><strong>Consent scope enforcement at the aggregator:</strong> The aggregation layer must enforce the account scope in the consent grant. If a TPP&rsquo;s consent covers only current accounts, the aggregator must not fan out to the card processor even if the customer has a card. This requires the product registry lookup to intersect the customer&rsquo;s product holding with the consented account types before constructing the target list.</li>
             <li><strong>Response staleness disclosure:</strong> When serving a cached result, the response must include a <code>meta.dataRetrievedAt</code> field with the timestamp of the last live fetch. Where the standard does not mandate a maximum staleness, assume ambiguous cases will be interpreted against the provider; keep staleness within the cache TTL and surface it in the response.</li>
             <li><strong>Audit log per aggregation call:</strong> Each fan-out must be logged with: the consent ID, customer pseudonym, target system list, per-system status and latency, and whether the response was partial. This log is the evidence trail for a regulatory inspection of an incident.</li>
-            <li><strong>Rate limit enforcement:</strong> Open-banking regimes commonly cap how often a TPP may call without the customer present &mdash; under the EU&rsquo;s PSD2 technical standards, for example, four unattended account-information requests per day. The aggregation layer must enforce this limit before fanning out &mdash; not just at the API gateway. Gateway rate-limit counters can be bypassed by replay attacks; the aggregation layer&rsquo;s enforcement is the backstop.</li>
+            <li><strong>Rate limit enforcement:</strong> Open-banking regimes commonly cap how often a TPP may call without the customer present. Under the EU&rsquo;s PSD2 regulatory technical standards on strong customer authentication and secure communication (Commission Delegated Regulation (EU) 2018/389, Article 36(5)), an account information service provider may access account data without the customer actively requesting it no more than four times in a 24-hour period, unless a higher frequency is agreed with the account provider with the customer&rsquo;s consent; the UK&rsquo;s version of the RTS carries the same rule. Count these accesses where the consent context lives &mdash; in the aggregation or consent layer, per consent and account &mdash; rather than only in gateway counters keyed by client, and decide explicitly whether a cache hit counts as an access.</li>
           </ul>
 
           <div class="callout callout--note">
@@ -584,6 +620,23 @@
 
           <p><strong>The partial-result flag is the most useful operational signal you have.</strong> When the legacy-core circuit breaker opens during a maintenance window, the partial-result flag in your logs tells you exactly which sessions were affected and which TPPs need to be notified. If you did not build the partial flag into your audit log at launch, you will reconstruct the blast radius of every legacy-core incident from raw logs, manually, while the incident is open. Build the flag; log it; alert on a threshold (e.g. more than 15% of sessions returning partial in any 5-minute window).</p>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="api-composition-and-bff.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">API Composition &amp; Backend-for-Frontend</span></a></li>
+              <li><a class="lab-related__link" href="circuit-breaker-and-bulkhead.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Circuit Breaker &amp; Bulkhead: Resilience4j for Mission-Critical Integration</span></a></li>
+              <li><a class="lab-related__link" href="../api-security/open-banking-consent-management.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: Open Banking &amp; Consent Management</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/scatter-gather-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Scatter-Gather Is Not a Technical Pattern: It&rsquo;s a Service Agreement with the Customer</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../integration-patterns.html">
               <div class="article-nav__label">&larr; Back to topic</div>

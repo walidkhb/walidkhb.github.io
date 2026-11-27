@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,52 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Event-Driven Architecture &mdash; Kafka & IBM MQ",
+    "headline": "Event-Driven Architecture: Kafka & IBM MQ",
     "description": "Production-grade event-driven architecture patterns for regulated, high-volume enterprises on Kafka and IBM MQ.",
-    "url": "https://www.wbadawi.info/lab/event-driven/kafka-and-mq.html",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-05-03",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
       "@id": "https://www.wbadawi.info/#person",
-      "url": "https://www.wbadawi.info/",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
-    "image": "https://www.wbadawi.info/assets/img/og-image.png"
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/event-driven/kafka-and-mq.html"
+    },
+    "url": "https://www.wbadawi.info/lab/event-driven/kafka-and-mq.html",
+    "inLanguage": "en",
+    "wordCount": 1506,
+    "isPartOf": {
+      "@type": "CollectionPage",
+      "name": "Event-Driven Architecture — Technical Lab",
+      "url": "https://www.wbadawi.info/lab/event-driven.html"
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Event-Driven Architecture",
+        "item": "https://www.wbadawi.info/lab/event-driven.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Event-Driven Architecture: Kafka & IBM MQ",
+        "item": "https://www.wbadawi.info/lab/event-driven/kafka-and-mq.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -121,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Kafka &amp; IBM MQ</div>
           <span class="overline">Lab Article</span>
           <h1>Event-Driven Architecture: Kafka &amp; IBM MQ</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-05-03">3 May 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>7 min read</span>
+          </div>
           <p class="lead">Event modelling, broker topology, schema evolution, idempotent consumers, exactly-once semantics, and the operational patterns behind real-time payment, order, telemetry and legacy system-of-record event flows. Where Kafka fits, where MQ still wins, and how to run them side by side.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -153,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Apache Kafka 3.x / IBM MQ 9.x</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~16 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> May 3, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -330,23 +349,23 @@
 
           <ol class="step-list">
             <li>
-              <h4>Define the topic</h4>
+              <h3>Define the topic</h3>
               <p>Pick partitions for parallelism (16&ndash;64 is typical), a replication factor of 3 with <code>min.insync.replicas=2</code>, and a retention policy that matches the consumer SLA. Compaction is a separate decision &mdash; only compact topics that represent the latest state of a key.</p>
             </li>
             <li>
-              <h4>Register the schema</h4>
+              <h3>Register the schema</h3>
               <p>Avro or Protobuf &mdash; both work. Register the schema in Schema Registry with <code>BACKWARD</code> compatibility for events that consumers must keep reading; <code>FULL</code> for canonical contracts. Never use <code>NONE</code> in production.</p>
             </li>
             <li>
-              <h4>Build the producer</h4>
+              <h3>Build the producer</h3>
               <p>Configure <code>acks=all</code>, <code>enable.idempotence=true</code>, and a deterministic key (account id, customer id, trade id). The key controls partitioning and therefore ordering; pick it once and never change.</p>
             </li>
             <li>
-              <h4>Build the consumer</h4>
+              <h3>Build the consumer</h3>
               <p>Manual offset commit, idempotent processing logic, structured DLQ on permanent failure, and a poll-loop pause / resume around backpressure. Always commit offsets <em>after</em> the side effect succeeds, never before.</p>
             </li>
             <li>
-              <h4>Wire observability</h4>
+              <h3>Wire observability</h3>
               <p>Lag metrics per consumer group, throughput per topic, request rate per producer, ISR shrink/expand events. Without lag alerts, a slow consumer silently rots until disk fills.</p>
             </li>
           </ol>
@@ -370,7 +389,7 @@ kafka-topics --bootstrap-server <span class="tok-s">kafka:9092</span> --create \
           <p>The schema is the API. In a synchronous service the API contract is the OpenAPI spec; in event-driven systems it is the schema registered against a topic. Schema evolution rules are the equivalent of versioning rules for a REST API &mdash; just enforced earlier.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>payment-submitted-v2.avsc</span><span class="code-block__lang">avro</span></div>
+            <div class="code-block__header"><span>payment-submitted-v2.avsc &mdash; channel added in v2 with a default (backward compatible)</span><span class="code-block__lang">avro</span></div>
 <pre><code>{
   <span class="tok-k">"type"</span>: <span class="tok-s">"record"</span>,
   <span class="tok-k">"name"</span>: <span class="tok-s">"PaymentSubmitted"</span>,
@@ -385,7 +404,6 @@ kafka-topics --bootstrap-server <span class="tok-s">kafka:9092</span> --create \
     { <span class="tok-k">"name"</span>: <span class="tok-s">"currency"</span>,     <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
     { <span class="tok-k">"name"</span>: <span class="tok-s">"submittedAt"</span>,  <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"long"</span>, <span class="tok-k">"logicalType"</span>: <span class="tok-s">"timestamp-millis"</span> } },
     { <span class="tok-k">"name"</span>: <span class="tok-s">"reference"</span>,    <span class="tok-k">"type"</span>: [<span class="tok-s">"null"</span>, <span class="tok-s">"string"</span>], <span class="tok-k">"default"</span>: <span class="tok-n">null</span> },
-    <span class="tok-c">// added in v2 with default &mdash; backward compatible</span>
     { <span class="tok-k">"name"</span>: <span class="tok-s">"channel"</span>,      <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>, <span class="tok-k">"default"</span>: <span class="tok-s">"unknown"</span> }
   ]
 }</code></pre>
@@ -538,6 +556,22 @@ state.dir=<span class="tok-s">/var/lib/kafka-streams</span></code></pre>
 
           <p>Where event-driven wins: when the same fact must reach multiple consumers, when replay is a regulatory requirement, when downstream systems evolve at different speeds, and when peak throughput exceeds what a synchronous call chain can absorb. That&rsquo;s most modern transactional platforms &mdash; but not all of them.</p>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="strimzi-on-private-ocp.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">Strimzi on Private OpenShift &mdash; Regulated</span></a></li>
+              <li><a class="lab-related__link" href="dead-letter-queue-and-replay.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">Dead Letter Queue Design &amp; Event Replay Patterns</span></a></li>
+              <li><a class="lab-related__link" href="asyncapi-kafka-contracts.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">AsyncAPI 3.0 Contracts for Kafka Channel Governance</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../api-gateway.html">
               <div class="article-nav__label">&larr; Previous</div>

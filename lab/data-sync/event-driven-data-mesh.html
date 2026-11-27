@@ -31,13 +31,13 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 0.4rem; }
   </style>
-
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -46,54 +46,62 @@
     "description": "Event-driven data mesh patterns for regulated enterprises: domain-owned Kafka topics as data products, Debezium CDC as the source, Avro schema contracts, Kafka Streams cross-domain joins, and data residency enforcement.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/data-sync/event-driven-data-mesh.html"
     },
     "url": "https://www.wbadawi.info/lab/data-sync/event-driven-data-mesh.html",
+    "inLanguage": "en",
+    "wordCount": 3305,
     "isPartOf": {
-      "@type": "TechArticleSeries",
-      "name": "Data Synchronisation &mdash; Lab &mdash; Waleed Albadawi",
+      "@type": "CollectionPage",
+      "name": "Data Synchronisation — Technical Lab",
       "url": "https://www.wbadawi.info/lab/data-sync.html"
-    }
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Data Synchronisation",
+        "item": "https://www.wbadawi.info/lab/data-sync.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Data Synchronisation: Event-Driven Data Mesh Patterns",
+        "item": "https://www.wbadawi.info/lab/data-sync/event-driven-data-mesh.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -128,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Event-Driven Data Mesh Patterns</div>
           <span class="overline">Lab Article</span>
           <h1>Data Synchronisation: Event-Driven Data Mesh Patterns</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-09-05">5 September 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>14 min read</span>
+          </div>
           <p class="lead">Domain-owned Kafka topics as data products, Debezium CDC as the source of domain events, Avro schema contracts enforced by the Schema Registry, Kafka Streams and Flink for cross-domain queries, and federated governance that satisfies data-residency and data-protection rules without recreating the central data warehouse you were trying to escape.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -159,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Kafka 3.7 / Confluent Schema Registry / OpenShift 4.15 / Debezium 2.7 / Flink 1.19</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~16 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -456,7 +468,7 @@ enriched.to(<span class="tok-s">"payments.enriched.v1"</span>,
 
           <div class="callout callout--warn">
             <div class="callout__title">Cross-domain joins in Kafka Streams are expensive when partition counts differ</div>
-            <p>Kafka Streams joins between a KStream and a KTable require both topics to be co-partitioned: same number of partitions, same partitioning key. If <code>payments.settled.v1</code> has 12 partitions and <code>accounts.balance.v2</code> has 6 partitions, Kafka Streams will silently repartition the smaller topic &mdash; creating an internal repartition topic, adding latency, and doubling broker storage for the duration of the join. Design both topics with the same partition count from the start, keyed on the same business entity key (IBAN or account number). Changing partition counts after consumers are live requires a coordinated migration that is far more painful than getting the count right initially.</p>
+            <p>Kafka Streams joins between a KStream and a KTable require both topics to be co-partitioned: same number of partitions, same partitioning key. If <code>payments.settled.v1</code> has 12 partitions and <code>accounts.balance.v2</code> has 6, Kafka Streams refuses to build the topology (a co-partitioning <code>TopologyException</code> at start-up); the workarounds &mdash; re-keying through an internal repartition topic, or a <code>GlobalKTable</code> that replicates the whole table to every instance &mdash; add latency and broker or local storage. Design both topics with the same partition count from the start, keyed on the same business entity key (IBAN or account number). Changing partition counts after consumers are live requires a coordinated migration that is far more painful than getting the count right initially.</p>
           </div>
 
           <p>For complex cross-domain aggregations that span more than two domains &mdash; for example, a regulatory report that joins payment events with account state and customer KYC status &mdash; Flink SQL is more appropriate than Kafka Streams. Flink&rsquo;s SQL layer treats Kafka topics as tables and expresses multi-way joins as standard SQL, with temporal joins for handling slowly-changing dimension data (KYC status changes infrequently; payment events arrive continuously).</p>
@@ -483,35 +495,52 @@ enriched.to(<span class="tok-s">"payments.enriched.v1"</span>,
 
           <ol class="step-list">
             <li>
-              <h4>Write the data product specification</h4>
+              <h3>Write the data product specification</h3>
               <p>Before writing any code, document in the data product catalogue: the domain, the topic name and version, the business event it represents, the Kafka message key, the SLA (freshness p99, completeness), the data classification label, the lawful processing basis, and the planned consumer list. This document is a governance artefact. Get it reviewed by the data governance team before the Schema Registry subject is created.</p>
             </li>
             <li>
-              <h4>Draft and validate the Avro schema</h4>
+              <h3>Draft and validate the Avro schema</h3>
               <p>Write the Avro schema with <code>doc</code> fields on every field that carry the classification label and PII indicator. Validate BACKWARD compatibility against any previous version of the subject. Include at least one optional field with a default (not a union type unnecessarily) to leave room for the first expected evolution without a breaking change.</p>
             </li>
             <li>
-              <h4>Register the schema and create the topic</h4>
+              <h3>Register the schema and create the topic</h3>
               <p>Register the schema subject in the Schema Registry with the compatibility mode set to <code>BACKWARD</code>. Create the Kafka topic with the correct partition count (co-partitioned with the topics you plan to join against), replication factor of 3, and retention configured to match the data classification retention policy. Multi-year retention obligations for transaction records (commonly five to ten years, depending on the jurisdiction) are usually met by an archive tier fed from the topic, not by the topic itself.</p>
             </li>
             <li>
-              <h4>Set producer ACL and deploy the producer</h4>
+              <h3>Set producer ACL and deploy the producer</h3>
               <p>Grant the domain service principal Write and Describe ACLs on the topic. Deploy the Debezium connector or Kafka producer application. Verify that messages are being produced with the correct schema by consuming the first batch and checking deserialisation against the Schema Registry schema.</p>
             </li>
             <li>
-              <h4>Grant consumer ACLs per approved consumer</h4>
+              <h3>Grant consumer ACLs per approved consumer</h3>
               <p>For each approved consumer in the data product specification, grant Read and Describe ACLs to the consumer service principal and the consumer group name. Record the ACL grant in the record of processing activities if the topic carries personal data. Do not use a wildcard consumer ACL (<code>*</code>) for any topic that carries RESTRICTED or CONFIDENTIAL data.</p>
             </li>
             <li>
-              <h4>Instrument and publish data quality metrics</h4>
+              <h3>Instrument and publish data quality metrics</h3>
               <p>Add Prometheus metrics to the producer: <code>data_product_messages_published_total</code>, <code>data_product_source_to_topic_latency_seconds</code>, <code>data_product_schema_serialisation_errors_total</code>. Wire these to the Grafana data quality dashboard. Set alerts: freshness SLA breach pages the domain team on-call; schema serialisation errors are a P1 (a consumer that receives a message it cannot deserialise will fail silently if it lacks proper error handling).</p>
             </li>
             <li>
-              <h4>Run the governance review and open the topic to consumers</h4>
+              <h3>Run the governance review and open the topic to consumers</h3>
               <p>Submit the data product for governance review: data product specification, schema Registry subject registration confirmation, ACL configuration, data quality dashboard link, and processing-register entry. Once governance signs off, announce the data product in the internal data product catalogue and notify approved consumers that the topic is production-ready.</p>
             </li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="../data-streaming/schema-registry-and-data-contracts.html"><span class="lab-related__kicker">Lab &middot; Data Streaming</span><span class="lab-related__name">Data Streaming: Schema Registry &amp; Data Contracts</span></a></li>
+              <li><a class="lab-related__link" href="../event-driven/asyncapi-kafka-contracts.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">AsyncAPI 3.0 Contracts for Kafka Channel Governance</span></a></li>
+              <li><a class="lab-related__link" href="debezium-and-outbox.html"><span class="lab-related__kicker">Lab &middot; Data Synchronisation</span><span class="lab-related__name">Data Synchronisation: Debezium &amp; Outbox</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/event-driven-data-mesh-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Data Mesh: The Architecture Decision That Shifts Data Ownership Back to the Domains That Understand It</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="reconciliation-pipelines-for-regulators.html">
               <div class="article-nav__label">&larr; Previous</div>

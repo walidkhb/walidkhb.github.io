@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -45,56 +46,62 @@
     "description": "End-to-end design of a real-time fraud detection pipeline: feature store, sliding-window velocity checks, Apache Flink model scoring, feedback loops, and operational patterns for sub-100ms latency SLAs at high transaction volumes.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-08-01",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/data-streaming/real-time-fraud-detection.html"
     },
     "url": "https://www.wbadawi.info/lab/data-streaming/real-time-fraud-detection.html",
+    "inLanguage": "en",
+    "wordCount": 2566,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Data Streaming &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Data Streaming — Technical Lab",
       "url": "https://www.wbadawi.info/lab/data-streaming.html"
     },
-    "proficiencyLevel": "Expert",
-    "dependencies": "Apache Flink 1.19, Kafka Streams 3.7, Feast 0.38, Redis 7.2, Apache Kafka"
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Data Streaming",
+        "item": "https://www.wbadawi.info/lab/data-streaming.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Data Streaming: Real-Time Fraud Detection Pipeline",
+        "item": "https://www.wbadawi.info/lab/data-streaming/real-time-fraud-detection.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -129,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Real-Time Fraud Detection</div>
           <span class="overline">Lab Article</span>
           <h1>Data Streaming: Real-Time Fraud Detection Pipeline</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-08-01">1 August 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>11 min read</span>
+          </div>
           <p class="lead">An end-to-end production design: feature store architecture, sliding-window velocity checks, Apache Flink model scoring on the event stream, feedback loops that close the training cycle, and the operational discipline that keeps sub-100&nbsp;ms latency SLAs intact when transaction volumes spike &mdash; illustrated with card and instant-payment flows, but applicable to any high-volume transaction stream: e-commerce orders, account logins, insurance claims or telecom top-ups.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -161,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Apache Flink 1.19 &middot; Kafka Streams 3.7 &middot; Feast 0.38 &middot; Redis 7.2 &middot; Apache Kafka</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Aug 1, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -484,56 +495,57 @@ card_velocity_fv = FeatureView(
 
           <ol class="step-list">
             <li>
-              <h4>Define Kafka topic layout</h4>
+              <h3>Define Kafka topic layout</h3>
               <p>One topic per event type (<code>card-auth</code>, <code>instant-transfer</code>, <code>dispute-event</code>, <code>fraud-decisions</code>). Over-partition upfront: 48 partitions on card-auth handles 3x projected peak throughput with room to scale Flink parallelism. Co-partition <code>card-auth</code> and the customer master KTable by <code>card_id</code> with the same partition count &mdash; stream-table joins require it.</p>
             </li>
             <li>
-              <h4>Bootstrap the online feature store</h4>
+              <h3>Bootstrap the online feature store</h3>
               <p>Run a full Feast materialisation from the offline store to Redis before the Flink job starts. An empty Redis means every scoring event gets zero-valued features until the ring buffer warms up &mdash; the first 30 minutes after deployment will have systematically lower fraud scores. Schedule a materialisation immediately before each deployment, not only nightly.</p>
             </li>
             <li>
-              <h4>Deploy Flink with RocksDB state backend</h4>
+              <h3>Deploy Flink with RocksDB state backend</h3>
               <p>Configure incremental checkpoints to an S3-compatible store (Ceph in on-prem, AWS S3 on cloud). Checkpoint interval of 60 seconds balances recovery time against overhead. Set <code>state.backend.incremental: true</code>; full checkpoints for large velocity state can take minutes and block processing. Pin RocksDB block cache at 512&nbsp;MB per TaskManager slot &mdash; undersizing causes excessive I/O and kills P99 latency.</p>
             </li>
             <li>
-              <h4>Integrate ONNX model</h4>
+              <h3>Integrate ONNX model</h3>
               <p>Store the ONNX artefact in a model registry (MLflow, or an S3 path with versioning). Load at job startup via <code>open()</code> on the scoring operator. Wire the model path as a Flink job parameter so it can be changed at savepoint-restore time without code changes. Include the feature vector schema version in the ONNX metadata &mdash; a schema mismatch at restore time should fail fast, not silently pass wrong features.</p>
             </li>
             <li>
-              <h4>Wire the decision sink</h4>
+              <h3>Wire the decision sink</h3>
               <p>The <code>fraud-decisions</code> topic is consumed by the authorisation gateway to approve, flag (step-up authentication), or block the transaction. Use an idempotent Kafka sink keyed by <code>txn_id</code> to prevent duplicate decisions under Flink task failure and recovery. The downstream authorisation gateway must deduplicate on <code>txn_id</code> too &mdash; Flink&rsquo;s at-least-once recovery can re-emit the last checkpoint&rsquo;s output.</p>
             </li>
             <li>
-              <h4>Activate the feedback pipeline</h4>
+              <h3>Activate the feedback pipeline</h3>
               <p>Deploy the label writer job separately from the scorer &mdash; it runs at lower parallelism and does not need to meet the same latency SLA. Verify that the <code>dispute-event</code> topic includes the original <code>event_timestamp</code> and <code>txn_id</code> as mandatory fields; without them the retrospective feature join is impossible.</p>
             </li>
             <li>
-              <h4>Validate with shadow mode</h4>
+              <h3>Validate with shadow mode</h3>
               <p>Run the scoring pipeline in shadow mode for two weeks before switching the authorisation gateway to act on its decisions. Shadow mode: score all events, emit to <code>fraud-decisions-shadow</code>, compare with the existing rule-engine output, measure precision and recall against historical confirmed fraud. Ship only when shadow precision matches or exceeds the baseline at the same recall.</p>
             </li>
           </ol>
 
           <h2 id="exactly-once">Exactly-once in fraud</h2>
-          <p>In most stream processing, &ldquo;at least once&rdquo; is acceptable because downstream systems are idempotent. In a fraud pipeline, a duplicated BLOCK decision can create two chargeback records against the same transaction, visible to the customer and potentially reportable to the regulator. Exactly-once delivery from Flink to Kafka is achievable at a throughput cost of roughly 5&ndash;8%.</p>
+          <p>In most stream processing, &ldquo;at least once&rdquo; is acceptable because downstream systems are idempotent. In a fraud pipeline, a duplicated BLOCK decision can create two chargeback records against the same transaction, visible to the customer and potentially reportable to the regulator. Exactly-once delivery from Flink to Kafka is achievable; the cost is transactional commits on every checkpoint and the latency of <code>read_committed</code> consumers, which you should measure on your own pipeline before committing to an SLA.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>flink-job.yaml</span><span class="code-block__lang">yaml</span></div>
-<pre><code><span class="tok-k">execution</span>:
-  <span class="tok-k">checkpointing</span>:
-    <span class="tok-k">interval</span>: <span class="tok-n">60000</span>   <span class="tok-c"># 60 seconds</span>
-    <span class="tok-k">mode</span>: <span class="tok-s">EXACTLY_ONCE</span>
-    <span class="tok-k">min-pause-between-checkpoints</span>: <span class="tok-n">30000</span>
-    <span class="tok-k">timeout</span>: <span class="tok-n">120000</span>
-    <span class="tok-k">max-concurrent-checkpoints</span>: <span class="tok-n">1</span>
-  <span class="tok-k">state-backend</span>: <span class="tok-s">rocksdb</span>
-  <span class="tok-k">state-backend-incremental</span>: <span class="tok-k">true</span>
-  <span class="tok-k">savepoint-dir</span>: <span class="tok-s">s3://example-flink/savepoints/fraud-scorer</span>
+            <div class="code-block__header"><span>flink-job.yaml &mdash; checkpointing and state configuration</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Flink configuration (flink-conf.yaml / config.yaml keys)</span>
+<span class="tok-k">execution.checkpointing.interval</span>: <span class="tok-n">60</span> s
+<span class="tok-k">execution.checkpointing.mode</span>: EXACTLY_ONCE
+<span class="tok-k">execution.checkpointing.min-pause</span>: <span class="tok-n">30</span> s
+<span class="tok-k">execution.checkpointing.timeout</span>: <span class="tok-n">2</span> min
+<span class="tok-k">execution.checkpointing.max-concurrent-checkpoints</span>: <span class="tok-n">1</span>
+<span class="tok-k">state.backend.type</span>: rocksdb
+<span class="tok-k">state.backend.incremental</span>: true
+<span class="tok-k">state.savepoints.dir</span>: s3://example-flink/savepoints/fraud-scorer
+<span class="tok-k">parallelism.default</span>: <span class="tok-n">12</span>   <span class="tok-c"># = card-auth partition count / 4</span>
 
-<span class="tok-k">kafka-sink</span>:
-  <span class="tok-k">semantic</span>: <span class="tok-s">EXACTLY_ONCE</span>
-  <span class="tok-k">transaction-timeout</span>: <span class="tok-n">120000</span> <span class="tok-c"># must exceed checkpoint interval</span>
-
-<span class="tok-k">parallelism</span>: <span class="tok-n">12</span>   <span class="tok-c"># = card-auth partition count / 4</span></code></pre>
+<span class="tok-c"># Kafka sink: exactly-once is set in the job code, not in this file -</span>
+<span class="tok-c">#   KafkaSink.builder()...setDeliveryGuarantee(DeliveryGuarantee.EXACTLY_ONCE)</span>
+<span class="tok-c">#                       .setTransactionalIdPrefix("fraud-scorer")</span>
+<span class="tok-c">#                       .setProperty("transaction.timeout.ms", "900000")</span>
+<span class="tok-c"># transaction.timeout.ms must exceed the longest checkpoint plus restart time and</span>
+<span class="tok-c"># stay within the brokers' transaction.max.timeout.ms (15 minutes by default).</span></code></pre>
           </div>
 
           <div class="callout callout--warn">
@@ -574,6 +586,23 @@ card_velocity_fv = FeatureView(
             <li><strong>Startup pipelines with under 1&nbsp;M transactions/day.</strong> Below that volume, a Kafka consumer plus PostgreSQL with window aggregation functions in SQL delivers the same velocity features at a fraction of the operational complexity. Reserve Flink for the scale where SQL aggregation latency becomes the bottleneck.</li>
           </ul>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="stateful-stream-processing.html"><span class="lab-related__kicker">Lab &middot; Data Streaming</span><span class="lab-related__name">Data Streaming: Stateful Stream Processing Patterns</span></a></li>
+              <li><a class="lab-related__link" href="flink-on-openshift-checkpointing.html"><span class="lab-related__kicker">Lab &middot; Data Streaming</span><span class="lab-related__name">Data Streaming: Flink on OpenShift &mdash; Checkpointing &amp; Exactly-Once</span></a></li>
+              <li><a class="lab-related__link" href="../distributed-caching/multi-tier-caching-strategies.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Multi-Tier Caching Strategies</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/real-time-fraud-detection-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Real-Time Fraud Detection: The Infrastructure Decision Your Risk and Technology Leaders Both Have to Own</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../data-streaming.html">
               <div class="article-nav__label">&larr; Category index</div>

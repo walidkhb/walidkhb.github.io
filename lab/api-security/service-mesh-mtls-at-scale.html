@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -45,54 +46,62 @@
     "description": "Istio and Linkerd patterns for east-west mTLS at production scale: SPIFFE identity, certificate rotation, AuthorizationPolicy, performance overhead, and the zero-trust controls that satisfy financial-sector auditors.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-08-22",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/api-security/service-mesh-mtls-at-scale.html"
     },
     "url": "https://www.wbadawi.info/lab/api-security/service-mesh-mtls-at-scale.html",
+    "inLanguage": "en",
+    "wordCount": 2525,
     "isPartOf": {
-      "@type": "WebSite",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/"
-    }
+      "@type": "CollectionPage",
+      "name": "API Security — Technical Lab",
+      "url": "https://www.wbadawi.info/lab/api-security.html"
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "API Security",
+        "item": "https://www.wbadawi.info/lab/api-security.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "API Security: Service Mesh mTLS at Scale",
+        "item": "https://www.wbadawi.info/lab/api-security/service-mesh-mtls-at-scale.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -127,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>Service Mesh mTLS at Scale</div>
           <span class="overline">Lab Article</span>
           <h1>API Security: Service Mesh mTLS at Scale</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-08-22">22 August 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>11 min read</span>
+          </div>
           <p class="lead">Istio and Linkerd patterns for east-west mutual TLS at production scale &mdash; SPIFFE workload identity, automated certificate rotation, AuthorizationPolicy enforcement, identity propagation across service chains, and the operational model that keeps latency under control while satisfying a regulator&rsquo;s zero-trust audit.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -158,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Istio 1.22 / Linkerd 2.15 / SPIFFE / cert-manager 1.14 / OpenShift Service Mesh</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Aug 22, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -288,21 +301,17 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>inspect-svid.sh</span><span class="code-block__lang">bash</span></div>
-<pre><code><span class="tok-c"># Inspect the SVID a sidecar is currently presenting</span>
-kubectl exec -n payments deploy/payments-svc -c istio-proxy -- \
-  openssl s_client -connect accounts-svc.accounts.svc.cluster.local:8080 \
-  -showcerts 2&gt;/dev/null | \
-  openssl x509 -noout -text | grep -A2 <span class="tok-s">"Subject Alternative Name"</span>
+<pre><code><span class="tok-c"># Inspect the SVID the payments-svc sidecar holds ("default" secret = workload cert)</span>
+istioctl proxy-config secret deploy/payments-svc -n payments -o json \
+  | jq -r <span class="tok-s">'.dynamicActiveSecrets[]</span>
+           | select(.name == <span class="tok-s">"default"</span>)
+           | .secret.tlsCertificate.certificateChain.inlineBytes<span class="tok-s">' \</span>
+  | base64 -d \
+  | openssl x509 -noout -ext subjectAltName -dates
 
-<span class="tok-c"># Expected output:</span>
+<span class="tok-c"># Expected output includes:</span>
 <span class="tok-c">#   URI:spiffe://example.org/ns/payments/sa/payments-svc</span>
-
-<span class="tok-c"># Check SVID expiry on a live sidecar</span>
-istioctl proxy-config secret deploy/payments-svc -n payments \
-  --output json | \
-  jq <span class="tok-s">'.dynamicActiveSecrets[0].secret.tlsCertificate
-      .certificateChain.inlineBytes'</span> -r | \
-  base64 -d | openssl x509 -noout -dates</code></pre>
+<span class="tok-c">#   notBefore=... notAfter=...   (lifetime = SECRET_TTL)</span></code></pre>
           </div>
 
           <p>For clusters that need cross-cluster or cross-cloud identity (for example, a disaster-recovery site on a second OpenShift cluster), SPIRE (the SPIFFE Reference Implementation) provides a federated trust model: each cluster runs a SPIRE Server, and the servers federate by exchanging trust bundles out-of-band. Istio can be configured to use SPIRE as its certificate authority via the <code>ExternalCertificateAuthority</code> plugin.</p>
@@ -350,26 +359,31 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
           </div>
 
           <div class="callout callout--warn">
-            <div class="callout__title">Rotation window must exceed your longest in-flight request</div>
-            <p>If a payment processing request takes up to 30 seconds and the cert rotation overlap window is only 10 seconds, a connection established just before rotation completes may terminate mid-flight when the old cert is revoked. Set <code>CITADEL_WORKLOAD_CERT_TTL</code> to 3600 seconds (1 hour) and <code>CITADEL_WORKLOAD_CERT_GRACE_PERIOD_RATIO</code> to 0.5 (rotate at 50% of TTL), giving a 30-minute overlap. Long-running streaming connections (Kafka clients inside the mesh, WebSocket gateways) need explicit analysis.</p>
+            <div class="callout__title">Rotation must finish well before expiry</div>
+            <p>Rotation does not cut established connections: TLS checks certificates at the handshake, so an in-flight request survives a rotation. What fails is a new handshake after the old certificate has expired on a workload that has not yet received its replacement. The Istio proxy requests a new certificate once a share of the lifetime has elapsed &mdash; <code>SECRET_GRACE_PERIOD_RATIO</code>, 0.5 by default &mdash; so a one-hour certificate (<code>SECRET_TTL=1h</code>, set through <code>proxyMetadata</code>, within istiod&rsquo;s <code>MAX_WORKLOAD_CERT_TTL</code>) is renewed after about 30 minutes, leaving a 30-minute margin for istiod or CA trouble. Shorter lifetimes add load on istiod and shrink that margin; long-running connections (Kafka clients, WebSocket gateways) should still reconnect periodically so that revoked identities do not linger.</p>
           </div>
 
           <div class="code-block">
-            <div class="code-block__header"><span>istio-cert-ttl-configmap.yaml</span><span class="code-block__lang">yaml</span></div>
-<pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">v1</span>
-<span class="tok-k">kind</span>: <span class="tok-s">ConfigMap</span>
-<span class="tok-k">metadata</span>:
-  <span class="tok-k">name</span>: <span class="tok-s">istio</span>
-  <span class="tok-k">namespace</span>: <span class="tok-s">istio-system</span>
-<span class="tok-k">data</span>:
-  <span class="tok-k">mesh</span>: |
-    <span class="tok-k">certificates</span>:
-      <span class="tok-k">workloadCertTtl</span>: <span class="tok-s">3600s</span>          <span class="tok-c"># 1-hour SVID TTL (short rotation for regulated workloads)</span>
-      <span class="tok-k">workloadCertGracePeriodRatio</span>: <span class="tok-s">0.5</span>  <span class="tok-c"># rotate at 50% lifetime = 30 min overlap</span>
-    <span class="tok-k">trustDomain</span>: <span class="tok-s">example.org</span>
-    <span class="tok-k">ca</span>:
-      <span class="tok-k">workloadCertKeySize</span>: <span class="tok-n">2048</span>
-      <span class="tok-k">caRSACertificateKeySize</span>: <span class="tok-n">4096</span></code></pre>
+            <div class="code-block__header"><span>istio-workload-cert-ttl.yaml &mdash; IstioOperator overlay</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Workload certificate lifetime is requested by the proxy (istio-agent) and</span>
+<span class="tok-c"># capped by istiod. Set it mesh-wide through proxyMetadata.</span>
+<span class="tok-k">apiVersion</span>: install.istio.io/v1alpha1
+<span class="tok-k">kind</span>: IstioOperator
+<span class="tok-k">spec</span>:
+  <span class="tok-k">meshConfig</span>:
+    <span class="tok-k">trustDomain</span>: example.org
+    <span class="tok-k">defaultConfig</span>:
+      <span class="tok-k">proxyMetadata</span>:
+        <span class="tok-k">SECRET_TTL</span>: <span class="tok-s">"1h"</span>                  <span class="tok-c"># 1-hour SVID for regulated workloads (default 24h)</span>
+        <span class="tok-k">SECRET_GRACE_PERIOD_RATIO</span>: <span class="tok-s">"0.5"</span>  <span class="tok-c"># renew at 50% of lifetime = 30-minute margin</span>
+  <span class="tok-k">components</span>:
+    <span class="tok-k">pilot</span>:
+      <span class="tok-k">k8s</span>:
+        <span class="tok-k">env</span>:
+          - <span class="tok-k">name</span>: DEFAULT_WORKLOAD_CERT_TTL  <span class="tok-c"># used when a proxy requests no TTL</span>
+            <span class="tok-k">value</span>: <span class="tok-s">"1h"</span>
+          - <span class="tok-k">name</span>: MAX_WORKLOAD_CERT_TTL      <span class="tok-c"># upper bound istiod will sign</span>
+            <span class="tok-k">value</span>: <span class="tok-s">"24h"</span></code></pre>
           </div>
 
           <p>For intermediate CA rotation (rotating the CA that signs SVIDs, not individual SVIDs), use cert-manager with an <code>Issuer</code> chain: a root CA stored in Vault PKI, an intermediate CA issued via <code>cert-manager</code> into the <code>istio-system</code> namespace, and Istio configured to use the intermediate. When the intermediate rotates, cert-manager handles the re-issuance; Istio picks up the new signing chain without restart. This is the pattern that makes a periodic (typically annual) CA key rotation policy achievable without an outage.</p>
@@ -407,7 +421,7 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
   <span class="tok-k">name</span>: <span class="tok-s">deny-all</span>
   <span class="tok-k">namespace</span>: <span class="tok-s">accounts</span>
 <span class="tok-k">spec</span>:
-  <span class="tok-p">{}</span>    <span class="tok-c"># empty spec = deny all; ALLOW rules above are additive exceptions</span></code></pre>
+  <span class="tok-p">{}</span>    <span class="tok-c"># "allow-nothing": with no other ALLOW match, requests are denied</span></code></pre>
           </div>
 
           <p>The <strong>deny-all default</strong> is the critical piece. Without it, all authenticated workloads can call accounts-svc. Start with a deny-all in each namespace and add explicit ALLOW rules per caller. This is the allow-list model that zero-trust guidance expects and that auditors look for.</p>
@@ -446,33 +460,48 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
           <div class="code-block">
             <div class="code-block__header"><span>linkerd-inject.yaml</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-c"># Inject linkerd-proxy into a namespace (all new pods auto-injected)</span>
-<span class="tok-k">apiVersion</span>: <span class="tok-s">v1</span>
-<span class="tok-k">kind</span>: <span class="tok-s">Namespace</span>
+<span class="tok-k">apiVersion</span>: v1
+<span class="tok-k">kind</span>: Namespace
 <span class="tok-k">metadata</span>:
-  <span class="tok-k">name</span>: <span class="tok-s">payments</span>
+  <span class="tok-k">name</span>: payments
   <span class="tok-k">annotations</span>:
-    <span class="tok-k">linkerd.io/inject</span>: <span class="tok-s">enabled</span>
-<span class="tok-p">---</span>
-<span class="tok-c"># AuthorizationPolicy in Linkerd (Server + AuthorizationPolicy pair)</span>
-<span class="tok-k">apiVersion</span>: <span class="tok-s">policy.linkerd.io/v1beta2</span>
-<span class="tok-k">kind</span>: <span class="tok-s">Server</span>
+    <span class="tok-k">linkerd.io/inject</span>: enabled
+---
+<span class="tok-c"># Authorization in Linkerd: Server + MeshTLSAuthentication + AuthorizationPolicy</span>
+<span class="tok-k">apiVersion</span>: policy.linkerd.io/v1beta2
+<span class="tok-k">kind</span>: Server
 <span class="tok-k">metadata</span>:
-  <span class="tok-k">name</span>: <span class="tok-s">accounts-http</span>
-  <span class="tok-k">namespace</span>: <span class="tok-s">accounts</span>
+  <span class="tok-k">name</span>: accounts-http
+  <span class="tok-k">namespace</span>: accounts
 <span class="tok-k">spec</span>:
   <span class="tok-k">podSelector</span>:
-    <span class="tok-k">matchLabels</span>: { <span class="tok-k">app</span>: <span class="tok-s">accounts-svc</span> }
+    <span class="tok-k">matchLabels</span>: { app: accounts-svc }
   <span class="tok-k">port</span>: <span class="tok-n">8080</span>
-  <span class="tok-k">proxyProtocol</span>: <span class="tok-s">HTTP/2</span>
-<span class="tok-p">---</span>
-<span class="tok-k">apiVersion</span>: <span class="tok-s">policy.linkerd.io/v1beta2</span>
-<span class="tok-k">kind</span>: <span class="tok-s">MeshTLSAuthentication</span>
+  <span class="tok-k">proxyProtocol</span>: HTTP/<span class="tok-n">2</span>
+---
+<span class="tok-k">apiVersion</span>: policy.linkerd.io/v1alpha1
+<span class="tok-k">kind</span>: MeshTLSAuthentication
 <span class="tok-k">metadata</span>:
-  <span class="tok-k">name</span>: <span class="tok-s">payments-identity</span>
-  <span class="tok-k">namespace</span>: <span class="tok-s">accounts</span>
+  <span class="tok-k">name</span>: payments-identity
+  <span class="tok-k">namespace</span>: accounts
 <span class="tok-k">spec</span>:
   <span class="tok-k">identities</span>:
-  - <span class="tok-s">"payments-svc.payments.serviceaccount.identity.linkerd.cluster.local"</span></code></pre>
+  - <span class="tok-s">"payments-svc.payments.serviceaccount.identity.linkerd.cluster.local"</span>
+---
+<span class="tok-k">apiVersion</span>: policy.linkerd.io/v1alpha1
+<span class="tok-k">kind</span>: AuthorizationPolicy
+<span class="tok-k">metadata</span>:
+  <span class="tok-k">name</span>: accounts-allow-payments
+  <span class="tok-k">namespace</span>: accounts
+<span class="tok-k">spec</span>:
+  <span class="tok-k">targetRef</span>:
+    <span class="tok-k">group</span>: policy.linkerd.io
+    <span class="tok-k">kind</span>: Server
+    <span class="tok-k">name</span>: accounts-http
+  <span class="tok-k">requiredAuthenticationRefs</span>:
+    - <span class="tok-k">group</span>: policy.linkerd.io
+      <span class="tok-k">kind</span>: MeshTLSAuthentication
+      <span class="tok-k">name</span>: payments-identity</code></pre>
           </div>
 
           <h2 id="performance">Performance overhead</h2>
@@ -512,6 +541,23 @@ istioctl proxy-config secret deploy/payments-svc -n payments \
             <li>Multi-cluster federation documented. Trust bundle exchange process defined. DR cluster mTLS config parity with primary validated quarterly.</li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="vault-pki-and-cert-manager.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: Vault PKI &amp; cert-manager &mdash; Automated Certificate Lifecycle</span></a></li>
+              <li><a class="lab-related__link" href="oauth-and-mtls.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: OAuth 2.1 &amp; mTLS</span></a></li>
+              <li><a class="lab-related__link" href="../devops/observability-pipeline-architecture.html"><span class="lab-related__kicker">Lab &middot; DevOps &amp; Platform Engineering</span><span class="lab-related__name">Observability Pipeline Architecture</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/service-mesh-mtls-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Service Mesh mTLS: The Infrastructure Decision That Determines Whether Zero-Trust Is Real or Theoretical</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../api-security.html">
               <div class="article-nav__label">&larr; Back to</div>

@@ -31,12 +31,79 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 0.4rem; }
   </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Idempotency Keys at Scale",
+    "description": "Production-grade idempotency for payment and transactional APIs: key design, storage choices (Redis vs Postgres vs hybrid), TTL and eviction, replay semantics, the request-fingerprint problem, and why every transactional write API needs them by default.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-05-10",
+    "dateModified": "2026-11-27",
+    "author": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "publisher": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/integration-patterns/idempotency-keys.html"
+    },
+    "url": "https://www.wbadawi.info/lab/integration-patterns/idempotency-keys.html",
+    "inLanguage": "en",
+    "wordCount": 2166,
+    "isPartOf": {
+      "@type": "CollectionPage",
+      "name": "Integration Design Patterns — Technical Lab",
+      "url": "https://www.wbadawi.info/lab/integration-patterns.html"
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Integration Design Patterns",
+        "item": "https://www.wbadawi.info/lab/integration-patterns.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Idempotency Keys at Scale",
+        "item": "https://www.wbadawi.info/lab/integration-patterns/idempotency-keys.html"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -69,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Patterns</a><span>/</span>Idempotency Keys</div>
           <span class="overline">Lab Article</span>
           <h1>Idempotency Keys at Scale</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-05-10">10 May 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>9 min read</span>
+          </div>
           <p class="lead">The single most under-implemented pattern in financial-services APIs: idempotency key design, storage trade-offs (Redis vs Postgres vs hybrid), TTL and eviction, request-fingerprint matching, replay semantics, and the production failure modes that turn a retry into a duplicate payment.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -101,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Postgres / Redis / Spring / OpenAPI</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~13 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> May 10, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -136,7 +207,6 @@ Host: api.example.com
 <span class="tok-k">Authorization</span>: Bearer <span class="tok-s">eyJ...</span>
 <span class="tok-k">Idempotency-Key</span>: <span class="tok-s">7f9c3b2e-4a91-4d2c-88f1-2e0f3a1b9c67</span>
 <span class="tok-k">Content-Type</span>: application/json
-<span class="tok-k">Content-Length</span>: 142
 
 {
   <span class="tok-k">"amount"</span>: <span class="tok-s">"125.00"</span>,
@@ -150,19 +220,19 @@ Host: api.example.com
 
           <ol class="step-list">
             <li>
-              <h4>New key, new request</h4>
+              <h3>New key, new request</h3>
               <p>Process normally. Record the key, the request fingerprint, the response, and the resulting resource id. Return the response.</p>
             </li>
             <li>
-              <h4>Same key, identical request, processing complete</h4>
+              <h3>Same key, identical request, processing complete</h3>
               <p>Return the cached response with the original status code. Do not re-execute. The client cannot tell whether they&rsquo;re reading the cache or processing fresh &mdash; that&rsquo;s the point.</p>
             </li>
             <li>
-              <h4>Same key, identical request, still processing</h4>
+              <h3>Same key, identical request, still processing</h3>
               <p>Return <code>409 Conflict</code> with a <code>Retry-After</code> header, or block on the in-flight request and return its result. Either is defensible; pick one and document it.</p>
             </li>
             <li>
-              <h4>Same key, different request body</h4>
+              <h3>Same key, different request body</h3>
               <p>Return <code>422 Unprocessable Entity</code> with a clear error code (<code>idempotency_key_mismatch</code>). The key was reused with different inputs; this is a client bug, not a retry.</p>
             </li>
           </ol>
@@ -369,6 +439,23 @@ Host: api.example.com
             <li><strong>Read endpoints.</strong> <code>GET</code> requests are idempotent by definition. Adding an <code>Idempotency-Key</code> to them is wasted work and confuses caches and proxies that already cache reads correctly.</li>
           </ul>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="../data-sync/idempotent-consumer-exactly-once.html"><span class="lab-related__kicker">Lab &middot; Data Synchronisation</span><span class="lab-related__name">Idempotent Consumers &amp; Exactly-Once Semantics: Payment Deduplication at Scale</span></a></li>
+              <li><a class="lab-related__link" href="../field-playbooks/timeouts-and-unknown-outcomes.html"><span class="lab-related__kicker">Lab &middot; Field Playbooks</span><span class="lab-related__name">The Call Timed Out. Did It Work? Handling Unknown Outcomes Without Double Posting</span></a></li>
+              <li><a class="lab-related__link" href="hold-and-release-payments.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Hold-and-Release: A Two-Phase Pattern for Integrating Orchestration Hubs with Legacy Systems of Record</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/idempotent-consumer-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Idempotency Is a Business Decision: Why Payment Deduplication Requires VP-Level Commitment</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../integration-patterns.html">
               <div class="article-nav__label">&larr; Previous</div>

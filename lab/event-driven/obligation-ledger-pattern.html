@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -45,56 +46,62 @@
     "description": "A design pattern for any system where several independent parties place holds, reservations or restrictions on the same balance, stock or quota: record obligations rather than the resource itself, project one reconciled hold per resource into the legacy system of record, keep every claim as a hash-chained event stream, pin in-flight claims to versioned service definitions, and certify connectors against duplicate delivery and reversal storms.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-12",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/event-driven/obligation-ledger-pattern.html"
     },
     "url": "https://www.wbadawi.info/lab/event-driven/obligation-ledger-pattern.html",
+    "inLanguage": "en",
+    "wordCount": 3889,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Event-Driven Architecture &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Event-Driven Architecture — Technical Lab",
       "url": "https://www.wbadawi.info/lab/event-driven.html"
     },
-    "proficiencyLevel": "Expert",
-    "articleSection": "Event-Driven Architecture"
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Event-Driven Architecture",
+        "item": "https://www.wbadawi.info/lab/event-driven.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "The Obligation Ledger Pattern: Tracking Holds and Reservations Without Stacking Them in the System of Record",
+        "item": "https://www.wbadawi.info/lab/event-driven/obligation-ledger-pattern.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -129,7 +136,13 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Obligation Ledger Pattern</div>
           <span class="overline">Lab Article</span>
           <h1>The Obligation Ledger Pattern: Tracking Holds and Reservations Without Stacking Them in the System of Record</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-11-12">12 November 2026</time></span>
+            <span>17 min read</span>
+          </div>
           <p class="lead">Many systems let several independent parties lay claim to the same resource. A retailer reserves stock for an order while quality control quarantines the same lot. A telecom operator reserves prepaid quota for a session while a fraud rule suspends roaming. A payments firm places a dispute hold and executes a court order against the same balance. A public agency encumbers a budget line against several approved commitments. The obvious design places one hold per claim in the legacy system of record and lets that system be the record. It works for the first claim and breaks on the third against the same resource. This guide covers the alternative: record <em>obligations</em>, keep the resource itself in the system of record, and treat the hold there as an idempotent, reconciled projection.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -161,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Java 21 / Spring Boot / PostgreSQL / Apache Kafka / Red Hat OpenShift</span>
             <span class="article-meta__item"><strong>Audience:</strong> Architects &amp; engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~12 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Nov 12, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -569,19 +579,19 @@
 
           <ol class="step-list">
             <li>
-              <h4>Duplicate delivery</h4>
+              <h3>Duplicate delivery</h3>
               <p>The same <code>hold.set</code> with the same key arrives twice, ten milliseconds apart, and again an hour later. The second and third calls must return <code>ALREADY_APPLIED</code> and leave exactly one hold.</p>
             </li>
             <li>
-              <h4>Reversal storms</h4>
+              <h3>Reversal storms</h3>
               <p>Hundreds of claims on overlapping resources are reversed at once, at every lifecycle state, including mid-call. End state: every resource at its recomputed target, no orphan holds, every stream verifiable.</p>
             </li>
             <li>
-              <h4>Out-of-order and superseded calls</h4>
+              <h3>Out-of-order and superseded calls</h3>
               <p>A call under ledger version 5 completes after version 6 was applied. The connector, or the reconciler on its next pass, must leave version 6 in force.</p>
             </li>
             <li>
-              <h4>Timeouts with unknown outcome</h4>
+              <h3>Timeouts with unknown outcome</h3>
               <p>The connector times out after the system of record has applied the hold. The retry with the same key must converge, not double.</p>
             </li>
           </ol>
@@ -612,35 +622,52 @@
 
           <ol class="step-list">
             <li>
-              <h4>Agree the ownership split in writing</h4>
+              <h3>Agree the ownership split in writing</h3>
               <p>The platform owns obligations; the system of record owns the resource. Record it as an architecture decision and have the business, compliance and system-of-record owners sign it. Every later argument resolves against this line.</p>
             </li>
             <li>
-              <h4>Define obligation types before services</h4>
+              <h3>Define obligation types before services</h3>
               <p>Types, accumulation rules and how each projects to each resource class. Services are then definitions that emit typed obligations.</p>
             </li>
             <li>
-              <h4>Build the reconciler as a first-class component</h4>
+              <h3>Build the reconciler as a first-class component</h3>
               <p>One function, four triggers, keyed on resource and ledger version, with drift reporting and a cap on automatic re-application. Test it with property-based tests: any sequence of obligation changes must converge to the same target.</p>
             </li>
             <li>
-              <h4>Make every claim stream gap-free and chained</h4>
+              <h3>Make every claim stream gap-free and chained</h3>
               <p>Unique constraint on sequence, a hash per event, periodic anchors, and a verifier auditors can run themselves.</p>
             </li>
             <li>
-              <h4>Ship the protected-floor gap tier first</h4>
+              <h3>Ship the protected-floor gap tier first</h3>
               <p>Delegate where the system of record can, escalate where nothing can, and only then compute centrally. Never ship a path that can silently over-hold.</p>
             </li>
             <li>
-              <h4>Version service definitions and pin in-flight claims</h4>
+              <h3>Version service definitions and pin in-flight claims</h3>
               <p>Sign, verify, promote, pin. Regression scenarios travel inside the release unit, so a definition cannot be promoted without its own tests.</p>
             </li>
             <li>
-              <h4>Certify connectors on the hard scenarios</h4>
+              <h3>Certify connectors on the hard scenarios</h3>
               <p>Duplicate delivery, reversal storms, superseded calls and unknown-outcome timeouts. A connector that passes only the happy path is not certified.</p>
             </li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="../integration-patterns/hold-and-release-payments.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Hold-and-Release: A Two-Phase Pattern for Integrating Orchestration Hubs with Legacy Systems of Record</span></a></li>
+              <li><a class="lab-related__link" href="event-sourcing-and-cqrs.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">Event Sourcing &amp; CQRS in Payments</span></a></li>
+              <li><a class="lab-related__link" href="saga-patterns-distributed-transactions.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">Saga Patterns for Distributed Transactions</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/live-code-is-the-spec.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">The Live Code Is the Spec: Recover Business Rules Before You Rewrite Legacy Integration</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="event-sourcing-and-cqrs.html">
               <div class="article-nav__label">&larr; Previous</div>

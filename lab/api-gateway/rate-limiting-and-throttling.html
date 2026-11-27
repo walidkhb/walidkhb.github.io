@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,58 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "API Gateway: Rate Limiting & Throttling at Scale",
+    "headline": "Rate Limiting & Throttling at Scale",
     "description": "Distributed rate limiting at API gateway scale: token bucket vs sliding window, Redis-backed counters, Kong rate-limiting-advanced, IBM API Connect rate plans, Open Banking quota compliance, and adaptive backpressure.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/api-gateway/rate-limiting-and-throttling.html"
     },
     "url": "https://www.wbadawi.info/lab/api-gateway/rate-limiting-and-throttling.html",
+    "inLanguage": "en",
+    "wordCount": 3504,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "API Gateway &mdash; Lab &mdash; Waleed Albadawi",
+      "@type": "CollectionPage",
+      "name": "API Gateway — Technical Lab",
       "url": "https://www.wbadawi.info/lab/api-gateway.html"
-    }
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "API Gateway",
+        "item": "https://www.wbadawi.info/lab/api-gateway.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Rate Limiting & Throttling at Scale",
+        "item": "https://www.wbadawi.info/lab/api-gateway/rate-limiting-and-throttling.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -127,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-gateway.html">API Gateway</a><span>/</span>Rate Limiting &amp; Throttling</div>
           <span class="overline">Lab Article</span>
           <h1>Rate Limiting &amp; Throttling at Scale</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-09-05">5 September 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>15 min read</span>
+          </div>
           <p class="lead">Distributed rate limiting fails in production for predictable reasons &mdash; wrong algorithm, wrong identity, or wrong Redis topology. This article covers sliding window counters with Redis Lua scripts, Kong&rsquo;s rate-limiting-advanced plugin, IBM API Connect rate plans for Open Banking quotas, adaptive backpressure, and the bypass patterns that make IP-only rate limiting useless for financial APIs.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -158,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Kong Gateway 3.7 &middot; Redis 7.2 &middot; OpenShift 4.15 &middot; IBM API Connect 10.0.7</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Why Rate Limiting Fails in Production</h2>
@@ -352,56 +365,57 @@ redis.call(<span class="tok-s">'ZREMRANGEBYSCORE'</span>, key, <span class="tok-
           <div class="code-block">
             <div class="code-block__header"><span>kong-rate-limiting-plugin.yaml</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-c"># Base rate limit on the payment initiation route (PIS)</span>
-<span class="tok-k">name</span>: <span class="tok-s">rate-limiting-advanced</span>
-<span class="tok-k">route</span>: <span class="tok-s">pis-initiate-payment</span>
+<span class="tok-k">name</span>: rate-limiting-advanced
+<span class="tok-k">route</span>: pis-initiate-payment
 <span class="tok-k">config</span>:
   <span class="tok-k">limit</span>: [<span class="tok-n">100</span>]          <span class="tok-c"># 100 requests per window</span>
   <span class="tok-k">window_size</span>: [<span class="tok-n">60</span>]     <span class="tok-c"># 60-second window (1 minute)</span>
-  <span class="tok-k">window_type</span>: <span class="tok-s">sliding</span>
-  <span class="tok-k">limit_by</span>: <span class="tok-s">consumer</span>   <span class="tok-c"># JWT sub resolved to Kong consumer via JWT plugin</span>
-  <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>       <span class="tok-c"># cluster-wide distributed counter</span>
+  <span class="tok-k">window_type</span>: sliding
+  <span class="tok-k">identifier</span>: consumer  <span class="tok-c"># JWT sub resolved to a Kong consumer by the auth plugin</span>
+  <span class="tok-k">strategy</span>: redis       <span class="tok-c"># cluster-wide distributed counter</span>
+  <span class="tok-k">sync_rate</span>: <span class="tok-n">0</span>          <span class="tok-c"># 0 = synchronous Redis update; &gt;0 batches every N seconds</span>
   <span class="tok-k">redis</span>:
-    <span class="tok-k">cluster_addresses</span>:
+    <span class="tok-k">cluster_addresses</span>:  <span class="tok-c"># Redis Cluster: only database 0 exists</span>
       - <span class="tok-s">"redis-0.redis-headless.infra.svc:6379"</span>
       - <span class="tok-s">"redis-1.redis-headless.infra.svc:6379"</span>
       - <span class="tok-s">"redis-2.redis-headless.infra.svc:6379"</span>
-    <span class="tok-k">database</span>: <span class="tok-n">1</span>
-    <span class="tok-k">timeout</span>: <span class="tok-n">2000</span>        <span class="tok-c"># 2 s Redis timeout; fall back to local on timeout</span>
-    <span class="tok-k">ssl</span>: <span class="tok-n">true</span>
-    <span class="tok-k">ssl_verify</span>: <span class="tok-n">true</span>
-  <span class="tok-k">hide_client_headers</span>: <span class="tok-n">false</span>
-  <span class="tok-c"># Headers injected on every response:</span>
+    <span class="tok-k">timeout</span>: <span class="tok-n">2000</span>       <span class="tok-c"># ms; decide and test what happens when Redis is unreachable</span>
+    <span class="tok-k">ssl</span>: true
+    <span class="tok-k">ssl_verify</span>: true
+  <span class="tok-k">hide_client_headers</span>: false
+  <span class="tok-c"># Headers injected on responses:</span>
   <span class="tok-c"># X-RateLimit-Limit-60: 100</span>
   <span class="tok-c"># X-RateLimit-Remaining-60: N</span>
-  <span class="tok-c"># X-RateLimit-Reset-60: {epoch}</span>
+  <span class="tok-c"># RateLimit-Reset: {seconds}</span>
   <span class="tok-c"># Retry-After: {seconds} (on 429 only)</span>
   <span class="tok-k">error_code</span>: <span class="tok-n">429</span>
   <span class="tok-k">error_message</span>: <span class="tok-s">"Rate limit exceeded. See Retry-After header."</span>
 
-<span class="tok-c">---</span>
+---
 
-<span class="tok-c"># Account information route (AIS) — separate quota class per scheme rules</span>
-<span class="tok-k">name</span>: <span class="tok-s">rate-limiting-advanced</span>
-<span class="tok-k">route</span>: <span class="tok-s">ais-account-info</span>
+<span class="tok-c"># Account information route (AIS) - separate quota class per scheme rules</span>
+<span class="tok-k">name</span>: rate-limiting-advanced
+<span class="tok-k">route</span>: ais-account-info
 <span class="tok-k">config</span>:
-  <span class="tok-k">limit</span>: [<span class="tok-n">60</span>, <span class="tok-n">500</span>]      <span class="tok-c"># 60/min AND 500/hour — multi-window enforcement</span>
+  <span class="tok-k">limit</span>: [<span class="tok-n">60</span>, <span class="tok-n">500</span>]      <span class="tok-c"># 60/min AND 500/hour - multi-window enforcement</span>
   <span class="tok-k">window_size</span>: [<span class="tok-n">60</span>, <span class="tok-n">3600</span>]
-  <span class="tok-k">window_type</span>: <span class="tok-s">sliding</span>
-  <span class="tok-k">limit_by</span>: <span class="tok-s">consumer</span>
-  <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>
+  <span class="tok-k">window_type</span>: sliding
+  <span class="tok-k">identifier</span>: consumer
+  <span class="tok-k">strategy</span>: redis
+  <span class="tok-k">sync_rate</span>: <span class="tok-n">0</span>
 
-<span class="tok-c">---</span>
+---
 
-<span class="tok-c"># Premium PSP consumer group override — higher quota under a separate agreement</span>
-<span class="tok-k">name</span>: <span class="tok-s">rate-limiting-advanced</span>
-<span class="tok-k">route</span>: <span class="tok-s">pis-initiate-payment</span>
-<span class="tok-k">consumer_group</span>: <span class="tok-s">premium-psp</span>
+<span class="tok-c"># Premium PSP consumer group override - higher quota under a separate agreement</span>
+<span class="tok-k">name</span>: rate-limiting-advanced
+<span class="tok-k">route</span>: pis-initiate-payment
+<span class="tok-k">consumer_group</span>: premium-psp
 <span class="tok-k">config</span>:
   <span class="tok-k">limit</span>: [<span class="tok-n">300</span>]
   <span class="tok-k">window_size</span>: [<span class="tok-n">60</span>]
-  <span class="tok-k">window_type</span>: <span class="tok-s">sliding</span>
-  <span class="tok-k">strategy</span>: <span class="tok-s">redis</span>
-</code></pre>
+  <span class="tok-k">window_type</span>: sliding
+  <span class="tok-k">strategy</span>: redis
+  <span class="tok-k">sync_rate</span>: <span class="tok-n">0</span></code></pre>
           </div>
 
           <h2 id="apic-config">IBM API Connect Rate Plans</h2>
@@ -409,63 +423,48 @@ redis.call(<span class="tok-s">'ZREMRANGEBYSCORE'</span>, key, <span class="tok-
           <p>API Connect&rsquo;s rate plan model maps naturally to an Open Banking subscription tier model: a PSP subscribes to the &ldquo;Open Banking Standard&rdquo; plan, which enforces the scheme-mandated (or ASPSP-published) quotas. Premium PSPs with a separate agreement can be subscribed to a &ldquo;Premium PSP&rdquo; plan with higher limits, without any code change to the API itself.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>open-banking-product.yaml</span><span class="code-block__lang">yaml</span></div>
-<pre><code><span class="tok-k">product</span>: <span class="tok-s">1.0.0</span>
+            <div class="code-block__header"><span>open-banking-product.yaml &mdash; API Connect product</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-k">product</span>: <span class="tok-n">1.0</span>.0
 <span class="tok-k">info</span>:
-  <span class="tok-k">title</span>: <span class="tok-s">Open Banking APIs</span>
-  <span class="tok-k">name</span>: <span class="tok-s">open-banking-apis</span>
-  <span class="tok-k">version</span>: <span class="tok-s">1.3.0</span>
+  <span class="tok-k">title</span>: Open Banking APIs
+  <span class="tok-k">name</span>: open-banking-apis
+  <span class="tok-k">version</span>: <span class="tok-n">1.3</span>.0
 
 <span class="tok-k">apis</span>:
   <span class="tok-k">payment-initiation</span>:
-    <span class="tok-k">$ref</span>: <span class="tok-s">"./apis/pis-api.yaml"</span>
+    <span class="tok-k">$ref</span>: pis-api_1.0.0.yaml
   <span class="tok-k">account-information</span>:
-    <span class="tok-k">$ref</span>: <span class="tok-s">"./apis/ais-api.yaml"</span>
+    <span class="tok-k">$ref</span>: ais-api_1.0.0.yaml
 
 <span class="tok-k">plans</span>:
   <span class="tok-k">open-banking-standard</span>:
-    <span class="tok-k">title</span>: <span class="tok-s">Open Banking Standard</span>
-    <span class="tok-k">description</span>: <span class="tok-s">Scheme quotas for licensed PSPs and TPPs</span>
-    <span class="tok-k">approval</span>: <span class="tok-n">true</span>    <span class="tok-c"># subscriptions require manual approval</span>
+    <span class="tok-k">title</span>: Open Banking Standard
+    <span class="tok-k">description</span>: Scheme quotas for licensed PSPs and TPPs
+    <span class="tok-k">approval</span>: true                 <span class="tok-c"># subscriptions require manual approval</span>
     <span class="tok-k">rate-limits</span>:
-      <span class="tok-k">default</span>:
-        <span class="tok-k">value</span>: <span class="tok-n">100</span>
-        <span class="tok-k">unit</span>: <span class="tok-s">minute</span>
-        <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span>   <span class="tok-c"># reject at limit; no grace</span>
+      <span class="tok-k">per-minute</span>:
+        <span class="tok-k">value</span>: <span class="tok-n">100</span>/1minute         <span class="tok-c"># example quota: 100 req/min per subscribed app</span>
+        <span class="tok-k">hard-limit</span>: true           <span class="tok-c"># reject at limit; no grace</span>
     <span class="tok-k">burst-limits</span>:
-      <span class="tok-k">default</span>:
-        <span class="tok-k">value</span>: <span class="tok-n">20</span>
-        <span class="tok-k">unit</span>: <span class="tok-s">second</span>
+      <span class="tok-k">per-second</span>:
+        <span class="tok-k">value</span>: <span class="tok-n">20</span>/1second
     <span class="tok-k">apis</span>:
-      <span class="tok-k">payment-initiation</span>:
-        <span class="tok-k">rate-limits</span>:
-          <span class="tok-k">pis-initiate</span>:
-            <span class="tok-k">value</span>: <span class="tok-n">100</span>
-            <span class="tok-k">unit</span>: <span class="tok-s">minute</span>    <span class="tok-c"># example PIS quota: 100 req/min per PSP</span>
-            <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span>
-        <span class="tok-k">operations</span>:
-          <span class="tok-k">createPayment</span>:
-            <span class="tok-k">rate-limits</span>:
-              <span class="tok-k">per-operation</span>:
-                <span class="tok-k">value</span>: <span class="tok-n">50</span>
-                <span class="tok-k">unit</span>: <span class="tok-s">minute</span>   <span class="tok-c"># tighter limit on the mutation endpoint</span>
-      <span class="tok-k">account-information</span>:
-        <span class="tok-k">rate-limits</span>:
-          <span class="tok-k">ais-query</span>:
-            <span class="tok-k">value</span>: <span class="tok-n">60</span>
-            <span class="tok-k">unit</span>: <span class="tok-s">minute</span>    <span class="tok-c"># example AIS quota: 60 req/min per app</span>
-            <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span>
+      <span class="tok-k">payment-initiation</span>: {}
+      <span class="tok-k">account-information</span>: {}
+    <span class="tok-c"># Tighter limits for individual APIs or operations (for example createPayment)</span>
+    <span class="tok-c"># are set as API- or operation-level rate limits; see the API Connect product reference.</span>
 
   <span class="tok-k">premium-psp</span>:
-    <span class="tok-k">title</span>: <span class="tok-s">Premium PSP</span>
-    <span class="tok-k">description</span>: <span class="tok-s">Higher quotas under a separate agreement</span>
-    <span class="tok-k">approval</span>: <span class="tok-n">true</span>
+    <span class="tok-k">title</span>: Premium PSP
+    <span class="tok-k">description</span>: Higher quotas under a separate agreement
+    <span class="tok-k">approval</span>: true
     <span class="tok-k">rate-limits</span>:
-      <span class="tok-k">default</span>:
-        <span class="tok-k">value</span>: <span class="tok-n">300</span>
-        <span class="tok-k">unit</span>: <span class="tok-s">minute</span>
-        <span class="tok-k">hard-limit</span>: <span class="tok-n">true</span>
-</code></pre>
+      <span class="tok-k">per-minute</span>:
+        <span class="tok-k">value</span>: <span class="tok-n">300</span>/1minute
+        <span class="tok-k">hard-limit</span>: true
+    <span class="tok-k">apis</span>:
+      <span class="tok-k">payment-initiation</span>: {}
+      <span class="tok-k">account-information</span>: {}</code></pre>
           </div>
 
           <h2 id="quota-context">Scheme Quota Context</h2>
@@ -473,7 +472,7 @@ redis.call(<span class="tok-s">'ZREMRANGEBYSCORE'</span>, key, <span class="tok-
           <p>The shape is consistent across schemes even where the numbers differ. The values below are illustrative &mdash; take the real ones from your scheme&rsquo;s current standard:</p>
           <ul>
             <li><strong>Payment Initiation Service (PIS) APIs</strong> &mdash; e.g. 100 requests per minute per PSP. &ldquo;Per PSP&rdquo; usually means per PSP <em>organisation</em>, identified from its directory registration (the organisation ID carried in the software statement or transport certificate) &mdash; not per application or per end-user session. A PSP with 10 applications gets 100 req/min total, not 1 000.</li>
-            <li><strong>Account Information Service (AIS) APIs</strong> &mdash; e.g. 60 requests per minute per TPP-application combination. AIS quotas are typically per-application (identified by the <code>client_id</code> in the OAuth token) rather than per-organisation, because different AIS applications serve different customer consent contexts. Some regimes also cap unattended access per customer &mdash; the EU/UK rule allowing a TPP four account refreshes per 24 hours without the customer present is the best-known example.</li>
+            <li><strong>Account Information Service (AIS) APIs</strong> &mdash; e.g. 60 requests per minute per TPP-application combination. AIS quotas are typically per-application (identified by the <code>client_id</code> in the OAuth token) rather than per-organisation, because different AIS applications serve different customer consent contexts. Some regimes also cap unattended access per customer. The best-known example is Article 36(5) of the EU&rsquo;s PSD2 regulatory technical standards (Delegated Regulation (EU) 2018/389), carried into the UK&rsquo;s version of the RTS: without the customer actively requesting it, an account information service provider may access account data no more than four times in a 24-hour period, unless a higher frequency is agreed with the account provider with the customer&rsquo;s consent.</li>
             <li><strong>Confirmation of Funds (CoF)</strong> &mdash; often not separately quota-controlled; commonly treated under the PIS quota class.</li>
             <li><strong>Sandbox environments</strong> &mdash; quotas are usually relaxed (several times the production values), sometimes with soft-limit enforcement only, so PSPs can load-test integrations without hitting production limits. <strong>Do not carry sandbox quota values into the production configuration.</strong></li>
           </ul>
@@ -542,6 +541,23 @@ redis.call(<span class="tok-s">'ZREMRANGEBYSCORE'</span>, key, <span class="tok-
             <li>Retry storm mitigation documented in consumer API guide; per-consumer 429 rate alerting configured in Grafana.</li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="kong-and-envoy.html"><span class="lab-related__kicker">Lab &middot; API Gateway</span><span class="lab-related__name">Kong &amp; Envoy at the Edge: Open-Source Gateway Strategies for Financial Services</span></a></li>
+              <li><a class="lab-related__link" href="../api-security/api-waf-and-owasp.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: API WAF &amp; OWASP API Top 10</span></a></li>
+              <li><a class="lab-related__link" href="aws-api-gateway.html"><span class="lab-related__kicker">Lab &middot; API Gateway</span><span class="lab-related__name">AWS API Gateway for Regulated Workloads: VPC Integration, WAF &amp; Custom Authorisers</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/rate-limiting-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Rate Limiting at Scale: The Infrastructure Decision That Protects Revenue While Satisfying SAMA</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="graphql-federation.html">
               <div class="article-nav__label">&larr; Previous</div>

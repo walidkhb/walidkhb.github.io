@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -78,9 +79,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">May 3, 2026</span>
+            <span class="article-list__date-pub">3 May 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~15 min read</span>
+            <span>6 min read</span>
           </div>
           <h2 class="article-list__title">Data Streaming: Kafka Streams &amp; Flink</h2>
           <p class="article-list__excerpt">Stream processing for fraud detection, real-time screening and live metrics: windowing, stateful joins, exactly-once processing, and the trade-offs between Kafka Streams (in-process) and Flink (separate cluster).</p>
@@ -98,9 +99,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">May 23, 2026</span>
+            <span class="article-list__date-pub">23 May 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>10 min read</span>
           </div>
           <h2 class="article-list__title">Data Streaming: ksqlDB &amp; Flink SQL for Stream Analytics</h2>
           <p class="article-list__excerpt">SQL on streams: stateful aggregations, windowing semantics, temporal joins for audit-grade screening, schema management, and the operational trade-offs that determine which engine fits your architecture.</p>
@@ -118,9 +119,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Aug 1, 2026</span>
+            <span class="article-list__date-pub">1 August 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>11 min read</span>
           </div>
           <h2 class="article-list__title">Data Streaming: Real-Time Fraud Detection Pipeline</h2>
           <p class="article-list__excerpt">End-to-end production design: Feast feature store, sliding-window velocity checks with Flink KeyedProcessFunction, embedded ONNX model scoring, a dispute-driven feedback loop, and the operational patterns that keep sub-100&nbsp;ms authorisation SLAs intact under load &mdash; illustrated with card payments, applicable to any high-volume transaction stream.</p>
@@ -138,9 +139,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Sep 5, 2026</span>
+            <span class="article-list__date-pub">5 September 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>14 min read</span>
           </div>
           <h2 class="article-list__title">Schema Registry and Data Contracts: Avro, Compatibility Modes, and CI Enforcement</h2>
           <p class="article-list__excerpt">Avro schema design for industry-standard messages (ISO 20022 as the worked example) with decimal logicalType and data-classification metadata, schema-registry-maven-plugin CI compatibility checks, schema evolution patterns, and the governance model that keeps dozens of Kafka topics from becoming a fragile mesh of implicit contracts.</p>
@@ -158,9 +159,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Sep 5, 2026</span>
+            <span class="article-list__date-pub">5 September 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>14 min read</span>
           </div>
           <h2 class="article-list__title">Stateful Stream Processing: Kafka Streams Interactive Queries and Flink Exactly-Once</h2>
           <p class="article-list__excerpt">Flink VelocityCheckFunction with RocksDB state and TTL, exactly-once Kafka sink configuration, Kafka Streams interactive query REST endpoint, tumbling and session window semantics, and the checkpoint sizing guidance that keeps RocksDB from stalling real-time detection pipelines.</p>
@@ -178,9 +179,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Oct 31, 2026</span>
+            <span class="article-list__date-pub">31 October 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>10 min read</span>
           </div>
           <h2 class="article-list__title">Flink on OpenShift: Checkpointing, Exactly-Once, and Production Operations</h2>
           <p class="article-list__excerpt">Running Apache Flink as a production cluster on OpenShift via the Flink Kubernetes Operator: incremental checkpoints to S3-compatible storage, exactly-once Kafka sink with two-phase commit, RocksDB state backend tuning, JobManager HA with ZooKeeper, rolling upgrades via savepoints, and the observability configuration that surfaces checkpoint failures before they become incidents.</p>
@@ -197,6 +198,24 @@
       </div>
     </div>
   </section>
+
+  <!-- lab-meta:further -->
+  <section class="lab-further" aria-labelledby="further-reading">
+    <div class="container container--narrow">
+      <h2 id="further-reading">Further reading</h2>
+      <p class="lab-further__intro">Official documentation and specifications behind the articles above. The articles are reference architectures with illustrative code; these sources are authoritative.</p>
+      <ul class="lab-further__list">
+            <li><a href="https://kafka.apache.org/documentation/">Apache Kafka documentation</a></li>
+            <li><a href="https://kafka.apache.org/documentation/streams/">Kafka Streams documentation</a></li>
+            <li><a href="https://nightlies.apache.org/flink/flink-docs-stable/">Apache Flink documentation</a></li>
+            <li><a href="https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-stable/">Flink Kubernetes Operator documentation</a></li>
+            <li><a href="https://docs.ksqldb.io/">ksqlDB documentation</a></li>
+            <li><a href="https://docs.confluent.io/platform/current/schema-registry/index.html">Confluent Schema Registry documentation</a></li>
+            <li><a href="https://avro.apache.org/docs/">Apache Avro specification and documentation</a></li>
+      </ul>
+    </div>
+  </section>
+  <!-- /lab-meta:further -->
 
   </main>
 

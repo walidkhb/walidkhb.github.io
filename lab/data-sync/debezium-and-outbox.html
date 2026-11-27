@@ -31,12 +31,79 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 0.4rem; }
   </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Data Synchronisation: Debezium & Outbox",
+    "description": "Production patterns for keeping distributed data in sync: change data capture with Debezium, the transactional outbox pattern, dual-write hazards, idempotent consumers, and the recipes that survive partial failures across business-critical data flows.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-05-03",
+    "dateModified": "2026-11-27",
+    "author": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "publisher": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/data-sync/debezium-and-outbox.html"
+    },
+    "url": "https://www.wbadawi.info/lab/data-sync/debezium-and-outbox.html",
+    "inLanguage": "en",
+    "wordCount": 1356,
+    "isPartOf": {
+      "@type": "CollectionPage",
+      "name": "Data Synchronisation — Technical Lab",
+      "url": "https://www.wbadawi.info/lab/data-sync.html"
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Data Synchronisation",
+        "item": "https://www.wbadawi.info/lab/data-sync.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Data Synchronisation: Debezium & Outbox",
+        "item": "https://www.wbadawi.info/lab/data-sync/debezium-and-outbox.html"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -69,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Debezium &amp; Outbox</div>
           <span class="overline">Lab Article</span>
           <h1>Data Synchronisation: Debezium &amp; Outbox</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-05-03">3 May 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>6 min read</span>
+          </div>
           <p class="lead">The dual-write problem and how to solve it: change data capture with Debezium, the transactional outbox pattern, idempotent downstreams, and the reconciliation that catches the edge cases everyone forgets.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -101,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Debezium 2.x / Kafka Connect / Postgres / Db2</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> May 3, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -262,27 +333,27 @@
 
           <ol class="step-list">
             <li>
-              <h4>Enable logical replication on the source</h4>
+              <h3>Enable logical replication on the source</h3>
               <p>Postgres: <code>wal_level=logical</code>, a <code>REPLICATION</code> user, a publication, and a replication slot. MySQL: row-format binlog. Db2: <code>DATA CAPTURE CHANGES</code>.</p>
             </li>
             <li>
-              <h4>Decide the snapshot strategy</h4>
+              <h3>Decide the snapshot strategy</h3>
               <p>Initial snapshot of existing rows is the heaviest part of CDC startup. <code>initial</code> for the first deployment; <code>schema_only</code> when historical state isn&rsquo;t needed; <code>incremental</code> for tables too large to read in one go.</p>
             </li>
             <li>
-              <h4>Configure the connector</h4>
+              <h3>Configure the connector</h3>
               <p>Filter to only the tables CDC actually needs (otherwise you&rsquo;re shipping every internal table&rsquo;s changes). Pick the right SMT &mdash; Outbox Router, ExtractNewRecordState, or Unwrap.</p>
             </li>
             <li>
-              <h4>Topic conventions</h4>
+              <h3>Topic conventions</h3>
               <p>One topic per table by default. With outbox, route by <code>aggregate_type</code> &rarr; one topic per business event class (payment.events, customer.events).</p>
             </li>
             <li>
-              <h4>Consumer-side dedupe</h4>
+              <h3>Consumer-side dedupe</h3>
               <p>CDC is at-least-once. Use the source LSN or outbox row id as the idempotency key downstream.</p>
             </li>
             <li>
-              <h4>Wire alerts</h4>
+              <h3>Wire alerts</h3>
               <p>Connector lag (LSN behind), restart count, snapshot duration, slot disk usage. A slot with no consumer <em>retains WAL forever</em> and fills the source DB&rsquo;s disk &mdash; this is the single most common Debezium production incident.</p>
             </li>
           </ol>
@@ -301,7 +372,7 @@
     <span class="tok-k">"database.user"</span>: <span class="tok-s">"debezium"</span>,
     <span class="tok-k">"database.password"</span>: <span class="tok-s">"${file:/secrets/db.pwd:db.pwd}"</span>,
     <span class="tok-k">"database.dbname"</span>: <span class="tok-s">"payments"</span>,
-    <span class="tok-k">"database.server.name"</span>: <span class="tok-s">"payments"</span>,
+    <span class="tok-k">"topic.prefix"</span>: <span class="tok-s">"payments"</span>,
 
     <span class="tok-k">"plugin.name"</span>: <span class="tok-s">"pgoutput"</span>,
     <span class="tok-k">"slot.name"</span>: <span class="tok-s">"debezium_payments"</span>,
@@ -323,12 +394,12 @@
     <span class="tok-k">"value.converter.schema.registry.url"</span>: <span class="tok-s">"http://schema-registry:8081"</span>,
 
     <span class="tok-k">"heartbeat.interval.ms"</span>: <span class="tok-s">"10000"</span>,
-    <span class="tok-k">"heartbeat.action.query"</span>: <span class="tok-s">"INSERT INTO heartbeat (ts) VALUES (now()) ON CONFLICT (id) DO UPDATE SET ts = now()"</span>
+    <span class="tok-k">"heartbeat.action.query"</span>: <span class="tok-s">"INSERT INTO debezium_heartbeat (id, ts) VALUES (1, now()) ON CONFLICT (id) DO UPDATE SET ts = EXCLUDED.ts"</span>
   }
 }</code></pre>
           </div>
 
-          <p>The <code>heartbeat.action.query</code> is the silent hero. Without traffic on the source DB the WAL doesn&rsquo;t advance and the slot holds WAL forever; an idle outbox table can fill the DB&rsquo;s disk in days. The heartbeat keeps WAL flowing.</p>
+          <p>The <code>heartbeat.action.query</code> is the silent hero. When the captured outbox table is quiet but the rest of the server keeps writing, the replication slot&rsquo;s confirmed position stops moving and PostgreSQL retains WAL for it; a quiet outbox on a busy server can fill the disk in days. The heartbeat interval plus the action query give the connector a recent position to confirm, so the slot keeps advancing.</p>
 
           <h2 id="consumer">Idempotent consumer</h2>
           <p>CDC delivers at-least-once. The consumer must dedupe. The simplest reliable pattern: a processed-events table, keyed by the outbox event id, written in the same transaction as the side effect.</p>
@@ -393,6 +464,22 @@
             <li><strong>You need synchronous propagation.</strong> CDC is async by definition. For strong cross-system consistency, use a database-level distributed transaction or co-locate the systems.</li>
           </ul>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="idempotent-consumer-exactly-once.html"><span class="lab-related__kicker">Lab &middot; Data Synchronisation</span><span class="lab-related__name">Idempotent Consumers &amp; Exactly-Once Semantics: Payment Deduplication at Scale</span></a></li>
+              <li><a class="lab-related__link" href="../distributed-caching/cache-invalidation-via-cdc.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Cache Invalidation via CDC</span></a></li>
+              <li><a class="lab-related__link" href="reconciliation-pipelines-for-regulators.html"><span class="lab-related__kicker">Lab &middot; Data Synchronisation</span><span class="lab-related__name">Data Synchronisation: Reconciliation Pipelines for Regulators</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../api-security.html">
               <div class="article-nav__label">&larr; Previous</div>

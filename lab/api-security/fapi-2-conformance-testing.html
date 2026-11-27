@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -45,56 +46,62 @@
     "description": "A practical guide to passing FAPI 2.0 Open Banking conformance: single-deployable versus split authorisation and resource servers, gateway and application mTLS responsibilities, a rule-to-enforcement matrix for FAPI 2.0 and national market profiles, headless conformance runs in CI, strict versus compatibility modes, common failure points and a checklist.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-12",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/api-security/fapi-2-conformance-testing.html"
     },
     "url": "https://www.wbadawi.info/lab/api-security/fapi-2-conformance-testing.html",
+    "inLanguage": "en",
+    "wordCount": 3003,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "API Security &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "API Security — Technical Lab",
       "url": "https://www.wbadawi.info/lab/api-security.html"
     },
-    "proficiencyLevel": "Expert",
-    "articleSection": "API Security"
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "API Security",
+        "item": "https://www.wbadawi.info/lab/api-security.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Passing FAPI 2.0 Open Banking Conformance: Architecture Choices and Test Automation",
+        "item": "https://www.wbadawi.info/lab/api-security/fapi-2-conformance-testing.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -129,7 +136,13 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>FAPI 2.0 Conformance Testing</div>
           <span class="overline">Lab Article</span>
           <h1>Passing FAPI 2.0 Open Banking Conformance: Architecture Choices and Test Automation</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-11-12">12 November 2026</time></span>
+            <span>13 min read</span>
+          </div>
           <p class="lead">Reading the FAPI 2.0 profile is the easy part. Passing a conformance suite is harder: every clause needs one place in code where it is enforced, and a test that proves it. This guide covers the deployable topology, how to split mTLS between gateway and application, a rule-to-enforcement matrix for FAPI 2.0 and national Open Banking market profiles, running the conformance suite headlessly in CI, and the failure points that catch most teams.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -159,9 +172,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Java / Spring Authorization Server / nginx / OpenID Foundation conformance suite / Playwright</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~12 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Nov 12, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -414,23 +424,23 @@
 
           <ol class="step-list">
             <li>
-              <h4>Start from a clean runner</h4>
+              <h3>Start from a clean runner</h3>
               <p>Restart the suite (or create a fresh plan) for each test set, then wait on a health check rather than a fixed sleep. Carried-over state is the main cause of flaky runs.</p>
             </li>
             <li>
-              <h4>Generate configuration, never edit it</h4>
+              <h3>Generate configuration, never edit it</h3>
               <p>A small tool renders discovery and client configuration from templates: issuer URLs for the target environment, client IDs, certificates and signing keys pulled from a secret store at run time. Keys never enter version control.</p>
             </li>
             <li>
-              <h4>Stage consents</h4>
+              <h3>Stage consents</h3>
               <p>Creating the plan or fetching its test cases makes the suite create consents and PAR requests. Collect the authorisation URLs it produces.</p>
             </li>
             <li>
-              <h4>Complete each customer consent headlessly</h4>
+              <h3>Complete each customer consent headlessly</h3>
               <p>A headless browser opens each URL, logs in as a test customer, selects accounts and approves. Negative cases that expect rejection are left to fail as designed.</p>
             </li>
             <li>
-              <h4>Run and collect verdicts</h4>
+              <h3>Run and collect verdicts</h3>
               <p>Start the run, wait for completion, and parse results into one JSON file per plan. Compare with the last green baseline: any test that flips from pass to fail breaks the build.</p>
             </li>
           </ol>
@@ -540,39 +550,56 @@
 
           <ol class="step-list">
             <li>
-              <h4>Choose the deployable boundary by trust</h4>
+              <h3>Choose the deployable boundary by trust</h3>
               <p>Keep AS and resource APIs together while consent is shared state, or name who secures every internal hop in a split design.</p>
             </li>
             <li>
-              <h4>Split mTLS: cryptography at the gateway, policy in the app</h4>
+              <h3>Split mTLS: cryptography at the gateway, policy in the app</h3>
               <p>Verify chains at the edge, overwrite the certificate header on every request, restrict the app port, and require certificates per endpoint in the app.</p>
             </li>
             <li>
-              <h4>Write the rule &rarr; enforcement matrix before the code</h4>
+              <h3>Write the rule &rarr; enforcement matrix before the code</h3>
               <p>One row per profile rule, one enforcement point per row, and the test IDs that cover it. Review it with every errata.</p>
             </li>
             <li>
-              <h4>Validate against the standard&rsquo;s OpenAPI</h4>
+              <h3>Validate against the standard&rsquo;s OpenAPI</h3>
               <p>Requests and responses, from the published files. No hand-coded payload rules.</p>
             </li>
             <li>
-              <h4>Make windows, lifetimes and audiences configuration</h4>
+              <h3>Make windows, lifetimes and audiences configuration</h3>
               <p>Request-object age, <code>exp &minus; nbf</code>, token lifetime, refresh rotation and assertion audience all vary between profile versions and suites.</p>
             </li>
             <li>
-              <h4>Automate the conformance runner early</h4>
+              <h3>Automate the conformance runner early</h3>
               <p>Script the manual guide step by step, store verdicts per run, run a subset on every merge and the full set nightly, and fail on any regression.</p>
             </li>
             <li>
-              <h4>Name every compatibility switch and prove strict mode</h4>
+              <h3>Name every compatibility switch and prove strict mode</h3>
               <p>Strict by default, relaxed only in a named profile, logged on use, blocked in production. Run the OpenID Foundation plans in strict mode.</p>
             </li>
             <li>
-              <h4>Describe results precisely</h4>
+              <h3>Describe results precisely</h3>
               <p>Sandbox conformance is not certification. Report it as what it is, and keep the certification evidence path separate, manual and signed.</p>
             </li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="fapi-2-open-banking.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: FAPI 2.0 &amp; Open Banking Security</span></a></li>
+              <li><a class="lab-related__link" href="open-banking-consent-management.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: Open Banking &amp; Consent Management</span></a></li>
+              <li><a class="lab-related__link" href="oauth-and-mtls.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: OAuth 2.1 &amp; mTLS</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/open-banking-conformance-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Open Banking Conformance Is a Capability, Not a Certificate</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="fapi-2-open-banking.html">
               <div class="article-nav__label">&larr; Previous</div>

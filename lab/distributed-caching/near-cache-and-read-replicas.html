@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,60 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Near-Cache & Read-Replica Topologies: Redis Read-Scaling for High-Frequency, Peak-Load APIs",
+    "headline": "Distributed Caching: Near-Cache & Read-Replica Topologies",
     "description": "Redis read replicas and client-side near-cache patterns for high-frequency, peak-load APIs: REPLICA_PREFERRED routing, replica lag budgets, Hazelcast Near Cache, read-scaling through settlement windows, flash sales and other predictable peaks, and the failure modes that cause stale balances or stock levels in production.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-07",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/distributed-caching/near-cache-and-read-replicas.html"
     },
     "url": "https://www.wbadawi.info/lab/distributed-caching/near-cache-and-read-replicas.html",
+    "inLanguage": "en",
+    "wordCount": 3732,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Distributed Caching &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Distributed Caching — Technical Lab",
       "url": "https://www.wbadawi.info/lab/distributed-caching.html"
     },
-    "proficiencyLevel": "Expert",
-    "articleSection": "Distributed Caching"
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Distributed Caching",
+        "item": "https://www.wbadawi.info/lab/distributed-caching.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Distributed Caching: Near-Cache & Read-Replica Topologies",
+        "item": "https://www.wbadawi.info/lab/distributed-caching/near-cache-and-read-replicas.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -129,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Near-Cache &amp; Read-Replica Topologies</div>
           <span class="overline">Lab Article</span>
           <h1>Distributed Caching: Near-Cache &amp; Read-Replica Topologies</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-11-07">7 November 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>16 min read</span>
+          </div>
           <p class="lead">Redis Cluster gives you horizontal write capacity and high availability. What it does not give you automatically is horizontal read capacity. When a payments, checkout or settlement API serves 50,000 balance or stock pre-checks per second, all reads land on the primary shard for each key. Near-cache and read-replica topologies change that &mdash; at the cost of a replica lag budget you must model explicitly for every data type that touches an authoritative ledger or inventory.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -160,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Redis 7.2 / Lettuce 6.3 / Spring Data Redis 3.3 / Hazelcast 5.4 / OpenShift 4.16</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Nov 7, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -520,7 +531,7 @@
       <span class="tok-k">local-update-policy:</span> <span class="tok-s">INVALIDATE</span> <span class="tok-c"># invalidate near-cache on write (not update)</span>
       <span class="tok-k">preloader:</span>
         <span class="tok-k">enabled:</span> <span class="tok-s">true</span>
-        <span class="tok-k">auto-interval:</span> <span class="tok-n">600</span>           <span class="tok-c"># persist near-cache keys to disk every 10 min</span>
+        <span class="tok-k">store-interval-seconds:</span> <span class="tok-n">600</span>  <span class="tok-c"># persist near-cache keys to disk every 10 min</span>
         <span class="tok-k">store-initial-delay-seconds:</span> <span class="tok-n">120</span>
 
     <span class="tok-k">bic-routing:</span>
@@ -539,23 +550,23 @@
           <p>Five patterns hold up in production during such windows:</p>
           <ol class="step-list">
             <li>
-              <h4>Separate read and write connection pools</h4>
+              <h3>Separate read and write connection pools</h3>
               <p>Use two connection pool configurations: a write pool (default: 10 connections per node, timeout 200 ms) targeting primaries, and a read pool (default: 20 connections per node, timeout 150 ms) targeting replicas via <code>REPLICA_PREFERRED</code>. The read pool is larger because reference-data reads are more numerous and shorter-lived than writes. Tune pool sizes based on the connection count observed in <code>redis-cli CLIENT LIST</code> during a peak-window load test.</p>
             </li>
             <li>
-              <h4>Preheat the near-cache before the peak window opens</h4>
+              <h3>Preheat the near-cache before the peak window opens</h3>
               <p>Settlement sessions, scheduled sales and batch runs open at a known time. Schedule a cache-warm job 10 minutes before the window opens to populate the near-cache for exchange rates and BIC routing tables. This ensures the near-cache is fully populated before the spike hits, eliminating DB fallback reads during the window. The warm job reads from Redis replicas, not from the database &mdash; it only touches the DB if the Redis near-cache is cold (e.g., after a Redis cluster failover).</p>
             </li>
             <li>
-              <h4>Promote replicas during primary failover without routing stale balance reads</h4>
+              <h3>Promote replicas during primary failover without routing stale balance reads</h3>
               <p>When a Redis primary fails, Redis Sentinel or Redis Cluster promotes a replica to primary. During the promotion (typically 10&ndash;30 seconds), the near-cache TTLs provide continuity for reference data reads. For balance and payment-state reads, implement a circuit breaker: if the primary is unavailable and the read-from-replica fallback is not configured for that key type, return a <code>503</code> rather than serving a potentially stale balance. A <code>503</code> is recoverable; a stale balance that authorises an overdraft is not.</p>
             </li>
             <li>
-              <h4>Monitor replica lag explicitly during the peak window</h4>
+              <h3>Monitor replica lag explicitly during the peak window</h3>
               <p>Instrument the Lettuce connection factory to emit <code>redis.replica.lag.ms</code> metrics for each replica node. Alert when lag exceeds 100 ms &mdash; that is the threshold at which limit-matrix reads from replicas start producing values that have missed recent limit-change operations. If lag exceeds 100 ms on any replica, temporarily switch that key type back to primary-only reads and alert the operations team.</p>
             </li>
             <li>
-              <h4>ISO 20022 pacs.008 enrichment: near-cache for BIC/LEI resolution</h4>
+              <h3>ISO 20022 pacs.008 enrichment: near-cache for BIC/LEI resolution</h3>
               <p>SWIFT MT-to-MX migration requires BIC-to-LEI resolution at message transformation time. The ISO 20022 BIC/LEI resolution table is a classic near-cache candidate: 10,000&ndash;50,000 entries, updated once per business day at the SWIFT open time, read on every international payment. The same reasoning applies to any per-message enrichment lookup, such as SKU-to-supplier or postcode-to-region mapping. Configure a 1-hour near-cache TTL with Hazelcast <code>invalidate-on-change: true</code>. The near-cache eliminates the Redis hop for every enrichment operation, cutting p99 enrichment latency from 2 ms to &lt;0.1 ms at 10,000 pacs.008 messages per hour.</p>
             </li>
           </ol>
@@ -633,35 +644,52 @@
 
           <ol class="step-list">
             <li>
-              <h4>Build a data-classification table with lag budgets</h4>
+              <h3>Build a data-classification table with lag budgets</h3>
               <p>For every entity that will be cached, document: staleness budget (seconds), read strategy (PRIMARY / REPLICA_PREFERRED / near-cache), near-cache TTL if applicable, invalidation mechanism, and sign-off from the data owner. Get this signed off before writing a line of code. The sign-off prevents teams from quietly routing balance reads to replicas when caching a new entity type.</p>
             </li>
             <li>
-              <h4>Configure dual Lettuce connection factories</h4>
+              <h3>Configure dual Lettuce connection factories</h3>
               <p>Create a <code>MASTER</code> factory (primary only) and a <code>REPLICA_PREFERRED</code> factory. Wire them to separate <code>RedisTemplate</code> beans annotated with <code>@Qualifier</code>. Never configure <code>REPLICA_PREFERRED</code> at the application-level <code>spring.data.redis</code> property level &mdash; that makes it too easy for new services to inherit the replica routing without understanding the lag implications.</p>
             </li>
             <li>
-              <h4>Enable Redis keyspace notifications with minimal scope</h4>
+              <h3>Enable Redis keyspace notifications with minimal scope</h3>
               <p>Run <code>CONFIG SET notify-keyspace-events Kgx</code> (keyevent + generic + expired-without-string) on the cache Redis Cluster &mdash; this is narrower than <code>KEA</code> and reduces CPU overhead significantly. Verify that DELETE and EXPIRE events are being published for the keys used by the near-cache. Load-test the notification throughput at peak write rate to confirm the Redis node CPU does not exceed 60% with notifications enabled.</p>
             </li>
             <li>
-              <h4>Implement near-cache with Caffeine and a keyspace invalidation listener</h4>
+              <h3>Implement near-cache with Caffeine and a keyspace invalidation listener</h3>
               <p>Configure per-cache Caffeine specs (maximumSize, expireAfterWrite). Implement <code>RedisMessageListenerContainer</code> subscribed to <code>__keyevent@0__:del</code> and <code>__keyevent@0__:expired</code>. Add a <code>RedisConnectionStateListener</code> that flushes all near-caches on reconnect. Test: write a key to Redis, observe the near-cache entry evict within 50 ms on all pods.</p>
             </li>
             <li>
-              <h4>Add replica-lag and near-cache hit-rate metrics</h4>
+              <h3>Add replica-lag and near-cache hit-rate metrics</h3>
               <p>Implement the <code>ReplicaLagMonitor</code> scheduled bean. Expose Caffeine stats via Micrometer. Add a custom counter for keyspace notification receipt latency (time between Redis publish and application receipt). Create Alertmanager rules: lag &gt; 100 ms (severity: warning), lag &gt; 500 ms (severity: critical), near-cache hit rate &lt; 80% (severity: warning).</p>
             </li>
             <li>
-              <h4>Implement the ClusterTopologyChangedEvent flush</h4>
+              <h3>Implement the ClusterTopologyChangedEvent flush</h3>
               <p>Register a Lettuce <code>ClusterTopologyChangedEvent</code> listener. On topology change (primary failover, replica added/removed), flush all near-caches that use keyspace notification coherence. Log the flush event with the topology change details. This handles the near-cache divergence risk during failover described in the failure modes section.</p>
             </li>
             <li>
-              <h4>Load test at peak-window scale before go-live</h4>
+              <h3>Load test at peak-window scale before go-live</h3>
               <p>Run a load test at 1.5x peak-window RPS. Verify replica lag stays below 20 ms under write load. Verify near-cache hit rates stay above 95% for exchange rates and 98% for BIC routing. Verify that a simulated primary failover (stop the Redis primary pod) triggers the near-cache flush and does not route balance reads to the promoted replica.</p>
             </li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="multi-tier-caching-strategies.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Multi-Tier Caching Strategies</span></a></li>
+              <li><a class="lab-related__link" href="hazelcast-imdg-in-process-state.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Hazelcast IMDG for In-Process State</span></a></li>
+              <li><a class="lab-related__link" href="redis-cluster.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Redis Cluster &amp; Sentinel</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/near-cache-read-replicas-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Cache Architecture Is a Risk Architecture: Why Read-Replica and Near-Cache Decisions Belong at VP Level</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="multi-tier-caching-strategies.html">
               <div class="article-nav__label">&larr; Previous</div>

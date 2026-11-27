@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,60 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Cache Invalidation via CDC",
-    "description": "Using Debezium and Kafka to drive cache invalidation from database change events &mdash; the only pattern that survives DBA-level updates the application never sees.",
+    "headline": "Distributed Caching: Cache Invalidation via CDC",
+    "description": "Using Debezium and Kafka to drive cache invalidation from database change events — the only pattern that survives DBA-level updates the application never sees.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/distributed-caching/cache-invalidation-via-cdc.html"
     },
     "url": "https://www.wbadawi.info/lab/distributed-caching/cache-invalidation-via-cdc.html",
+    "inLanguage": "en",
+    "wordCount": 3764,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Distributed Caching &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Distributed Caching — Technical Lab",
       "url": "https://www.wbadawi.info/lab/distributed-caching.html"
     },
-    "proficiencyLevel": "Expert",
-    "articleSection": "Distributed Caching"
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Distributed Caching",
+        "item": "https://www.wbadawi.info/lab/distributed-caching.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Distributed Caching: Cache Invalidation via CDC",
+        "item": "https://www.wbadawi.info/lab/distributed-caching/cache-invalidation-via-cdc.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -129,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Cache Invalidation via CDC</div>
           <span class="overline">Lab Article</span>
           <h1>Distributed Caching: Cache Invalidation via CDC</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-09-05">5 September 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>16 min read</span>
+          </div>
           <p class="lead">TTL-based invalidation is a lie your cache tells your customers. Change Data Capture &mdash; Debezium reading the database transaction log, publishing to Kafka, a dedicated consumer deleting stale Redis keys &mdash; is the only pattern that survives a DBA update, a batch job, or a correction made directly in a backend system of record the application never saw.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -160,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Debezium 2.7 / Kafka 3.7 / Redis 7.2 / IBM DB2</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -275,53 +286,41 @@
           <div class="code-block">
             <div class="code-block__header"><span>debezium-db2-connector.json</span><span class="code-block__lang">json</span></div>
 <pre><code>{
-  <span class="tok-k">"name"</span>: <span class="tok-s">"ledger-account-cdc"</span>,
-  <span class="tok-k">"config"</span>: {
-    <span class="tok-k">"connector.class"</span>: <span class="tok-s">"io.debezium.connector.db2.Db2Connector"</span>,
-    <span class="tok-k">"database.hostname"</span>: <span class="tok-s">"db2.example.internal"</span>,
-    <span class="tok-k">"database.port"</span>: <span class="tok-s">"50000"</span>,
-    <span class="tok-k">"database.user"</span>: <span class="tok-s">"${file:/opt/kafka/secrets:db2.username}"</span>,
-    <span class="tok-k">"database.password"</span>: <span class="tok-s">"${file:/opt/kafka/secrets:db2.password}"</span>,
-    <span class="tok-k">"database.dbname"</span>: <span class="tok-s">"LEDGERDB"</span>,
-    <span class="tok-k">"database.server.name"</span>: <span class="tok-s">"ledger"</span>,
-
-    <span class="tok-c">// Snapshot mode: initial captures the full table on first start;</span>
-    <span class="tok-c">// schema_only skips the snapshot and starts from the current log position.</span>
-    <span class="tok-c">// Use schema_only when the cache can tolerate a cold-start period.</span>
-    <span class="tok-k">"snapshot.mode"</span>: <span class="tok-s">"initial"</span>,
-
-    <span class="tok-k">"table.include.list"</span>: <span class="tok-s">"LEDGER.ACCOUNT_BAL,LEDGER.LIMIT_MATRIX,LEDGER.CUSTOMER_REF"</span>,
-
-    <span class="tok-c">// Column filtering: exclude audit columns that don't affect cache keys.</span>
-    <span class="tok-c">// Reduces event payload size significantly for wide tables.</span>
-    <span class="tok-k">"column.exclude.list"</span>: <span class="tok-s">"LEDGER.ACCOUNT_BAL.LAST_MODIFIED_BY,LEDGER.ACCOUNT_BAL.RECORD_VERSION"</span>,
-
-    <span class="tok-k">"key.converter"</span>: <span class="tok-s">"org.apache.kafka.connect.json.JsonConverter"</span>,
-    <span class="tok-k">"value.converter"</span>: <span class="tok-s">"org.apache.kafka.connect.json.JsonConverter"</span>,
-    <span class="tok-k">"key.converter.schemas.enable"</span>: <span class="tok-s">"false"</span>,
-    <span class="tok-k">"value.converter.schemas.enable"</span>: <span class="tok-s">"false"</span>,
-
-    <span class="tok-c">// Offset store: MUST be a durable Kafka topic, not an in-memory store.</span>
-    <span class="tok-c">// The connector reads from this offset on restart.</span>
-    <span class="tok-k">"offset.storage.topic"</span>: <span class="tok-s">"debezium-offsets"</span>,
-    <span class="tok-k">"offset.flush.interval.ms"</span>: <span class="tok-s">"5000"</span>,
-
-    <span class="tok-c">// Schema history: required for DB2 connector to track DDL changes.</span>
-    <span class="tok-k">"schema.history.internal.kafka.topic"</span>: <span class="tok-s">"debezium-schema-history"</span>,
-    <span class="tok-k">"schema.history.internal.kafka.bootstrap.servers"</span>: <span class="tok-s">"kafka-bootstrap:9092"</span>,
-
-    <span class="tok-c">// Heartbeat: emit a heartbeat event every 30 s on idle tables.</span>
-    <span class="tok-c">// Prevents the offset from falling behind on low-change tables.</span>
-    <span class="tok-k">"heartbeat.interval.ms"</span>: <span class="tok-s">"30000"</span>,
-
-    <span class="tok-k">"topic.prefix"</span>: <span class="tok-s">"db"</span>,
-    <span class="tok-k">"poll.interval.ms"</span>: <span class="tok-s">"100"</span>,
-    <span class="tok-k">"max.batch.size"</span>: <span class="tok-s">"2048"</span>
+  <span class="tok-s">"name"</span>: <span class="tok-s">"ledger-account-cdc"</span>,
+  <span class="tok-s">"config"</span>: {
+    <span class="tok-s">"connector.class"</span>: <span class="tok-s">"io.debezium.connector.db2.Db2Connector"</span>,
+    <span class="tok-s">"database.hostname"</span>: <span class="tok-s">"db2.example.internal"</span>,
+    <span class="tok-s">"database.port"</span>: <span class="tok-s">"50000"</span>,
+    <span class="tok-s">"database.user"</span>: <span class="tok-s">"${file:/opt/kafka/secrets:db2.username}"</span>,
+    <span class="tok-s">"database.password"</span>: <span class="tok-s">"${file:/opt/kafka/secrets:db2.password}"</span>,
+    <span class="tok-s">"database.dbname"</span>: <span class="tok-s">"LEDGERDB"</span>,
+    <span class="tok-s">"topic.prefix"</span>: <span class="tok-s">"ledger"</span>,
+    <span class="tok-s">"snapshot.mode"</span>: <span class="tok-s">"initial"</span>,
+    <span class="tok-s">"table.include.list"</span>: <span class="tok-s">"LEDGER.ACCOUNT_BAL,LEDGER.LIMIT_MATRIX,LEDGER.CUSTOMER_REF"</span>,
+    <span class="tok-s">"column.exclude.list"</span>: <span class="tok-s">"LEDGER.ACCOUNT_BAL.LAST_MODIFIED_BY,LEDGER.ACCOUNT_BAL.RECORD_VERSION"</span>,
+    <span class="tok-s">"key.converter"</span>: <span class="tok-s">"org.apache.kafka.connect.json.JsonConverter"</span>,
+    <span class="tok-s">"value.converter"</span>: <span class="tok-s">"org.apache.kafka.connect.json.JsonConverter"</span>,
+    <span class="tok-s">"key.converter.schemas.enable"</span>: <span class="tok-s">"false"</span>,
+    <span class="tok-s">"value.converter.schemas.enable"</span>: <span class="tok-s">"false"</span>,
+    <span class="tok-s">"schema.history.internal.kafka.topic"</span>: <span class="tok-s">"debezium-schema-history"</span>,
+    <span class="tok-s">"schema.history.internal.kafka.bootstrap.servers"</span>: <span class="tok-s">"kafka-bootstrap:9092"</span>,
+    <span class="tok-s">"heartbeat.interval.ms"</span>: <span class="tok-s">"30000"</span>,
+    <span class="tok-s">"poll.interval.ms"</span>: <span class="tok-s">"100"</span>,
+    <span class="tok-s">"max.batch.size"</span>: <span class="tok-s">"2048"</span>
   }
 }</code></pre>
           </div>
 
-          <p>The <code>snapshot.mode</code> choice has a significant operational consequence. <code>initial</code> causes Debezium to read every row of the included tables before streaming live changes &mdash; for a table with 50 million account balance rows, this is hours of snapshot time during which the connector holds a consistent read, potentially blocking table statistics updates. <code>schema_only</code> starts streaming immediately from the current log position. Use <code>schema_only</code> when you can tolerate a cold-start cache (the cache will be empty and will self-populate on demand for the first few hours). Use <code>initial</code> when the cache must be warm immediately after the connector starts.</p>
+          <ul>
+            <li><strong><code>topic.prefix</code></strong> names the change topics (<code>ledger.LEDGER.ACCOUNT_BAL</code> and so on). It replaced <code>database.server.name</code> in Debezium 2.x; do not set both.</li>
+            <li><strong><code>snapshot.mode</code></strong>: <code>initial</code> captures the full tables on first start; the schema-only mode (<code>schema_only</code>, renamed <code>no_data</code> in recent Debezium releases) skips the data snapshot and starts from the current log position &mdash; use it when the cache can tolerate a cold start.</li>
+            <li><strong><code>column.exclude.list</code></strong> drops audit columns that do not affect cache keys, which shrinks events for wide tables.</li>
+            <li><strong>Offsets</strong> are not a connector setting: in distributed mode the Kafka Connect worker stores them in its <code>offset.storage.topic</code> (with <code>offset.flush.interval.ms</code> on the worker). Make that topic durable and replicated; the connector resumes from it on restart.</li>
+            <li><strong>Schema history</strong> (<code>schema.history.internal.*</code>) is required for the Db2 connector to track DDL changes.</li>
+            <li><strong><code>heartbeat.interval.ms</code></strong> emits a heartbeat every 30 seconds so the committed offset keeps moving even when the captured tables are idle.</li>
+          </ul>
+
+          <p>The <code>snapshot.mode</code> choice has a significant operational consequence. <code>initial</code> causes Debezium to read every row of the included tables before streaming live changes &mdash; for a table with 50 million account balance rows, this is hours of snapshot time during which the connector holds a consistent read, potentially blocking table statistics updates. <code>schema_only</code> (<code>no_data</code> in recent Debezium releases) starts streaming immediately from the current log position. Use it when you can tolerate a cold-start cache (the cache will be empty and will self-populate on demand for the first few hours). Use <code>initial</code> when the cache must be warm immediately after the connector starts.</p>
 
           <h2 id="kafka-consumer">Kafka Consumer for Invalidation</h2>
           <p>The invalidation consumer must be idempotent and must batch Redis operations. At-least-once delivery means the same change event may arrive twice after a consumer restart. Deleting a Redis key that is already absent is a no-op &mdash; the idempotency requirement is already satisfied by Redis semantics. Do not build deduplication logic into the consumer; it adds complexity without benefit.</p>
@@ -413,7 +412,10 @@
             <div class="code-block__header"><span>tag-invalidation.lua</span><span class="code-block__lang">lua</span></div>
 <pre><code><span class="tok-c">-- Atomically read all keys in a tag set and delete them, then delete the tag.</span>
 <span class="tok-c">-- KEYS[1] = tag set key, e.g. "tag:acct:12345678"</span>
-<span class="tok-c">-- Runs inside a single Redis command slot; no other command interleaves.</span>
+<span class="tok-c">-- Scripts run atomically: no other command interleaves. In Redis Cluster every key a</span>
+<span class="tok-c">-- script touches must hash to one slot, so give the tag set and its members the same</span>
+<span class="tok-c">-- hash tag, e.g. "tag:{acct:12345678}" and "bal:{acct:12345678}". For very large tags,</span>
+<span class="tok-c">-- delete members in batches: unpack() has a stack limit.</span>
 
 <span class="tok-k">local</span> tag_key = KEYS[1]
 <span class="tok-k">local</span> members = redis.call(<span class="tok-s">'SMEMBERS'</span>, tag_key)
@@ -439,15 +441,15 @@
 
           <ol class="step-list">
             <li>
-              <h4>Read path (unchanged)</h4>
+              <h3>Read path (unchanged)</h3>
               <p>Application reads <code>acct:balance:{accountId}</code> from Redis. Cache hit: return cached value immediately. Cache miss: read from DB2, write result to Redis with a safety-net TTL (see below), return to caller. The safety-net TTL is typically 5&ndash;30 minutes &mdash; long enough that it only fires if Debezium lag is severe. It is not the primary freshness control; CDC is.</p>
             </li>
             <li>
-              <h4>Write path (application writes)</h4>
+              <h3>Write path (application writes)</h3>
               <p>Application writes the debit to DB2. Transaction commits. The application does <em>not</em> invalidate the cache. Within 100&ndash;500 ms, Debezium reads the committed change from the DB2 journal, the invalidation consumer deletes the Redis key, and the next cache read triggers a DB refresh. The coupling between the application write and the cache invalidation is broken &mdash; the invalidation always happens, but the application does not drive it.</p>
             </li>
             <li>
-              <h4>Out-of-band write path (DBA correction, batch job)</h4>
+              <h3>Out-of-band write path (DBA correction, batch job)</h3>
               <p>DBA runs <code>UPDATE ACCOUNT_BAL SET AVAILABLE_BALANCE = ... WHERE ACCOUNT_ID = ...</code>. Transaction commits. DB2 journal records the change. Debezium tails the journal. Kafka receives the event. Invalidation consumer deletes the Redis key. Application next read is fresh. The application never knew the DBA update happened &mdash; and it does not need to.</p>
             </li>
           </ol>
@@ -503,31 +505,31 @@
 
           <ol class="step-list">
             <li>
-              <h4>Enable supplemental logging on target tables</h4>
+              <h3>Enable supplemental logging on target tables</h3>
               <p>Work with the DB2 DBA to enable supplemental logging on <code>ACCOUNT_BAL</code>, <code>LIMIT_MATRIX</code>, and other tables that back cached entities. This is a one-time change per table. Verify that before-images appear in change events after enabling. Schedule during a low-traffic window.</p>
             </li>
             <li>
-              <h4>Deploy Debezium connector with schema_only snapshot</h4>
+              <h3>Deploy Debezium connector with schema_only snapshot</h3>
               <p>Start with <code>snapshot.mode=schema_only</code> so the connector begins streaming from the current log position without a full table scan. The cache will be cold for these tables until organic reads re-populate it. This avoids the snapshot thundering herd during the initial rollout.</p>
             </li>
             <li>
-              <h4>Build the CacheKeyMapper with shared library</h4>
+              <h3>Build the CacheKeyMapper with shared library</h3>
               <p>Extract the cache key derivation logic from the application into a shared library. Implement it in the invalidation consumer using the same library. Write unit tests for every table with a table of (input fields) &rarr; (expected cache keys) mappings. Include edge cases: null fields, multi-currency accounts, composite keys.</p>
             </li>
             <li>
-              <h4>Deploy the invalidation consumer and validate against shadow TTL</h4>
+              <h3>Deploy the invalidation consumer and validate against shadow TTL</h3>
               <p>Run the consumer alongside the existing TTL-based invalidation. Log every invalidation event with the account ID and timestamp. Compare with the DB2 audit log for balance updates. Verify that every out-of-band DB update triggers an invalidation within your SLA window. Run this validation for at least one full business day, including the end-of-day batch window.</p>
             </li>
             <li>
-              <h4>Shorten the safety-net TTL</h4>
+              <h3>Shorten the safety-net TTL</h3>
               <p>Once CDC is validated, shorten the cache TTL from your current value (e.g. 60 seconds) to the safety-net value (e.g. 5 minutes). The TTL no longer drives freshness &mdash; it is a backstop for Debezium outages. Document the acceptable Debezium lag SLA and the safety-net TTL value in the runbook.</p>
             </li>
             <li>
-              <h4>Remove application-level cache invalidation calls</h4>
+              <h3>Remove application-level cache invalidation calls</h3>
               <p>Remove the explicit <code>cache.evict()</code> calls from application write paths. These are now redundant &mdash; CDC will invalidate within 500 ms of any write. Removing them simplifies the application code and eliminates the dual-write race condition.</p>
             </li>
             <li>
-              <h4>Alert on Debezium lag</h4>
+              <h3>Alert on Debezium lag</h3>
               <p>Add a Kafka consumer group lag alert on the <code>cache-invalidation</code> consumer group for each CDC topic. Alert at 1,000 unconsumed records (approximately 5 seconds of peak throughput). Page at 10,000 records (approximately 50 seconds). A lagging invalidation consumer is a cache accuracy incident, not just a performance issue.</p>
             </li>
           </ol>
@@ -562,6 +564,23 @@
             <li>Debezium connector health dashboard; alert on connector <code>status != RUNNING</code>.</li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="../data-sync/debezium-and-outbox.html"><span class="lab-related__kicker">Lab &middot; Data Synchronisation</span><span class="lab-related__name">Data Synchronisation: Debezium &amp; Outbox</span></a></li>
+              <li><a class="lab-related__link" href="multi-tier-caching-strategies.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Multi-Tier Caching Strategies</span></a></li>
+              <li><a class="lab-related__link" href="near-cache-and-read-replicas.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Near-Cache &amp; Read-Replica Topologies</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/cache-invalidation-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Cache Invalidation via CDC: The Architecture Decision That Eliminates Stale Balances Without DBA Coordination</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="hazelcast-imdg-in-process-state.html">
               <div class="article-nav__label">&larr; Previous</div>

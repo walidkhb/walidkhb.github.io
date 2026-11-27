@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,58 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Observability Pipeline Architecture: OpenTelemetry, Prometheus, Loki & Tempo",
+    "headline": "Observability Pipeline Architecture",
     "description": "End-to-end observability for integration platforms: OpenTelemetry collector pipelines, Prometheus metrics, Loki logs, Tempo distributed traces, and Grafana — production patterns for regulated industries.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/devops/observability-pipeline-architecture.html"
     },
     "url": "https://www.wbadawi.info/lab/devops/observability-pipeline-architecture.html",
+    "inLanguage": "en",
+    "wordCount": 2812,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "DevOps &amp; Platform Engineering &mdash; Lab &mdash; Waleed Albadawi",
+      "@type": "CollectionPage",
+      "name": "DevOps & Platform Engineering — Technical Lab",
       "url": "https://www.wbadawi.info/lab/devops.html"
-    }
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "DevOps & Platform Engineering",
+        "item": "https://www.wbadawi.info/lab/devops.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Observability Pipeline Architecture",
+        "item": "https://www.wbadawi.info/lab/devops/observability-pipeline-architecture.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -127,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform</a><span>/</span>Observability Pipeline</div>
           <span class="overline">Lab Article</span>
           <h1>Observability Pipeline Architecture</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-09-05">5 September 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>12 min read</span>
+          </div>
           <p class="lead">OpenTelemetry collectors, Prometheus for metrics, Loki for logs, Tempo for distributed traces &mdash; an end-to-end observability platform for an integration estate at scale, grounded in the constraints of regulated industries.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -160,9 +176,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> OTel 0.107 / Prometheus 2.53 / Loki 3.1 / Tempo 2.5 / Grafana 11.1 / OpenShift 4.15</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -320,7 +333,7 @@
 
       <span class="tok-c"># Kafka consumer lag for payments bridge</span>
       - <span class="tok-k">alert</span>: <span class="tok-s">KafkaConsumerLagCritical</span>
-        <span class="tok-k">expr</span>: <span class="tok-s">kafka_consumer_group_lag{group="payments-bridge"} > 5000</span>
+        <span class="tok-k">expr</span>: <span class="tok-s">kafka_consumergroup_lag{consumergroup="payments-bridge"} > 5000</span>
         <span class="tok-k">for</span>: <span class="tok-s">2m</span>
         <span class="tok-k">labels</span>:
           <span class="tok-k">severity</span>: <span class="tok-s">critical</span>
@@ -343,47 +356,46 @@
 <pre><code><span class="tok-k">receivers</span>:
   <span class="tok-k">otlp</span>:
     <span class="tok-k">protocols</span>:
-      <span class="tok-k">grpc</span>: { <span class="tok-k">endpoint</span>: <span class="tok-s">"0.0.0.0:4317"</span> }
+      <span class="tok-k">grpc</span>: { endpoint: <span class="tok-s">"0.0.0.0:4317"</span> }
   <span class="tok-k">filelog</span>:
     <span class="tok-k">include</span>: [<span class="tok-s">"/var/log/ace/*.log"</span>]
     <span class="tok-k">operators</span>:
-      - <span class="tok-k">type</span>: <span class="tok-s">json_parser</span>
+      - <span class="tok-k">type</span>: json_parser
         <span class="tok-k">timestamp</span>:
-          <span class="tok-k">parse_from</span>: <span class="tok-s">attributes.timestamp</span>
+          <span class="tok-k">parse_from</span>: attributes.timestamp
           <span class="tok-k">layout</span>: <span class="tok-s">"%Y-%m-%dT%H:%M:%S.%fZ"</span>
-      - <span class="tok-k">type</span>: <span class="tok-s">regex_parser</span>   <span class="tok-c"># extract ACE flow name</span>
+      - <span class="tok-k">type</span>: regex_parser   <span class="tok-c"># extract ACE flow name</span>
         <span class="tok-k">regex</span>: <span class="tok-s">'Flow=(?P&lt;flow_name&gt;[^,;]+)'</span>
-        <span class="tok-k">parse_from</span>: <span class="tok-s">body</span>
-        <span class="tok-k">on_error</span>: <span class="tok-s">send</span>   <span class="tok-c"># don't drop lines that don't match</span>
-
+        <span class="tok-k">parse_from</span>: body
+        <span class="tok-k">on_error</span>: send   <span class="tok-c"># don't drop lines that don't match</span>
 <span class="tok-k">processors</span>:
   <span class="tok-k">resource</span>:
     <span class="tok-k">attributes</span>:
-      - { <span class="tok-k">action</span>: <span class="tok-s">insert</span>, <span class="tok-k">key</span>: <span class="tok-s">loki.resource.labels</span>,
+      - { action: insert, key: loki.resource.labels,
           <span class="tok-k">value</span>: <span class="tok-s">"service.name,k8s.namespace.name,flow_name"</span> }
   <span class="tok-k">filter/drop_health</span>:    <span class="tok-c"># suppress heartbeat lines before they leave the node</span>
-    <span class="tok-k">error_mode</span>: <span class="tok-s">ignore</span>
+    <span class="tok-k">error_mode</span>: ignore
     <span class="tok-k">logs</span>:
       <span class="tok-k">log_record</span>:
-        - <span class="tok-s">'body contains "HealthCheck"'</span>
-        - <span class="tok-s">'body contains "BIPE3788I"'</span>  <span class="tok-c"># ACE broker ready heartbeat</span>
+        - <span class="tok-s">'IsMatch(body, "HealthCheck")'</span>      <span class="tok-c"># OTTL has no "contains" operator</span>
+        - <span class="tok-s">'IsMatch(body, "BIP[0-9]{4}I.*heartbeat")'</span>   <span class="tok-c"># example: an ACE heartbeat message</span>
   <span class="tok-k">batch</span>:
-    <span class="tok-k">timeout</span>: <span class="tok-s">5s</span>
+    <span class="tok-k">timeout</span>: <span class="tok-n">5s</span>
     <span class="tok-k">send_batch_size</span>: <span class="tok-n">8192</span>
-
 <span class="tok-k">exporters</span>:
+  <span class="tok-c"># The loki exporter is deprecated in recent Collector releases; Loki 3.x also</span>
+  <span class="tok-c"># accepts OTLP directly (otlphttp exporter to Loki's /otlp endpoint).</span>
   <span class="tok-k">loki</span>:
     <span class="tok-k">endpoint</span>: <span class="tok-s">"http://loki-gateway.monitoring.svc:3100/loki/api/v1/push"</span>
     <span class="tok-k">tls</span>:
-      <span class="tok-k">insecure</span>: <span class="tok-n">false</span>
+      <span class="tok-k">insecure</span>: false
       <span class="tok-k">ca_file</span>: <span class="tok-s">"/etc/otelcol/certs/internal-ca.crt"</span>
-
 <span class="tok-k">service</span>:
   <span class="tok-k">pipelines</span>:
     <span class="tok-k">logs</span>:
-      <span class="tok-k">receivers</span>:  [<span class="tok-s">otlp</span>, <span class="tok-s">filelog</span>]
-      <span class="tok-k">processors</span>: [<span class="tok-s">resource</span>, <span class="tok-s">filter/drop_health</span>, <span class="tok-s">batch</span>]
-      <span class="tok-k">exporters</span>:  [<span class="tok-s">loki</span>]</code></pre>
+      <span class="tok-k">receivers</span>:  [otlp, filelog]
+      <span class="tok-k">processors</span>: [resource, filter/drop_health, batch]
+      <span class="tok-k">exporters</span>:  [loki]</code></pre>
           </div>
 
           <p>Loki&rsquo;s chunk-based storage backs onto object storage &mdash; OpenShift Data Foundation (ODF/Ceph) or an on-premise S3-compatible endpoint. Configure retention per-tenant in Loki&rsquo;s <code>limits_config</code>: 90 days for regulated logs (transaction, audit), 30 days for application INFO, 7 days for debug-level output.</p>
@@ -404,61 +416,68 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>otel-collector-gateway.yaml</span><span class="code-block__lang">yaml</span></div>
-<pre><code><span class="tok-k">processors</span>:
-  <span class="tok-k">memory_limiter</span>:          <span class="tok-c"># NEVER skip this — prevents OOM on traffic spike</span>
-    <span class="tok-k">check_interval</span>: <span class="tok-s">1s</span>
-    <span class="tok-k">limit_mib</span>: <span class="tok-n">1500</span>         <span class="tok-c"># 75% of container memory request</span>
+<pre><code><span class="tok-k">receivers</span>:
+  <span class="tok-k">otlp</span>:
+    <span class="tok-k">protocols</span>:
+      <span class="tok-k">grpc</span>: { endpoint: <span class="tok-s">"0.0.0.0:4317"</span> }
+<span class="tok-k">processors</span>:
+  <span class="tok-k">memory_limiter</span>:          <span class="tok-c"># NEVER skip this - prevents OOM on traffic spike</span>
+    <span class="tok-k">check_interval</span>: <span class="tok-n">1s</span>
+    <span class="tok-k">limit_mib</span>: <span class="tok-n">1500</span>         <span class="tok-c"># about 75% of a 2 GiB container memory limit</span>
     <span class="tok-k">spike_limit_mib</span>: <span class="tok-n">400</span>
+  <span class="tok-k">resource</span>:
+    <span class="tok-k">attributes</span>:
+      - { action: upsert, key: deployment.environment, value: prod }
   <span class="tok-k">batch</span>:
-    <span class="tok-k">timeout</span>: <span class="tok-s">5s</span>
+    <span class="tok-k">timeout</span>: <span class="tok-n">5s</span>
     <span class="tok-k">send_batch_size</span>: <span class="tok-n">4096</span>
+  <span class="tok-c"># tail_sampling needs every span of a trace on the same replica: with several</span>
+  <span class="tok-c"># gateway replicas, put a loadbalancing exporter (routing by trace ID) in front.</span>
   <span class="tok-k">tail_sampling</span>:
-    <span class="tok-k">decision_wait</span>: <span class="tok-s">15s</span>
+    <span class="tok-k">decision_wait</span>: <span class="tok-n">15s</span>
     <span class="tok-k">num_traces</span>: <span class="tok-n">50000</span>
     <span class="tok-k">policies</span>:
-      - { <span class="tok-k">name</span>: <span class="tok-s">always-errors</span>, <span class="tok-k">type</span>: <span class="tok-s">status_code</span>,
-          <span class="tok-k">status_code</span>: { <span class="tok-k">status_codes</span>: [<span class="tok-s">ERROR</span>] } }
-      - { <span class="tok-k">name</span>: <span class="tok-s">probabilistic-10pct</span>, <span class="tok-k">type</span>: <span class="tok-s">probabilistic</span>,
-          <span class="tok-k">probabilistic</span>: { <span class="tok-k">sampling_percentage</span>: <span class="tok-n">10</span> } }
+      - { name: always-errors, type: status_code,
+          <span class="tok-k">status_code</span>: { status_codes: [ERROR] } }
+      - { name: probabilistic-10pct, type: probabilistic,
+          <span class="tok-k">probabilistic</span>: { sampling_percentage: <span class="tok-n">10</span> } }
   <span class="tok-k">filter/drop_healthz</span>:
-    <span class="tok-k">error_mode</span>: <span class="tok-s">ignore</span>
+    <span class="tok-k">error_mode</span>: ignore
     <span class="tok-k">traces</span>:
       <span class="tok-k">span</span>:
         - <span class="tok-s">'attributes["http.route"] == "/healthz"'</span>
         - <span class="tok-s">'attributes["http.route"] == "/readyz"'</span>
         - <span class="tok-s">'attributes["http.route"] == "/metrics"'</span>
-
 <span class="tok-k">exporters</span>:
-  <span class="tok-k">prometheusremotewrite</span>:
+  <span class="tok-k">prometheusremotewrite</span>:   <span class="tok-c"># Prometheus must run with its remote-write receiver enabled</span>
     <span class="tok-k">endpoint</span>: <span class="tok-s">"http://prometheus.monitoring.svc:9090/api/v1/write"</span>
-    <span class="tok-k">resource_to_telemetry_conversion</span>: { <span class="tok-k">enabled</span>: <span class="tok-n">true</span> }
+    <span class="tok-k">resource_to_telemetry_conversion</span>: { enabled: true }
   <span class="tok-k">loki</span>:
     <span class="tok-k">endpoint</span>: <span class="tok-s">"http://loki-gateway.monitoring.svc:3100/loki/api/v1/push"</span>
   <span class="tok-k">otlp/tempo</span>:
     <span class="tok-k">endpoint</span>: <span class="tok-s">"tempo-distributor.monitoring.svc:4317"</span>
-    <span class="tok-k">tls</span>: { <span class="tok-k">insecure</span>: <span class="tok-n">true</span> }   <span class="tok-c"># mTLS handled by service mesh sidecar</span>
-
+    <span class="tok-k">tls</span>: { insecure: true }   <span class="tok-c"># mTLS handled by service mesh sidecar</span>
 <span class="tok-k">service</span>:
   <span class="tok-k">pipelines</span>:
     <span class="tok-k">traces</span>:
-      <span class="tok-k">receivers</span>:  [<span class="tok-s">otlp</span>]
-      <span class="tok-k">processors</span>: [<span class="tok-s">memory_limiter</span>, <span class="tok-s">filter/drop_healthz</span>, <span class="tok-s">tail_sampling</span>, <span class="tok-s">batch</span>]
-      <span class="tok-k">exporters</span>:  [<span class="tok-s">otlp/tempo</span>]
+      <span class="tok-k">receivers</span>:  [otlp]
+      <span class="tok-k">processors</span>: [memory_limiter, filter/drop_healthz, tail_sampling, batch]
+      <span class="tok-k">exporters</span>:  [otlp/tempo]
     <span class="tok-k">metrics</span>:
-      <span class="tok-k">receivers</span>:  [<span class="tok-s">otlp</span>]
-      <span class="tok-k">processors</span>: [<span class="tok-s">memory_limiter</span>, <span class="tok-s">resource</span>, <span class="tok-s">batch</span>]
-      <span class="tok-k">exporters</span>:  [<span class="tok-s">prometheusremotewrite</span>]
+      <span class="tok-k">receivers</span>:  [otlp]
+      <span class="tok-k">processors</span>: [memory_limiter, resource, batch]
+      <span class="tok-k">exporters</span>:  [prometheusremotewrite]
     <span class="tok-k">logs</span>:
-      <span class="tok-k">receivers</span>:  [<span class="tok-s">otlp</span>]
-      <span class="tok-k">processors</span>: [<span class="tok-s">memory_limiter</span>, <span class="tok-s">resource</span>, <span class="tok-s">batch</span>]
-      <span class="tok-k">exporters</span>:  [<span class="tok-s">loki</span>]</code></pre>
+      <span class="tok-k">receivers</span>:  [otlp]
+      <span class="tok-k">processors</span>: [memory_limiter, resource, batch]
+      <span class="tok-k">exporters</span>:  [loki]</code></pre>
           </div>
 
           <p>Set the Collector container memory request to match expected peak ingest. A rough budget: 500 MiB per 50 000 spans/second at the Gateway; 256 MiB per node at the DaemonSet. Size the DaemonSet filequeue buffer to hold at least 60 seconds of peak log volume so the DaemonSet survives a Gateway restart without data loss.</p>
 
           <h2 id="grafana">Grafana: Unified Pane</h2>
           <p>Grafana 11&rsquo;s value is correlation. From a Prometheus alert panel you drill into Loki logs for the same time window and service, then pivot to a Tempo trace for the specific failing request. This reduces mean-time-to-diagnosis from hours of tab-switching to a single page interaction.</p>
-          <p>Three dashboard types cover 80% of operational use on an integration platform:</p>
+          <p>Three dashboard types cover most day-to-day operational use on an integration platform:</p>
           <ul>
             <li><strong>Platform SLO dashboard.</strong> One row per integration domain: traffic rate, error rate, latency p99, and SLO burn rate. The burn rate panel alerts before the SLO window expires &mdash; not after the SLO has already been breached for the week.</li>
             <li><strong>Service map.</strong> Tempo&rsquo;s service-graph processor emits inter-service call metrics that Grafana renders as a live dependency graph. Essential for understanding blast radius when a downstream system of record degrades.</li>
@@ -474,7 +493,7 @@
           <p>Observability platform cost is determined almost entirely by two variables: Prometheus active series count and Loki ingest volume (GiB/day). Trace volume is manageable once tail-based sampling is in place. The cost conversation with finance is almost always about uncontrolled log volume growth compounding quarterly.</p>
 
           <ol class="step-list">
-            <li><strong>Audit existing volume.</strong> Run <code>sum(rate(loki_ingester_samples_ingested_total[24h])) by (namespace)</code> to rank namespaces by ingestion rate. Three namespaces typically produce 70% of total volume &mdash; focus cost reduction there first.</li>
+            <li><strong>Audit existing volume.</strong> Run <code>sum(rate(loki_ingester_samples_ingested_total[24h])) by (namespace)</code> to rank namespaces by ingestion rate. In most estates a handful of namespaces produce most of the volume &mdash; focus cost reduction there first.</li>
             <li><strong>Drop at the Collector, not at Loki.</strong> Filter health-check, heartbeat, and DEBUG-level log records in the Collector&rsquo;s <code>filter</code> processor before they leave the node. Bytes dropped at source cost nothing; bytes ingested into Loki always consume storage and index.</li>
             <li><strong>Cap series per application.</strong> Set a Prometheus <code>limits.max_samples_per_send</code> on remote write, or enforce it via the Collector&rsquo;s <code>transform</code> processor to drop labels with unbounded cardinality before they reach Prometheus.</li>
             <li><strong>Tier log retention by classification.</strong> 7 days for DEBUG, 30 days for INFO, 90+ days for audit, security-event, and transaction logs. Configure per-tenant retention via Loki <code>compactor</code> with <code>retention_enabled: true</code>.</li>
@@ -526,6 +545,23 @@
             <li>Runbook URL set in every Prometheus alert annotation; on-call playbook tested quarterly.</li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="../field-playbooks/slow-integration-triage.html"><span class="lab-related__kicker">Lab &middot; Field Playbooks</span><span class="lab-related__name">Where Did the Time Go? A Triage Method for Slow Integrations</span></a></li>
+              <li><a class="lab-related__link" href="../field-playbooks/first-30-minutes-of-an-incident.html"><span class="lab-related__kicker">Lab &middot; Field Playbooks</span><span class="lab-related__name">The First 30 Minutes of an Integration Incident</span></a></li>
+              <li><a class="lab-related__link" href="progressive-delivery-flagger-argo-rollouts.html"><span class="lab-related__kicker">Lab &middot; DevOps &amp; Platform Engineering</span><span class="lab-related__name">Progressive Delivery: Flagger, Argo Rollouts &amp; Feature Flags</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/observability-pipeline-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Observability at Scale: The Platform Decision That Determines Whether Your Integration Estate Runs or Hides</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="internal-developer-platform.html">
               <div class="article-nav__label">&larr; Previous</div>

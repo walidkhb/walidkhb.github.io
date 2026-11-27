@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,58 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Multi-Cluster GitOps with ArgoCD ApplicationSets: Fleet Management Across OpenShift Clusters",
+    "headline": "Multi-Cluster GitOps with ArgoCD ApplicationSets",
     "description": "ArgoCD 2.12 ApplicationSets for multi-cluster fleet management on OpenShift 4.15: Cluster, Git, and Matrix generators, hub-spoke topology, environment promotion, multi-site business-continuity requirements, and multi-cluster RBAC.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/devops/multi-cluster-gitops.html"
     },
     "url": "https://www.wbadawi.info/lab/devops/multi-cluster-gitops.html",
+    "inLanguage": "en",
+    "wordCount": 2820,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "DevOps &amp; Platform Engineering &mdash; Lab &mdash; Waleed Albadawi",
+      "@type": "CollectionPage",
+      "name": "DevOps & Platform Engineering — Technical Lab",
       "url": "https://www.wbadawi.info/lab/devops.html"
-    }
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "DevOps & Platform Engineering",
+        "item": "https://www.wbadawi.info/lab/devops.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Multi-Cluster GitOps with ArgoCD ApplicationSets",
+        "item": "https://www.wbadawi.info/lab/devops/multi-cluster-gitops.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -127,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform</a><span>/</span>Multi-Cluster GitOps</div>
           <span class="overline">Lab Article</span>
           <h1>Multi-Cluster GitOps with ArgoCD ApplicationSets</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-09-05">5 September 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>12 min read</span>
+          </div>
           <p class="lead">ArgoCD 2.12 ApplicationSet controller for fleet-scale GitOps &mdash; Cluster, Git, and Matrix generators eliminating per-cluster Application manifest duplication, hub-spoke topology, environment promotion as a git PR, multi-site business-continuity deployment, and multi-cluster RBAC scoped to platform and integration teams.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -158,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> ArgoCD 2.12 / OpenShift 4.15 / Helm 3.16 / Kustomize / ApplicationSet</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -288,8 +301,9 @@
     <span class="tok-k">metadata</span>:
       <span class="tok-k">name</span>: <span class="tok-s">"{{ path.basenameNormalized }}-{{ name }}"</span>
       <span class="tok-k">annotations</span>:
-        <span class="tok-c"># Sync waves: stagger across clusters to prevent thundering herd</span>
-        <span class="tok-k">argocd.argoproj.io/sync-wave</span>: <span class="tok-s">"2"</span>
+        <span class="tok-c"># Note: a sync-wave annotation here would not stagger generated Applications;</span>
+        <span class="tok-c"># use ApplicationSet progressive syncs (RollingSync) for that</span>
+        <span class="tok-k">platform.example.com/owner</span>: <span class="tok-s">integration-platform</span>
     <span class="tok-k">spec</span>:
       <span class="tok-k">project</span>: <span class="tok-s">integration</span>
       <span class="tok-k">source</span>:
@@ -317,7 +331,7 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">Matrix generator can cause a thundering herd on cluster restore</div>
-            <p>A Matrix ApplicationSet with 10 clusters and 10 apps creates 100 Applications. When a cluster is restored after maintenance, ArgoCD queues all 100 Applications for sync simultaneously. Without sync wave annotations, the spoke cluster&rsquo;s API server receives 100 concurrent apply operations that can overload the admission controllers and cause cascading sync failures. Add <code>argocd.argoproj.io/sync-wave</code> annotations to stagger syncs: wave 0 for namespaces and RBAC, wave 1 for platform services, wave 2 for application services, wave 3 for integration services. Each wave must reach Healthy before the next begins.</p>
+            <p>A Matrix ApplicationSet with 10 clusters and 10 apps creates 100 Applications. When a cluster is restored after maintenance, ArgoCD queues all 100 Applications for sync simultaneously. The spoke cluster&rsquo;s API server then receives a burst of concurrent apply operations that can overload the admission controllers and cause cascading sync failures. Sync waves do not fix this on their own: <code>argocd.argoproj.io/sync-wave</code> orders resources inside one Application (or child Applications inside an app-of-apps parent), not Applications that an ApplicationSet generates. Use waves inside each Application &mdash; wave 0 for namespaces and RBAC, wave 1 for platform services, wave 2 for application services &mdash; and stagger the generated Applications with ApplicationSet progressive syncs (the opt-in <code>RollingSync</code> strategy), plus sensible application-controller concurrency limits.</p>
           </div>
 
           <h2 id="hub-spoke">Hub-Spoke vs Mesh Topology</h2>
@@ -488,7 +502,7 @@
             <li>Management cluster has the same SLA as the highest-tier spoke it manages; it is not a dev or shared cluster.</li>
             <li>All spoke clusters registered in ArgoCD with labels encoding tier (<code>dev</code>/<code>test</code>/<code>prod</code>), site (<code>site-a</code>/<code>site-b</code>), and function (<code>integration</code>/<code>platform</code>).</li>
             <li>Platform apps (cert-manager, ESO, Vault agent injector, monitoring stack) managed by a Cluster-generator ApplicationSet; no per-cluster Application manifests for platform components.</li>
-            <li>Integration services managed by a Matrix-generator ApplicationSet (Git dirs &times; Clusters); sync wave annotations prevent thundering herd on cluster restore.</li>
+            <li>Integration services managed by a Matrix-generator ApplicationSet (Git dirs &times; Clusters); progressive syncs (RollingSync) and controller concurrency limits prevent a thundering herd on cluster restore; sync waves order resources within each Application.</li>
             <li>AppProject per team scoping destinations to dev and test only; platform team AppProject for prod destinations; no overlap.</li>
             <li>ArgoCD service account on each spoke has namespace-scoped RBAC; cluster-admin absent from all integration team project service accounts.</li>
             <li>SSO configured via SAML/OIDC from the corporate IdP (e.g. Entra ID); AD group &rarr; ArgoCD role mapping reviewed quarterly.</li>
@@ -498,6 +512,23 @@
             <li>Alert on <code>argocd_app_info{sync_status="OutOfSync", project=~"payments.*|platform.*"}</code> for more than 30 minutes; routes to platform on-call, not application teams.</li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="gitops-for-cloud-pak-for-integration.html"><span class="lab-related__kicker">Lab &middot; DevOps &amp; Platform Engineering</span><span class="lab-related__name">GitOps for IBM Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery</span></a></li>
+              <li><a class="lab-related__link" href="progressive-delivery-flagger-argo-rollouts.html"><span class="lab-related__kicker">Lab &middot; DevOps &amp; Platform Engineering</span><span class="lab-related__name">Progressive Delivery: Flagger, Argo Rollouts &amp; Feature Flags</span></a></li>
+              <li><a class="lab-related__link" href="tekton-and-argocd.html"><span class="lab-related__kicker">Lab &middot; DevOps &amp; Platform Engineering</span><span class="lab-related__name">DevOps &amp; Platform Engineering: Tekton &amp; ArgoCD</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/multi-cluster-gitops-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Multi-Cluster GitOps: The Platform Decision That Determines Whether Your Deployment Governance Scales</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="vault-secrets-management.html">
               <div class="article-nav__label">&larr; Previous</div>

@@ -5,10 +5,10 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>API Security: Vault PKI &amp; cert-manager &mdash; Zero-Touch Certificate Lifecycle &mdash; Lab &mdash; Waleed Albadawi</title>
+  <title>API Security: Vault PKI &amp; cert-manager &mdash; Automated Certificate Lifecycle &mdash; Lab &mdash; Waleed Albadawi</title>
   <meta name="description" content="How to eliminate manual certificate spreadsheets from a regulated organisation's API estate: HashiCorp Vault PKI engine, cert-manager ClusterIssuers, RFC 8705 cert-bound OAuth tokens, zero-restart TLS rotation, and regulatory control alignment.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="API Security: Vault PKI &amp; cert-manager &mdash; Zero-Touch Certificate Lifecycle &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:title" content="API Security: Vault PKI &amp; cert-manager &mdash; Automated Certificate Lifecycle &mdash; Lab &mdash; Waleed Albadawi">
   <meta property="og:description" content="Vault PKI, cert-manager, and RFC 8705 cert-bound tokens &mdash; automated certificate lifecycle for financial APIs.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/api-security/vault-pki-and-cert-manager.html">
@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,58 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "API Security: Vault PKI &amp; cert-manager &mdash; Zero-Touch Certificate Lifecycle",
+    "headline": "API Security: Vault PKI & cert-manager — Automated Certificate Lifecycle",
     "description": "Automated TLS certificate lifecycle for regulated APIs: HashiCorp Vault PKI engine, cert-manager ClusterIssuers, zero-restart rotation, RFC 8705 cert-bound tokens, and regulatory control alignment.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-26",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/api-security/vault-pki-and-cert-manager.html"
     },
     "url": "https://www.wbadawi.info/lab/api-security/vault-pki-and-cert-manager.html",
+    "inLanguage": "en",
+    "wordCount": 2983,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "API Security &mdash; Lab &mdash; Waleed Albadawi",
+      "@type": "CollectionPage",
+      "name": "API Security — Technical Lab",
       "url": "https://www.wbadawi.info/lab/api-security.html"
-    }
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "API Security",
+        "item": "https://www.wbadawi.info/lab/api-security.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "API Security: Vault PKI & cert-manager — Automated Certificate Lifecycle",
+        "item": "https://www.wbadawi.info/lab/api-security/vault-pki-and-cert-manager.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -126,8 +135,15 @@
         <div>
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../api-security.html">API Security</a><span>/</span>Vault PKI &amp; cert-manager</div>
           <span class="overline">Lab Article</span>
-          <h1>API Security: Vault PKI &amp; cert-manager &mdash; Zero-Touch Certificate Lifecycle</h1>
+          <h1>API Security: Vault PKI &amp; cert-manager &mdash; Automated Certificate Lifecycle</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-09-26">26 September 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>13 min read</span>
+          </div>
           <p class="lead">How to eliminate manual certificate spreadsheets from a regulated organisation&rsquo;s API estate: HashiCorp Vault PKI engine, cert-manager ClusterIssuers, zero-restart TLS rotation, RFC 8705 cert-bound OAuth tokens, and alignment with financial-sector cryptography controls.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -159,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> HashiCorp Vault 1.17 / cert-manager 1.15 / OpenShift 4.15 / Keycloak 24</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Sep 26, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -469,15 +482,15 @@ path <span class="tok-s">"pki_int/crl"</span> {
           <p>The mechanism: the authorisation server embeds the SHA-256 thumbprint of the client&rsquo;s mTLS cert into the access token as a <code>cnf.x5t#S256</code> claim. The resource server validates that the TLS cert presented in the mTLS handshake matches the thumbprint in the token.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>cert-bound-token-claim.json</span><span class="code-block__lang">json</span></div>
+            <div class="code-block__header"><span>cert-bound-token-claim.json &mdash; cnf.x5t#S256 is the base64url SHA-256 of the DER client certificate</span><span class="code-block__lang">json</span></div>
 <pre><code>{
-  <span class="tok-k">"iss"</span>: <span class="tok-s">"https://idp.example.com/realms/openbanking"</span>,
-  <span class="tok-k">"sub"</span>: <span class="tok-s">"svc:payments-aggregator"</span>,
-  <span class="tok-k">"aud"</span>: <span class="tok-s">"accounts-api"</span>,
-  <span class="tok-k">"scope"</span>: <span class="tok-s">"accounts.read payments.initiate"</span>,
-  <span class="tok-k">"exp"</span>: <span class="tok-n">1758000000</span>,
-  <span class="tok-k">"cnf"</span>: {
-    <span class="tok-k">"x5t#S256"</span>: <span class="tok-s">"bwcK0esc3ACC3DB2Y5_lESsXE8o9ltc05O89jdN-dg2"</span>  <span class="tok-c">// SHA-256 of DER-encoded client cert</span>
+  <span class="tok-s">"iss"</span>: <span class="tok-s">"https://idp.example.com/realms/openbanking"</span>,
+  <span class="tok-s">"sub"</span>: <span class="tok-s">"svc:payments-aggregator"</span>,
+  <span class="tok-s">"aud"</span>: <span class="tok-s">"accounts-api"</span>,
+  <span class="tok-s">"scope"</span>: <span class="tok-s">"accounts.read payments.initiate"</span>,
+  <span class="tok-s">"exp"</span>: <span class="tok-n">1758000000</span>,
+  <span class="tok-s">"cnf"</span>: {
+    <span class="tok-s">"x5t#S256"</span>: <span class="tok-s">"bwcK0esc3ACC3DB2Y5_lESsXE8o9ltc05O89jdN-dg2"</span>
   }
 }</code></pre>
           </div>
@@ -586,6 +599,23 @@ path <span class="tok-s">"pki_int/crl"</span> {
             </li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="../devops/vault-secrets-management.html"><span class="lab-related__kicker">Lab &middot; DevOps &amp; Platform Engineering</span><span class="lab-related__name">Secrets Management &amp; Dynamic Credentials with Vault</span></a></li>
+              <li><a class="lab-related__link" href="service-mesh-mtls-at-scale.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: Service Mesh mTLS at Scale</span></a></li>
+              <li><a class="lab-related__link" href="oauth-and-mtls.html"><span class="lab-related__kicker">Lab &middot; API Security</span><span class="lab-related__name">API Security: OAuth 2.1 &amp; mTLS</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/vault-pki-cert-lifecycle-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">The Certificate Lifecycle Debt Every KSA Bank Carries &mdash; And How to Pay It Off</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="api-waf-and-owasp.html">
               <div class="article-nav__label">&larr; Previous</div>

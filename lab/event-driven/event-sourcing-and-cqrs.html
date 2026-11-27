@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,52 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Event Sourcing &amp; CQRS in Payments",
+    "headline": "Event Sourcing & CQRS in Payments",
     "description": "When event sourcing is worth the cost, worked through a payment lifecycle: event store design, CQRS projection patterns, aligning events with external message standards such as ISO 20022, snapshotting, idempotency, regulatory audit-trail requirements, and the Kafka-backed read model that scales.",
-    "url": "https://www.wbadawi.info/lab/event-driven/event-sourcing-and-cqrs.html",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-07-04",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
       "@id": "https://www.wbadawi.info/#person",
-      "url": "https://www.wbadawi.info/",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
-    "image": "https://www.wbadawi.info/assets/img/og-image.png"
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/event-driven/event-sourcing-and-cqrs.html"
+    },
+    "url": "https://www.wbadawi.info/lab/event-driven/event-sourcing-and-cqrs.html",
+    "inLanguage": "en",
+    "wordCount": 2742,
+    "isPartOf": {
+      "@type": "CollectionPage",
+      "name": "Event-Driven Architecture — Technical Lab",
+      "url": "https://www.wbadawi.info/lab/event-driven.html"
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Event-Driven Architecture",
+        "item": "https://www.wbadawi.info/lab/event-driven.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Event Sourcing & CQRS in Payments",
+        "item": "https://www.wbadawi.info/lab/event-driven/event-sourcing-and-cqrs.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -121,7 +136,13 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Event Sourcing &amp; CQRS</div>
           <span class="overline">Lab Article</span>
           <h1>Event Sourcing &amp; CQRS in Payments</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-07-04">4 July 2026</time></span>
+            <span>12 min read</span>
+          </div>
           <p class="lead">When event sourcing is worth the cost, how to structure the write and read sides of an aggregate, aligning events with external message standards, snapshotting, idempotency guarantees, and the audit trail regulators and auditors expect for free &mdash; without a commercial event-store vendor. The worked example is a payment, but the same model fits any audit-critical lifecycle: orders, insurance claims, bookings, shipments, case files.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -154,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Axon Framework 4.9 / Spring Boot 3.3 / Kafka 3.7 / PostgreSQL 15 (event store)</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Jul 4, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="when-worth-it">When it&rsquo;s worth the cost</h2>
@@ -483,23 +501,23 @@
 
           <ol class="step-list">
             <li>
-              <h4>Configure a snapshot threshold</h4>
+              <h3>Configure a snapshot threshold</h3>
               <p>Axon&rsquo;s <code>EventCountSnapshotTriggerDefinition</code> takes a snapshot after N events. For a payment aggregate, N = 50 is a reasonable starting point. Below 50 events, the replay is cheap; above 50, the aggregate is unusual and snapshot coverage is worth the storage.</p>
             </li>
             <li>
-              <h4>Store snapshots separately</h4>
+              <h3>Store snapshots separately</h3>
               <p>Keep snapshots in the same PostgreSQL database as the event store, in a separate <code>snapshots</code> table. Never store snapshots in the event stream itself &mdash; mixing them makes replay logic conditional on event type, which is fragile.</p>
             </li>
             <li>
-              <h4>Snapshot as the full aggregate state</h4>
+              <h3>Snapshot as the full aggregate state</h3>
               <p>The snapshot is the aggregate serialised at a given sequence number. Axon stores the aggregate class state as JSON or XStream-serialised bytes. Ensure the class is serialisable: no transient dependencies, no thread-local state.</p>
             </li>
             <li>
-              <h4>Replay still works without the snapshot</h4>
+              <h3>Replay still works without the snapshot</h3>
               <p>The snapshot is a performance optimisation, not a replacement for the event history. The event log must always be complete and independently replayable. Snapshots can be deleted and rebuilt; the event log cannot.</p>
             </li>
             <li>
-              <h4>Don&rsquo;t snapshot audit aggregates</h4>
+              <h3>Don&rsquo;t snapshot audit aggregates</h3>
               <p>If you have a dedicated audit aggregate that captures every state transition for the regulatory trail, do not snapshot it. The entire value of that aggregate is its full event history; a snapshot collapses the history you are trying to preserve.</p>
             </li>
           </ol>
@@ -691,6 +709,23 @@
             <p>With the exception of the regulatory audit projection, projecting to a read model synchronously on the command path couples the write latency to the read-model build latency. A slow projection (joining to an external service, building a complex denormalised view) makes every command slow. Project asynchronously, accept eventual consistency, and document the lag SLA for each query view.</p>
           </div>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="saga-patterns-distributed-transactions.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">Saga Patterns for Distributed Transactions</span></a></li>
+              <li><a class="lab-related__link" href="obligation-ledger-pattern.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">The Obligation Ledger Pattern: Tracking Holds and Reservations Without Stacking Them in the System of Record</span></a></li>
+              <li><a class="lab-related__link" href="../data-sync/reconciliation-pipelines-for-regulators.html"><span class="lab-related__kicker">Lab &middot; Data Synchronisation</span><span class="lab-related__name">Data Synchronisation: Reconciliation Pipelines for Regulators</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/event-sourcing-cqrs-payments-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Event Sourcing in Payments: The Architecture Decision Your CTO and Compliance Team Both Own</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../event-driven.html">
               <div class="article-nav__label">&larr; Back to topic</div>

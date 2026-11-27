@@ -31,12 +31,79 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 0.4rem; }
   </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Distributed Caching: Redis Cluster & Sentinel",
+    "description": "Cache topology, consistency models, invalidation strategies, and distributed state management for low-latency, high-traffic applications: Redis Cluster, Sentinel, cache patterns (cache-aside, write-through, write-behind), and the operational patterns to avoid cache stampedes.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-05-03",
+    "dateModified": "2026-11-27",
+    "author": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "publisher": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/distributed-caching/redis-cluster.html"
+    },
+    "url": "https://www.wbadawi.info/lab/distributed-caching/redis-cluster.html",
+    "inLanguage": "en",
+    "wordCount": 1364,
+    "isPartOf": {
+      "@type": "CollectionPage",
+      "name": "Distributed Caching — Technical Lab",
+      "url": "https://www.wbadawi.info/lab/distributed-caching.html"
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Distributed Caching",
+        "item": "https://www.wbadawi.info/lab/distributed-caching.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Distributed Caching: Redis Cluster & Sentinel",
+        "item": "https://www.wbadawi.info/lab/distributed-caching/redis-cluster.html"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -69,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Redis Cluster</div>
           <span class="overline">Lab Article</span>
           <h1>Distributed Caching: Redis Cluster &amp; Sentinel</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-05-03">3 May 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>6 min read</span>
+          </div>
           <p class="lead">Cache patterns (cache-aside, write-through, write-behind), Redis topology choices (Cluster vs Sentinel), invalidation strategies, the cache stampede that has felled more high-traffic platforms than any disk failure, and the operational patterns to keep p99 latency in the millisecond range.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -101,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Redis 7 / Lettuce / Spring Cache</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> May 3, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -243,23 +314,23 @@
 
           <ol class="step-list">
             <li>
-              <h4>Size the working set</h4>
+              <h3>Size the working set</h3>
               <p>Production Redis should run at &lt; 60% of <code>maxmemory</code>. Anything more and eviction churn destroys p99 latency. Pick node memory based on data size + 60% headroom + replica overhead.</p>
             </li>
             <li>
-              <h4>Pick the eviction policy</h4>
+              <h3>Pick the eviction policy</h3>
               <p><code>allkeys-lru</code> for general cache, <code>volatile-ttl</code> when only some keys have TTL and you want them prioritised for eviction, <code>noeviction</code> for systems where stale-but-not-evicted is the right choice.</p>
             </li>
             <li>
-              <h4>Configure persistence</h4>
+              <h3>Configure persistence</h3>
               <p>For pure cache: disable AOF, keep RDB snapshots for crash recovery. For Redis-as-database: AOF with <code>appendfsync everysec</code>. The choice has performance implications.</p>
             </li>
             <li>
-              <h4>Deploy with anti-affinity</h4>
+              <h3>Deploy with anti-affinity</h3>
               <p>Primary and its replica must never be on the same physical host or the same AZ. Use Kubernetes pod anti-affinity or explicit node selectors.</p>
             </li>
             <li>
-              <h4>Wire monitoring</h4>
+              <h3>Wire monitoring</h3>
               <p>Hit rate, eviction rate, connection count, memory fragmentation, replication lag, slow log. Without these you discover problems by latency complaints.</p>
             </li>
           </ol>
@@ -269,40 +340,42 @@
           <div class="code-block">
             <div class="code-block__header"><span>redis.conf</span><span class="code-block__lang">conf</span></div>
 <pre><code><span class="tok-c"># Memory</span>
-maxmemory <span class="tok-n">12gb</span>
-maxmemory-policy <span class="tok-s">allkeys-lru</span>
-maxmemory-samples <span class="tok-n">10</span>
+<span class="tok-k">maxmemory</span> <span class="tok-n">12gb</span>
+<span class="tok-k">maxmemory-policy</span> allkeys-lru
+<span class="tok-k">maxmemory-samples</span> <span class="tok-n">10</span>
 
-<span class="tok-c"># Persistence: cache mode</span>
-appendonly <span class="tok-s">no</span>
-save <span class="tok-s">""</span>                              <span class="tok-c"># disable RDB during normal ops</span>
-save <span class="tok-n">3600 1</span>                          <span class="tok-c"># light snapshot once an hour</span>
+<span class="tok-c"># Persistence: cache mode - no AOF, one light RDB snapshot an hour</span>
+<span class="tok-c"># (each "save" line adds a save point; save "" alone would disable RDB entirely)</span>
+<span class="tok-k">appendonly</span> no
+<span class="tok-k">save</span> <span class="tok-n">3600</span> <span class="tok-n">1</span>
 
 <span class="tok-c"># Replication</span>
-replica-read-only <span class="tok-s">yes</span>
-repl-backlog-size <span class="tok-n">256mb</span>
-replica-lazy-flush <span class="tok-s">yes</span>
+<span class="tok-k">replica-read-only</span> yes
+<span class="tok-k">repl-backlog-size</span> <span class="tok-n">256mb</span>
+<span class="tok-k">replica-lazy-flush</span> yes
 
 <span class="tok-c"># Cluster</span>
-cluster-enabled <span class="tok-s">yes</span>
-cluster-config-file <span class="tok-s">nodes.conf</span>
-cluster-node-timeout <span class="tok-n">5000</span>
-cluster-require-full-coverage <span class="tok-s">no</span>
+<span class="tok-k">cluster-enabled</span> yes
+<span class="tok-k">cluster-config-file</span> nodes.conf
+<span class="tok-k">cluster-node-timeout</span> <span class="tok-n">5000</span>
+<span class="tok-k">cluster-require-full-coverage</span> no
 
 <span class="tok-c"># Slow log threshold (microseconds)</span>
-slowlog-log-slower-than <span class="tok-n">10000</span>
-slowlog-max-len <span class="tok-n">256</span>
+<span class="tok-k">slowlog-log-slower-than</span> <span class="tok-n">10000</span>
+<span class="tok-k">slowlog-max-len</span> <span class="tok-n">256</span>
 
-<span class="tok-c"># Latency monitor</span>
-latency-monitor-threshold <span class="tok-n">100</span>
+<span class="tok-c"># Latency monitor (milliseconds)</span>
+<span class="tok-k">latency-monitor-threshold</span> <span class="tok-n">100</span>
 
-<span class="tok-c"># TLS</span>
-tls-port <span class="tok-n">6379</span>
-port <span class="tok-n">0</span>
-tls-cert-file <span class="tok-s">/etc/redis/server.crt</span>
-tls-key-file <span class="tok-s">/etc/redis/server.key</span>
-tls-ca-cert-file <span class="tok-s">/etc/redis/ca.crt</span>
-tls-auth-clients <span class="tok-s">yes</span></code></pre>
+<span class="tok-c"># TLS - clients, replication and the cluster bus</span>
+<span class="tok-k">tls-port</span> <span class="tok-n">6379</span>
+<span class="tok-k">port</span> <span class="tok-n">0</span>
+<span class="tok-k">tls-cert-file</span> /etc/redis/server.crt
+<span class="tok-k">tls-key-file</span> /etc/redis/server.key
+<span class="tok-k">tls-ca-cert-file</span> /etc/redis/ca.crt
+<span class="tok-k">tls-auth-clients</span> yes
+<span class="tok-k">tls-replication</span> yes
+<span class="tok-k">tls-cluster</span> yes</code></pre>
           </div>
 
           <h3>Cache-aside in Java with Lettuce</h3>
@@ -414,7 +487,8 @@ tls-auth-clients <span class="tok-s">yes</span></code></pre>
 
           <div class="code-block">
             <div class="code-block__header"><span>single-flight.lua</span><span class="code-block__lang">lua</span></div>
-<pre><code><span class="tok-c">-- KEYS[1] = data key, KEYS[2] = lock key</span>
+<pre><code><span class="tok-c">-- KEYS[1] = data key, KEYS[2] = lock key (same hash tag in Redis Cluster,</span>
+<span class="tok-c">--   e.g. "fx:{EURUSD}" and "lock:{EURUSD}", so both keys live in one slot)</span>
 <span class="tok-c">-- ARGV[1] = lock TTL in seconds</span>
 <span class="tok-k">local</span> v = redis.call(<span class="tok-s">'GET'</span>, KEYS[<span class="tok-n">1</span>])
 <span class="tok-k">if</span> v <span class="tok-k">then</span> <span class="tok-k">return</span> {<span class="tok-s">'hit'</span>, v} <span class="tok-k">end</span>
@@ -465,6 +539,23 @@ tls-auth-clients <span class="tok-s">yes</span></code></pre>
             <li><strong>The DB is fast enough.</strong> Adding a cache adds a network hop, a cache-coherence problem, and an operational dependency. If the DB serves the read in 2 ms, a 1 ms cache hit is rarely worth the complexity.</li>
           </ul>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="multi-tier-caching-strategies.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Multi-Tier Caching Strategies</span></a></li>
+              <li><a class="lab-related__link" href="distributed-session-management.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Distributed Session Management</span></a></li>
+              <li><a class="lab-related__link" href="near-cache-and-read-replicas.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Near-Cache &amp; Read-Replica Topologies</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/multi-tier-caching-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Multi-Tier Caching: The Platform Decision That Determines Your API Latency Floor</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../legacy-integration.html">
               <div class="article-nav__label">&larr; Previous</div>

@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -45,56 +46,62 @@
     "description": "A generic guide to integrating an orchestration hub with a legacy system of record using two phases: verify-and-hold, then post-and-release or release-only. Worked through with a payment hub in front of a legacy core; the same mechanics apply to inventory reservations, prepaid-balance charging and ticketing holds. Covers the lifecycle state machine, deriving an accounting-event catalogue, idempotent channel API design, idempotency store trade-offs, resilience settings, per-scheme routing and failure modes.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-12",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/integration-patterns/hold-and-release-payments.html"
     },
     "url": "https://www.wbadawi.info/lab/integration-patterns/hold-and-release-payments.html",
+    "inLanguage": "en",
+    "wordCount": 3562,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Integration Patterns &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Integration Design Patterns — Technical Lab",
       "url": "https://www.wbadawi.info/lab/integration-patterns.html"
     },
-    "proficiencyLevel": "Expert",
-    "articleSection": "Integration Patterns"
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Integration Design Patterns",
+        "item": "https://www.wbadawi.info/lab/integration-patterns.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Hold-and-Release: A Two-Phase Pattern for Integrating Orchestration Hubs with Legacy Systems of Record",
+        "item": "https://www.wbadawi.info/lab/integration-patterns/hold-and-release-payments.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -129,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Patterns</a><span>/</span>Hold-and-Release Payments</div>
           <span class="overline">Lab Article</span>
           <h1>Hold-and-Release: A Two-Phase Pattern for Integrating Orchestration Hubs with Legacy Systems of Record</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-11-12">12 November 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>15 min read</span>
+          </div>
           <p class="lead">An orchestration hub knows the external rails. The system of record knows the balances. In payments that means a payment hub in front of a legacy core; in retail, an order orchestrator in front of an inventory system; in telecoms, a charging gateway in front of a prepaid balance store. The cleanest integration between them is two calls &mdash; verify-and-hold, then post-and-release or release-only &mdash; driven by an explicit state machine, an accounting-event catalogue derived by method, and an idempotent channel API that never changes when the routing behind it does.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -161,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> IBM App Connect Enterprise / IBM MQ / ISO 20022 / Resilience4j / relational state store</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~12 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Nov 12, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -228,7 +239,7 @@
 <span class="tok-c"># 2a. Scheme accepted: post and release</span>
 <span class="tok-k">POST</span> /core/v1/payments/P-000184223/post HTTP/1.1
 { <span class="tok-k">"holdReference"</span>: <span class="tok-s">"H-90311475"</span>, <span class="tok-k">"mode"</span>: <span class="tok-s">"POST_AND_RELEASE"</span>,
-  <span class="tok-k">"accountingEvent"</span>: <span class="tok-s">"OUTBOUND_INSTANT_DEBIT"</span>, <span class="tok-k">"postingItems"</span>: [ ... ] }
+  <span class="tok-k">"accountingEvent"</span>: <span class="tok-s">"OUTBOUND_INSTANT_DEBIT"</span>, <span class="tok-k">"postingItems"</span>: [ { <span class="tok-k">"account"</span>: <span class="tok-s">"ACC-00012345"</span>, <span class="tok-k">"side"</span>: <span class="tok-s">"DEBIT"</span>, <span class="tok-k">"amount"</span>: <span class="tok-s">"2500.00"</span> } ] }
 
 <span class="tok-c"># 2b. Scheme rejected or timed out: release only</span>
 <span class="tok-k">POST</span> /core/v1/payments/P-000184223/post HTTP/1.1
@@ -350,15 +361,15 @@
           <p>Three rules make the machine safe.</p>
           <ol class="step-list">
             <li>
-              <h4>Terminal states are final</h4>
+              <h3>Terminal states are final</h3>
               <p>POSTED, RELEASED, REJECTED and REVERSED accept no further transitions, except POSTED &rarr; REVERSED. A late scheme message for a RELEASED payment does not move it back; it raises an exception case (see <a href="#failure-modes">failure modes</a>).</p>
             </li>
             <li>
-              <h4>One trigger, one core side effect per transition</h4>
+              <h3>One trigger, one core side effect per transition</h3>
               <p>HELD is entered only by a successful verify-and-hold. RELEASED is entered only after release-only has succeeded. If the core call fails, the state does not move; the retry policy decides what happens next.</p>
             </li>
             <li>
-              <h4>Reversal is a new entry</h4>
+              <h3>Reversal is a new entry</h3>
               <p>When a recall is accepted after posting, nothing is undone. A compensating entry is booked through the direct-post route. Both the original posting and the reversal stay on the ledger, which is exactly what auditors expect to see.</p>
             </li>
           </ol>
@@ -490,28 +501,33 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>resilience.yaml</span><span class="code-block__lang">yaml</span></div>
-<pre><code><span class="tok-k">resilience4j:</span>
-  <span class="tok-k">circuitbreaker:</span>
-    <span class="tok-k">instances:</span>
-      <span class="tok-k">legacy-core:</span>
-        <span class="tok-k">sliding-window-type:</span> <span class="tok-s">COUNT_BASED</span>
-        <span class="tok-k">sliding-window-size:</span> <span class="tok-n">20</span>            <span class="tok-c"># last 20 calls</span>
-        <span class="tok-k">failure-rate-threshold:</span> <span class="tok-n">50</span>         <span class="tok-c"># open at 50% failures</span>
-        <span class="tok-k">wait-duration-in-open-state:</span> <span class="tok-s">30s</span>
-        <span class="tok-k">permitted-number-of-calls-in-half-open-state:</span> <span class="tok-n">3</span>
-      <span class="tok-k">payment-hub:</span>
-        <span class="tok-k">base-config:</span> <span class="tok-s">legacy-core</span>
-  <span class="tok-k">timelimiter:</span>
-    <span class="tok-k">instances:</span>
-      <span class="tok-k">legacy-core:</span> { <span class="tok-k">timeout-duration:</span> <span class="tok-s">8s</span> }    <span class="tok-c"># MQ request/reply</span>
-      <span class="tok-k">payment-hub:</span>  { <span class="tok-k">timeout-duration:</span> <span class="tok-s">10s</span> }
-  <span class="tok-k">retry:</span>
-    <span class="tok-k">instances:</span>
-      <span class="tok-k">idempotent-only:</span>
-        <span class="tok-k">max-attempts:</span> <span class="tok-n">3</span>
-        <span class="tok-k">wait-duration:</span> <span class="tok-s">1s</span>
-        <span class="tok-k">exponential-backoff-multiplier:</span> <span class="tok-n">2</span>  <span class="tok-c"># 1s, 2s, 4s</span>
-        <span class="tok-k">randomized-wait-factor:</span> <span class="tok-n">0.25</span>      <span class="tok-c"># jitter</span></code></pre>
+<pre><code><span class="tok-k">resilience4j</span>:
+  <span class="tok-k">circuitbreaker</span>:
+    <span class="tok-k">configs</span>:
+      <span class="tok-k">core-default</span>:                        <span class="tok-c"># shared settings; instances inherit via base-config</span>
+        <span class="tok-k">sliding-window-type</span>: COUNT_BASED
+        <span class="tok-k">sliding-window-size</span>: <span class="tok-n">20</span>            <span class="tok-c"># last 20 calls</span>
+        <span class="tok-k">failure-rate-threshold</span>: <span class="tok-n">50</span>         <span class="tok-c"># open at 50% failures</span>
+        <span class="tok-k">wait-duration-in-open-state</span>: <span class="tok-n">30s</span>
+        <span class="tok-k">permitted-number-of-calls-in-half-open-state</span>: <span class="tok-n">3</span>
+    <span class="tok-k">instances</span>:
+      <span class="tok-k">legacy-core</span>:
+        <span class="tok-k">base-config</span>: core-default
+      <span class="tok-k">payment-hub</span>:
+        <span class="tok-k">base-config</span>: core-default          <span class="tok-c"># base-config names a configs entry, not an instance</span>
+  <span class="tok-k">timelimiter</span>:
+    <span class="tok-k">instances</span>:
+      <span class="tok-k">legacy-core</span>: { timeout-duration: <span class="tok-n">8s</span> }    <span class="tok-c"># MQ request/reply</span>
+      <span class="tok-k">payment-hub</span>:  { timeout-duration: <span class="tok-n">10s</span> }
+  <span class="tok-k">retry</span>:
+    <span class="tok-k">instances</span>:
+      <span class="tok-k">idempotent-only</span>:
+        <span class="tok-k">max-attempts</span>: <span class="tok-n">3</span>                    <span class="tok-c"># first call + 2 retries</span>
+        <span class="tok-k">wait-duration</span>: <span class="tok-n">1s</span>
+        <span class="tok-k">enable-exponential-backoff</span>: true
+        <span class="tok-k">exponential-backoff-multiplier</span>: <span class="tok-n">2</span>  <span class="tok-c"># waits 1s, then 2s</span>
+        <span class="tok-k">enable-randomized-wait</span>: true
+        <span class="tok-k">randomized-wait-factor</span>: <span class="tok-n">0.25</span>       <span class="tok-c"># jitter</span></code></pre>
           </div>
 
           <ul>
@@ -581,39 +597,56 @@
 
           <ol class="step-list">
             <li>
-              <h4>Write down the three owners</h4>
+              <h3>Write down the three owners</h3>
               <p>Hub: lifecycle and scheme messaging. Core: accounts, holds, posting. Integration layer: translation, correlation, idempotency, resilience, routing. Review every new field against that list.</p>
             </li>
             <li>
-              <h4>Agree the two-phase core contract</h4>
+              <h3>Agree the two-phase core contract</h3>
               <p>Verify-and-hold returns a hold reference. Post has two modes and is idempotent on that reference. Map every flow to one of the four routes.</p>
             </li>
             <li>
-              <h4>Encode the state machine as an allowed-transition table</h4>
+              <h3>Encode the state machine as an allowed-transition table</h3>
               <p>Reject illegal transitions loudly. Every exit from HELD ends in exactly one post call, in one of its two modes.</p>
             </li>
             <li>
-              <h4>Build the accounting matrix before the flows</h4>
+              <h3>Build the accounting matrix before the flows</h3>
               <p>Payment type &times; funding source &times; outcome. Every cell has an event or a documented &ldquo;not applicable&rdquo;. Treat the matrix as a release gate.</p>
             </li>
             <li>
-              <h4>Make idempotency durable and fail closed</h4>
+              <h3>Make idempotency durable and fail closed</h3>
               <p>Namespace keys to the authenticated customer, store a payload hash, check before routing, and keep the authoritative record in a synchronous-commit store. Rehearse a store failover under load and confirm no duplicates.</p>
             </li>
             <li>
-              <h4>One breaker and one timeout per upstream</h4>
+              <h3>One breaker and one timeout per upstream</h3>
               <p>Retry only idempotent calls, with backoff and jitter. On hub submission timeout, release the hold.</p>
             </li>
             <li>
-              <h4>Run the sweepers</h4>
+              <h3>Run the sweepers</h3>
               <p>One for orphaned holds, one for stuck <code>IN_FLIGHT</code> keys, one exception queue for late scheme statuses. Each has an owner and a runbook.</p>
             </li>
             <li>
-              <h4>Reconcile daily</h4>
+              <h3>Reconcile daily</h3>
               <p>Hub payment states against core postings, open holds against non-terminal payments, and any two-system postings against each other. A clean reconciliation is the only real proof that the state machine works.</p>
             </li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="../event-driven/obligation-ledger-pattern.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">The Obligation Ledger Pattern: Tracking Holds and Reservations Without Stacking Them in the System of Record</span></a></li>
+              <li><a class="lab-related__link" href="idempotency-keys.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Idempotency Keys at Scale</span></a></li>
+              <li><a class="lab-related__link" href="../field-playbooks/timeouts-and-unknown-outcomes.html"><span class="lab-related__kicker">Lab &middot; Field Playbooks</span><span class="lab-related__name">The Call Timed Out. Did It Work? Handling Unknown Outcomes Without Double Posting</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/payment-rail-migration-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Strangle the Rails, Not the Channels: How to Migrate Payment Schemes Without a Big-Bang Cutover</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="idempotency-keys.html">
               <div class="article-nav__label">&larr; Previous</div>

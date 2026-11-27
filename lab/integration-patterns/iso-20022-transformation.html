@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -42,62 +43,69 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "ISO 20022 Transformation Patterns: MT-to-MX Migration in Production",
+    "description": "Mapping legacy SWIFT MT messages to ISO 20022 pacs.* and pain.* flows in production: translation layers, validation strategy, IBM ACE mappings, Apache Camel routes, truncation traps, and the migration timelines that shape the architecture.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-07-25",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/integration-patterns/iso-20022-transformation.html"
     },
     "url": "https://www.wbadawi.info/lab/integration-patterns/iso-20022-transformation.html",
+    "inLanguage": "en",
+    "wordCount": 3250,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Integration Design Patterns &mdash; Lab &mdash; Waleed Albadawi",
+      "@type": "CollectionPage",
+      "name": "Integration Design Patterns — Technical Lab",
       "url": "https://www.wbadawi.info/lab/integration-patterns.html"
     },
-    "description": "Mapping legacy SWIFT MT messages to ISO 20022 pacs.* and pain.* flows in production: translation layers, validation strategy, IBM ACE mappings, Apache Camel routes, truncation traps, and the migration timelines that shape the architecture.",
     "proficiencyLevel": "Expert",
     "audience": {
       "@type": "Audience",
       "audienceType": "Software Engineers, Integration Architects"
     }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Integration Design Patterns",
+        "item": "https://www.wbadawi.info/lab/integration-patterns.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "ISO 20022 Transformation Patterns: MT-to-MX Migration in Production",
+        "item": "https://www.wbadawi.info/lab/integration-patterns/iso-20022-transformation.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -132,7 +140,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>ISO 20022 Transformation</div>
           <span class="overline">Lab Article</span>
           <h1>ISO 20022 Transformation Patterns: MT-to-MX Migration in Production</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-07-25">25 July 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>14 min read</span>
+          </div>
           <p class="lead">Mapping legacy SWIFT MT messages to ISO 20022 pacs.* and pain.* message types in a live payment estate: translation architecture, enrichment and validation strategy, the truncation traps that cause scheme rejects, and what actually ships in production.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -165,9 +180,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> ISO 20022 / SWIFT MT / IBM ACE 12 / Apache Camel 4 / Saxon</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Jul 25, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -374,31 +386,31 @@
 
           <ol class="step-list">
             <li>
-              <h4>Parse the inbound MT103</h4>
+              <h3>Parse the inbound MT103</h3>
               <p>Attach a DFDL message set with the MT103 schema. IBM provides a SWIFT MT DFDL library for ACE; import it into the BAR and configure the <code>MQInput</code> node&rsquo;s parser to use it. The result is a fully navigable <code>MRM</code> tree in the local environment tree.</p>
             </li>
             <li>
-              <h4>Validate IBAN and BIC before mapping</h4>
+              <h3>Validate IBAN and BIC before mapping</h3>
               <p>Use a <code>Compute</code> node or a Java plugin call to validate <code>:50K:</code> account against MOD-97 before any transformation. A validation failure goes to the error subflow, not the mapping node. This surfaces bad data early with a structured reject, not a downstream scheme reject.</p>
             </li>
             <li>
-              <h4>Map to canonical form</h4>
+              <h3>Map to canonical form</h3>
               <p>The <code>Mapping</code> node maps MT tree fields to the canonical XSD type. Configure date format transformation (YYMMDD &rarr; YYYY-MM-DD) in the mapping function panel. Amount mapping: strip any implied decimal and recast with explicit decimal using the <code>CAST&hellip;AS DECIMAL</code> function.</p>
             </li>
             <li>
-              <h4>Enrich from core</h4>
+              <h3>Enrich from core</h3>
               <p>A <code>DatabaseRetrieve</code> or <code>HTTPRequest</code> node looks up the debtor IBAN from the legacy core&rsquo;s account master if it is absent. Use a 500ms timeout and a circuit breaker. If the lookup fails, fail the payment with a structured error &mdash; do not propagate a payment with an unknown IBAN.</p>
             </li>
             <li>
-              <h4>Generate pacs.008</h4>
+              <h3>Generate pacs.008</h3>
               <p>A second <code>Mapping</code> node transforms from canonical to the pacs.008 XSD. Set the message domain to <code>XMLNSC</code> and attach the ISO 20022 XSD. The generated XML must be namespace-correct &mdash; the ACE XMLNSC domain handles this automatically when the schema is correctly associated.</p>
             </li>
             <li>
-              <h4>Validate against the scheme ruleset</h4>
+              <h3>Validate against the scheme ruleset</h3>
               <p>A <code>Validate</code> node with the scheme&rsquo;s extended XSD (many schemes publish an XSD overlay or usage guideline on top of the base message) catches any missing mandatory extensions before the message leaves the institution.</p>
             </li>
             <li>
-              <h4>Route and dispatch</h4>
+              <h3>Route and dispatch</h3>
               <p>A <code>RouteToLabel</code> node reads the <code>scheme</code> field from the canonical form and routes to the instant-scheme MQ queue, the regional scheme&rsquo;s HTTPS endpoint, or the SWIFT connector. Each route uses the failure terminal for DLQ handling.</p>
             </li>
           </ol>
@@ -455,63 +467,57 @@
           <p>The trade-off: Camel&rsquo;s ISO 20022 support is less mature than ACE&rsquo;s DFDL SWIFT library. You own the XSLT maintenance. ACE&rsquo;s IBM-provided parsers and the SWIFT DFDL library are commercially supported and auditable for a regulated institution &mdash; a material difference when your auditor or regulator asks who maintains the translation logic.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>iso20022-transform-route.yaml &mdash; Camel K DSL</span><span class="code-block__lang">yaml</span></div>
-<pre><code><span class="tok-k">- route</span>:
-    <span class="tok-k">id</span>: <span class="tok-s">mt103-to-pacs008</span>
+            <div class="code-block__header"><span>iso20022-transform-route.yaml &mdash; Camel YAML DSL (Camel K)</span><span class="code-block__lang">yaml</span></div>
+<pre><code><span class="tok-c"># Camel YAML DSL (Camel 4 / Camel K). Values that start with "#" must be quoted:</span>
+<span class="tok-c"># unquoted, YAML reads them as comments.</span>
+- <span class="tok-k">onException</span>:
+    <span class="tok-k">exception</span>:
+      - org.apache.camel.ValidationException
+    <span class="tok-k">handled</span>:
+      <span class="tok-k">constant</span>: true
+    <span class="tok-k">steps</span>:
+      - <span class="tok-k">bean</span>:
+          <span class="tok-k">ref</span>: rejectEnricher
+          <span class="tok-k">method</span>: buildPacs002Reject
+      - <span class="tok-k">to</span>: jms:queue:OUTBOUND.REJECTS
+
+- <span class="tok-k">route</span>:
+    <span class="tok-k">id</span>: mt103-to-pacs008
     <span class="tok-k">from</span>:
-      <span class="tok-k">uri</span>: <span class="tok-s">mq:queue:INBOUND.MT103</span>
+      <span class="tok-k">uri</span>: jms:queue:INBOUND.MT103          <span class="tok-c"># IBM MQ through the JMS component</span>
       <span class="tok-k">parameters</span>:
-        <span class="tok-k">connectionFactory</span>: <span class="tok-s">#mqConnectionFactory</span>
+        <span class="tok-k">connectionFactory</span>: <span class="tok-s">"#mqConnectionFactory"</span>
     <span class="tok-k">steps</span>:
       <span class="tok-c"># Parse and unmarshal MT103 text to intermediate bean</span>
       - <span class="tok-k">bean</span>:
-          <span class="tok-k">ref</span>: <span class="tok-s">mt103Parser</span>
-          <span class="tok-k">method</span>: <span class="tok-s">parse</span>
-
+          <span class="tok-k">ref</span>: mt103Parser
+          <span class="tok-k">method</span>: parse
       <span class="tok-c"># Keep the routing key as a header; the body becomes XML below</span>
       - <span class="tok-k">setHeader</span>:
-          <span class="tok-k">name</span>: <span class="tok-s">creditorCountry</span>
+          <span class="tok-k">name</span>: creditorCountry
           <span class="tok-k">simple</span>: <span class="tok-s">"${body.creditorCountry}"</span>
-
       <span class="tok-c"># Enrich: lookup IBAN from account master service</span>
       - <span class="tok-k">enrich</span>:
           <span class="tok-k">expression</span>:
-            <span class="tok-k">simple</span>:
-              <span class="tok-k">expression</span>: <span class="tok-s">http://account-master/resolve-iban?account=${body.debtorAccount}</span>
-          <span class="tok-k">aggregationStrategy</span>: <span class="tok-s">#ibanMergeStrategy</span>
-          <span class="tok-k">timeout</span>: <span class="tok-n">500</span>
-
-      <span class="tok-c"># XSLT transformation: canonical → pacs.008</span>
+            <span class="tok-k">simple</span>: <span class="tok-s">"http://account-master/resolve-iban?account=${body.debtorAccount}"</span>
+          <span class="tok-k">aggregationStrategy</span>: <span class="tok-s">"#ibanMergeStrategy"</span>
+      <span class="tok-c"># XSLT transformation with Saxon: canonical -&gt; pacs.008</span>
       - <span class="tok-k">to</span>:
-          <span class="tok-k">uri</span>: <span class="tok-s">xslt:classpath:xslt/canonical-to-pacs008.xslt</span>
+          <span class="tok-k">uri</span>: xslt-saxon:classpath:xslt/canonical-to-pacs008.xslt
           <span class="tok-k">parameters</span>:
-            <span class="tok-k">contentCache</span>: <span class="tok-n">true</span>
-            <span class="tok-k">saxon</span>: <span class="tok-n">true</span>
-
+            <span class="tok-k">contentCache</span>: true
       <span class="tok-c"># Validate against the scheme XSD overlay</span>
       - <span class="tok-k">to</span>:
-          <span class="tok-k">uri</span>: <span class="tok-s">validator:classpath:xsd/scheme-pacs008-overlay.xsd</span>
-
+          <span class="tok-k">uri</span>: validator:classpath:xsd/scheme-pacs008-overlay.xsd
       <span class="tok-c"># Content-based routing: domestic instant vs cross-border</span>
       - <span class="tok-k">choice</span>:
           <span class="tok-k">when</span>:
-            - <span class="tok-k">simple</span>:
-                <span class="tok-k">expression</span>: <span class="tok-s">${header.creditorCountry} == '{{home.country}}'</span>
+            - <span class="tok-k">simple</span>: <span class="tok-s">"${header.creditorCountry} == '{{home.country}}'"</span>
               <span class="tok-k">steps</span>:
-                - <span class="tok-k">to</span>: <span class="tok-s">mq:queue:OUTBOUND.INSTANT.PACS008</span>
+                - <span class="tok-k">to</span>: jms:queue:OUTBOUND.INSTANT.PACS008
           <span class="tok-k">otherwise</span>:
             <span class="tok-k">steps</span>:
-              - <span class="tok-k">to</span>: <span class="tok-s">mq:queue:OUTBOUND.XBORDER.PACS008</span>
-
-      <span class="tok-c"># Dead letter on any validation failure</span>
-      - <span class="tok-k">onException</span>:
-          <span class="tok-k">exception</span>: <span class="tok-s">org.apache.camel.ValidationException</span>
-          <span class="tok-k">handled</span>: <span class="tok-n">true</span>
-          <span class="tok-k">steps</span>:
-            - <span class="tok-k">bean</span>:
-                <span class="tok-k">ref</span>: <span class="tok-s">rejectEnricher</span>
-                <span class="tok-k">method</span>: <span class="tok-s">buildPacs002Reject</span>
-            - <span class="tok-k">to</span>: <span class="tok-s">mq:queue:OUTBOUND.REJECTS</span></code></pre>
+              - <span class="tok-k">to</span>: jms:queue:OUTBOUND.XBORDER.PACS008</code></pre>
           </div>
 
           <h2 id="validation-enrichment">Validation &amp; enrichment</h2>
@@ -600,13 +606,13 @@
           <p>Three kinds of deadline shape how you architect the translation layer today. Their dates differ by market; their shape does not.</p>
           <ul>
             <li><strong>Domestic scheme participation</strong>: most instant-payment schemes, and a growing number of high-value (RTGS) systems, run natively on ISO 20022. If you participate in one, you are already running production ISO 20022 &mdash; it is not a future requirement.</li>
-            <li><strong>The cross-border coexistence window</strong>: SWIFT&rsquo;s CBPR+ programme ran MT and ISO 20022 side by side for cross-border payment instructions until November 2025. Coexistence has ended on the network, but not inside institutions: counterparties migrate unevenly and internal systems still emit MT. Your translation layer must handle inbound MT103 <em>and</em> inbound pacs.008, converting both to canonical form for downstream processing.</li>
+            <li><strong>The cross-border coexistence window</strong>: according to Swift&rsquo;s published ISO 20022 programme timeline, the MT/ISO 20022 coexistence period for cross-border payment instructions (CBPR+) ended in November 2025. Reporting and statement messages follow a separate timeline, and Swift&rsquo;s own end-of-coexistence guidance sets out how MT payment instructions still sent after that date are handled; check the current position at <a href="https://www.swift.com/standards/iso-20022">swift.com/standards/iso-20022</a>. Even where coexistence has ended on the network, it has not ended inside institutions: counterparties migrate unevenly and internal systems still emit MT. Your translation layer must handle inbound MT103 <em>and</em> inbound pacs.008, converting both to canonical form for downstream processing.</li>
             <li><strong>Internal MT decommissioning</strong>: a network deadline does not retire MT inside your own estate. Legacy cores, reconciliation tools and statement generators that consume MT103 or MT940 internally need their own migration plan. The translation layer built for the schemes is the foundation; the internal consumers are the remaining work.</li>
           </ul>
 
           <div class="callout callout--note">
             <div class="callout__title">Coexistence is the hardest period, not post-migration</div>
-            <p>The temptation is to build a clean MX-only stack and skip the MT coexistence path. Resist it. Every coexistence window so far &mdash; cross-border and domestic &mdash; has carried a long tail of counterparties and internal systems that had not finished migrating. If your translation layer cannot handle inbound MT103, you will reject legitimate payments. Coexistence windows are always shorter than they look once you account for procurement, testing, scheme certification, and parallel run periods.</p>
+            <p>The temptation is to build a clean MX-only stack and skip the MT coexistence path. Resist it. In practice, coexistence windows &mdash; cross-border and domestic &mdash; carry a long tail of counterparties and internal systems that had not finished migrating. If your translation layer cannot handle inbound MT103, you will reject legitimate payments. Coexistence windows are always shorter than they look once you account for procurement, testing, scheme certification, and parallel run periods.</p>
           </div>
 
           <h2 id="production-reality">What production tells you</h2>
@@ -616,6 +622,23 @@
           <p><strong>The pacs.002 reason code set is underdocumented.</strong> The scheme&rsquo;s technical specifications list the reason codes; the operational guide describes the common ones. In production you will encounter reason codes that are in neither document, because they originate from the downstream core system of the receiving institution, not from the scheme itself. Build your reject handler to log the raw reason code before mapping it to a human-readable status, because your support team will need the raw code to diagnose participant-specific issues.</p>
           <p><strong>Test with non-Latin names before go-live, not after.</strong> The first time a payment with a name in a non-Latin script (Arabic, Cyrillic, Chinese) hits a downstream system that was only tested with Latin-character names, you will discover a character-set issue in production. This is recoverable &mdash; it is not a data loss &mdash; but it is a support incident during what should be a smooth go-live period. Maintain a test dataset with non-Latin names, numbers at field length limits, and all special characters allowed in the SWIFT-X and UTF-8 character sets.</p>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="canonical-data-model.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Canonical Data Model: Designing an Enterprise-Wide Mapping Layer</span></a></li>
+              <li><a class="lab-related__link" href="apache-camel-cloud-native.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Apache Camel for Cloud-Native Integration</span></a></li>
+              <li><a class="lab-related__link" href="../data-streaming/schema-registry-and-data-contracts.html"><span class="lab-related__kicker">Lab &middot; Data Streaming</span><span class="lab-related__name">Data Streaming: Schema Registry &amp; Data Contracts</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/iso-20022-migration-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">ISO 20022 Migration: The Strategic Decision Your Bank Can&rsquo;t Delegate to the Integration Team</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../integration-patterns.html">
               <div class="article-nav__label">&larr; Back to topic</div>

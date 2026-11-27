@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -43,50 +44,64 @@
     "@type": "TechArticle",
     "headline": "Saga Patterns for Distributed Transactions",
     "description": "Choreography vs orchestration sagas, compensating transactions, and recovery patterns for multi-step workflows in regulated environments, worked through an instant-payment flow and equally applicable to order fulfilment, bookings and service provisioning.",
-    "url": "https://www.wbadawi.info/lab/event-driven/saga-patterns-distributed-transactions.html",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-08-08",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
       "@id": "https://www.wbadawi.info/#person",
-      "url": "https://www.wbadawi.info/",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
-    "image": "https://www.wbadawi.info/assets/img/og-image.png"
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/event-driven/saga-patterns-distributed-transactions.html"
+    },
+    "url": "https://www.wbadawi.info/lab/event-driven/saga-patterns-distributed-transactions.html",
+    "inLanguage": "en",
+    "wordCount": 2888,
+    "isPartOf": {
+      "@type": "CollectionPage",
+      "name": "Event-Driven Architecture — Technical Lab",
+      "url": "https://www.wbadawi.info/lab/event-driven.html"
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Event-Driven Architecture",
+        "item": "https://www.wbadawi.info/lab/event-driven.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Saga Patterns for Distributed Transactions",
+        "item": "https://www.wbadawi.info/lab/event-driven/saga-patterns-distributed-transactions.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -121,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Saga Patterns</div>
           <span class="overline">Lab Article</span>
           <h1>Saga Patterns for Distributed Transactions</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-08-08">8 August 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>13 min read</span>
+          </div>
           <p class="lead">Choreography vs orchestration sagas, compensating actions, idempotent saga steps, and recovery patterns for multi-step distributed workflows &mdash; worked through an instant-payment lifecycle, where partial failures are not hypothetical edge cases, and equally applicable to order fulfilment, travel booking and service provisioning.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -152,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Axon Framework 4.9 / Spring Boot 3.3 / Kafka 3.7 / PostgreSQL 15 / Testcontainers 1.19</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Aug 8, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="why-sagas">Why sagas, not 2PC</h2>
@@ -356,27 +375,27 @@
 
           <ol class="step-list">
             <li>
-              <h4>Design compensations before you design the forward steps</h4>
+              <h3>Design compensations before you design the forward steps</h3>
               <p>Every step in a saga must have a defined compensation before the step is implemented. If you cannot design a compensation, the step should not be asynchronous &mdash; either make it synchronous (so it participates in the local transaction boundary) or restructure the domain to make compensation unnecessary (e.g., soft-reserve before hard-reserve).</p>
             </li>
             <li>
-              <h4>Compensations must be idempotent</h4>
+              <h3>Compensations must be idempotent</h3>
               <p>A compensation command may be delivered multiple times if the network times out between the coordinator sending it and the participant acknowledging it. The participant must handle a duplicate <code>ReleaseLiquidityCommand</code> for an already-released reservation without error or double-release. The simplest implementation: check the reservation status before acting; if already released, return success.</p>
             </li>
             <li>
-              <h4>Compensations must be retriable</h4>
+              <h3>Compensations must be retriable</h3>
               <p>A compensation that fails must be retried until it succeeds. There is no &ldquo;fail the compensation&rdquo; path &mdash; if the compensation fails, the system is in an inconsistent state. The saga coordinator must be configured with a retry policy and a dead-letter queue for compensation commands that cannot be delivered after N retries. A human operations process must exist to resolve dead-lettered compensations.</p>
             </li>
             <li>
-              <h4>Order compensations in reverse saga order</h4>
+              <h3>Order compensations in reverse saga order</h3>
               <p>If steps A &rarr; B &rarr; C all succeeded and step D failed, compensate in the order C&prime; &rarr; B&prime; &rarr; A&prime;. Do not compensate A before compensating C &mdash; earlier steps may have created dependencies that the later steps rely on. In a typical scheme integration, the submission acknowledgement contains the scheme reference that the liquidity compensation uses; releasing liquidity before the rejection is confirmed loses that reference.</p>
             </li>
             <li>
-              <h4>Compensations are business events, not technical housekeeping</h4>
+              <h3>Compensations are business events, not technical housekeeping</h3>
               <p>A <code>LiquidityReleasedEvent</code> is a business event that fraud analytics, the customer notification service, and the audit trail all care about. Emit it as a first-class domain event through the same Kafka topic as the forward events. Do not treat compensations as internal plumbing that bypasses the event log.</p>
             </li>
             <li>
-              <h4>Some steps are non-compensable</h4>
+              <h3>Some steps are non-compensable</h3>
               <p>Once a <code>pacs.008</code> is submitted to an instant-payment scheme, it cannot be withdrawn &mdash; only returned via a <code>pacs.004</code> payment return, which is a new forward transaction, not a compensation. Model this correctly: the saga compensates by <em>initiating a payment return</em>, not by &ldquo;undoing&rdquo; the submission. The scheme submission is a pivot point &mdash; steps before it can be compensated cleanly; steps after it require a new forward flow. The same holds outside payments: once a parcel is handed to the carrier or a ticket is issued, compensation means a return or a refund, not an undo.</p>
             </li>
           </ol>
@@ -479,33 +498,43 @@
           </div>
 
           <div class="code-block">
-            <div class="code-block__header"><span>saga-config.yaml &mdash; Axon deadline for scheme acknowledgement timeout</span><span class="code-block__lang">yaml</span></div>
+            <div class="code-block__header"><span>application.yml &mdash; Axon serializer and deadline settings</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-k">axon</span>:
-  <span class="tok-k">deadline</span>:
-    <span class="tok-k">enabled</span>: <span class="tok-n">true</span>
   <span class="tok-k">serializer</span>:
-    <span class="tok-k">general</span>: <span class="tok-s">xstream</span>
+    <span class="tok-k">general</span>: jackson     <span class="tok-c"># XStream is deprecated in Axon 4 and a deserialisation risk</span>
+    <span class="tok-k">messages</span>: jackson
+    <span class="tok-k">events</span>: jackson
+<span class="tok-c"># Deadlines must survive restarts: register a persistent DeadlineManager bean</span>
+<span class="tok-c"># (Quartz, JobRunr or db-scheduler backed) rather than the in-memory SimpleDeadlineManager.</span></code></pre>
+          </div>
 
-<span class="tok-c"># In PaymentSaga.java — schedule a deadline after scheme submission</span>
-<span class="tok-c"># If SchemeAcknowledgedEvent not received in 90s, fire the deadline handler</span>
-<span class="tok-k">deadlineManager</span>.<span class="tok-n">schedule</span>(
-    <span class="tok-n">Duration</span>.ofSeconds(<span class="tok-n">90</span>),
+          <div class="code-block">
+            <div class="code-block__header"><span>PaymentSaga.java &mdash; Axon deadline for scheme acknowledgement timeout</span><span class="code-block__lang">java</span></div>
+<pre><code><span class="tok-c">// PaymentSaga.java - schedule a deadline after scheme submission</span>
+<span class="tok-k">@Autowired</span> <span class="tok-k">private</span> transient <span class="tok-t">DeadlineManager</span> deadlineManager;
+<span class="tok-k">@Autowired</span> <span class="tok-k">private</span> transient <span class="tok-t">CommandGateway</span> commandGateway;
+
+<span class="tok-c">// If SchemeAcknowledgedEvent has not arrived within 90 s, fire the deadline handler</span>
+deadlineManager.schedule(
+    <span class="tok-t">Duration</span>.ofSeconds(<span class="tok-n">90</span>),
     <span class="tok-s">"schemeSubmissionTimeout"</span>,
-    <span class="tok-t">new</span> <span class="tok-n">SchemeSubmissionDeadline</span>(paymentId)
+    <span class="tok-k">new</span> <span class="tok-t">SchemeSubmissionDeadline</span>(paymentId)
 );
 
-<span class="tok-c"># Handler: query scheme status, compensate or extend depending on result</span>
+<span class="tok-c">// Handler: query scheme status, then compensate, extend or escalate</span>
 <span class="tok-k">@DeadlineHandler</span>(deadlineName = <span class="tok-s">"schemeSubmissionTimeout"</span>)
-<span class="tok-t">public void</span> <span class="tok-n">onSchemeTimeout</span>(<span class="tok-n">SchemeSubmissionDeadline</span> deadline) {
-    <span class="tok-n">SchemeStatus</span> status = schemeQueryService.<span class="tok-n">checkStatus</span>(deadline.<span class="tok-n">getPaymentId</span>());
-    <span class="tok-t">if</span> (status == <span class="tok-n">SchemeStatus</span>.PENDING) {
+<span class="tok-k">public</span> <span class="tok-k">void</span> onSchemeTimeout(<span class="tok-t">SchemeSubmissionDeadline</span> deadline) {
+    <span class="tok-t">String</span> paymentId = deadline.getPaymentId();
+    <span class="tok-t">SchemeStatus</span> status = schemeQueryService.checkStatus(paymentId);
+    <span class="tok-k">if</span> (status == <span class="tok-t">SchemeStatus</span>.PENDING) {
         <span class="tok-c">// Extend: scheme is slow, reschedule</span>
-        deadlineManager.<span class="tok-n">schedule</span>(<span class="tok-n">Duration</span>.ofSeconds(<span class="tok-n">30</span>), <span class="tok-s">"schemeSubmissionTimeout"</span>, deadline);
-    } <span class="tok-t">else if</span> (status == <span class="tok-n">SchemeStatus</span>.REJECTED) {
-        <span class="tok-n">AggregateLifecycle</span>.<span class="tok-n">apply</span>(<span class="tok-t">new</span> <span class="tok-n">SchemeRejectedEvent</span>(paymentId, <span class="tok-s">"TIMEOUT_CONFIRMED_REJECTED"</span>));
-    } <span class="tok-t">else if</span> (status == <span class="tok-n">SchemeStatus</span>.UNKNOWN) {
+        deadlineManager.schedule(<span class="tok-t">Duration</span>.ofSeconds(<span class="tok-n">30</span>), <span class="tok-s">"schemeSubmissionTimeout"</span>, deadline);
+    } <span class="tok-k">else</span> <span class="tok-k">if</span> (status == <span class="tok-t">SchemeStatus</span>.REJECTED) {
+        <span class="tok-c">// A saga does not apply events itself: it sends a command to the aggregate</span>
+        commandGateway.send(<span class="tok-k">new</span> <span class="tok-t">MarkSchemeRejectedCommand</span>(paymentId, <span class="tok-s">"TIMEOUT_CONFIRMED_REJECTED"</span>));
+    } <span class="tok-k">else</span> <span class="tok-k">if</span> (status == <span class="tok-t">SchemeStatus</span>.UNKNOWN) {
         <span class="tok-c">// Escalate to ops dead-letter queue</span>
-        deadLetterQueue.<span class="tok-n">park</span>(paymentId, <span class="tok-s">"SCHEME_STATUS_UNKNOWN"</span>);
+        deadLetterQueue.park(paymentId, <span class="tok-s">"SCHEME_STATUS_UNKNOWN"</span>);
     }
 }</code></pre>
           </div>
@@ -627,6 +656,23 @@
             <p>A choreography saga that spans five services produces an audit trail distributed across five event streams and five databases. Reconstructing the complete history of a single payment requires joining those streams on <code>paymentId</code> across five different data stores &mdash; which may have different retention policies, different access controls, and different log formats. For audit purposes, an orchestration saga with a centralised saga state table is significantly easier to present to an auditor or examiner. If you are already using choreography, invest in a correlation-ID-based event correlation service that aggregates the per-payment audit trail into a single queryable view.</p>
           </div>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="event-sourcing-and-cqrs.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">Event Sourcing &amp; CQRS in Payments</span></a></li>
+              <li><a class="lab-related__link" href="../integration-patterns/hold-and-release-payments.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Hold-and-Release: A Two-Phase Pattern for Integrating Orchestration Hubs with Legacy Systems of Record</span></a></li>
+              <li><a class="lab-related__link" href="../field-playbooks/timeouts-and-unknown-outcomes.html"><span class="lab-related__kicker">Lab &middot; Field Playbooks</span><span class="lab-related__name">The Call Timed Out. Did It Work? Handling Unknown Outcomes Without Double Posting</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/saga-patterns-distributed-transactions-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Saga Patterns: The Distributed Transaction Decision Leaders Have to Own Before Engineering Writes a Line of Code</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../event-driven.html">
               <div class="article-nav__label">&larr; Back to topic</div>

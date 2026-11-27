@@ -31,12 +31,79 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 0.4rem; }
   </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Data Streaming: Kafka Streams & Flink",
+    "description": "Real-time stream processing with Kafka Streams and Apache Flink: windowing, joins, exactly-once stateful processing, managed Kafka distributions in production, and the operational patterns behind fraud detection, real-time screening, telemetry and other latency-critical pipelines.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-05-03",
+    "dateModified": "2026-11-27",
+    "author": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "publisher": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/data-streaming/kafka-streams-and-flink.html"
+    },
+    "url": "https://www.wbadawi.info/lab/data-streaming/kafka-streams-and-flink.html",
+    "inLanguage": "en",
+    "wordCount": 1282,
+    "isPartOf": {
+      "@type": "CollectionPage",
+      "name": "Data Streaming — Technical Lab",
+      "url": "https://www.wbadawi.info/lab/data-streaming.html"
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Data Streaming",
+        "item": "https://www.wbadawi.info/lab/data-streaming.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Data Streaming: Kafka Streams & Flink",
+        "item": "https://www.wbadawi.info/lab/data-streaming/kafka-streams-and-flink.html"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -69,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Kafka Streams &amp; Flink</div>
           <span class="overline">Lab Article</span>
           <h1>Data Streaming: Kafka Streams &amp; Flink</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-05-03">3 May 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>6 min read</span>
+          </div>
           <p class="lead">Real-time stream processing for fraud detection, transaction screening, IoT telemetry, and live operational metrics: windowing, stateful joins, exactly-once processing, the trade-offs between Kafka Streams and Apache Flink, and the operational patterns behind streams that run for months without intervention.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -101,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Kafka Streams 3.x / Flink 1.18 / IBM Event Streams</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~15 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> May 3, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -228,23 +299,23 @@
 
           <ol class="step-list">
             <li>
-              <h4>Define the topology</h4>
+              <h3>Define the topology</h3>
               <p>Source topics, transformations, sinks. Draw the DAG before writing code &mdash; it&rsquo;s the design document.</p>
             </li>
             <li>
-              <h4>Co-partition the inputs</h4>
+              <h3>Co-partition the inputs</h3>
               <p>Stream-table joins require the stream and table to be partitioned by the same key with the same partition count. Repartition explicitly when this isn&rsquo;t already true.</p>
             </li>
             <li>
-              <h4>Configure state</h4>
+              <h3>Configure state</h3>
               <p>Local disk size for RocksDB, changelog retention (default <code>compact</code>), and rocksdb-tuning if state is large (block cache, write buffer).</p>
             </li>
             <li>
-              <h4>Set processing guarantee</h4>
+              <h3>Set processing guarantee</h3>
               <p><code>at_least_once</code> for most flows; <code>exactly_once_v2</code> when downstream cannot tolerate duplicates and side effects are Kafka-only.</p>
             </li>
             <li>
-              <h4>Wire metrics &amp; alerts</h4>
+              <h3>Wire metrics &amp; alerts</h3>
               <p>Lag per task, state store size, restore time on rebalance, processing rate. Without these you&rsquo;ll discover problems via business complaints.</p>
             </li>
           </ol>
@@ -302,7 +373,7 @@
           </div>
 
           <h2 id="exactly-once">Exactly-once</h2>
-          <p>Kafka Streams supports <code>exactly_once_v2</code> end-to-end: consume from input topics, update state, produce to output topics, all atomically. Latency cost is around 30&ndash;50 ms per commit, throughput cost is around 5%. For most stream pipelines that&rsquo;s a fair trade.</p>
+          <p>Kafka Streams supports <code>exactly_once_v2</code> end-to-end: consume from input topics, update state, produce to output topics, all atomically. The cost is added end-to-end latency &mdash; downstream <code>read_committed</code> consumers see results only after each commit, so <code>commit.interval.ms</code> (100 ms by default under exactly-once) sets the floor &mdash; and some throughput. Measure both on your own topology and message sizes; for most stream pipelines it is a fair trade.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>streams.properties</span><span class="code-block__lang">properties</span></div>
@@ -409,6 +480,23 @@ acceptable.recovery.lag=<span class="tok-n">10000</span></code></pre>
             <li><strong>The pipeline is a one-off.</strong> A nightly Spark job is simpler than a Streams app for a once-a-day rollup. Don&rsquo;t over-engineer.</li>
           </ul>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="stateful-stream-processing.html"><span class="lab-related__kicker">Lab &middot; Data Streaming</span><span class="lab-related__name">Data Streaming: Stateful Stream Processing Patterns</span></a></li>
+              <li><a class="lab-related__link" href="ksqldb-and-flink-sql.html"><span class="lab-related__kicker">Lab &middot; Data Streaming</span><span class="lab-related__name">Data Streaming: ksqlDB &amp; Flink SQL for Stream Analytics</span></a></li>
+              <li><a class="lab-related__link" href="../event-driven/kafka-and-mq.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">Event-Driven Architecture: Kafka &amp; IBM MQ</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/stateful-stream-processing-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Stateful Stream Processing: The Infrastructure Decision Your Fraud and Risk Teams Cannot Afford to Get Wrong</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../integration-patterns.html">
               <div class="article-nav__label">&larr; Previous</div>

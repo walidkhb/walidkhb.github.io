@@ -31,12 +31,79 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 0.4rem; }
   </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Integration Design Patterns & IBM ACE",
+    "description": "Enterprise integration patterns in production: content-based routing, message translation, splitter, aggregator, choreography vs orchestration, and how IBM App Connect Enterprise (ACE) implements them in regulated enterprise platforms.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-05-03",
+    "dateModified": "2026-11-27",
+    "author": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "publisher": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/integration-patterns/ibm-ace.html"
+    },
+    "url": "https://www.wbadawi.info/lab/integration-patterns/ibm-ace.html",
+    "inLanguage": "en",
+    "wordCount": 1463,
+    "isPartOf": {
+      "@type": "CollectionPage",
+      "name": "Integration Design Patterns — Technical Lab",
+      "url": "https://www.wbadawi.info/lab/integration-patterns.html"
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Integration Design Patterns",
+        "item": "https://www.wbadawi.info/lab/integration-patterns.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Integration Design Patterns & IBM ACE",
+        "item": "https://www.wbadawi.info/lab/integration-patterns/ibm-ace.html"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -69,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>IBM ACE</div>
           <span class="overline">Lab Article</span>
           <h1>Integration Design Patterns &amp; IBM ACE</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-05-03">3 May 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>6 min read</span>
+          </div>
           <p class="lead">The EIP catalogue applied to production enterprise integration: content-based routing, message translation, splitter/aggregator, choreography vs orchestration, canonical data models, and how IBM App Connect Enterprise (ACE) implements them in real flows.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -101,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> IBM ACE 12 / App Connect</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> May 3, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -193,7 +264,7 @@
               <tr><td><strong>Content-based router</strong></td><td>Route a message to one of several outputs based on its content</td><td><code>RouteToLabel</code> + <code>Filter</code></td></tr>
               <tr><td><strong>Message translator</strong></td><td>Convert one format/schema into another</td><td><code>Mapping</code> / <code>Compute</code> (ESQL)</td></tr>
               <tr><td><strong>Splitter</strong></td><td>Break a composite message into individual elements</td><td><code>Compute</code> with PROPAGATE</td></tr>
-              <tr><td><strong>Aggregator</strong></td><td>Combine related messages into a single one</td><td><code>AggregateControl</code> + <code>AggregateReply</code></td></tr>
+              <tr><td><strong>Aggregator</strong></td><td>Combine related messages into a single one</td><td><code>AggregateControl</code> + <code>AggregateRequest</code> + <code>AggregateReply</code> (or the Group nodes)</td></tr>
               <tr><td><strong>Message enricher</strong></td><td>Augment a message with data from a side lookup</td><td><code>HTTPRequest</code> / <code>DatabaseRetrieve</code></td></tr>
               <tr><td><strong>Dead letter channel</strong></td><td>Capture unprocessable messages for triage</td><td>Failure terminal &rarr; MQ DLQ</td></tr>
             </tbody>
@@ -302,27 +373,27 @@
 
           <ol class="step-list">
             <li>
-              <h4>Choose the input node</h4>
+              <h3>Choose the input node</h3>
               <p><code>MQInput</code> for queue-driven, <code>HTTPInput</code> for synchronous REST, <code>KafkaConsumer</code> for streams. The input node defines the transaction boundary.</p>
             </li>
             <li>
-              <h4>Parse and validate</h4>
+              <h3>Parse and validate</h3>
               <p>Attach a message domain (<code>DFDL</code>, <code>JSON</code>, <code>XMLNSC</code>) so the rest of the flow has structured access. Validate against the canonical schema; reject early.</p>
             </li>
             <li>
-              <h4>Transform to canonical</h4>
+              <h3>Transform to canonical</h3>
               <p>A <code>Mapping</code> node is preferred over <code>Compute</code> (ESQL) for maintainability. Mapping is graphical and reviewable; ESQL is code that only one engineer remembers how to read.</p>
             </li>
             <li>
-              <h4>Enrich</h4>
+              <h3>Enrich</h3>
               <p>Side calls to lookup services (account master, sanctions, KYC). Use <code>HTTPRequest</code> with a 2-second timeout and a circuit breaker; never let a downstream slowdown block the flow indefinitely.</p>
             </li>
             <li>
-              <h4>Route</h4>
+              <h3>Route</h3>
               <p>A <code>RouteToLabel</code> sets a label based on content; one <code>Label</code> node per branch. Avoid deep <code>Filter</code> chains &mdash; they&rsquo;re hard to read.</p>
             </li>
             <li>
-              <h4>Output</h4>
+              <h3>Output</h3>
               <p><code>MQOutput</code>, <code>HTTPRequest</code>, <code>KafkaProducer</code>. Wire the failure terminal of the output node to an error subflow that always logs and DLQs.</p>
             </li>
           </ol>
@@ -404,7 +475,7 @@
           </div>
 
           <ol>
-            <li><strong>MQ qmgr cluster, not single qmgr.</strong> If the integration server pulls from MQ, the qmgr must be clustered or the MQ failover is the bottleneck.</li>
+            <li><strong>Highly available queue manager, not a single one.</strong> If the integration server pulls from MQ, run the queue manager with Native HA (or multi-instance) so a pod or node failure does not stop the flows. MQ clustering spreads workload across queue managers; on its own it does not make one queue manager highly available.</li>
             <li><strong>BAR file in artifactory, not in the image.</strong> Same image, different BAR per environment. This is what makes promotion deterministic.</li>
             <li><strong>HPA on CPU is fine for synchronous flows.</strong> For queue-driven flows, use a custom metric on queue depth &mdash; CPU lags behind a backlog.</li>
           </ol>
@@ -448,6 +519,22 @@
             <li>You don&rsquo;t already have ACE / IBM licensing. Standalone, the cost rarely pencils against open-source alternatives (Apache Camel, Kafka Connect).</li>
           </ul>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="apache-camel-cloud-native.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Apache Camel for Cloud-Native Integration</span></a></li>
+              <li><a class="lab-related__link" href="canonical-data-model.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Canonical Data Model: Designing an Enterprise-Wide Mapping Layer</span></a></li>
+              <li><a class="lab-related__link" href="../devops/gitops-for-cloud-pak-for-integration.html"><span class="lab-related__kicker">Lab &middot; DevOps &amp; Platform Engineering</span><span class="lab-related__name">GitOps for IBM Cloud Pak for Integration: From Push Pipelines to Pull-Based Delivery</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../event-driven.html">
               <div class="article-nav__label">&larr; Previous</div>

@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -78,9 +79,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">May 3, 2026</span>
+            <span class="article-list__date-pub">3 May 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>6 min read</span>
           </div>
           <h2 class="article-list__title">Distributed Caching: Redis Cluster &amp; Sentinel</h2>
           <p class="article-list__excerpt">Cache patterns (cache-aside, write-through, write-behind), Redis topology (Cluster vs Sentinel), invalidation strategies, the cache stampede that has felled more high-traffic platforms than any disk failure, and operational patterns for sub-millisecond latency.</p>
@@ -98,9 +99,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Jul 11, 2026</span>
+            <span class="article-list__date-pub">11 July 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>10 min read</span>
           </div>
           <h2 class="article-list__title">Distributed Caching: Hazelcast IMDG for In-Process State</h2>
           <p class="article-list__excerpt">Embedded grid topology, partition awareness, near-cache configuration, and the stateful, compute-heavy workloads where collapsing the network hop between your JVM and its data beats a shared Redis cluster &mdash; plus the real costs of embedding state inside application pods.</p>
@@ -118,9 +119,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Sep 5, 2026</span>
+            <span class="article-list__date-pub">5 September 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>16 min read</span>
           </div>
           <h2 class="article-list__title">Cache Invalidation via CDC: Debezium-Driven Redis Invalidation</h2>
           <p class="article-list__excerpt">Driving cache invalidation from a Debezium DB2 change stream: connector config, Redis consumer with Lua tag-invalidation, safety-net TTLs, and the only pattern that survives DBA-level schema changes the application doesn&rsquo;t know about.</p>
@@ -138,9 +139,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Sep 5, 2026</span>
+            <span class="article-list__date-pub">5 September 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>12 min read</span>
           </div>
           <h2 class="article-list__title">Distributed Session Management: Spring Session, Redis &amp; FAPI 2.0</h2>
           <p class="article-list__excerpt">Spring Session + Redis for stateless customer portals, OAuth2/FAPI 2.0 PKCE session lifecycle, regulatory timeout requirements, concurrent session control, and the session fixation and CSRF patterns that survive a regulator examination.</p>
@@ -158,9 +159,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Sep 5, 2026</span>
+            <span class="article-list__date-pub">5 September 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>13 min read</span>
           </div>
           <h2 class="article-list__title">Multi-Tier Caching Strategies: Caffeine L1 + Redis L2 for Sub-Millisecond APIs</h2>
           <p class="article-list__excerpt">Caffeine L1 and Redis L2 CompositeCacheManager, keyspace notification for L1 coherence across pods, cache warming on startup, TTL budget allocation, and the stampede prevention patterns that keep p99 latency under 5&nbsp;ms at high request volumes.</p>
@@ -178,9 +179,9 @@
           <div class="article-list__meta">
             <span>Lab article</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span class="article-list__date-pub">Nov 7, 2026</span>
+            <span class="article-list__date-pub">7 November 2026</span>
             <span class="article-list__meta-divider">&middot;</span>
-            <span>~14 min read</span>
+            <span>16 min read</span>
           </div>
           <h2 class="article-list__title">Near-Cache &amp; Read-Replica Topologies: Redis Read-Scaling for High-Frequency, Peak-Load APIs</h2>
           <p class="article-list__excerpt">REPLICA_PREFERRED routing in Lettuce, replica lag budgets per data type, Caffeine near-cache with keyspace notification coherence, Hazelcast Near Cache configuration, peak-window patterns for settlement runs and flash sales, and the failure modes that cause stale balances during Redis failover.</p>
@@ -197,6 +198,22 @@
       </div>
     </div>
   </section>
+
+  <!-- lab-meta:further -->
+  <section class="lab-further" aria-labelledby="further-reading">
+    <div class="container container--narrow">
+      <h2 id="further-reading">Further reading</h2>
+      <p class="lab-further__intro">Official documentation and specifications behind the articles above. The articles are reference architectures with illustrative code; these sources are authoritative.</p>
+      <ul class="lab-further__list">
+            <li><a href="https://redis.io/docs/latest/">Redis documentation</a></li>
+            <li><a href="https://docs.hazelcast.com/">Hazelcast documentation</a></li>
+            <li><a href="https://github.com/ben-manes/caffeine/wiki">Caffeine cache wiki</a></li>
+            <li><a href="https://docs.spring.io/spring-session/reference/">Spring Session reference</a></li>
+            <li><a href="https://debezium.io/documentation/">Debezium documentation</a></li>
+      </ul>
+    </div>
+  </section>
+  <!-- /lab-meta:further -->
 
   </main>
 

@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -45,56 +46,62 @@
     "description": "Treat API onboarding as a product with a measured lead time: one catalogue, a simulator with named scenarios, self-service non-production access, a starter kit, and automated go-live checks.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-16",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/field-playbooks/onboarding-consumers-in-days.html"
     },
     "url": "https://www.wbadawi.info/lab/field-playbooks/onboarding-consumers-in-days.html",
+    "inLanguage": "en",
+    "wordCount": 1069,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Field Playbooks &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Field Playbooks — Technical Lab",
       "url": "https://www.wbadawi.info/lab/field-playbooks.html"
     },
-    "proficiencyLevel": "Expert",
-    "articleSection": "Field Playbooks"
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Field Playbooks",
+        "item": "https://www.wbadawi.info/lab/field-playbooks.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Onboarding a New API Consumer in Days, Not Months",
+        "item": "https://www.wbadawi.info/lab/field-playbooks/onboarding-consumers-in-days.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -129,7 +136,13 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../field-playbooks.html">Field Playbooks</a><span>/</span>Onboarding in Days</div>
           <span class="overline">Lab Playbook</span>
           <h1>Onboarding a New API Consumer in Days, Not Months</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-11-16">16 November 2026</time></span>
+            <span>5 min read</span>
+          </div>
           <p class="lead">The APIs exist and work, and a new project still needs three months to make its first successful call. Almost all of that time is waiting. Six tactics that remove the waits and make time-to-first-call a number you manage.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -160,9 +173,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Applies to:</strong> API catalogue &middot; OpenAPI &middot; Simulators &middot; Self-service portal</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers &amp; team leads</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~8 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Nov 16, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="problem">The problem</h2>
@@ -239,19 +249,19 @@
           <p>Approval should depend on evidence the consumer can produce without booking anyone&rsquo;s time.</p>
           <ol class="step-list">
             <li>
-              <h4>Automated conformance run</h4>
+              <h3>Automated conformance run</h3>
               <p>The consumer runs the published scenario suite against the simulator. The result is attached to the request.</p>
             </li>
             <li>
-              <h4>Unhappy paths proven</h4>
+              <h3>Unhappy paths proven</h3>
               <p>Evidence that the consumer handles timeouts, rejections and duplicates the way the rules of the road require.</p>
             </li>
             <li>
-              <h4>Volume declared</h4>
+              <h3>Volume declared</h3>
               <p>Expected peak calls per second, so capacity and limits are set before go-live, not after the first incident.</p>
             </li>
             <li>
-              <h4>A named contact</h4>
+              <h3>A named contact</h3>
               <p>Who is called when this consumer misbehaves at night.</p>
             </li>
           </ol>
@@ -276,27 +286,43 @@
           <h2 id="checklist">Steps to adopt</h2>
           <ol class="step-list">
             <li>
-              <h4>Measure three recent onboardings</h4>
+              <h3>Measure three recent onboardings</h3>
               <p>Write down each wait and how long it lasted. This is the baseline and the business case.</p>
             </li>
             <li>
-              <h4>Start with the three most-requested APIs</h4>
+              <h3>Start with the three most-requested APIs</h3>
               <p>Catalogue entry, contract, starter kit and simulator scenarios for those first.</p>
             </li>
             <li>
-              <h4>Open self-service for non-production</h4>
+              <h3>Open self-service for non-production</h3>
               <p>Keep the production approval, and make its criteria public.</p>
             </li>
             <li>
-              <h4>Onboard the next real project through the new path</h4>
+              <h3>Onboard the next real project through the new path</h3>
               <p>Sit with them. Every place they get stuck is a fix to the path.</p>
             </li>
             <li>
-              <h4>Report the lead time every month</h4>
+              <h3>Report the lead time every month</h3>
               <p>Once the number is visible, it keeps improving.</p>
             </li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="changing-a-live-api.html"><span class="lab-related__kicker">Lab &middot; Field Playbooks</span><span class="lab-related__name">Changing a Live API Without Breaking Its Consumers</span></a></li>
+              <li><a class="lab-related__link" href="../legacy-integration/legacy-message-apis-and-simulators.html"><span class="lab-related__kicker">Lab &middot; Legacy Integration</span><span class="lab-related__name">From Fixed-Length Core Messages to Business APIs: Catalogue-Driven Generation and Wire-Protocol Simulators</span></a></li>
+              <li><a class="lab-related__link" href="../devops/internal-developer-platform.html"><span class="lab-related__kicker">Lab &middot; DevOps &amp; Platform Engineering</span><span class="lab-related__name">Internal Developer Platform for Integration Teams: Backstage, Golden Paths &amp; Scaffolders</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="slow-integration-triage.html">
               <div class="article-nav__label">&larr; Previous</div>

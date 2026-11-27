@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Composition &amp; Backend-for-Frontend &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="API composition patterns and Backend-for-Frontend architecture: IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budget management, BFF caching, and FAPI 2.0 scope enforcement for regulated third-party (open-API) channels.">
+  <meta name="description" content="API composition patterns and Backend-for-Frontend architecture: IBM ACE aggregation and Group nodes, Spring Boot CompletableFuture, timeout budget management, BFF caching, and FAPI 2.0 scope enforcement for regulated third-party (open-API) channels.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="API Composition &amp; Backend-for-Frontend &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budgets, and FAPI 2.0 at the BFF layer for regulated multi-channel platforms.">
+  <meta property="og:description" content="IBM ACE aggregation nodes, Spring Boot CompletableFuture, timeout budgets, and FAPI 2.0 at the BFF layer for regulated multi-channel platforms.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/integration-patterns/api-composition-and-bff.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="API Composition &amp; Backend-for-Frontend &mdash; Lab">
-  <meta name="twitter:description" content="ACE Fan-Out, Spring CompletableFuture, timeout budget management, and BFF circuit breaking for regulated multi-channel platforms.">
+  <meta name="twitter:description" content="ACE aggregation nodes, Spring CompletableFuture, timeout budget management, and BFF circuit breaking for regulated multi-channel platforms.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,58 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Integration Patterns: API Composition & Backend-for-Frontend",
-    "description": "API composition patterns and Backend-for-Frontend architecture: IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture, timeout budget management, BFF caching, and FAPI 2.0 scope enforcement for regulated third-party (open-API) channels.",
+    "headline": "API Composition & Backend-for-Frontend",
+    "description": "API composition patterns and Backend-for-Frontend architecture: IBM ACE aggregation and Group nodes, Spring Boot CompletableFuture, timeout budget management, BFF caching, and FAPI 2.0 scope enforcement for regulated third-party (open-API) channels.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/integration-patterns/api-composition-and-bff.html"
     },
     "url": "https://www.wbadawi.info/lab/integration-patterns/api-composition-and-bff.html",
+    "inLanguage": "en",
+    "wordCount": 3325,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Integration Design Patterns &mdash; Lab &mdash; Waleed Albadawi",
+      "@type": "CollectionPage",
+      "name": "Integration Design Patterns — Technical Lab",
       "url": "https://www.wbadawi.info/lab/integration-patterns.html"
-    }
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Integration Design Patterns",
+        "item": "https://www.wbadawi.info/lab/integration-patterns.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "API Composition & Backend-for-Frontend",
+        "item": "https://www.wbadawi.info/lab/integration-patterns/api-composition-and-bff.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -127,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../integration-patterns.html">Integration Design Patterns</a><span>/</span>API Composition &amp; BFF</div>
           <span class="overline">Lab Article</span>
           <h1>API Composition &amp; Backend-for-Frontend</h1>
-          <p class="lead">The aggregation problem, BFF architecture for mobile, web, and third-party open-API channels, IBM ACE Fan-Out/Fan-In, Spring Boot CompletableFuture composition, timeout budget management, and FAPI 2.0 scope enforcement &mdash; grounded in the channel integration challenges of a regulated, multi-channel enterprise, with retail banking as the worked example.</p>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-09-05">5 September 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>14 min read</span>
+          </div>
+          <p class="lead">The aggregation problem, BFF architecture for mobile, web, and third-party open-API channels, IBM ACE aggregation nodes, Spring Boot CompletableFuture composition, timeout budget management, and FAPI 2.0 scope enforcement &mdash; grounded in the channel integration challenges of a regulated, multi-channel enterprise, with retail banking as the worked example.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -158,9 +174,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> IBM ACE 12.0.10 / Spring Boot 3.3 / Kong 3.7 / OpenShift 4.15</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Sep 5, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -224,7 +237,7 @@
                 <rect x="262" y="125" width="130" height="100" rx="6" fill="#1c1c28" stroke="#a78bfa" stroke-width="1.5"/>
                 <text x="327" y="150" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Web BFF</text>
                 <text x="327" y="165" text-anchor="middle" fill="#71717a" font-size="8">IBM ACE 12.0.10</text>
-                <text x="327" y="180" text-anchor="middle" fill="#71717a" font-size="8">Fan-Out / Fan-In</text>
+                <text x="327" y="180" text-anchor="middle" fill="#71717a" font-size="8">Aggregate / Group nodes</text>
                 <text x="327" y="195" text-anchor="middle" fill="#71717a" font-size="8">all fields + history</text>
                 <text x="327" y="209" text-anchor="middle" fill="#71717a" font-size="8">partial result OK</text>
 
@@ -276,55 +289,55 @@
           </div>
 
           <h2 id="ace-aggregator">ACE Aggregator Flow</h2>
-          <p>IBM ACE 12.0.10&rsquo;s Fan Out and Fan In message flow nodes are the native mechanism for parallel aggregation in an ACE integration. The Fan Out node clones the inbound message, routes each copy to a separate parallel branch, and the Fan In node reassembles the results when all branches have completed or the timeout has expired.</p>
+          <p>IBM ACE has no &ldquo;Fan Out&rdquo; or &ldquo;Fan In&rdquo; node. Parallel aggregation uses one of two node families. The <strong>aggregation nodes</strong> &mdash; <code>AggregateControl</code>, <code>AggregateRequest</code> and <code>AggregateReply</code> &mdash; send each branch as an asynchronous request (classically over IBM MQ) and correlate the replies; the <code>AggregateReply</code> node propagates the combined message when every reply has arrived, or the partial set on its <code>Timeout</code> terminal when the <code>AggregateControl</code> timeout expires first. The <strong>Group nodes</strong> &mdash; <code>GroupScatter</code>, <code>GroupGather</code> and <code>GroupComplete</code> &mdash; give the same shape for asynchronous request nodes such as <code>HTTPAsyncRequest</code>/<code>HTTPAsyncResponse</code>, which suits a Web BFF calling REST domain APIs directly. Both express their timeouts in whole seconds, so a sub-second budget is enforced at the gateway or rounded up to one second in the flow.</p>
+          <p>The assembly logic below is written against the aggregation nodes&rsquo; reply tree, where each reply sits in a folder named by its <code>AggregateRequest</code> node&rsquo;s <code>Folder name</code> property. Check node and property names against the IBM documentation for your ACE release.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>WebBffAggregator_OverrideBuiltin.esql &mdash; ACE Fan-Out/Fan-In configuration</span><span class="code-block__lang">esql</span></div>
-<pre><code><span class="tok-c">-- ACE flow: WebBffAggregator.msgflow</span>
-<span class="tok-c">-- Nodes: MQInput &rarr; FanOut &rarr; [AccountsBranch, PaymentsBranch, NotificationsBranch] &rarr; FanIn &rarr; Aggregator &rarr; HTTPReply</span>
+            <div class="code-block__header"><span>WebBffAggregator.esql &mdash; assembling the AggregateReply output</span><span class="code-block__lang">esql</span></div>
+<pre><code><span class="tok-c">-- WebBffAggregator: request side</span>
+<span class="tok-c">--   HTTPInput -&gt; Compute (save the HTTP RequestIdentifier, build three requests)</span>
+<span class="tok-c">--     -&gt; AggregateControl (Timeout: 1 second)</span>
+<span class="tok-c">--     -&gt; MQOutput + AggregateRequest  x3  (Folder name: ACCOUNTS | PAYMENTS | NOTIFICATIONS)</span>
+<span class="tok-c">-- Reply side</span>
+<span class="tok-c">--   MQInput (reply queue) -&gt; AggregateReply -&gt; AggregateResults -&gt; HTTPReply</span>
+<span class="tok-c">--   AggregateReply Timeout terminal -&gt; AggregateResults (with whatever arrived in time)</span>
 
-<span class="tok-c">-- FanOut node configuration (set in message flow properties)</span>
-<span class="tok-c">-- Distribution mode: Fan out to all terminals</span>
-<span class="tok-c">-- Timeout: 800ms (total SLA budget: 1000ms minus 200ms for aggregation and reply serialisation)</span>
-
-<span class="tok-k">CREATE COMPUTE MODULE</span> AggregateResults
-  <span class="tok-k">CREATE FUNCTION</span> Main() <span class="tok-k">RETURNS</span> BOOLEAN
+<span class="tok-k">CREATE</span> <span class="tok-k">COMPUTE</span> <span class="tok-k">MODULE</span> AggregateResults
+  <span class="tok-k">CREATE</span> <span class="tok-k">FUNCTION</span> Main() <span class="tok-k">RETURNS</span> <span class="tok-k">BOOLEAN</span>
   <span class="tok-k">BEGIN</span>
-    <span class="tok-k">DECLARE</span> accountsResult   <span class="tok-k">REFERENCE TO</span> InputRoot.XMLNSC.AggregateReply.Reply[1];
-    <span class="tok-k">DECLARE</span> paymentsResult   <span class="tok-k">REFERENCE TO</span> InputRoot.XMLNSC.AggregateReply.Reply[2];
-    <span class="tok-k">DECLARE</span> notifyResult     <span class="tok-k">REFERENCE TO</span> InputRoot.XMLNSC.AggregateReply.Reply[3];
+    <span class="tok-c">-- A branch that did not answer before the timeout has no folder at all</span>
+    <span class="tok-k">DECLARE</span> r <span class="tok-k">REFERENCE</span> <span class="tok-k">TO</span> InputRoot.ComIbmAggregateReplyBody;
+    <span class="tok-k">DECLARE</span> accountsOk <span class="tok-k">BOOLEAN</span> EXISTS(r.ACCOUNTS[]);
+    <span class="tok-k">DECLARE</span> paymentsOk <span class="tok-k">BOOLEAN</span> EXISTS(r.PAYMENTS[]);
+    <span class="tok-k">DECLARE</span> notifyOk   <span class="tok-k">BOOLEAN</span> EXISTS(r.NOTIFICATIONS[]);
 
-    <span class="tok-c">-- Check for partial results (Fan In with timeout: some branches may have timed out)</span>
-    <span class="tok-k">DECLARE</span> accountsOk  <span class="tok-k">BOOLEAN</span> (FIELDNAME(accountsResult) <span class="tok-k">IS NOT NULL</span>);
-    <span class="tok-k">DECLARE</span> paymentsOk  <span class="tok-k">BOOLEAN</span> (FIELDNAME(paymentsResult) <span class="tok-k">IS NOT NULL</span>);
-    <span class="tok-k">DECLARE</span> notifyOk    <span class="tok-k">BOOLEAN</span> (FIELDNAME(notifyResult) <span class="tok-k">IS NOT NULL</span>);
+    <span class="tok-c">-- HTTPReply needs the original RequestIdentifier, saved before the</span>
+    <span class="tok-c">-- fan-out and carried with the replies (omitted here for brevity).</span>
+    <span class="tok-k">CREATE</span> <span class="tok-k">LASTCHILD</span> <span class="tok-k">OF</span> OutputRoot <span class="tok-k">DOMAIN</span>(<span class="tok-s">'JSON'</span>);
 
     <span class="tok-c">-- Accounts is mandatory: fail fast if absent</span>
-    <span class="tok-k">IF NOT</span> accountsOk <span class="tok-k">THEN</span>
-      <span class="tok-k">SET</span> OutputRoot.XMLNSC.BffError.code    = <span class="tok-s">'UPSTREAM_TIMEOUT'</span>;
-      <span class="tok-k">SET</span> OutputRoot.XMLNSC.BffError.service = <span class="tok-s">'accounts-api'</span>;
-      <span class="tok-k">PROPAGATE TO TERMINAL</span> <span class="tok-s">'out_error'</span>;
-      <span class="tok-k">RETURN</span> FALSE;
-    <span class="tok-k">END IF</span>;
+    <span class="tok-k">IF</span> <span class="tok-k">NOT</span> accountsOk <span class="tok-k">THEN</span>
+      <span class="tok-k">SET</span> OutputLocalEnvironment.Destination.HTTP.ReplyStatusCode = <span class="tok-n">503</span>;
+      <span class="tok-k">SET</span> OutputRoot.JSON.Data.error.code    = <span class="tok-s">'UPSTREAM_TIMEOUT'</span>;
+      <span class="tok-k">SET</span> OutputRoot.JSON.Data.error.service = <span class="tok-s">'accounts-api'</span>;
+      <span class="tok-k">RETURN</span> <span class="tok-k">TRUE</span>;
+    <span class="tok-k">END</span> <span class="tok-k">IF</span>;
 
-    <span class="tok-c">-- Assemble response; use degraded values for optional services</span>
-    <span class="tok-k">SET</span> OutputRoot.XMLNSC.WebDashboard.accountSummary  = accountsResult.AccountSummary;
-    <span class="tok-k">SET</span> OutputRoot.XMLNSC.WebDashboard.paymentStatus   =
-        <span class="tok-k">CASE</span> paymentsOk <span class="tok-k">WHEN</span> TRUE
-          <span class="tok-k">THEN</span> paymentsResult.LatestPaymentStatus
-          <span class="tok-k">ELSE</span> <span class="tok-s">'UNAVAILABLE'</span>   <span class="tok-c">-- documented in API contract; consumer renders grey badge</span>
-        <span class="tok-k">END</span>;
-    <span class="tok-k">SET</span> OutputRoot.XMLNSC.WebDashboard.notificationCount =
-        <span class="tok-k">CASE</span> notifyOk <span class="tok-k">WHEN</span> TRUE
-          <span class="tok-k">THEN</span> notifyResult.UnreadCount
-          <span class="tok-k">ELSE</span> <span class="tok-s">NULL</span>   <span class="tok-c">-- null badge: consumer hides notification icon when null</span>
-        <span class="tok-k">END</span>;
-    <span class="tok-k">SET</span> OutputRoot.XMLNSC.WebDashboard.partial =
-        <span class="tok-k">NOT</span> (paymentsOk <span class="tok-k">AND</span> notifyOk);
+    <span class="tok-c">-- Assemble response; use documented degraded values for optional services</span>
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.accountSummary = r.ACCOUNTS.JSON.Data.accountSummary;
+    <span class="tok-k">IF</span> paymentsOk <span class="tok-k">THEN</span>
+      <span class="tok-k">SET</span> OutputRoot.JSON.Data.paymentStatus = r.PAYMENTS.JSON.Data.latestPaymentStatus;
+    <span class="tok-k">ELSE</span>
+      <span class="tok-k">SET</span> OutputRoot.JSON.Data.paymentStatus = <span class="tok-s">'UNAVAILABLE'</span>;  <span class="tok-c">-- consumer renders a grey badge</span>
+    <span class="tok-k">END</span> <span class="tok-k">IF</span>;
+    <span class="tok-k">IF</span> notifyOk <span class="tok-k">THEN</span>
+      <span class="tok-k">SET</span> OutputRoot.JSON.Data.notificationCount = r.NOTIFICATIONS.JSON.Data.unreadCount;
+    <span class="tok-k">END</span> <span class="tok-k">IF</span>;                                <span class="tok-c">-- absent: consumer hides the notification icon</span>
+    <span class="tok-k">SET</span> OutputRoot.JSON.Data.partial = <span class="tok-k">NOT</span> (paymentsOk <span class="tok-k">AND</span> notifyOk);
 
-    <span class="tok-k">RETURN</span> TRUE;
+    <span class="tok-k">RETURN</span> <span class="tok-k">TRUE</span>;
   <span class="tok-k">END</span>;
-<span class="tok-k">END MODULE</span>;</code></pre>
+<span class="tok-k">END</span> <span class="tok-k">MODULE</span>;</code></pre>
           </div>
 
           <h2 id="spring-composition">Spring Boot Composition Service</h2>
@@ -438,12 +451,8 @@
             <span class="tok-k">application/json</span>:
               <span class="tok-k">schema</span>:
                 <span class="tok-k">$ref</span>: <span class="tok-s">"#/components/schemas/MobileDashboard"</span>
-        <span class="tok-s">"206"</span>:
-          <span class="tok-k">description</span>: <span class="tok-s">Partial Content — mandatory fields present, one or more optional fields absent due to downstream degradation. Consumer must check partial=true and render gracefully.</span>
-          <span class="tok-k">content</span>:
-            <span class="tok-k">application/json</span>:
-              <span class="tok-k">schema</span>:
-                <span class="tok-k">$ref</span>: <span class="tok-s">"#/components/schemas/MobileDashboard"</span>
+        <span class="tok-c"># No 206: HTTP 206 Partial Content is defined for range requests (RFC 9110).</span>
+        <span class="tok-c"># A degraded composition is a 200 with partial=true, as described in the schema.</span>
         <span class="tok-s">"503"</span>:
           <span class="tok-k">description</span>: <span class="tok-s">Mandatory downstream (Accounts API) unavailable; BFF cannot return a usable response</span>
 
@@ -458,8 +467,7 @@
         <span class="tok-k">paymentStatus</span>:
           <span class="tok-k">$ref</span>: <span class="tok-s">"#/components/schemas/PaymentStatus"</span>     <span class="tok-c"># optional; null when unavailable</span>
         <span class="tok-k">notificationBadge</span>:
-          <span class="tok-k">type</span>: <span class="tok-s">integer</span>
-          <span class="tok-k">nullable</span>: <span class="tok-n">true</span>                                <span class="tok-c"># null: hide badge icon</span>
+          <span class="tok-k">type</span>: [<span class="tok-s">integer</span>, <span class="tok-s">"null"</span>]                     <span class="tok-c"># OpenAPI 3.1 form of nullable; null hides the badge</span>
         <span class="tok-k">partial</span>:
           <span class="tok-k">type</span>: <span class="tok-s">boolean</span>
           <span class="tok-k">description</span>: <span class="tok-s">true when one or more optional downstream services were degraded</span></code></pre>
@@ -467,7 +475,7 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">Partial results must be documented in the API contract, not discovered in production</div>
-            <p>If the BFF returns a response with some fields absent due to downstream degradation and the API contract does not explicitly describe this behaviour &mdash; which fields are mandatory, which are optional, what value is returned when optional fields are absent &mdash; mobile or web clients will interpret the absent field as a bug and file an incident. Document partial result behaviour in the OpenAPI spec (<code>nullable: true</code> on optional fields, HTTP 206 for degraded responses, an explicit <code>partial: boolean</code> flag in the response body) and validate it in consumer-driven contract tests before the BFF reaches production.</p>
+            <p>If the BFF returns a response with some fields absent due to downstream degradation and the API contract does not explicitly describe this behaviour &mdash; which fields are mandatory, which are optional, what value is returned when optional fields are absent &mdash; mobile or web clients will interpret the absent field as a bug and file an incident. Document partial result behaviour in the OpenAPI spec (optional fields that may be absent or null &mdash; <code>type: [integer, "null"]</code> in OpenAPI 3.1, <code>nullable: true</code> in 3.0 &mdash; and an explicit <code>partial: boolean</code> flag in a 200 response; HTTP 206 is reserved for range requests) and validate it in consumer-driven contract tests before the BFF reaches production.</p>
           </div>
 
           <h2 id="timeout-budget">Timeout Budget Management</h2>
@@ -479,7 +487,7 @@
           <h2 id="error-handling">Error Handling Strategies</h2>
           <p>Two error handling philosophies apply at the BFF level, and the choice between them must be made per field in the composed response, not globally for the BFF.</p>
           <p><strong>Fail-fast.</strong> When a mandatory downstream service (Accounts API for a dashboard screen) returns 503 or times out, the BFF immediately returns 503 to the channel. There is no degraded view that is useful to the mobile user without account data. The circuit breaker for the Accounts API trips after 50% failure rate in a 10-second window; while open, the BFF returns 503 without attempting the call, reducing latency of the failure response from 700ms (timeout) to under 10ms.</p>
-          <p><strong>Partial results.</strong> When an optional downstream service (Notifications API for a badge count) returns 503, the BFF returns 200 or 206 with <code>partial: true</code> and a null <code>notificationBadge</code>. The mobile client is responsible for rendering the badge-absent state gracefully &mdash; typically by hiding the notification icon. This behaviour must be tested in the mobile client&rsquo;s contract test suite, not assumed.</p>
+          <p><strong>Partial results.</strong> When an optional downstream service (Notifications API for a badge count) returns 503, the BFF returns 200 with <code>partial: true</code> and a null <code>notificationBadge</code>. The mobile client is responsible for rendering the badge-absent state gracefully &mdash; typically by hiding the notification icon. This behaviour must be tested in the mobile client&rsquo;s contract test suite, not assumed.</p>
 
           <div class="callout callout--danger">
             <div class="callout__title">BFF without circuit breakers turns a single downstream failure into a full-channel outage</div>
@@ -488,7 +496,7 @@
 
           <h2 id="caching">BFF-Layer Caching</h2>
           <p>Reference data that the BFF reads on every request and that changes infrequently is a strong caching candidate at the BFF layer. Account metadata &mdash; IBAN, account name, product type &mdash; is stable for hours between changes; caching it at the BFF eliminates a downstream call on every dashboard load.</p>
-          <p>The caching strategy for the Mobile BFF: Caffeine in-process cache for per-customer reference data with a 5-minute TTL and a stale-while-revalidate window. For the Web BFF running in IBM ACE, use ACE&rsquo;s built-in <code>GlobalCache</code> node backed by an embedded WebSphere eXtreme Scale partition; this cache is shared across all ACE instances in the integration server group.</p>
+          <p>The caching strategy for the Mobile BFF: Caffeine in-process cache for per-customer reference data with a 5-minute TTL and a stale-while-revalidate window. For the Web BFF running in IBM ACE, there is no cache node: ACE&rsquo;s global cache is reached from a <code>JavaCompute</code> node through the <code>MbGlobalMap</code> API, either embedded (WebSphere eXtreme Scale) or pointed at an external grid. Check the embedded cache&rsquo;s support status in your ACE release and whether it spans your container replicas; an external cache such as Redis is the common choice on OpenShift.</p>
           <p>Cache invalidation via event: when the Accounts API publishes an <code>account.updated</code> Kafka event, the BFF consumes it and evicts the cached entry for the affected <code>customerId</code>. This keeps the cache coherent without a short TTL that would increase downstream load. The event consumer in the BFF is a lightweight Spring Kafka consumer; it does not participate in the request path.</p>
           <p>Per-channel cache TTL: the mobile BFF caches reference data for 5 minutes; the open banking BFF caches reference data for 1 minute (TPP-visible data typically carries a tighter freshness expectation under open-banking rules). Never cache consent records at the BFF &mdash; consent changes must be reflected immediately, and a 5-minute-stale consent cache would return data a customer has revoked.</p>
 
@@ -507,31 +515,31 @@
 
           <ol class="step-list">
             <li>
-              <h4>Identify the channel and its data requirements</h4>
+              <h3>Identify the channel and its data requirements</h3>
               <p>For each channel that will have a BFF, document every field the channel needs on its most critical screens, which domain service owns each field, and whether each field is mandatory or optional for the channel to be usable.</p>
             </li>
             <li>
-              <h4>Define the BFF API contract first</h4>
+              <h3>Define the BFF API contract first</h3>
               <p>Write the OpenAPI specification for the BFF endpoint before writing any code. Mark mandatory fields, document optional fields and their degraded values, and specify the <code>partial</code> flag behaviour. Share the spec with the channel team for validation before implementation.</p>
             </li>
             <li>
-              <h4>Classify each downstream service as mandatory or optional per screen</h4>
+              <h3>Classify each downstream service as mandatory or optional per screen</h3>
               <p>Apply fail-fast to mandatory services, partial-result handling to optional ones. Wire Resilience4j circuit breakers for all downstream services with different thresholds for mandatory (lower failure rate tolerance) and optional (higher failure rate tolerance).</p>
             </li>
             <li>
-              <h4>Deploy the BFF and its circuit breakers to a lower environment before adding caching</h4>
+              <h3>Deploy the BFF and its circuit breakers to a lower environment before adding caching</h3>
               <p>Caching makes circuit breaker behaviour harder to test. Validate that the fail-fast and partial-result paths work correctly without caching before adding the cache layer.</p>
             </li>
             <li>
-              <h4>Add BFF-layer caching with cache invalidation events</h4>
+              <h3>Add BFF-layer caching with cache invalidation events</h3>
               <p>Cache reference data with per-channel TTLs; wire Kafka event consumers to invalidate cache entries when upstream data changes. Never cache consent data or anything the customer has a right to revoke immediately.</p>
             </li>
             <li>
-              <h4>Write consumer-driven contract tests between the channel and the BFF</h4>
+              <h3>Write consumer-driven contract tests between the channel and the BFF</h3>
               <p>Pact contract tests ensure that when the BFF&rsquo;s response schema changes, the channel&rsquo;s tests fail before the BFF is deployed. Without contract tests, schema changes at the BFF are discovered in production.</p>
             </li>
             <li>
-              <h4>Establish a governance process for domain logic in the BFF</h4>
+              <h3>Establish a governance process for domain logic in the BFF</h3>
               <p>Define and enforce a rule distinguishing BFF logic (field selection, field renaming, partial result assembly) from domain logic (business rules, calculations, eligibility). Review BFF pull requests for domain logic creep during the code review phase.</p>
             </li>
           </ol>
@@ -552,6 +560,23 @@
             <li>No domain logic (eligibility rules, limit calculations, business validations) in any BFF; code review checklist includes explicit domain-logic check.</li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="scatter-gather-aggregation.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Scatter-Gather: Multi-Source Aggregation Across Fragmented Systems of Record</span></a></li>
+              <li><a class="lab-related__link" href="circuit-breaker-and-bulkhead.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Circuit Breaker &amp; Bulkhead: Resilience4j for Mission-Critical Integration</span></a></li>
+              <li><a class="lab-related__link" href="../api-gateway/graphql-federation.html"><span class="lab-related__kicker">Lab &middot; API Gateway</span><span class="lab-related__name">GraphQL Federation at Scale</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/api-composition-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">API Composition: The Architecture Decision That Determines Whether Your Channels Own Their Experience</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="iso-20022-transformation.html">
               <div class="article-nav__label">&larr; Previous</div>

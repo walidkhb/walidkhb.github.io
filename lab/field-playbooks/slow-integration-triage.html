@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -45,56 +46,62 @@
     "description": "A field method for slow APIs and flows: time every hop of one request, read the shape of the slowness, check the eight usual suspects in order of cost, and lock the fix in with a latency budget.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-16",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/field-playbooks/slow-integration-triage.html"
     },
     "url": "https://www.wbadawi.info/lab/field-playbooks/slow-integration-triage.html",
+    "inLanguage": "en",
+    "wordCount": 1033,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Field Playbooks &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Field Playbooks — Technical Lab",
       "url": "https://www.wbadawi.info/lab/field-playbooks.html"
     },
-    "proficiencyLevel": "Expert",
-    "articleSection": "Field Playbooks"
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Field Playbooks",
+        "item": "https://www.wbadawi.info/lab/field-playbooks.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Where Did the Time Go? A Triage Method for Slow Integrations",
+        "item": "https://www.wbadawi.info/lab/field-playbooks/slow-integration-triage.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -129,7 +136,13 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../field-playbooks.html">Field Playbooks</a><span>/</span>Slow Integration Triage</div>
           <span class="overline">Lab Playbook</span>
           <h1>Where Did the Time Go? A Triage Method for Slow Integrations</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-11-16">16 November 2026</time></span>
+            <span>4 min read</span>
+          </div>
           <p class="lead">&ldquo;The API is slow&rdquo; is a complaint, not a measurement. This is a method for putting numbers on every hop of one real request, the causes that explain most slow integrations, and the order in which to fix them.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -158,9 +171,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Applies to:</strong> Correlation IDs &middot; Structured logs &middot; Connection pools</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers &amp; team leads</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~8 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Nov 16, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="problem">The problem</h2>
@@ -209,35 +219,35 @@
           <p>These account for most of the cases. Check them in this order, because the first ones are the cheapest to confirm.</p>
           <ol class="step-list">
             <li>
-              <h4>Connection pool too small, or connections not returned</h4>
+              <h3>Connection pool too small, or connections not returned</h3>
               <p>Requests queue for a connection while the backend sits idle. Look for wait time before the call starts. A pool that never shrinks back usually means a code path that fails to release.</p>
             </li>
             <li>
-              <h4>A new connection for every call</h4>
+              <h3>A new connection for every call</h3>
               <p>Each call pays for a network handshake and a security handshake before any work. Reuse connections. On an internal call this alone often removes most of the latency.</p>
             </li>
             <li>
-              <h4>Calls made one after another that could run together</h4>
+              <h3>Calls made one after another that could run together</h3>
               <p>Three independent lookups at 300 ms each take 900 ms in sequence and about 300 ms in parallel.</p>
             </li>
             <li>
-              <h4>The same reference data fetched on every request</h4>
+              <h3>The same reference data fetched on every request</h3>
               <p>Branch or store lists, product codes and currency tables rarely change. Cache them with a short expiry.</p>
             </li>
             <li>
-              <h4>Payloads far larger than the consumer needs</h4>
+              <h3>Payloads far larger than the consumer needs</h3>
               <p>A response of several hundred fields, parsed and transformed in full so that the channel can show five. Trim at the source, or add a field selection.</p>
             </li>
             <li>
-              <h4>Synchronous logging of full payloads</h4>
+              <h3>Synchronous logging of full payloads</h3>
               <p>Writing every request and response to disk inside the request path. Log asynchronously, and log sizes and identifiers by default, not bodies.</p>
             </li>
             <li>
-              <h4>Hidden retries</h4>
+              <h3>Hidden retries</h3>
               <p>A client library that silently retries turns one slow call into three. Look for attempt counts above one.</p>
             </li>
             <li>
-              <h4>Name resolution and certificate checks on each call</h4>
+              <h3>Name resolution and certificate checks on each call</h3>
               <p>Lookups that should be cached and are not. They show up as a steady extra delay on the first call of each connection.</p>
             </li>
           </ol>
@@ -280,27 +290,43 @@
           <h2 id="checklist">Checklist</h2>
           <ol class="step-list">
             <li>
-              <h4>Confirm the correlation ID reaches every hop</h4>
+              <h3>Confirm the correlation ID reaches every hop</h3>
               <p>Pick one slow request and find it in every log.</p>
             </li>
             <li>
-              <h4>Build the per-hop table for that request</h4>
+              <h3>Build the per-hop table for that request</h3>
               <p>Total, wait, downstream and own work for each hop.</p>
             </li>
             <li>
-              <h4>Match the pattern to the table in step 2</h4>
+              <h3>Match the pattern to the table in step 2</h3>
               <p>Decide whether you are looking at work, saturation or outliers.</p>
             </li>
             <li>
-              <h4>Walk the suspects in order and fix the cheapest first</h4>
+              <h3>Walk the suspects in order and fix the cheapest first</h3>
               <p>One change at a time, measured.</p>
             </li>
             <li>
-              <h4>Record the budget per hop and alert on it</h4>
+              <h3>Record the budget per hop and alert on it</h3>
               <p>So the next slowdown is found by an alert, not a complaint.</p>
             </li>
           </ol>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="first-30-minutes-of-an-incident.html"><span class="lab-related__kicker">Lab &middot; Field Playbooks</span><span class="lab-related__name">The First 30 Minutes of an Integration Incident</span></a></li>
+              <li><a class="lab-related__link" href="../integration-patterns/circuit-breaker-and-bulkhead.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Circuit Breaker &amp; Bulkhead: Resilience4j for Mission-Critical Integration</span></a></li>
+              <li><a class="lab-related__link" href="../devops/observability-pipeline-architecture.html"><span class="lab-related__kicker">Lab &middot; DevOps &amp; Platform Engineering</span><span class="lab-related__name">Observability Pipeline Architecture</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="timeouts-and-unknown-outcomes.html">
               <div class="article-nav__label">&larr; Previous</div>

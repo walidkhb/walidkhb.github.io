@@ -31,6 +31,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
   <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261127">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,60 +42,66 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Hazelcast IMDG for In-Process State",
+    "headline": "Distributed Caching: Hazelcast IMDG for In-Process State",
     "description": "Embedded grid topology, partition awareness, near-cache patterns, and the stateful, latency-critical workloads where Hazelcast beats a shared Redis cluster.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-07-11",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/distributed-caching/hazelcast-imdg-in-process-state.html"
     },
     "url": "https://www.wbadawi.info/lab/distributed-caching/hazelcast-imdg-in-process-state.html",
+    "inLanguage": "en",
+    "wordCount": 2402,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Distributed Caching &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Distributed Caching — Technical Lab",
       "url": "https://www.wbadawi.info/lab/distributed-caching.html"
     },
-    "proficiencyLevel": "Expert",
-    "articleSection": "Distributed Caching"
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Distributed Caching",
+        "item": "https://www.wbadawi.info/lab/distributed-caching.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Distributed Caching: Hazelcast IMDG for In-Process State",
+        "item": "https://www.wbadawi.info/lab/distributed-caching/hazelcast-imdg-in-process-state.html"
+      }
+    ]
   }
   </script>
 </head>
@@ -129,7 +136,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Hazelcast IMDG</div>
           <span class="overline">Lab Article</span>
           <h1>Distributed Caching: Hazelcast IMDG for In-Process State</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-07-11">11 July 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>10 min read</span>
+          </div>
           <p class="lead">Embedded grid topology, partition awareness, near-cache configuration, and the stateful, compute-heavy workloads where collapsing the network hop between your application and its data beats every Redis Cluster benchmark you will run &mdash; and the real costs of that trade-off in a containerised, cloud-native deployment.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -161,9 +175,6 @@
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Hazelcast 5.4 / Spring Boot 3.2 / Kubernetes / OCP 4.14</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Jul 11, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -414,27 +425,27 @@
 
           <ol class="step-list">
             <li>
-              <h4>Add the Kubernetes discovery plugin</h4>
+              <h3>Add the Kubernetes discovery plugin</h3>
               <p>The <code>hazelcast-kubernetes</code> plugin uses the Kubernetes API to discover cluster members. It requires a ServiceAccount with <code>get</code> and <code>list</code> on Endpoints and Pods. Create the ClusterRole once per namespace; bind it to the pod's ServiceAccount.</p>
             </li>
             <li>
-              <h4>Choose embedded or client-server</h4>
+              <h3>Choose embedded or client-server</h3>
               <p>For embedded: include <code>hazelcast</code> as a compile dependency and Hazelcast boots with the Spring application context. For client-server: deploy a separate StatefulSet for the HZ cluster and add <code>hazelcast-client</code> as a dependency instead &mdash; <strong>not</strong> <code>hazelcast</code>. Mixing <code>hazelcast</code> and <code>hazelcast-client</code> in the same pod is valid for development; avoid it in production.</p>
             </li>
             <li>
-              <h4>Configure member discovery</h4>
+              <h3>Configure member discovery</h3>
               <p>Set <code>kubernetes</code> discovery in the Hazelcast YAML. Point it at the headless Service used by the StatefulSet (client-server) or at the app Deployment's label selector (embedded). The headless Service is simpler and more reliable than namespace-scoped pod listing.</p>
             </li>
             <li>
-              <h4>Set partition backup count</h4>
+              <h3>Set partition backup count</h3>
               <p>For 3-node clusters, <code>backup-count: 1</code> means every partition has one sync backup. With <code>async-backup-count: 1</code> you get two copies (primary + async backup) without synchronous replication latency. For data where loss is unacceptable, use <code>backup-count: 1</code> (synchronous) and ensure you have at least 3 members at all times.</p>
             </li>
             <li>
-              <h4>Configure graceful shutdown</h4>
+              <h3>Configure graceful shutdown</h3>
               <p>Add <code>SIGTERM</code> handling so Hazelcast migrates its partitions before the pod terminates. Set <code>hazelcast.shutdownhook.policy=GRACEFUL</code> and set <code>terminationGracePeriodSeconds</code> in the Deployment to at least 60 seconds. Rolling deploys without graceful shutdown trigger partition migration under traffic &mdash; avoidable latency spikes.</p>
             </li>
             <li>
-              <h4>Size JVM heap conservatively</h4>
+              <h3>Size JVM heap conservatively</h3>
               <p>In embedded mode, Hazelcast competes with the application for heap. Allocate at least 40% of the container memory limit to non-Hazelcast objects (thread stacks, code cache, application working set). Hazelcast stores serialised bytes on heap by default; if data volume is large, consider HD Memory (Hazelcast Platform only) or client-server to keep the app heap clean.</p>
             </li>
           </ol>
@@ -485,7 +496,7 @@
         <span class="tok-k">size</span><span class="tok-p">:</span> <span class="tok-n">200000</span>
 
   <span class="tok-k">cp-subsystem</span><span class="tok-p">:</span>
-    <span class="tok-k">cp-member-count</span><span class="tok-p">:</span> <span class="tok-n">3</span>    <span class="tok-c"># Raft quorum for FencedLock / CPMap</span>
+    <span class="tok-k">cp-member-count</span><span class="tok-p">:</span> <span class="tok-n">3</span>    <span class="tok-c"># Raft quorum for FencedLock / CPMap; check your edition (recent releases ship CP in Enterprise)</span>
     <span class="tok-k">group-size</span><span class="tok-p">:</span> <span class="tok-n">3</span>
 
   <span class="tok-k">properties</span><span class="tok-p">:</span>
@@ -628,6 +639,23 @@
             <p>IMap with an <code>EntryListener</code> is not a reliable queue. Listeners are best-effort and fire asynchronously; they do not guarantee exactly-once delivery and are not persisted across cluster restarts. For reliable work distribution, use <code>IQueue</code> or a proper broker (Kafka, IBM MQ). This distinction is a well-known source of missed notifications in systems that try to use map listeners as event triggers.</p>
           </div>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="near-cache-and-read-replicas.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Near-Cache &amp; Read-Replica Topologies</span></a></li>
+              <li><a class="lab-related__link" href="redis-cluster.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Redis Cluster &amp; Sentinel</span></a></li>
+              <li><a class="lab-related__link" href="multi-tier-caching-strategies.html"><span class="lab-related__kicker">Lab &middot; Distributed Caching</span><span class="lab-related__name">Distributed Caching: Multi-Tier Caching Strategies</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/hazelcast-in-process-caching-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">In-Process Caching: The Infrastructure Decision That Lives Beneath Your Latency SLA</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../distributed-caching.html">
               <div class="article-nav__label">&larr; Back to topic</div>
