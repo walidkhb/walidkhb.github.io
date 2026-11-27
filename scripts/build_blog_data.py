@@ -71,9 +71,10 @@ def collect_articles():
         date = post.get("datePublished", "")
         url = post.get("url") or f"{SITE}/blog/{slug}.html"
 
-        # Category comes from breadcrumb position 3 (Home > Insights > Category > Article)
-        category = ""
-        bc = post.get("breadcrumb", {})
+        # Category: the article's articleSection, falling back to breadcrumb
+        # position 3 (Home > Insights > Category > Article) for older markup.
+        category = html.unescape(post.get("articleSection", "") or "")
+        bc = post.get("breadcrumb", {}) if not category else {}
         for item in bc.get("itemListElement", []):
             if item.get("position") == 3:
                 category = html.unescape(item.get("name", ""))
