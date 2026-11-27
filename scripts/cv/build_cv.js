@@ -14,15 +14,23 @@ const { chromium } = require('playwright');
   await page.goto('file://' + path.join(__dirname, 'cv.html'), { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
 
-  // Fail loudly if any page's content no longer fits on its sheet.
-  const overflow = await page.evaluate(() =>
-    [...document.querySelectorAll('.page')].map((p, i) => {
-      const limit = p.getBoundingClientRect().bottom - 14; // keep clear of the footer
+  // Fail loudly if the CV is not exactly two sheets, or any sheet's content runs into its footer.
+  const overflow = await page.evaluate(() => {
+    const pages = [...document.querySelectorAll('.page')];
+    const problems = pages.length === 2 ? [] : [`expected 2 pages, found ${pages.length}`];
+    const spare = [];
+    pages.forEach((p, i) => {
+      const foot = p.querySelector('.foot');
+      const limit = (foot ? foot.getBoundingClientRect().top : p.getBoundingClientRect().bottom) - 6;
       const last = [...p.querySelectorAll('.body1 > *, .main > *, .side > *')]
         .reduce((m, el) => Math.max(m, el.getBoundingClientRect().bottom), 0);
-      return last > limit ? `page ${i + 1} overflows by ${Math.round(last - limit)}px` : null;
-    }).filter(Boolean));
-  if (overflow.length) { console.error(overflow.join('\n')); process.exitCode = 1; }
+      if (last > limit) problems.push(`page ${i + 1} overflows by ${Math.round(last - limit)}px`);
+      else spare.push(`page ${i + 1}: ${Math.round(limit - last)}px to spare`);
+    });
+    return { problems, spare };
+  });
+  console.log(overflow.spare.join(', '));
+  if (overflow.problems.length) { console.error(overflow.problems.join('\n')); process.exitCode = 1; }
 
   const out = path.join(root, 'assets', 'Waleed-Albadawi-CV.pdf');
   await page.pdf({ path: out, format: 'A4', printBackground: true, preferCSSPageSize: true, tagged: true, outline: false });
