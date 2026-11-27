@@ -1142,6 +1142,199 @@ section {
   .programme-card__title { font-size: 1.1875rem; }
 }
 
+/* --- Hero statement --- */
+.hero__statement {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+  line-height: 1.25;
+  color: var(--color-accent);
+  margin-bottom: 1rem;
+  max-width: 720px;
+}
+
+/* --- Leadership Agenda cards --- */
+.agenda-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  transition: all var(--transition);
+}
+
+.agenda-card:hover {
+  border-color: var(--color-accent-border);
+  box-shadow: var(--shadow-glow);
+}
+
+.agenda-card__num {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+}
+
+.agenda-card__question {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--color-text);
+  margin-bottom: 0.75rem;
+}
+
+.agenda-card__answer {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.25rem;
+  flex: 1;
+}
+
+.agenda-card__proof {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-accent);
+  text-decoration: none;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.agenda-card__proof:hover { color: var(--color-text); }
+
+/* --- Today vs Future-ready shift table --- */
+.shift {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.shift__row {
+  display: grid;
+  grid-template-columns: 180px 1fr 40px 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shift__row:last-child { border-bottom: none; }
+
+.shift__row--head {
+  background: var(--color-surface-elevated);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.shift__row--head .shift__from { color: var(--color-text-muted); }
+.shift__row--head .shift__to { color: var(--color-accent); font-weight: 600; }
+
+.shift__dim {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text);
+}
+
+.shift__from {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+}
+
+.shift__arrow {
+  color: var(--color-accent);
+  text-align: center;
+}
+
+.shift__to {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+@media (max-width: 768px) {
+  .shift__row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    padding: 1.1rem 1.25rem;
+  }
+  .shift__row--head { display: none; }
+  .shift__arrow { display: none; }
+  .shift__dim { color: var(--color-accent); margin-bottom: 0.25rem; }
+  .shift__from::before { content: 'Today: '; color: var(--color-text-muted); }
+  .shift__to::before { content: 'Future-ready: '; color: var(--color-accent); font-weight: 500; }
+}
+
+/* --- Mandate roadmap --- */
+.roadmap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  position: relative;
+}
+
+.roadmap__phase {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.roadmap__when {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
+}
+
+.roadmap__title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.75rem;
+}
+
+.roadmap__text {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+.roadmap__board {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin-bottom: 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.roadmap__board strong { color: var(--color-accent); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .roadmap { grid-template-columns: 1fr; }
+}
+
 /* --- Principle List --- */
 .principle {
   padding: 1.25rem 0;
@@ -1801,3 +1994,6 @@ section ul li span[style*="background: var(--color-accent)"] {
   .skill-tag--highlight { background: #e8e8e8; color: #000; }
   .overline { background: none; border: none; color: #666; padding: 0; }
 }
+
+/* Anchor targets clear the sticky header */
+#agenda, #flagship, .programme-card { scroll-margin-top: 88px; }
