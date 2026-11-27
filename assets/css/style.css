@@ -26,7 +26,8 @@
 
   --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+  --font-mono: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; /* UI labels use the single site typeface */
+  --font-code: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace; /* code samples only */
 
   --space-xs: 0.5rem;
   --space-sm: 1rem;
@@ -830,7 +831,7 @@ section {
 .quote blockquote {
   font-family: var(--font-heading);
   font-size: clamp(1.5rem, 3vw, 2rem);
-  font-style: italic;
+  font-style: normal;
   color: var(--color-text);
   line-height: 1.5;
   max-width: 700px;
@@ -1173,8 +1174,9 @@ section {
 }
 
 .programme-card__vision {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-style: italic;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  font-style: normal;
   font-size: 1.0625rem;
   line-height: 1.5;
   color: var(--color-text);
@@ -1223,7 +1225,8 @@ section {
 
 /* --- Hero statement --- */
 .hero__statement {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  font-family: var(--font-heading);
   font-size: clamp(1.5rem, 3.2vw, 2.25rem);
   line-height: 1.25;
   color: var(--color-accent);
@@ -1257,10 +1260,10 @@ section {
 }
 
 .agenda-card__question {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: var(--font-heading);
   font-size: 1.25rem;
-  font-weight: 400;
-  font-style: italic;
+  font-weight: 600;
+  font-style: normal;
   line-height: 1.35;
   color: var(--color-text);
   margin-bottom: 0.75rem;
@@ -2285,9 +2288,9 @@ main p a:not([class]):hover, main li a:not([class]):hover, main dd a:not([class]
 }
 .value-strip__item { border-top: 2px solid var(--color-accent); padding-top: 1rem; }
 .value-strip__title {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
+  font-family: var(--font-heading);
+  font-style: normal;
+  font-weight: 600;
   font-size: 1.5rem;
   line-height: 1.2;
   color: var(--color-accent);
@@ -2296,3 +2299,7 @@ main p a:not([class]):hover, main li a:not([class]):hover, main dd a:not([class]
 .value-strip__text { font-size: 0.9375rem; line-height: 1.6; color: var(--color-text-secondary); margin: 0; }
 @media (max-width: 1024px) { .value-strip__grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 640px) { .value-strip__grid { grid-template-columns: 1fr; gap: 1.5rem; } }
+
+
+/* Typography: one typeface (Inter) everywhere; monospace only for code samples */
+pre, pre *, code, kbd, samp { font-family: var(--font-code) !important; }

@@ -3,11 +3,11 @@
    - Site assets (CSS, JS, images): stale-while-revalidate.
    - Google Fonts files: cache first (they are immutable).
    Bump VERSION on each release to retire old caches. */
-const VERSION = 'wb-20261128b';
+const VERSION = 'wb-20261128d';
 const PRECACHE = [
   '/',
-  '/assets/css/style.css?v=20261128b',
-  '/assets/js/main.js?v=20261128b',
+  '/assets/css/style.css?v=20261128d',
+  '/assets/js/main.js?v=20261128d',
   '/assets/img/waleed-albadawi.jpg',
   '/assets/img/favicon.svg'
 ];
