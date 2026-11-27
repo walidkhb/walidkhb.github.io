@@ -2,7 +2,8 @@
 //
 //   node scripts/cv/build_cv.js
 //
-// Needs Playwright with Chromium. Writes assets/Waleed-Albadawi-CV.pdf (A4, 2 pages).
+// Needs Playwright with Chromium. Writes assets/Waleed-Albadawi-CV.pdf (designed, A4, 2 pages)
+// and assets/Waleed-Albadawi-CV-ATS.pdf (plain single column for applicant tracking systems).
 const path = require('path');
 const { chromium } = require('playwright');
 
@@ -25,6 +26,13 @@ const { chromium } = require('playwright');
 
   const out = path.join(root, 'assets', 'Waleed-Albadawi-CV.pdf');
   await page.pdf({ path: out, format: 'A4', printBackground: true, preferCSSPageSize: true, tagged: true, outline: false });
-  await browser.close();
   console.log('Wrote', path.relative(root, out));
+
+  // Plain single-column version for applicant tracking systems.
+  const ats = await browser.newPage();
+  await ats.goto('file://' + path.join(__dirname, 'cv-ats.html'), { waitUntil: 'load' });
+  const atsOut = path.join(root, 'assets', 'Waleed-Albadawi-CV-ATS.pdf');
+  await ats.pdf({ path: atsOut, format: 'A4', preferCSSPageSize: true, tagged: true });
+  console.log('Wrote', path.relative(root, atsOut));
+  await browser.close();
 })();
