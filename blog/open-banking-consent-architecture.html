@@ -15,6 +15,8 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2026-05-17">
+  <meta property="article:modified_time" content="2026-11-27">
   <meta property="og:title" content="The Consent Platform Decision: What Open Banking Phase 2 Actually Requires from Leadership &mdash; Waleed Albadawi">
   <meta property="og:description" content="The consent architecture your team builds for Open Banking Phase 2 will either compound or constrain every TPP integration that follows. The leadership decisions that determine which outcome you get.">
   <meta property="og:url" content="https://www.wbadawi.info/blog/open-banking-consent-architecture.html">
@@ -39,8 +41,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/style.css?v=20261127">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"></noscript>
+  <link rel="stylesheet" href="../assets/css/style.css?v=20261128b">
 
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
@@ -55,123 +59,109 @@
     .author-bio { background: var(--color-surface); border-top: 1px solid var(--color-border); }
     .author-bio__inner { padding: 3rem 0; }
   </style>
-
-  <!-- JSON-LD -->
+  <link rel="stylesheet" href="../assets/css/insights.css?v=20261128b">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": "The Consent Platform Decision: What Open Banking Phase 2 Actually Requires from Leadership",
+    "description": "The consent architecture your team builds for Open Banking Phase 2 will either compound or constrain every TPP integration that follows. The leadership decisions that determine which outcome you get.",
     "image": "https://www.wbadawi.info/assets/img/og/open-banking-consent-architecture.png",
     "datePublished": "2026-05-17",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/blog/open-banking-consent-architecture.html"
     },
     "url": "https://www.wbadawi.info/blog/open-banking-consent-architecture.html",
     "isPartOf": {
       "@type": "Blog",
-      "name": "Insights &mdash; Waleed Albadawi",
+      "name": "Insights — Waleed Albadawi",
       "url": "https://www.wbadawi.info/blog.html"
     },
-    "breadcrumb": {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://www.wbadawi.info/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Insights",
-          "item": "https://www.wbadawi.info/blog.html"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Open Banking &amp; Payments",
-          "item": "https://www.wbadawi.info/blog/open-banking-payments.html"
-        },
-        {
-          "@type": "ListItem",
-          "position": 4,
-          "name": "The Consent Platform Decision",
-          "item": "https://www.wbadawi.info/blog/open-banking-consent-architecture.html"
-        }
-      ]
-    }
+    "articleSection": "Open Banking, payments & ecosystems",
+    "inLanguage": "en",
+    "wordCount": 1070,
+    "timeRequired": "PT5M"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Insights",
+        "item": "https://www.wbadawi.info/blog.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Open Banking, payments & ecosystems",
+        "item": "https://www.wbadawi.info/blog.html#open-banking"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "The Consent Platform Decision: What Open Banking Phase 2 Actually Requires from Leadership",
+        "item": "https://www.wbadawi.info/blog/open-banking-consent-architecture.html"
+      }
+    ]
   }
   </script>
 </head>
 <body>
 
   <!-- Navigation -->
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header" id="header">
     <div class="site-header__inner">
       <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
-      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+      <nav class="site-nav" id="nav" aria-label="Main navigation">
         <a href="../about.html">About</a>
         <a href="../experience.html">Experience</a>
-        <a href="../projects.html">Initiatives</a>
-        <a href="../expertise.html">Expertise</a>
-        <a href="../resume.html">Resume</a>
-        <a href="../blog.html" class="active">Insights</a>
+        <a href="../projects.html">Transformations</a>
+        <a href="../blog.html" class="active" aria-current="page">Insights</a>
         <a href="../technical.html">Lab</a>
-        <a href="../contact.html">Contact</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../contact.html" class="site-nav__cta">Contact</a>
       </nav>
-      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
     </div>
   </header>
 
+  <main id="main">
+
   <!-- Page Header -->
   <section class="page-header">
     <div class="container">
-      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="open-banking-payments.html">Open Banking &amp; Payments</a><span>/</span>Consent Platform Decision</div>
-      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Open Banking &amp; Payments &middot; May 17, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
-      <h1 style="max-width:820px;">The Consent Platform Decision: What Open Banking Phase 2 Actually Requires from Leadership</h1>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../blog.html">Insights</a><span aria-hidden="true">/</span><a href="../blog.html#open-banking">Open Banking, payments &amp; ecosystems</a></nav>
+      <h1 class="insights-title">The Consent Platform Decision: What Open Banking Phase 2 Actually Requires from Leadership</h1>
+      <div class="article-meta insights-meta">
+        <span class="article-meta__item">By <a href="../about.html" rel="author">Waleed Albadawi</a></span>
+        <span class="article-meta__item"><time datetime="2026-05-17">17 May 2026</time></span>
+        <span class="article-meta__item">5 min read</span>
+      </div>
     </div>
   </section>
 
@@ -188,15 +178,15 @@
           <p>The technical team cannot make this choice. They can build either thing. The choice of which thing to build is made by whoever decides what kind of platform this bank intends to run &mdash; and whether open banking is a regulatory obligation or a product foundation.</p>
         </blockquote>
 
-        <p class="article-section">What the regulator is actually checking</p>
+        <h2 class="article-section">What the regulator is actually checking</h2>
 
         <p>SAMA&rsquo;s audit focus in Open Banking is not primarily the technology. It is the evidence. The regulator wants to know that for any customer dispute &mdash; &ldquo;I did not authorise that TPP to read my transactions&rdquo;, &ldquo;I revoked that consent and the calls continued&rdquo; &mdash; the bank can produce a complete, tamper-evident record of every consent lifecycle event, the authentication ceremony that created it, and the API calls made under it.</p>
 
         <p>What that means technically: consent events must be immutable once written, timestamped to a precision that resolves disputes, and retained for ten years. The current consent status is a projection of that event log, not the source of truth. A bank whose consent implementation writes a status column in a relational table and updates it on revocation will fail that audit requirement &mdash; not because the system is wrong, but because it cannot produce the reconstruction the regulator needs.</p>
 
-        <p>This is a leadership decision about data architecture. The engineers who built Phase 1 consent knew what the right answer was. The question is whether the programme gave them the time and authority to build it, or whether they shipped what could be shipped before the deadline.</p>
+        <p>This is a leadership decision about data architecture. In most programmes, the engineers building consent know what the right answer is. The question is whether the programme gives them the time and authority to build it, or whether they ship what can be shipped before the deadline.</p>
 
-        <p class="article-section">The trade-off the business has to make</p>
+        <h2 class="article-section">The trade-off the business has to make</h2>
 
         <p>The centralised consent platform costs more to build and takes longer. The Phase 2 implementation costs less and is faster. That trade-off is real and the leadership team should not pretend it isn&rsquo;t. The question is not whether the trade-off exists; it is which horizon to optimise for.</p>
 
@@ -204,7 +194,7 @@
 
         <p>If the bank intends to use open banking as a distribution channel for premium API products &mdash; transaction enrichment, merchant analytics, embedded finance primitives, real-time risk scoring sold to fintech partners &mdash; then the Phase 2 implementation will be rebuilt within two years. Every premium API product requires consent to operate. If each product brings its own consent mechanism, the bank ends up with multiple consent stores, multiple audit trails, and a customer experience where &ldquo;managing my connected apps&rdquo; requires navigating multiple bank systems. That is not a commercial-grade platform. That is Phase 2 repeated several times with increasing coordination cost each time.</p>
 
-        <p class="article-section">What the team needs from leadership to build it right</p>
+        <h2 class="article-section">What the team needs from leadership to build it right</h2>
 
         <p>The engineering teams delivering Phase 2 can build the consent platform, if they are given three things that programmes typically do not give them.</p>
 
@@ -214,7 +204,7 @@
 
         <p><strong>Time after go-live.</strong> The consent platform as delivered on Phase 2 go-live will not be complete. The first twelve months of production operation will surface the gaps: edge cases in the consent lifecycle, TPP integration patterns that weren&rsquo;t anticipated, SAMA guidance that arrived after the design was locked. The team needs runway to address those gaps without the intensity of a compliance deadline. This is the investment that separates a platform from a delivery that is declared complete and quietly degraded.</p>
 
-        <p class="article-section">The question that determines the answer</p>
+        <h2 class="article-section">The question that determines the answer</h2>
 
         <p>The consent platform decision resolves to a single question that the leadership team has to answer honestly: what is open banking for?</p>
 
@@ -223,18 +213,32 @@
         <p>That is not a technical question. It is a strategic one. And it needs to be answered before the Phase 2 architecture is locked, not after it is in production.</p>
 
       </div>
-    </div>
-  </section>
 
-  <!-- Author Bio -->
-  <section class="author-bio">
-    <div class="container container--narrow">
-      <div class="author-bio__inner">
-        <p class="overline" style="margin-bottom:0.5rem;">About the Author</p>
-        <h3 style="margin-bottom:0.75rem;">Waleed Albadawi</h3>
-        <p style="font-size:0.9375rem;color:var(--color-text-secondary);line-height:1.75;margin-bottom:1rem;">VP, Enterprise Integration.14+ years delivering enterprise integration strategy, open banking implementation, and digital transformation across Saudi Arabia&rsquo;s banking and government sectors. Named a <strong>Tech100 Strategic Leader of the Future</strong>. Based in Riyadh, KSA.</p>
-        <a href="https://www.linkedin.com/in/walidkhb" target="_blank" rel="noopener" style="font-family:var(--font-mono);font-size:0.8125rem;color:var(--color-accent);text-decoration:none;font-weight:600;">Connect on LinkedIn &rarr;</a>
-      </div>
+        <!-- insights:end -->
+        <div class="insights-end">
+          <aside class="insights-author" aria-label="About the author">
+            <p class="insights-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <a class="insights-author__link" href="../about.html">About Waleed Albadawi &rarr;</a>
+          </aside>
+          <nav class="insights-related" aria-labelledby="related-heading">
+            <h2 id="related-heading" class="insights-related__heading">Related insights</h2>
+            <div class="insights-related__grid">
+              <a class="thinking-card" href="sama-open-banking-phase-2.html">
+                <span class="thinking-card__topic">Open Banking, payments &amp; ecosystems &middot; 8 min read</span>
+                <span class="thinking-card__title">SAMA Open Banking Phase 2: What Implementation Taught Us About What Comes Next</span>
+              </a>
+              <a class="thinking-card" href="fapi-2-decision.html">
+                <span class="thinking-card__topic">Decision brief &middot; 7 min read</span>
+                <span class="thinking-card__title">FAPI 2.0: The Security Architecture Decision That Determines Whether Your Open Banking APIs Satisfy SAMA Phase 2</span>
+              </a>
+              <a class="thinking-card" href="open-banking-ksa-strategic-opportunity.html">
+                <span class="thinking-card__topic">Open Banking, payments &amp; ecosystems &middot; 2 min read</span>
+                <span class="thinking-card__title">Open Banking in KSA: Compliance Checkbox or Strategic Opportunity?</span>
+              </a>
+            </div>
+          </nav>
+        </div>
+        <!-- /insights:end -->
     </div>
   </section>
 
@@ -249,19 +253,50 @@
   </section>
 
   <!-- Footer -->
+  </main>
+
   <footer class="site-footer">
     <div class="container">
-      <div class="site-footer__inner">
-        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
-        <ul class="footer-links">
-          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
-          <li><a href="../contact.html">Contact</a></li>
-          <li><a href="../resume.html">Resume</a></li>
-        </ul>
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+          <p>Enterprise technology and transformation executive. Riyadh, Saudi Arabia.</p>
+        </div>
+        <nav class="site-footer__col" aria-label="Explore">
+          <p class="site-footer__title">Explore</p>
+          <ul>
+            <li><a href="../about.html">About</a></li>
+            <li><a href="../experience.html">Experience</a></li>
+            <li><a href="../projects.html">Transformations</a></li>
+            <li><a href="../expertise.html">Expertise</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Writing">
+          <p class="site-footer__title">Writing</p>
+          <ul>
+            <li><a href="../blog.html">Insights</a></li>
+            <li><a href="../technical.html">Technical Lab</a></li>
+            <li><a href="../feed.xml">RSS feed</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Connect">
+          <p class="site-footer__title">Connect</p>
+          <ul>
+            <li><a href="../contact.html">Contact</a></li>
+            <li><a href="https://www.linkedin.com/in/walidkhb" rel="me noopener" target="_blank">LinkedIn</a></li>
+            <li><a href="https://medium.com/@walidkhb" rel="me noopener" target="_blank">Medium</a></li>
+            <li><a href="https://github.com/walidkhb" rel="me noopener" target="_blank">GitHub</a></li>
+            <li><a href="../assets/Waleed-Albadawi-CV.pdf">Download CV</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="site-footer__base">
+        <span>&copy; 2026 Waleed Albadawi</span>
+        <span>Views are my own and do not represent my employer.</span>
       </div>
     </div>
   </footer>
 
-  <script src="../assets/js/main.js?v=20261127"></script>
+  <script src="../assets/js/main.js?v=20261128b"></script>
 </body>
 </html>

@@ -21,23 +21,25 @@
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta property="og:image:alt" content="Waleed Albadawi — Building technology organisations that scale">
   <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/idempotent-consumer-exactly-once.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"></noscript>
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261128b">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261128b">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 0.4rem; }
   </style>
-
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -46,77 +48,87 @@
     "description": "How to guarantee effectively-once processing for business-critical messages on Kafka, with payments as the worked example: deduplication keys, database idempotency tables, Redis atomic dedup, Kafka EOS, ISO 20022 EndToEndId, and the monitoring that proves it works in production.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-10-24",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/data-sync/idempotent-consumer-exactly-once.html"
     },
     "url": "https://www.wbadawi.info/lab/data-sync/idempotent-consumer-exactly-once.html",
+    "inLanguage": "en",
+    "wordCount": 2698,
     "isPartOf": {
-      "@type": "TechArticleSeries",
-      "name": "Data Synchronisation Lab",
+      "@type": "CollectionPage",
+      "name": "Data Synchronisation — Technical Lab",
       "url": "https://www.wbadawi.info/lab/data-sync.html"
-    }
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Data Synchronisation",
+        "item": "https://www.wbadawi.info/lab/data-sync.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Idempotent Consumers & Exactly-Once Semantics: Payment Deduplication at Scale",
+        "item": "https://www.wbadawi.info/lab/data-sync/idempotent-consumer-exactly-once.html"
+      }
+    ]
   }
   </script>
 </head>
 <body>
 
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header" id="header">
     <div class="site-header__inner">
       <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
-      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+      <nav class="site-nav" id="nav" aria-label="Main navigation">
         <a href="../../about.html">About</a>
         <a href="../../experience.html">Experience</a>
-        <a href="../../projects.html">Initiatives</a>
-        <a href="../../expertise.html">Expertise</a>
-        <a href="../../resume.html">Resume</a>
+        <a href="../../projects.html">Transformations</a>
         <a href="../../blog.html">Insights</a>
-        <a href="../../technical.html" class="active">Lab</a>
-        <a href="../../contact.html">Contact</a>
+        <a href="../../technical.html" class="active" aria-current="page">Lab</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../contact.html" class="site-nav__cta">Contact</a>
       </nav>
-      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
     </div>
   </header>
+
+  <main id="main">
 
   <section class="page-header">
     <div class="container container--wide">
@@ -126,7 +138,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Idempotent Consumers &amp; Exactly-Once</div>
           <span class="overline">Lab Article</span>
           <h1>Idempotent Consumers &amp; Exactly-Once Semantics: Payment Deduplication at Scale</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-10-24">24 October 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>12 min read</span>
+          </div>
           <p class="lead">At-least-once delivery is the honest default for every message bus you will ever run. The question is not whether duplicates arrive&mdash;they will&mdash;but whether your consumers handle them correctly. In payments, the cost of getting this wrong is a duplicate debit; in e-commerce, a double shipment; in telecoms, a double charge.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -136,7 +155,7 @@
     <div class="container container--wide">
       <div class="lab-article__layout">
 
-        <aside class="lab-article__toc">
+        <nav class="lab-article__toc" aria-label="On this page">
           <div class="lab-article__toc-title">On this page</div>
           <ul class="lab-article__toc-list">
             <li><a href="#overview">Overview</a></li>
@@ -151,16 +170,13 @@
             <li><a href="#monitoring">Monitoring deduplication</a></li>
             <li><a href="#limits">When idempotency is not enough</a></li>
           </ul>
-        </aside>
+        </nav>
 
         <article class="lab-article__body">
 
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> Kafka 3.7 / Spring Kafka / Postgres 16 / Redis 7 / ISO 20022</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Oct 24, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -520,23 +536,23 @@ spring:
 
           <ol class="step-list">
             <li>
-              <h4>read_committed (recommended for payment pipelines)</h4>
+              <h3>read_committed (recommended for payment pipelines)</h3>
               <p>Only messages from committed transactions are visible. Aborted transaction messages are filtered by the broker. Uncommitted messages from an in-flight transaction are withheld until the transaction commits or aborts. This introduces a small amount of end-to-end latency but guarantees that aborted messages never reach the consumer.</p>
             </li>
             <li>
-              <h4>read_uncommitted (default)</h4>
+              <h3>read_uncommitted (default)</h3>
               <p>All messages, including those from in-flight and subsequently aborted transactions, are visible. The consumer sees the abort marker after the fact but has already processed the message. For a payment pipeline, this means consumers must handle abort markers explicitly&mdash;which most Spring Kafka setups do not do by default.</p>
             </li>
             <li>
-              <h4>LSO lag implications</h4>
+              <h3>LSO lag implications</h3>
               <p>The Last Stable Offset (LSO) is the highest offset below any open transaction. Consumer lag metrics that use the log end offset minus the committed offset will be inflated by open transactions. Wire your consumer lag alerting to the LSO, not the LEO, to avoid false alerts during long-running transactions.</p>
             </li>
             <li>
-              <h4>Partition assignment and EOS</h4>
+              <h3>Partition assignment and EOS</h3>
               <p>A transactional producer is bound to specific partitions at send time. On consumer group rebalance, a new consumer instance inherits the partition&mdash;but the transaction manager on the old instance may still have an open transaction. The transaction coordinator will time out the open transaction and abort it, ensuring the new consumer does not see an orphaned partial write.</p>
             </li>
             <li>
-              <h4>Non-transactional topics alongside transactional ones</h4>
+              <h3>Non-transactional topics alongside transactional ones</h3>
               <p>If the pipeline mixes transactional and non-transactional topics in the same consumer group, <code>read_committed</code> applies only to the transactional topics. Non-transactional topics are read with no isolation. This is safe but must be explicitly understood by the engineering team maintaining the consumer group configuration.</p>
             </li>
           </ol>
@@ -550,7 +566,7 @@ spring:
   <span class="tok-k">&lt;PmtId&gt;</span>
     <span class="tok-c">&lt;!-- EndToEndId: originator-assigned; MUST be preserved end-to-end --&gt;</span>
     <span class="tok-k">&lt;EndToEndId&gt;</span><span class="tok-s">E2E-20261024-000123</span><span class="tok-k">&lt;/EndToEndId&gt;</span>
-    <span class="tok-c">&lt;!-- TxId: assigned by the instructing agent; can change at each interbank hop --&gt;</span>
+    <span class="tok-c">&lt;!-- TxId: set by the first instructing agent; passed on unchanged along the interbank chain --&gt;</span>
     <span class="tok-k">&lt;TxId&gt;</span><span class="tok-s">TX-20261024-0001</span><span class="tok-k">&lt;/TxId&gt;</span>
     <span class="tok-c">&lt;!-- UETR: UUIDv4 generated once at origination; universally unique end-to-end --&gt;</span>
     <span class="tok-k">&lt;UETR&gt;</span><span class="tok-s">a23cc4f5-7e8b-4c12-a9d1-3f4e5b6c7d8e</span><span class="tok-k">&lt;/UETR&gt;</span>
@@ -561,7 +577,7 @@ spring:
 </code></pre>
           </div>
 
-          <p>For SWIFT cross-border payments, and for the market infrastructures that have adopted it, the UETR is the authoritative end-to-end reference at the network level. Within an institution&rsquo;s internal Kafka pipeline, use the UETR as the primary idempotency key and the EndToEndId as a secondary key for customer-facing tracing. Do not confuse either with the TxId: the TxId changes at each interbank leg, so using it as an idempotency key will fail for any multi-hop payment.</p>
+          <p>For SWIFT cross-border payments, and for the market infrastructures that have adopted it, the UETR is the authoritative end-to-end reference at the network level. Within an institution&rsquo;s internal Kafka pipeline, use the UETR as the primary idempotency key and the EndToEndId as a secondary key for customer-facing tracing. Do not use the InstrId: it is a point-to-point reference between two agents and changes at each interbank leg, so as an idempotency key it fails for any multi-hop payment. The TxId is assigned by the first instructing agent and, under the ISO 20022 definition, passed on unchanged along the interbank chain &mdash; but it is not set by the debtor, so it cannot catch a customer&rsquo;s resubmission.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">UETR format and generation</div>
@@ -624,6 +640,23 @@ groups:
             <li><strong>Consumer group topic resets.</strong> An operations team manually resets the consumer group offset to replay a production incident. Without an idempotency layer, every downstream system re-receives every event from the reset point. With a database idempotency table and a sufficiently long retention window, the replayed events are silently discarded. If the retention window has elapsed, the table has been pruned and the events will be reprocessed. Size your retention window to the maximum credible reset window: for a production payment pipeline, 7 days is a reasonable minimum.</li>
           </ul>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="../integration-patterns/idempotency-keys.html"><span class="lab-related__kicker">Lab &middot; Integration Design Patterns</span><span class="lab-related__name">Idempotency Keys at Scale</span></a></li>
+              <li><a class="lab-related__link" href="debezium-and-outbox.html"><span class="lab-related__kicker">Lab &middot; Data Synchronisation</span><span class="lab-related__name">Data Synchronisation: Debezium &amp; Outbox</span></a></li>
+              <li><a class="lab-related__link" href="../event-driven/dead-letter-queue-and-replay.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">Dead Letter Queue Design &amp; Event Replay Patterns</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/idempotent-consumer-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Idempotency Is a Business Decision: Why Payment Deduplication Requires VP-Level Commitment</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../data-sync.html">
               <div class="article-nav__label">&larr; Back to topic</div>
@@ -640,20 +673,51 @@ groups:
     </div>
   </section>
 
+  </main>
+
   <footer class="site-footer">
     <div class="container">
-      <div class="site-footer__inner">
-        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
-        <ul class="footer-links">
-          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
-          <li><a href="../../contact.html">Contact</a></li>
-          <li><a href="../../resume.html">Resume</a></li>
-        </ul>
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+          <p>Enterprise technology and transformation executive. Riyadh, Saudi Arabia.</p>
+        </div>
+        <nav class="site-footer__col" aria-label="Explore">
+          <p class="site-footer__title">Explore</p>
+          <ul>
+            <li><a href="../../about.html">About</a></li>
+            <li><a href="../../experience.html">Experience</a></li>
+            <li><a href="../../projects.html">Transformations</a></li>
+            <li><a href="../../expertise.html">Expertise</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Writing">
+          <p class="site-footer__title">Writing</p>
+          <ul>
+            <li><a href="../../blog.html">Insights</a></li>
+            <li><a href="../../technical.html">Technical Lab</a></li>
+            <li><a href="../../feed.xml">RSS feed</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Connect">
+          <p class="site-footer__title">Connect</p>
+          <ul>
+            <li><a href="../../contact.html">Contact</a></li>
+            <li><a href="https://www.linkedin.com/in/walidkhb" rel="me noopener" target="_blank">LinkedIn</a></li>
+            <li><a href="https://medium.com/@walidkhb" rel="me noopener" target="_blank">Medium</a></li>
+            <li><a href="https://github.com/walidkhb" rel="me noopener" target="_blank">GitHub</a></li>
+            <li><a href="../../assets/Waleed-Albadawi-CV.pdf">Download CV</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="site-footer__base">
+        <span>&copy; 2026 Waleed Albadawi</span>
+        <span>Views are my own and do not represent my employer.</span>
       </div>
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js?v=20261127"></script>
+  <script src="../../assets/js/main.js?v=20261128b"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

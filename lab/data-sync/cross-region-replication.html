@@ -21,16 +21,19 @@
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta property="og:image:alt" content="Waleed Albadawi — Building technology organisations that scale">
   <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/cross-region-replication.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"></noscript>
   <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
   <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
-  <link rel="stylesheet" href="../../assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261128b">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261128b">
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
     .breadcrumb a { color: var(--color-accent); text-decoration: none; }
@@ -41,56 +44,31 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Cross-Region Replication Patterns for Regulated Data",
+    "headline": "Data Synchronisation: Cross-Region Replication Patterns",
     "description": "Active/active vs active/passive multi-region data replication for regulated, business-critical systems: conflict resolution, Kafka MirrorMaker 2, Postgres streaming and logical replication, IBM Db2 HADR, data-residency constraints, and the trade-offs that survive production failover.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-07-18",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/data-sync/cross-region-replication.html"
     },
     "url": "https://www.wbadawi.info/lab/data-sync/cross-region-replication.html",
+    "inLanguage": "en",
+    "wordCount": 3034,
     "isPartOf": {
-      "@type": "WebPage",
-      "name": "Data Synchronisation &mdash; Lab",
+      "@type": "CollectionPage",
+      "name": "Data Synchronisation — Technical Lab",
       "url": "https://www.wbadawi.info/lab/data-sync.html"
     },
     "proficiencyLevel": "Expert",
@@ -100,27 +78,61 @@
     }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Data Synchronisation",
+        "item": "https://www.wbadawi.info/lab/data-sync.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Data Synchronisation: Cross-Region Replication Patterns",
+        "item": "https://www.wbadawi.info/lab/data-sync/cross-region-replication.html"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header" id="header">
     <div class="site-header__inner">
       <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
-      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+      <nav class="site-nav" id="nav" aria-label="Main navigation">
         <a href="../../about.html">About</a>
         <a href="../../experience.html">Experience</a>
-        <a href="../../projects.html">Initiatives</a>
-        <a href="../../expertise.html">Expertise</a>
-        <a href="../../resume.html">Resume</a>
+        <a href="../../projects.html">Transformations</a>
         <a href="../../blog.html">Insights</a>
-        <a href="../../technical.html" class="active">Lab</a>
-        <a href="../../contact.html">Contact</a>
+        <a href="../../technical.html" class="active" aria-current="page">Lab</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../contact.html" class="site-nav__cta">Contact</a>
       </nav>
-      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
     </div>
   </header>
+
+  <main id="main">
 
   <section class="page-header">
     <div class="container container--wide">
@@ -130,7 +142,14 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Cross-Region Replication</div>
           <span class="overline">Lab Article</span>
           <h1>Data Synchronisation: Cross-Region Replication Patterns</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-07-18">18 July 2026</time></span>
+            <span>Updated <time datetime="2026-11-27">27 November 2026</time></span>
+            <span>13 min read</span>
+          </div>
           <p class="lead">Active/active vs active/passive, conflict resolution strategies, MirrorMaker 2 for Kafka, Postgres logical replication, IBM Db2 HADR &mdash; and the specific trade-offs that matter when your data has to stay inside one jurisdiction and still survive a regional outage.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
         </div>
       </div>
     </div>
@@ -140,7 +159,7 @@
     <div class="container container--wide">
       <div class="lab-article__layout">
 
-        <aside class="lab-article__toc">
+        <nav class="lab-article__toc" aria-label="On this page">
           <div class="lab-article__toc-title">On this page</div>
           <ul class="lab-article__toc-list">
             <li><a href="#overview">Overview</a></li>
@@ -154,16 +173,13 @@
             <li><a href="#observability">Observability</a></li>
             <li><a href="#decision">Decision guide</a></li>
           </ul>
-        </aside>
+        </nav>
 
         <article class="lab-article__body">
 
           <div class="article-meta">
             <span class="article-meta__item"><strong>Stack:</strong> PostgreSQL 16 / Kafka MirrorMaker 2.6 / IBM Db2 HADR / Patroni / Debezium 2.x</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
-            <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
-            <span class="article-meta__item"><strong>Published:</strong> Jul 18, 2026</span>
-            <span class="article-meta__item"><strong>Author:</strong> <a href="../../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></span>
           </div>
 
           <h2 id="overview">Overview</h2>
@@ -399,112 +415,122 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>mm2-config.properties</span><span class="code-block__lang">properties</span></div>
-<pre><code><span class="tok-c"># MirrorMaker 2 — bidirectional between east and west clusters</span>
-<span class="tok-k">clusters</span> = <span class="tok-s">east, west</span>
+<pre><code><span class="tok-c"># MirrorMaker 2 (connect-mirror-maker.properties) - bidirectional east &lt;-&gt; west</span>
+<span class="tok-k">clusters</span> = east, west
 
-<span class="tok-k">east.bootstrap.servers</span>  = <span class="tok-s">kafka-east.svc.internal:9093</span>
-<span class="tok-k">west.bootstrap.servers</span>  = <span class="tok-s">kafka-west.svc.internal:9093</span>
+<span class="tok-k">east.bootstrap.servers</span>  = kafka-east.svc.internal:<span class="tok-n">9093</span>
+<span class="tok-k">west.bootstrap.servers</span>  = kafka-west.svc.internal:<span class="tok-n">9093</span>
 
-<span class="tok-c"># TLS between regions — mandatory for regulated data in transit</span>
-<span class="tok-k">east.security.protocol</span>  = <span class="tok-s">SSL</span>
-<span class="tok-k">west.security.protocol</span>  = <span class="tok-s">SSL</span>
-<span class="tok-k">east.ssl.keystore.location</span>  = <span class="tok-s">/certs/east.keystore.jks</span>
-<span class="tok-k">west.ssl.keystore.location</span>  = <span class="tok-s">/certs/west.keystore.jks</span>
+<span class="tok-c"># TLS between regions - expected for regulated data in transit</span>
+<span class="tok-k">east.security.protocol</span>  = SSL
+<span class="tok-k">west.security.protocol</span>  = SSL
+<span class="tok-k">east.ssl.truststore.location</span> = /certs/east.truststore.jks
+<span class="tok-k">west.ssl.truststore.location</span> = /certs/west.truststore.jks
+<span class="tok-k">east.ssl.keystore.location</span>   = /certs/east.keystore.jks
+<span class="tok-k">west.ssl.keystore.location</span>   = /certs/west.keystore.jks
 
 <span class="tok-c"># Enable both directions</span>
-<span class="tok-k">east->west.enabled</span>  = <span class="tok-s">true</span>
-<span class="tok-k">west->east.enabled</span>  = <span class="tok-s">true</span>
+<span class="tok-k">east-&gt;west.enabled</span>  = true
+<span class="tok-k">west-&gt;east.enabled</span>  = true
 
-<span class="tok-c"># Topics to replicate — an explicit allow-list beats a deny-list for regulated data</span>
-<span class="tok-k">east->west.topics</span>  = <span class="tok-s">payment\.events, customer\.events, limit\.events</span>
-<span class="tok-k">west->east.topics</span>  = <span class="tok-s">payment\.events, customer\.events, limit\.events</span>
+<span class="tok-c"># Topics to replicate - an explicit allow-list beats a deny-list for regulated data</span>
+<span class="tok-k">east-&gt;west.topics</span>  = payment\.events, customer\.events, limit\.events
+<span class="tok-k">west-&gt;east.topics</span>  = payment\.events, customer\.events, limit\.events
 
-<span class="tok-c"># Offset translation — critical for failover without replay</span>
-<span class="tok-k">east->west.sync.group.offsets.enabled</span>   = <span class="tok-s">true</span>
-<span class="tok-k">west->east.sync.group.offsets.enabled</span>   = <span class="tok-s">true</span>
-<span class="tok-k">east->west.emit.checkpoints.enabled</span>      = <span class="tok-s">true</span>
-<span class="tok-k">west->east.emit.checkpoints.enabled</span>      = <span class="tok-s">true</span>
-<span class="tok-k">east->west.emit.heartbeats.enabled</span>       = <span class="tok-s">true</span>
+<span class="tok-c"># Offset translation - critical for failover without replay</span>
+<span class="tok-k">east-&gt;west.sync.group.offsets.enabled</span>   = true
+<span class="tok-k">west-&gt;east.sync.group.offsets.enabled</span>   = true
+<span class="tok-k">east-&gt;west.emit.checkpoints.enabled</span>     = true
+<span class="tok-k">west-&gt;east.emit.checkpoints.enabled</span>     = true
+<span class="tok-k">east-&gt;west.emit.heartbeats.enabled</span>      = true
+<span class="tok-k">west-&gt;east.emit.heartbeats.enabled</span>      = true
 
 <span class="tok-c"># Replication factor for mirrored topics in the target cluster</span>
-<span class="tok-k">east->west.replication.factor</span>  = <span class="tok-n">3</span>
+<span class="tok-k">replication.factor</span> = <span class="tok-n">3</span>
 
-<span class="tok-c"># Consumer lag limit before connector throttles; keep below 30 s for instant-payment flows</span>
-<span class="tok-k">east->west.consumer.lag.threshold.ms</span>  = <span class="tok-n">20000</span></code></pre>
+<span class="tok-c"># MM2 has no lag-threshold or throttling setting. Watch lag through its metrics instead:</span>
+<span class="tok-c">#   MirrorSourceConnector   replication-latency-ms (max/avg), record-age-ms (max/avg)</span>
+<span class="tok-c">#   MirrorCheckpointConnector checkpoint-latency-ms</span>
+<span class="tok-c"># exposed over JMX as kafka.connect.mirror:type=MirrorSourceConnector,target=*,topic=*,partition=*</span>
+<span class="tok-c"># Alert when replication-latency-ms max stays above your RPO budget (e.g. 20 s for instant payments).</span></code></pre>
           </div>
 
           <div class="callout callout--warn">
             <div class="callout__title">Cyclic replication loop</div>
-            <p>MM2 uses a topic-name prefix convention (<code>east.payment.events</code> in the west cluster) to avoid replicating a mirror back to its origin. This only works if your topic allow-list is an exact whitelist, not a regex that also matches the prefixed names. A <code>.*</code> replication pattern will cause every message to loop endlessly between clusters. Confirm the pattern excludes the prefix before going live.</p>
+            <p>MM2&rsquo;s default replication policy prefixes remote topics with their source alias (<code>east.payment.events</code> on the west cluster), and its cycle detection skips topics that originated in the cluster it is writing to &mdash; so a default bidirectional setup does not loop. The trap is <code>IdentityReplicationPolicy</code>, which keeps topic names unchanged: MM2 can no longer tell a mirror from an original, so it is suitable only for one-way replication. Keep the default policy for active/active, and still prefer an explicit topic allow-list for regulated data.</p>
           </div>
 
           <h2 id="db-replication">Database replication</h2>
           <p>Kafka handles event streams. The relational database holding the ledger, account state, and customer master needs its own cross-region strategy. Two platforms common in large enterprise estates are PostgreSQL (for newer microservices) and IBM Db2 (often underneath legacy systems of record). Each has a distinct replication path.</p>
 
-          <p><strong>PostgreSQL streaming replication</strong> is the default HA mechanism: the primary streams WAL to one or more standbys in real time. Standbys are read-only until promoted. For cross-region hot-standby, use <code>synchronous_commit = remote_apply</code> on the primary for zero-RPO commits at the cost of a WAN-round-trip on every write. For async replication with a small RPO lag, use <code>synchronous_commit = off</code> on the inter-region standby and measure the lag via <code>pg_stat_replication.replay_lag</code>.</p>
+          <p><strong>PostgreSQL streaming replication</strong> is the default HA mechanism: the primary streams WAL to one or more standbys in real time. Standbys are read-only until promoted. Synchronous replication is decided on the primary: a standby named in <code>synchronous_standby_names</code> must confirm each commit. With <code>synchronous_commit = on</code> the commit waits until the WAL is flushed on the synchronous standby (zero RPO); <code>remote_apply</code> also waits until the change is visible there, which matters only if you read from that standby. Making a cross-region standby synchronous puts a WAN round-trip on every write. To keep it asynchronous, leave it out of <code>synchronous_standby_names</code> and measure its lag via <code>pg_stat_replication.replay_lag</code>.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>postgresql.conf — primary (east region)</span><span class="code-block__lang">ini</span></div>
-<pre><code><span class="tok-k">wal_level</span>                = <span class="tok-s">replica</span>
-<span class="tok-k">max_wal_senders</span>          = <span class="tok-n">5</span>
-<span class="tok-k">wal_keep_size</span>            = <span class="tok-n">1024</span>MB
+            <div class="code-block__header"><span>postgresql.conf &mdash; primary and standby settings</span><span class="code-block__lang">ini</span></div>
+<pre><code><span class="tok-c"># --- primary (east region) ---</span>
+<span class="tok-k">wal_level</span>                 = replica
+<span class="tok-k">max_wal_senders</span>           = <span class="tok-n">5</span>
+<span class="tok-k">wal_keep_size</span>             = <span class="tok-n">1024MB</span>
+<span class="tok-k">wal_log_hints</span>             = on        <span class="tok-c"># lets pg_rewind re-sync this node after a failover</span>
 
-<span class="tok-c"># Synchronous replication to local HA standby; async to cross-region standby</span>
-<span class="tok-k">synchronous_standby_names</span> = <span class="tok-s">FIRST 1 (standby-local, standby-west)</span>
-<span class="tok-c"># standby-local: sync, same DC — zero RPO within region</span>
-<span class="tok-c"># standby-west: async by position (FIRST 1 means only local must ack)</span>
+<span class="tok-c"># Only the local standby is synchronous. A standby listed after it inside FIRST 1 (...)</span>
+<span class="tok-c"># is a *potential* sync standby: it would become synchronous if the local one dropped</span>
+<span class="tok-c"># out, putting a WAN round-trip on every commit. Leave the cross-region standby out.</span>
+<span class="tok-k">synchronous_standby_names</span> = <span class="tok-s">'FIRST 1 (standby_local)'</span>
+<span class="tok-k">synchronous_commit</span>        = on        <span class="tok-c"># commit waits for WAL flush on standby_local: zero RPO in-region</span>
 
-<span class="tok-k">recovery_target_timeline</span> = <span class="tok-s">latest</span>    <span class="tok-c"># follow timeline switches on failover</span>
-<span class="tok-k">hot_standby</span>              = <span class="tok-s">on</span>        <span class="tok-c"># allow reads from west standby</span>
-<span class="tok-k">hot_standby_feedback</span>     = <span class="tok-s">on</span>        <span class="tok-c"># prevent query conflicts from bloat vacuum</span></code></pre>
+<span class="tok-c"># --- standbys (standby_local, standby_west) ---</span>
+<span class="tok-k">hot_standby</span>               = on        <span class="tok-c"># allow read-only queries on the standby</span>
+<span class="tok-k">hot_standby_feedback</span>      = on        <span class="tok-c"># fewer query cancellations on the standby, at the cost of primary bloat</span>
+<span class="tok-c"># recovery_target_timeline defaults to 'latest' (PostgreSQL 12+): standbys follow a promotion</span></code></pre>
           </div>
 
-          <p><strong>Patroni</strong> is the recommended HA layer for Postgres in Kubernetes. It wraps streaming replication with automatic leader election (backed by etcd or Consul), a REST health endpoint, and a switchover/failover CLI. Cross-region Patroni requires that your distributed consensus store (etcd) also spans regions &mdash; a cross-region etcd cluster with 5 nodes, 2 per region and 1 as tiebreaker, is the standard configuration.</p>
+          <p><strong>Patroni</strong> is the recommended HA layer for Postgres in Kubernetes. It wraps streaming replication with automatic leader election (backed by etcd or Consul), a REST health endpoint, and a switchover/failover CLI. Cross-region Patroni requires that your distributed consensus store (etcd) also spans regions, with an odd number of members across three locations &mdash; for example two per region plus a tiebreaker at a third site. With only two locations, losing the one that holds the etcd majority stops automatic failover.</p>
 
           <p><strong>IBM Db2 HADR</strong> is the IBM-native solution for Db2 HA/DR. Configure HADR with <code>HADR_SYNCMODE NEARSYNC</code> (primary waits for the log to reach the standby buffer but not be applied) for a good balance between RPO and WAN round-trip cost. <code>SUPERASYNC</code> gives the lowest latency but risks losing the in-flight log on primary failure.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>db2 — configure HADR</span><span class="code-block__lang">shell</span></div>
-<pre><code><span class="tok-c"># On primary (east region)</span>
-<span class="tok-k">UPDATE</span> DB CFG FOR PAYMENTSDB USING
-  HADR_LOCAL_HOST    <span class="tok-s">'db2-primary.east.svc.internal'</span>
-  HADR_LOCAL_SVC     <span class="tok-n">50900</span>
-  HADR_REMOTE_HOST   <span class="tok-s">'db2-standby.west.svc.internal'</span>
-  HADR_REMOTE_SVC    <span class="tok-n">50901</span>
-  HADR_REMOTE_INST   <span class="tok-s">'db2inst1'</span>
-  HADR_SYNCMODE      <span class="tok-s">NEARSYNC</span>
-  HADR_TIMEOUT       <span class="tok-n">120</span>
-  HADR_PEER_WINDOW   <span class="tok-n">120</span>;   <span class="tok-c">-- prevents split-brain automatic takeover within 120 s</span>
+            <div class="code-block__header"><span>db2 &mdash; configure HADR</span><span class="code-block__lang">shell</span></div>
+<pre><code><span class="tok-c"># On the primary (east region) - Db2 CLP commands run from the shell</span>
+db2 <span class="tok-s">"UPDATE DB CFG FOR PAYMENTSDB USING</span>
+       HADR_LOCAL_HOST  db2-primary.east.svc.internal  HADR_LOCAL_SVC  <span class="tok-n">50900</span>
+       HADR_REMOTE_HOST db2-standby.west.svc.internal  HADR_REMOTE_SVC <span class="tok-n">50901</span>
+       HADR_REMOTE_INST db2inst1
+       HADR_SYNCMODE    NEARSYNC
+       HADR_TIMEOUT     <span class="tok-n">120</span>
+       HADR_PEER_WINDOW <span class="tok-n">120</span><span class="tok-s">"</span>
+<span class="tok-c"># HADR_PEER_WINDOW: after losing the standby, the primary blocks commits for up to 120 s,</span>
+<span class="tok-c"># so a TAKEOVER HADR ... BY FORCE PEER WINDOW ONLY on the standby cannot lose committed work.</span>
 
-<span class="tok-k">START HADR ON DB</span> PAYMENTSDB <span class="tok-k">AS PRIMARY</span>;
+db2 <span class="tok-s">"START HADR ON DB PAYMENTSDB AS PRIMARY"</span>
 
-<span class="tok-c"># Monitor replication health — run from primary</span>
-<span class="tok-k">GET SNAPSHOT FOR</span> DATABASE ON PAYMENTSDB | grep -E <span class="tok-s">'HADR|replay'</span></code></pre>
+<span class="tok-c"># Monitor replication health (role, state, log gap) from either side</span>
+db2pd -db PAYMENTSDB -hadr</code></pre>
           </div>
 
           <ol class="step-list">
             <li>
-              <h4>Enable cross-region connectivity</h4>
+              <h3>Enable cross-region connectivity</h3>
               <p>Open the HADR port (Db2: TCP/50900–50901, Postgres: TCP/5432) between data centres. Use TLS/mTLS for the replication stream &mdash; unencrypted replication of regulated data over a WAN is a control failure under almost any regulatory framework.</p>
             </li>
             <li>
-              <h4>Take a base backup to the standby</h4>
+              <h3>Take a base backup to the standby</h3>
               <p>Postgres: <code>pg_basebackup -h primary -D /var/lib/postgresql/data -P -R</code>. Db2: offline backup restore or <code>db2inidb</code> standby initialisation.</p>
             </li>
             <li>
-              <h4>Start replication and verify lag</h4>
-              <p>Postgres: <code>SELECT * FROM pg_stat_replication</code> on primary; check <code>sent_lsn - replay_lsn</code>. Db2: <code>GET SNAPSHOT FOR DATABASE</code> and look at <code>HADR log gap running</code>.</p>
+              <h3>Start replication and verify lag</h3>
+              <p>Postgres: <code>SELECT * FROM pg_stat_replication</code> on primary; check <code>sent_lsn - replay_lsn</code>. Db2: <code>db2pd -db PAYMENTSDB -hadr</code> (or the <code>MON_GET_HADR</code> table function) and check the HADR state and log gap.</p>
             </li>
             <li>
-              <h4>Configure automatic failover</h4>
-              <p>Postgres with Patroni: leader election is automatic when the primary fails a health check. Db2: use IBM High Availability Cluster Multi-Processing (HACMP) or a custom script calling <code>TAKEOVER HADR ON DB</code>. Neither should fire before a peer window timeout to prevent split-brain.</p>
+              <h3>Configure automatic failover</h3>
+              <p>Postgres with Patroni: leader election is automatic when the primary fails a health check. Db2: use a cluster manager with quorum &mdash; the integrated Pacemaker support in recent Db2 11.5 releases, or TSA through <code>db2haicu</code> &mdash; rather than a home-grown script calling <code>TAKEOVER HADR ON DB</code>. Either way, automated takeover must fence the old primary to prevent split-brain.</p>
             </li>
             <li>
-              <h4>Test failover end-to-end quarterly</h4>
+              <h3>Test failover end-to-end quarterly</h3>
               <p>Perform a planned switchover, measure actual RTO, verify the application reconnects correctly, and walk the standby back to primary. Simulate network partition, not just a clean shutdown. Regulators and auditors expect evidence of tested DR procedures.</p>
             </li>
             <li>
-              <h4>Document failback</h4>
+              <h3>Document failback</h3>
               <p>After a failover, the old primary becomes the new standby. Re-sync it from the new primary (another base backup or HADR reinitialisation) before promoting it back. Skipping this step causes divergent timelines and data loss.</p>
             </li>
           </ol>
@@ -514,7 +540,7 @@
           <p>Translate this into concrete targets:</p>
           <ul>
             <li><strong>RPO (Recovery Point Objective)</strong> &mdash; how much data can be lost. For instant payments and other system-of-record writes: effectively zero (synchronous replication). For analytics and reporting replicas: seconds to minutes.</li>
-            <li><strong>RTO (Recovery Time Objective)</strong> &mdash; how long until the service is back. Patroni-managed Postgres: 10&ndash;30 seconds. Manual Db2 HADR takeover: minutes. Application-level reconnect logic adds another 10&ndash;60 seconds to the RTO you present to the business.</li>
+            <li><strong>RTO (Recovery Time Objective)</strong> &mdash; how long until the service is back. Patroni-managed Postgres: roughly the leader-key TTL plus promotion time &mdash; with the <code>ttl: 60</code> shown below, budget about a minute; shorter TTLs fail over faster but are more sensitive to WAN blips. Manual Db2 HADR takeover: minutes. Application-level reconnect logic adds another 10&ndash;60 seconds to the RTO you present to the business.</li>
           </ul>
 
           <div class="callout callout--note">
@@ -525,7 +551,7 @@
           <h2 id="failover">Failover &amp; failback</h2>
           <p>Automated failover requires three things to be in place <em>before</em> the incident: a consensus mechanism that detects failure faster than the timeout, a promotion sequence that does not cause split-brain, and application-layer reconnection logic that handles the new primary endpoint without a restart.</p>
 
-          <p>The most common production failure in multi-region deployments is the network partition that is not a real primary failure. The primary is up in Region A; the standby in Region B cannot see it due to a WAN link issue. If the standby promotes itself, both regions believe they are primary. Both write. Replication resumes when the link recovers, and the two divergent timelines must be reconciled manually &mdash; with potentially lost or duplicated payment records. The prevention is a <strong>peer window</strong> (Db2) or <strong>TTL-based fencing</strong> (Patroni + etcd): the standby will not promote until the peer window has expired <em>and</em> it has confirmed the old primary is fenced (e.g., its leader lock in etcd has expired).</p>
+          <p>The most common production failure in multi-region deployments is the network partition that is not a real primary failure. The primary is up in Region A; the standby in Region B cannot see it due to a WAN link issue. If the standby promotes itself, both regions believe they are primary. Both write. Replication resumes when the link recovers, and the two divergent timelines must be reconciled manually &mdash; with potentially lost or duplicated payment records. The prevention is quorum plus fencing. With Patroni, the leader lock lives in etcd: a primary that cannot renew its leader key demotes itself, and a replica promotes only after that key has expired (a watchdog makes the self-demotion enforceable). With Db2 HADR, the cluster manager provides quorum and fencing, and <code>BY FORCE PEER WINDOW ONLY</code> restricts a forced takeover to the window in which no committed transactions can be lost.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>patroni.yaml &mdash; cross-region</span><span class="code-block__lang">yaml</span></div>
@@ -551,7 +577,7 @@
   <span class="tok-k">use_pg_rewind</span>: <span class="tok-s">true</span>                 <span class="tok-c"># fast re-sync of old primary after failback</span></code></pre>
           </div>
 
-          <p><strong>Failback</strong> is the step most runbooks skip. After a failover, the old primary is stale. The fastest path back: use <code>pg_rewind</code> (configured in Patroni as <code>use_pg_rewind: true</code>) to re-sync it from the new primary&rsquo;s divergence point rather than running a full base backup. <code>pg_rewind</code> can only be used if the old primary was a sync standby at time of failure; otherwise a base backup is required. Either way, test failback in the DR exercise, not just failover.</p>
+          <p><strong>Failback</strong> is the step most runbooks skip. After a failover, the old primary is stale. The fastest path back: use <code>pg_rewind</code> (configured in Patroni as <code>use_pg_rewind: true</code>) to re-sync it from the new primary&rsquo;s divergence point rather than running a full base backup. <code>pg_rewind</code> needs data checksums or <code>wal_log_hints = on</code> on the old primary, and the WAL since the divergence point must still be available; otherwise a fresh base backup is required. Either way, test failback in the DR exercise, not just failover.</p>
 
           <h2 id="data-residency">Data residency</h2>
           <p>Data-residency rules &mdash; financial-sector cloud frameworks such as SAMA&rsquo;s Cloud Computing Regulatory Framework, national data-protection laws, public-sector and health-data rules &mdash; typically impose three constraints on cross-region replication for regulated data:</p>
@@ -572,44 +598,43 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>prometheus-rules.yaml</span><span class="code-block__lang">yaml</span></div>
-<pre><code><span class="tok-k">groups</span>:
-  - <span class="tok-k">name</span>: <span class="tok-s">replication</span>
+<pre><code><span class="tok-c"># Metric names depend on your exporters (postgres_exporter, JMX exporter rules for</span>
+<span class="tok-c"># Kafka Connect / MirrorMaker 2, a Db2 exporter). Treat the names below as placeholders.</span>
+<span class="tok-k">groups</span>:
+  - <span class="tok-k">name</span>: replication
     <span class="tok-k">rules</span>:
-      <span class="tok-c"># Postgres streaming replication lag &gt; 30 s → page</span>
-      - <span class="tok-k">alert</span>: <span class="tok-s">PostgresReplicationLagHigh</span>
-        <span class="tok-k">expr</span>: <span class="tok-s">pg_replication_lag_seconds{standby="west"} &gt; 30</span>
-        <span class="tok-k">for</span>: <span class="tok-s">2m</span>
+      <span class="tok-c"># Postgres streaming replication lag &gt; 30 s -&gt; page</span>
+      - <span class="tok-k">alert</span>: PostgresReplicationLagHigh
+        <span class="tok-k">expr</span>: pg_replication_lag_seconds{standby=<span class="tok-s">"west"</span>} &gt; <span class="tok-n">30</span>
+        <span class="tok-k">for</span>: <span class="tok-n">2m</span>
         <span class="tok-k">labels</span>:
-          <span class="tok-k">severity</span>: <span class="tok-s">critical</span>
+          <span class="tok-k">severity</span>: critical
         <span class="tok-k">annotations</span>:
-          <span class="tok-k">summary</span>: <span class="tok-s">"Postgres cross-region standby lag {{ $value }}s — RTO breach risk"</span>
-
-      <span class="tok-c"># MirrorMaker 2 consumer lag &gt; 5000 messages → warn</span>
-      - <span class="tok-k">alert</span>: <span class="tok-s">MM2ConsumerLagHigh</span>
-        <span class="tok-k">expr</span>: <span class="tok-s">kafka_consumer_group_lag{group="mirrormaker2"} &gt; 5000</span>
-        <span class="tok-k">for</span>: <span class="tok-s">5m</span>
+          <span class="tok-k">summary</span>: <span class="tok-s">"Postgres cross-region standby lag {{ $value }}s - RPO budget at risk"</span>
+      <span class="tok-c"># MM2 replication latency (MirrorSourceConnector replication-latency-ms, max) &gt; 20 s</span>
+      - <span class="tok-k">alert</span>: MM2ReplicationLatencyHigh
+        <span class="tok-k">expr</span>: max by (topic) (kafka_connect_mirror_source_connector_replication_latency_ms_max) &gt; <span class="tok-n">20000</span>
+        <span class="tok-k">for</span>: <span class="tok-n">5m</span>
         <span class="tok-k">labels</span>:
-          <span class="tok-k">severity</span>: <span class="tok-s">warning</span>
+          <span class="tok-k">severity</span>: warning
         <span class="tok-k">annotations</span>:
-          <span class="tok-k">summary</span>: <span class="tok-s">"MM2 replication lag {{ $value }} msgs — check WAN link"</span>
-
-      <span class="tok-c"># MM2 heartbeat not seen in 60 s → connector is down</span>
-      - <span class="tok-k">alert</span>: <span class="tok-s">MM2HeartbeatMissing</span>
-        <span class="tok-k">expr</span>: <span class="tok-s">time() - kafka_mm2_heartbeat_timestamp &gt; 60</span>
-        <span class="tok-k">for</span>: <span class="tok-s">1m</span>
+          <span class="tok-k">summary</span>: <span class="tok-s">"MM2 replication latency {{ $value }} ms on {{ $labels.topic }} - check WAN link and connector tasks"</span>
+      <span class="tok-c"># MM2 heartbeats stop arriving in the target cluster -&gt; replication is down</span>
+      - <span class="tok-k">alert</span>: MM2HeartbeatMissing
+        <span class="tok-k">expr</span>: time() - mm2_heartbeat_last_seen_timestamp_seconds &gt; <span class="tok-n">60</span>
+        <span class="tok-k">for</span>: <span class="tok-n">1m</span>
         <span class="tok-k">labels</span>:
-          <span class="tok-k">severity</span>: <span class="tok-s">critical</span>
+          <span class="tok-k">severity</span>: critical
         <span class="tok-k">annotations</span>:
-          <span class="tok-k">summary</span>: <span class="tok-s">"MM2 heartbeat absent — cross-region Kafka replication down"</span>
-
-      <span class="tok-c"># Db2 HADR log gap &gt; 10 MB → warn</span>
-      - <span class="tok-k">alert</span>: <span class="tok-s">Db2HADRLogGapHigh</span>
-        <span class="tok-k">expr</span>: <span class="tok-s">db2_hadr_log_gap_bytes &gt; 10485760</span>
-        <span class="tok-k">for</span>: <span class="tok-s">3m</span>
+          <span class="tok-k">summary</span>: <span class="tok-s">"MM2 heartbeat absent - cross-region Kafka replication down"</span>
+      <span class="tok-c"># Db2 HADR log gap &gt; 10 MB -&gt; warn</span>
+      - <span class="tok-k">alert</span>: Db2HADRLogGapHigh
+        <span class="tok-k">expr</span>: db2_hadr_log_gap_bytes &gt; <span class="tok-n">10485760</span>
+        <span class="tok-k">for</span>: <span class="tok-n">3m</span>
         <span class="tok-k">labels</span>:
-          <span class="tok-k">severity</span>: <span class="tok-s">warning</span>
+          <span class="tok-k">severity</span>: warning
         <span class="tok-k">annotations</span>:
-          <span class="tok-k">summary</span>: <span class="tok-s">"Db2 HADR log gap {{ $value | humanize }} — standby drifting"</span></code></pre>
+          <span class="tok-k">summary</span>: <span class="tok-s">"Db2 HADR log gap {{ $value | humanize }} - standby drifting"</span></code></pre>
           </div>
 
           <p>Beyond lag, build a <strong>data-age dashboard</strong>: pick a high-write table (e.g., <code>payment_transactions</code>), track the timestamp of its most recent row on both primary and standby, and alert if the standby&rsquo;s most recent row is more than N seconds older than the primary&rsquo;s. Replication metrics at the platform layer (LSN, log gap) measure pipe capacity; data-age metrics measure actual business impact.</p>
@@ -619,23 +644,23 @@
 
           <ol class="step-list">
             <li>
-              <h4>What is the maximum acceptable data loss (RPO)?</h4>
+              <h3>What is the maximum acceptable data loss (RPO)?</h3>
               <p>Zero RPO &rarr; synchronous replication required &rarr; WAN round-trip adds to every write latency &rarr; active/hot-standby with <code>synchronous_commit = remote_apply</code>. Non-zero RPO (e.g., 5 s for analytics) &rarr; async replication &rarr; all three topologies are viable.</p>
             </li>
             <li>
-              <h4>Can the second region serve live reads under normal operation?</h4>
+              <h3>Can the second region serve live reads under normal operation?</h3>
               <p>Yes &rarr; active/hot-standby or active/active. No &rarr; active/passive. Hot-standby reads with slight lag are acceptable for most reference data; they are not acceptable for balance reads that precede an authorisation decision.</p>
             </li>
             <li>
-              <h4>Do multiple regions receive independent writes to the same data?</h4>
+              <h3>Do multiple regions receive independent writes to the same data?</h3>
               <p>Yes &rarr; active/active, with mandatory write partitioning or conflict resolution. No &rarr; one of the simpler topologies. If you cannot answer &ldquo;no&rdquo; with confidence, you do not yet have the write ownership model required for active/active and should not proceed.</p>
             </li>
             <li>
-              <h4>What is the operational cost ceiling?</h4>
-              <p>Active/active adds conflict resolution logic, write-routing infrastructure, and significantly more complex failover testing. Budget 3&ndash;4&times; the engineering effort of active/passive. If that budget is not approved, active/hot-standby delivers 90% of the availability improvement at a fraction of the cost.</p>
+              <h3>What is the operational cost ceiling?</h3>
+              <p>Active/active adds conflict resolution logic, write-routing infrastructure, and significantly more complex failover testing. As a planning assumption, expect it to cost several times the engineering effort of active/passive. If that budget is not approved, active/hot-standby delivers most of the availability improvement at a fraction of the cost.</p>
             </li>
             <li>
-              <h4>Does the regulator require tested DR within a defined RTO?</h4>
+              <h3>Does the regulator require tested DR within a defined RTO?</h3>
               <p>Most regulators require regulated firms to document and test business continuity plans. If your approved RTO is under 30 minutes, active/passive with manual failover is likely insufficient &mdash; Patroni-automated Postgres failover or a tested Db2 HADR takeover procedure is required.</p>
             </li>
           </ol>
@@ -645,6 +670,23 @@
             <p>In practice, successful active/active deployments almost always start life as active/passive or active/hot-standby. The teams that shipped active/active reliably understood their write ownership model completely before they changed the topology. Teams that started with active/active as a design goal without that foundation spent years firefighting conflict incidents. The topology is not a statement of ambition; it is a consequence of operational readiness.</p>
           </div>
 
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="conflict-resolution-multi-master.html"><span class="lab-related__kicker">Lab &middot; Data Synchronisation</span><span class="lab-related__name">Data Synchronisation: Conflict Resolution in Multi-Master Replication</span></a></li>
+              <li><a class="lab-related__link" href="../event-driven/strimzi-on-private-ocp.html"><span class="lab-related__kicker">Lab &middot; Event-Driven Architecture</span><span class="lab-related__name">Strimzi on Private OpenShift &mdash; Regulated</span></a></li>
+              <li><a class="lab-related__link" href="reconciliation-pipelines-for-regulators.html"><span class="lab-related__kicker">Lab &middot; Data Synchronisation</span><span class="lab-related__name">Data Synchronisation: Reconciliation Pipelines for Regulators</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/cross-region-data-replication-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">Multi-Region Data: The Architecture Decision That Exposes Your Bank&rsquo;s Continuity Strategy</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
           <nav class="article-nav">
             <a href="../data-sync.html">
               <div class="article-nav__label">&larr; Back to topic</div>
@@ -661,20 +703,51 @@
     </div>
   </section>
 
+  </main>
+
   <footer class="site-footer">
     <div class="container">
-      <div class="site-footer__inner">
-        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
-        <ul class="footer-links">
-          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
-          <li><a href="../../contact.html">Contact</a></li>
-          <li><a href="../../resume.html">Resume</a></li>
-        </ul>
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+          <p>Enterprise technology and transformation executive. Riyadh, Saudi Arabia.</p>
+        </div>
+        <nav class="site-footer__col" aria-label="Explore">
+          <p class="site-footer__title">Explore</p>
+          <ul>
+            <li><a href="../../about.html">About</a></li>
+            <li><a href="../../experience.html">Experience</a></li>
+            <li><a href="../../projects.html">Transformations</a></li>
+            <li><a href="../../expertise.html">Expertise</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Writing">
+          <p class="site-footer__title">Writing</p>
+          <ul>
+            <li><a href="../../blog.html">Insights</a></li>
+            <li><a href="../../technical.html">Technical Lab</a></li>
+            <li><a href="../../feed.xml">RSS feed</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Connect">
+          <p class="site-footer__title">Connect</p>
+          <ul>
+            <li><a href="../../contact.html">Contact</a></li>
+            <li><a href="https://www.linkedin.com/in/walidkhb" rel="me noopener" target="_blank">LinkedIn</a></li>
+            <li><a href="https://medium.com/@walidkhb" rel="me noopener" target="_blank">Medium</a></li>
+            <li><a href="https://github.com/walidkhb" rel="me noopener" target="_blank">GitHub</a></li>
+            <li><a href="../../assets/Waleed-Albadawi-CV.pdf">Download CV</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="site-footer__base">
+        <span>&copy; 2026 Waleed Albadawi</span>
+        <span>Views are my own and do not represent my employer.</span>
       </div>
     </div>
   </footer>
 
-  <script src="../../assets/js/main.js?v=20261127"></script>
+  <script src="../../assets/js/main.js?v=20261128b"></script>
   <script>
     (function(){
       var sections = document.querySelectorAll('.lab-article__body h2[id]');

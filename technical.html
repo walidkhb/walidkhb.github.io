@@ -11,33 +11,36 @@
     gtag('config', 'G-CM7GZQSLWB');
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lab — Waleed Albadawi</title>
-  <meta name="description" content="Technical write-ups on building production systems for regulated, high-volume industries — event-driven architecture, distributed caching, integration patterns, API security, and more.">
+  <title>Technical Lab — Waleed Albadawi</title>
+  <meta name="description" content="Reference architectures and illustrative code for regulated, high-volume platforms: integration patterns, event-driven systems, API security, data synchronisation, caching and delivery. The engineering depth behind the executive work.">
   <meta name="robots" content="index, follow">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Waleed Albadawi — technology executive who reshapes banks into future-ready institutions">
+  <meta property="og:image:alt" content="Waleed Albadawi — Building technology organisations that scale">
   <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
   <link rel="canonical" href="https://www.wbadawi.info/technical.html">
-  <meta property="og:title" content="Lab — Waleed Albadawi">
-  <meta property="og:description" content="Technical write-ups on building production systems for regulated, high-volume industries.">
+  <meta property="og:title" content="Technical Lab — Waleed Albadawi">
+  <meta property="og:description" content="Reference architectures and illustrative code for regulated, high-volume platforms &mdash; the engineering depth behind the executive work.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.wbadawi.info/technical.html">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:locale" content="en_US">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Lab — Waleed Albadawi">
-  <meta name="twitter:description" content="Technical write-ups on building production systems for regulated, high-volume industries.">
+  <meta name="twitter:title" content="Technical Lab — Waleed Albadawi">
+  <meta name="twitter:description" content="Reference architectures and illustrative code for regulated, high-volume platforms &mdash; the engineering depth behind the executive work.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"></noscript>
   <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/img/favicon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/img/favicon-192.png">
   <link rel="apple-touch-icon" href="assets/img/favicon-192.png">
-  <link rel="stylesheet" href="assets/css/style.css?v=20261127">
+  <link rel="stylesheet" href="assets/css/style.css?v=20261128b">
+  <link rel="stylesheet" href="assets/css/lab.css?v=20261128b">
   <style>
     .lab-card {
       display: block;
@@ -55,7 +58,7 @@
     }
     .lab-card__soon {
       font-family: var(--font-mono);
-      font-size: 0.68rem;
+      font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -73,8 +76,8 @@
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "Lab — Waleed Albadawi",
-    "description": "Technical write-ups on building production systems for regulated, high-volume industries — event-driven architecture, distributed caching, integration patterns, API security, and more.",
+    "name": "Technical Lab — Waleed Albadawi",
+    "description": "Reference architectures and illustrative code for regulated, high-volume platforms: integration patterns, event-driven systems, API security, data synchronisation, caching and delivery. The engineering depth behind the executive work.",
     "url": "https://www.wbadawi.info/technical.html",
     "author": {
       "@type": "Person",
@@ -154,35 +157,67 @@
 </head>
 <body>
 
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header" id="header">
     <div class="site-header__inner">
       <a href="index.html" class="site-logo">W<span>.</span> Albadawi</a>
-      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+      <nav class="site-nav" id="nav" aria-label="Main navigation">
         <a href="about.html">About</a>
         <a href="experience.html">Experience</a>
-        <a href="projects.html">Initiatives</a>
-        <a href="expertise.html">Expertise</a>
-        <a href="resume.html">Resume</a>
+        <a href="projects.html">Transformations</a>
         <a href="blog.html">Insights</a>
-        <a href="technical.html" class="active">Lab</a>
-        <a href="contact.html">Contact</a>
+        <a href="technical.html" class="active" aria-current="page">Lab</a>
+        <a href="resume.html">Resume</a>
+        <a href="contact.html" class="site-nav__cta">Contact</a>
       </nav>
-      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
     </div>
   </header>
 
+  <main id="main">
+
   <section class="page-header">
     <div class="container">
-      <span class="overline">Lab</span>
-      <h1>Technical depth.</h1>
-      <p class="lead">Deep technical write-ups on building production systems that must be fast, correct and auditable&mdash;event-driven architecture, distributed caching, integration patterns, API security, and the engineering decisions behind reliable platforms in regulated, high-volume industries.</p>
+      <span class="overline">Technical Lab</span>
+      <h1>The engineering behind the decisions.</h1>
+      <p class="lead">Reference architectures and illustrative code for platforms that must be fast, correct and auditable &mdash; integration patterns, event-driven systems, API security, data synchronisation, caching and delivery pipelines in regulated, high-volume industries.</p>
     </div>
   </section>
 
-  <section>
+  <section class="section--alt" aria-labelledby="lab-bridge-title">
     <div class="container">
+      <span class="overline">From leadership to implementation</span>
+      <h2 id="lab-bridge-title">Why an executive keeps a lab</h2>
+      <p style="max-width: 72ch;">My executive work is about institutions, decisions and people: which capabilities a bank builds, how delivery is governed, which risks are accepted and who carries them. Those decisions only hold if the engineering underneath them is sound. The Lab is that engineering layer, written down &mdash; how the patterns behind integration platforms, open banking and resilient payments actually work, and the trade-offs an architect has to make to run them in production.</p>
+      <div class="lab-bridge">
+        <div class="lab-bridge__step">
+          <p class="lab-bridge__label">Transformations</p>
+          <h3>What changed for the institution</h3>
+          <p>The programmes, my accountability in each, and what they delivered.</p>
+          <a href="projects.html">See the transformations &rarr;</a>
+        </div>
+        <div class="lab-bridge__step">
+          <p class="lab-bridge__label">Insights</p>
+          <h3>The leadership decision</h3>
+          <p>Essays for executives on the choices behind each platform: build or buy, governance, sequencing and risk.</p>
+          <a href="blog.html">Read the Insights &rarr;</a>
+        </div>
+        <div class="lab-bridge__step lab-bridge__step--here">
+          <p class="lab-bridge__label">Technical Lab &middot; you are here</p>
+          <h3>How it works underneath</h3>
+          <p>Vendor-neutral deep dives for architects and engineers. Many articles pair with an Insights essay on the same decision.</p>
+          <a href="#lab-topics">Browse the topics &darr;</a>
+        </div>
+      </div>
+      <p class="lab-disclaimer">Every article is a reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
+    </div>
+  </section>
+
+  <section id="lab-topics" aria-labelledby="lab-topics-title">
+    <div class="container">
+      <h2 id="lab-topics-title" class="lab-section-title">Topics</h2>
       <div class="grid grid--3" style="gap: 1.5rem;">
 
         <a href="lab/field-playbooks.html" class="card lab-card">
@@ -352,28 +387,60 @@
     <div class="container text-center">
       <span class="overline">Beyond the Lab</span>
       <h2 class="mb-3">The engineering behind the executive.</h2>
-      <p class="lead" style="max-width: 600px; margin: 0 auto 1rem;">The Lab shows the depth behind every decision. The signature programmes show what that depth delivers for an institution.</p>
-      <p style="max-width: 600px; margin: 0 auto 2rem; font-size: 0.9375rem;">Leading technology at the scope of the whole institution: strategy, investment, platforms, operations, risk, vendors and people.</p>
+      <p class="lead" style="max-width: 600px; margin: 0 auto 1rem;">The Lab shows the depth behind the decisions. The transformations show what that depth delivers for an institution.</p>
+      <p style="max-width: 600px; margin: 0 auto 2rem; font-size: 0.9375rem;">Strategy, organisation design, sourcing, risk and resilience decisions are only as good as the engineering judgement underneath them.</p>
       <div class="hero__actions" style="justify-content: center;">
-        <a href="contact.html" class="btn btn--accent">Start a Conversation</a>
-        <a href="projects.html" class="btn btn--outline">View Signature Programmes</a>
+        <a href="contact.html" class="btn btn--accent">Start a conversation</a>
+        <a href="projects.html" class="btn btn--outline">See the transformations</a>
+        <a href="blog.html" class="btn btn--outline">Read the Insights</a>
       </div>
     </div>
   </section>
 
+  </main>
+
   <footer class="site-footer">
     <div class="container">
-      <div class="site-footer__inner">
-        <div>&copy; 2026 Waleed Albadawi. All rights reserved.</div>
-        <ul class="footer-links">
-          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
-          <li><a href="contact.html">Contact</a></li>
-          <li><a href="resume.html">Resume</a></li>
-        </ul>
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <a href="index.html" class="site-logo">W<span>.</span> Albadawi</a>
+          <p>Enterprise technology and transformation executive. Riyadh, Saudi Arabia.</p>
+        </div>
+        <nav class="site-footer__col" aria-label="Explore">
+          <p class="site-footer__title">Explore</p>
+          <ul>
+            <li><a href="about.html">About</a></li>
+            <li><a href="experience.html">Experience</a></li>
+            <li><a href="projects.html">Transformations</a></li>
+            <li><a href="expertise.html">Expertise</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Writing">
+          <p class="site-footer__title">Writing</p>
+          <ul>
+            <li><a href="blog.html">Insights</a></li>
+            <li><a href="technical.html">Technical Lab</a></li>
+            <li><a href="feed.xml">RSS feed</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Connect">
+          <p class="site-footer__title">Connect</p>
+          <ul>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="https://www.linkedin.com/in/walidkhb" rel="me noopener" target="_blank">LinkedIn</a></li>
+            <li><a href="https://medium.com/@walidkhb" rel="me noopener" target="_blank">Medium</a></li>
+            <li><a href="https://github.com/walidkhb" rel="me noopener" target="_blank">GitHub</a></li>
+            <li><a href="assets/Waleed-Albadawi-CV.pdf">Download CV</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="site-footer__base">
+        <span>&copy; 2026 Waleed Albadawi</span>
+        <span>Views are my own and do not represent my employer.</span>
       </div>
     </div>
   </footer>
 
-  <script src="assets/js/main.js?v=20261127"></script>
+  <script src="assets/js/main.js?v=20261128b"></script>
 </body>
 </html>

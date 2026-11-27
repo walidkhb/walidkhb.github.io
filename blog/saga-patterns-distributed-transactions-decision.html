@@ -15,6 +15,8 @@
   <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
 
   <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2026-08-08">
+  <meta property="article:modified_time" content="2026-11-27">
   <meta property="og:title" content="Saga Patterns: The Distributed Transaction Decision Leaders Have to Own Before Engineering Writes a Line of Code &mdash; Waleed Albadawi">
   <meta property="og:description" content="Consistency boundaries, compensation authority, and operational runbooks for stuck sagas &mdash; the leadership decisions a multi-step payment workflow needs before architecture begins.">
   <meta property="og:url" content="https://www.wbadawi.info/blog/saga-patterns-distributed-transactions-decision.html">
@@ -37,8 +39,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/style.css?v=20261127">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"></noscript>
+  <link rel="stylesheet" href="../assets/css/style.css?v=20261128b">
 
   <style>
     .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
@@ -51,91 +55,107 @@
     .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
     .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
   </style>
-
+  <link rel="stylesheet" href="../assets/css/insights.css?v=20261128b">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": "Saga Patterns: The Distributed Transaction Decision Leaders Have to Own Before Engineering Writes a Line of Code",
+    "description": "Distributed transactions in a multi-step payment workflow are not an engineering problem. The decisions around consistency boundaries, compensation authority, and operational runbooks for stuck sagas sit above the engineering team — and must be made first.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-08-08",
+    "dateModified": "2026-11-27",
     "author": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
     },
     "publisher": {
-      "@type": "Person",
-      "name": "Waleed Albadawi",
-      "url": "https://www.wbadawi.info/",
       "@id": "https://www.wbadawi.info/#person",
-      "image": {
-        "@type": "ImageObject",
-        "@id": "https://www.wbadawi.info/#photo",
-        "url": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "contentUrl": "https://www.wbadawi.info/assets/img/waleed-albadawi.jpg",
-        "width": 400,
-        "height": 400,
-        "caption": "Waleed Albadawi, technology executive, Riyadh"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/in/walidkhb",
-        "https://github.com/walidkhb",
-        "https://x.com/walidkhelbadawi",
-        "https://medium.com/@walidkhb"
-      ]
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/blog/saga-patterns-distributed-transactions-decision.html"
     },
     "url": "https://www.wbadawi.info/blog/saga-patterns-distributed-transactions-decision.html",
     "isPartOf": {
       "@type": "Blog",
-      "name": "Insights &mdash; Waleed Albadawi",
+      "name": "Insights — Waleed Albadawi",
       "url": "https://www.wbadawi.info/blog.html"
-    }
+    },
+    "articleSection": "Decision briefs",
+    "inLanguage": "en",
+    "wordCount": 1384,
+    "timeRequired": "PT7M"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Insights",
+        "item": "https://www.wbadawi.info/blog.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Decision briefs",
+        "item": "https://www.wbadawi.info/blog.html#decision-briefs"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Saga Patterns: The Distributed Transaction Decision Leaders Have to Own Before Engineering Writes a Line of Code",
+        "item": "https://www.wbadawi.info/blog/saga-patterns-distributed-transactions-decision.html"
+      }
+    ]
   }
   </script>
 </head>
 <body>
 
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header" id="header">
     <div class="site-header__inner">
       <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
-      <nav class="site-nav" id="nav" role="navigation" aria-label="Main navigation">
+      <nav class="site-nav" id="nav" aria-label="Main navigation">
         <a href="../about.html">About</a>
         <a href="../experience.html">Experience</a>
-        <a href="../projects.html">Initiatives</a>
-        <a href="../expertise.html">Expertise</a>
-        <a href="../resume.html">Resume</a>
-        <a href="../blog.html" class="active">Insights</a>
+        <a href="../projects.html">Transformations</a>
+        <a href="../blog.html" class="active" aria-current="page">Insights</a>
         <a href="../technical.html">Lab</a>
-        <a href="../contact.html">Contact</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../contact.html" class="site-nav__cta">Contact</a>
       </nav>
-      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
     </div>
   </header>
 
+  <main id="main">
+
   <section class="page-header">
     <div class="container">
-      <div class="breadcrumb"><a href="../blog.html">Insights</a><span>/</span><a href="enterprise-integration.html">Enterprise Integration</a><span>/</span>Saga Patterns Decision</div>
-      <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">Enterprise Integration &middot; August 8, 2026 &middot; By <a href="../about.html" rel="author" style="color:inherit;">Waleed Albadawi</a></div>
-      <h1 style="max-width:820px;">Saga Patterns: The Distributed Transaction Decision Leaders Have to Own Before Engineering Writes a Line of Code</h1>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../blog.html">Insights</a><span aria-hidden="true">/</span><a href="../blog.html#decision-briefs">Decision briefs</a></nav>
+      <h1 class="insights-title">Saga Patterns: The Distributed Transaction Decision Leaders Have to Own Before Engineering Writes a Line of Code</h1>
+      <div class="article-meta insights-meta">
+        <span class="article-meta__item">By <a href="../about.html" rel="author">Waleed Albadawi</a></span>
+        <span class="article-meta__item"><time datetime="2026-08-08">8 August 2026</time></span>
+        <span class="article-meta__item">7 min read</span>
+      </div>
     </div>
   </section>
 
@@ -147,9 +167,9 @@
 
         <p>The engineering answer to this problem has a name: the saga pattern. Instead of a single atomic transaction spanning all three services (which requires locking resources across network calls and is incompatible with asynchronous network protocols like SAMA&rsquo;s IPS), you decompose the workflow into a sequence of local transactions, each of which publishes an event or sends a command that triggers the next step. Failures are handled by compensating transactions &mdash; explicit, designed rollback actions for each step that completed before the failure.</p>
 
-        <p>The saga pattern is not new. It was first described by Hector Garcia-Molina and Kenneth Salem in 1987. What is new is that it is now the standard approach at every KSA bank modernising its payments stack. And the decisions that determine whether sagas work in production are not technical decisions. They are leadership decisions.</p>
+        <p>The saga pattern is not new. It was first described by Hector Garcia-Molina and Kenneth Salem in 1987. What is new is that it has become a standard approach for banks modernising their payments stacks. And the decisions that determine whether sagas work in production are not technical decisions. They are leadership decisions.</p>
 
-        <p class="article-section">The decision that looks like an architecture choice but isn&rsquo;t</p>
+        <h2 class="article-section">The decision that looks like an architecture choice but isn&rsquo;t</h2>
 
         <p>The first question the architecture team will bring to leadership is: <strong>orchestration saga or choreography saga?</strong> In an orchestration saga, a central coordinator service drives the workflow &mdash; it sends commands to participant services, waits for responses, and decides what to do if a step fails. In a choreography saga, there is no coordinator; each service reacts to events from the previous step autonomously, and the workflow emerges from the sequence of reactions.</p>
 
@@ -161,7 +181,7 @@
 
         <p>This is a decision leadership should make explicitly, not leave to the architecture team to discover through the implementation. The organisational implication of choreography &mdash; multiple teams responsible for the audit trail of a single payment &mdash; is not visible in the sequence diagram.</p>
 
-        <p class="article-section">Who has authority to compensate?</p>
+        <h2 class="article-section">Who has authority to compensate?</h2>
 
         <p>A compensating transaction for a reserved liquidity position releases funds that have been held against a customer account. This is a balance adjustment. In most banks, balance adjustments have an approval workflow, a posting authority limit, and an audit requirement. The engineering team cannot give itself posting authority for compensation transactions; that authority flows from the CFO or the Head of Finance, and it needs to be formally delegated to the payments service before the system goes live.</p>
 
@@ -169,7 +189,7 @@
 
         <p>The posting authority question must be resolved before the compensation logic is coded. The engineering team needs to know exactly which compensation actions can be executed automatically, which require a dual-control approval from an operations supervisor, and which require escalation to the finance function. Those three tiers map directly to code paths in the saga coordinator.</p>
 
-        <p class="article-section">The operations team is part of the saga design</p>
+        <h2 class="article-section">The operations team is part of the saga design</h2>
 
         <p>Every saga implementation must plan for a state it cannot escape from automatically: the payment whose IPS submission status is genuinely unknown because the IPS network is unreachable and has not responded. Compensating an unknown submission risks abandoning funds in transit. Not compensating it locks the liquidity reservation until the network recovers. The saga coordinator must escalate these cases to a human operations team, and that team must have a resolution process before the system goes live.</p>
 
@@ -177,39 +197,97 @@
 
         <p>The SLA for resolving stuck sagas during business hours is a leadership decision. A reasonable target is 15 minutes from detection to resolution for stuck IPS payments during business hours, with a 30-minute SLA outside business hours backed by an on-call arrangement. Whatever the numbers, they must come from the Head of Retail Banking and the Head of Payments, not from the engineering team. The engineering team builds the tooling to make those SLAs achievable; they cannot set the SLAs themselves.</p>
 
-        <p class="article-section">What SAMA expects to see</p>
+        <h2 class="article-section">What SAMA expects to see</h2>
 
-        <p>SAMA&rsquo;s Operational Risk Management Guidelines require financial institutions to have documented, tested incident response procedures for payment processing failures. A stuck saga is a payment processing failure. SAMA&rsquo;s payment examination process will ask: what is your procedure when an IPS credit transfer is in a partially-completed state? Who is responsible? What is the resolution time? How is the customer notified?</p>
+        <p>SAMA’s business continuity and operational-risk expectations require banks to have documented, tested procedures for payment processing failures. A stuck saga is a payment processing failure. SAMA&rsquo;s payment examination process will ask: what is your procedure when an IPS credit transfer is in a partially-completed state? Who is responsible? What is the resolution time? How is the customer notified?</p>
 
         <p>A bank that can answer those questions with a documented runbook, an SLA, and evidence of a quarterly test is in a defensible position. A bank that has a sophisticated orchestration saga implementation but no documented resolution process for stuck sagas has built something technically impressive that it cannot defend to a regulator.</p>
 
-        <p class="article-section">Three decisions that cannot be delegated</p>
+        <h2 class="article-section">Three decisions that cannot be delegated</h2>
 
         <p><strong>Which compensation actions are fully automated, and which require human approval?</strong> The automatic compensation tier needs formal posting authority delegated to the payments service. The manual tier needs a defined approval workflow and an SLA for each action type. The escalation tier needs clear ownership &mdash; which individual or committee has authority to trigger a compensation above the manual tier threshold.</p>
 
-        <p><strong>Who owns the saga state table for audit purposes?</strong> In an orchestration saga, the coordinator&rsquo;s saga state table is the authoritative record of every step in every payment workflow. It must be governed with the same retention and access controls as the payment ledger &mdash; which means a named data owner, an access control review process, and a retention policy that meets SAMA&rsquo;s 10-year record-keeping requirement. The engineering team cannot self-appoint as the data owner of a financial record.</p>
+        <p><strong>Who owns the saga state table for audit purposes?</strong> In an orchestration saga, the coordinator&rsquo;s saga state table is the authoritative record of every step in every payment workflow. It must be governed with the same retention and access controls as the payment ledger &mdash; which means a named data owner, an access control review process, and a retention policy that meets the ten-year record-keeping requirement for Saudi banks. The engineering team cannot self-appoint as the data owner of a financial record.</p>
 
         <p><strong>What is the escalation path for a saga stuck in an UNKNOWN state?</strong> The UNKNOWN state &mdash; where the IPS network has not confirmed whether it received a submission &mdash; cannot be resolved by software alone. The resolution process involves a human querying the SAMA IPS participant portal and making a judgement call about whether to compensate or await settlement. That person, their backup, and their authority to act must be identified and documented before the system goes live.</p>
 
         <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind this topic &mdash; Axon Framework saga implementation, choreography vs orchestration state machines, compensating transaction patterns, idempotency in saga steps, deadline handling for IPS timeouts, and integration testing with Testcontainers &mdash; see the companion Lab article: <a href="../lab/event-driven/saga-patterns-distributed-transactions.html" style="color:var(--color-accent);">Event-Driven Architecture: Saga Patterns for Distributed Transactions</a>.</p>
 
       </div>
+
+        <!-- insights:end -->
+        <div class="insights-end">
+          <p class="insights-series-note">Part of the <a href="../blog.html#decision-briefs">Decision briefs</a> series: one architecture choice at a time, and the decisions that belong above it.</p>
+          <aside class="insights-author" aria-label="About the author">
+            <p class="insights-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <a class="insights-author__link" href="../about.html">About Waleed Albadawi &rarr;</a>
+          </aside>
+          <nav class="insights-related" aria-labelledby="related-heading">
+            <h2 id="related-heading" class="insights-related__heading">Related insights</h2>
+            <div class="insights-related__grid">
+              <a class="thinking-card" href="idempotent-consumer-decision.html">
+                <span class="thinking-card__topic">Decision brief &middot; 5 min read</span>
+                <span class="thinking-card__title">Idempotency Is a Business Decision: Why Payment Deduplication Requires VP-Level Commitment</span>
+              </a>
+              <a class="thinking-card" href="reconciliation-pipelines-decision.html">
+                <span class="thinking-card__topic">Decision brief &middot; 5 min read</span>
+                <span class="thinking-card__title">Reconciliation Pipelines: The Data Integrity Decision That Regulators Actually Examine</span>
+              </a>
+              <a class="thinking-card" href="payment-rail-migration-decision.html">
+                <span class="thinking-card__topic">Decision brief &middot; 8 min read</span>
+                <span class="thinking-card__title">Strangle the Rails, Not the Channels: How to Migrate Payment Schemes Without a Big-Bang Cutover</span>
+              </a>
+            </div>
+          </nav>
+        </div>
+        <!-- /insights:end -->
     </div>
   </section>
 
+  </main>
+
   <footer class="site-footer">
     <div class="container">
-      <div class="site-footer__inner">
-        <div>&copy; 2025 Waleed Albadawi. All rights reserved.</div>
-        <ul class="footer-links">
-          <li><a href="https://github.com/walidkhb" target="_blank" rel="noopener">GitHub</a></li>
-          <li><a href="../contact.html">Contact</a></li>
-          <li><a href="../resume.html">Resume</a></li>
-        </ul>
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+          <p>Enterprise technology and transformation executive. Riyadh, Saudi Arabia.</p>
+        </div>
+        <nav class="site-footer__col" aria-label="Explore">
+          <p class="site-footer__title">Explore</p>
+          <ul>
+            <li><a href="../about.html">About</a></li>
+            <li><a href="../experience.html">Experience</a></li>
+            <li><a href="../projects.html">Transformations</a></li>
+            <li><a href="../expertise.html">Expertise</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Writing">
+          <p class="site-footer__title">Writing</p>
+          <ul>
+            <li><a href="../blog.html">Insights</a></li>
+            <li><a href="../technical.html">Technical Lab</a></li>
+            <li><a href="../feed.xml">RSS feed</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Connect">
+          <p class="site-footer__title">Connect</p>
+          <ul>
+            <li><a href="../contact.html">Contact</a></li>
+            <li><a href="https://www.linkedin.com/in/walidkhb" rel="me noopener" target="_blank">LinkedIn</a></li>
+            <li><a href="https://medium.com/@walidkhb" rel="me noopener" target="_blank">Medium</a></li>
+            <li><a href="https://github.com/walidkhb" rel="me noopener" target="_blank">GitHub</a></li>
+            <li><a href="../assets/Waleed-Albadawi-CV.pdf">Download CV</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="site-footer__base">
+        <span>&copy; 2026 Waleed Albadawi</span>
+        <span>Views are my own and do not represent my employer.</span>
       </div>
     </div>
   </footer>
 
-  <script src="../assets/js/main.js?v=20261127"></script>
+  <script src="../assets/js/main.js?v=20261128b"></script>
 </body>
 </html>
