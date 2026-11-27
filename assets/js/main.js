@@ -16,6 +16,15 @@ if (menuToggle && nav) {
     menuToggle.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
   });
 
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && nav.classList.contains('open')) {
+      nav.classList.remove('open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+      menuToggle.setAttribute('aria-label', 'Open menu');
+      menuToggle.focus();
+    }
+  });
+
   nav.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       nav.classList.remove('open');
@@ -43,6 +52,20 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
 // Active navigation state is written into the page by scripts/sync_layout.py.
+
+// Wide tables, code blocks and diagrams scroll horizontally on small screens;
+// make those scroll regions reachable and scrollable from the keyboard.
+function markScrollRegions() {
+  document.querySelectorAll('main pre, main table, main .diagram, main .code-block, main [class*="table-wrap"]').forEach(el => {
+    if (el.scrollWidth > el.clientWidth + 1) {
+      if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+    } else if (el.getAttribute('tabindex') === '0' && el.dataset.scrollRegion !== 'static') {
+      el.removeAttribute('tabindex');
+    }
+  });
+}
+window.addEventListener('load', markScrollRegions);
+window.addEventListener('resize', () => { clearTimeout(window.__srT); window.__srT = setTimeout(markScrollRegions, 200); });
 
 // "Also published on Medium" — injected from medium-links.json so publishing a
 // post to Medium (and recording its URL there) lights up the link automatically.

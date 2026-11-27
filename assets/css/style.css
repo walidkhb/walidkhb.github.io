@@ -2248,3 +2248,15 @@ h3.principle__heading { margin-top: 0; line-height: 1.4; }
 .contact-topics { list-style: none; padding: 0; margin: 0; }
 .contact-topic { padding: 0.875rem 0; border-bottom: 1px solid var(--color-border); font-size: 0.9375rem; color: var(--color-text); }
 .contact-topic:last-child { border-bottom: none; }
+
+/* Links inside running text are underlined, not identified by colour alone */
+main p a:not([class]), main li a:not([class]), main dd a:not([class]), main td a:not([class]) {
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent-border);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+main p a:not([class]):hover, main li a:not([class]):hover, main dd a:not([class]):hover, main td a:not([class]):hover {
+  text-decoration-color: currentColor;
+}
+.breadcrumb a { text-decoration: underline; text-decoration-color: var(--color-accent-border); text-underline-offset: 3px; }
