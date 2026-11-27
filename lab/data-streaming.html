@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Streaming &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Articles on real-time stream processing for financial data: Kafka Streams, Apache Flink, IBM Event Streams, windowing, exactly-once stateful processing, and the patterns behind real-time fraud detection and payments.">
+  <meta name="description" content="Articles on real-time stream processing: Kafka Streams, Apache Flink, ksqlDB, Schema Registry, windowing, exactly-once stateful processing, and the patterns behind fraud detection, transaction screening and other latency-critical pipelines.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Data Streaming &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Stream processing patterns for real-time fraud detection and payments.">
+  <meta property="og:description" content="Stream processing patterns for fraud detection, screening and other real-time pipelines.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Data Streaming &mdash; Lab &mdash; Waleed Albadawi">
-  <meta name="twitter:description" content="Stream processing for real-time financial services.">
+  <meta name="twitter:description" content="Kafka Streams, Flink and stateful stream processing in production.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,7 +60,7 @@
       <div class="breadcrumb"><a href="../technical.html">Lab</a><span>/</span>Data Streaming</div>
       <span class="overline">Lab Topic</span>
       <h1>Data Streaming</h1>
-      <p class="lead">Real-time data pipelines, stream processing, and high-throughput event handling for financial data flows, market feeds, fraud detection, and the trade-offs between Kafka Streams and Apache Flink.</p>
+      <p class="lead">Real-time data pipelines, stream processing, and high-throughput event handling for transaction flows, telemetry, fraud detection and live operational metrics &mdash; and the trade-offs between Kafka Streams and Apache Flink.</p>
     </div>
   </section>
 
@@ -77,11 +77,11 @@
             <span>~15 min read</span>
           </div>
           <h2 class="article-list__title">Data Streaming: Kafka Streams &amp; Flink</h2>
-          <p class="article-list__excerpt">Stream processing for fraud detection and real-time payments: windowing, stateful joins, exactly-once processing, and the trade-offs between Kafka Streams (in-process) and Flink (separate cluster).</p>
+          <p class="article-list__excerpt">Stream processing for fraud detection, real-time screening and live metrics: windowing, stateful joins, exactly-once processing, and the trade-offs between Kafka Streams (in-process) and Flink (separate cluster).</p>
           <div class="article-list__tags">
             <span class="skill-tag">Kafka Streams</span>
             <span class="skill-tag">Apache Flink</span>
-            <span class="skill-tag">IBM Event Streams</span>
+            <span class="skill-tag">Apache Kafka</span>
             <span class="skill-tag">Windowing</span>
             <span class="skill-tag">RocksDB</span>
           </div>
@@ -97,7 +97,7 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Data Streaming: ksqlDB &amp; Flink SQL for Stream Analytics</h2>
-          <p class="article-list__excerpt">SQL on streams for financial services: stateful aggregations, windowing semantics, temporal joins for sanctions screening, schema management, and the operational trade-offs that determine which engine fits your architecture.</p>
+          <p class="article-list__excerpt">SQL on streams: stateful aggregations, windowing semantics, temporal joins for audit-grade screening, schema management, and the operational trade-offs that determine which engine fits your architecture.</p>
           <div class="article-list__tags">
             <span class="skill-tag">ksqlDB</span>
             <span class="skill-tag">Flink SQL</span>
@@ -117,7 +117,7 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Data Streaming: Real-Time Fraud Detection Pipeline</h2>
-          <p class="article-list__excerpt">End-to-end production design: Feast feature store, sliding-window velocity checks with Flink KeyedProcessFunction, embedded ONNX model scoring, a dispute-driven feedback loop, and the operational patterns that keep sub-100&nbsp;ms card authorisation SLAs intact under load.</p>
+          <p class="article-list__excerpt">End-to-end production design: Feast feature store, sliding-window velocity checks with Flink KeyedProcessFunction, embedded ONNX model scoring, a dispute-driven feedback loop, and the operational patterns that keep sub-100&nbsp;ms authorisation SLAs intact under load &mdash; illustrated with card payments, applicable to any high-volume transaction stream.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Apache Flink</span>
             <span class="skill-tag">Feast</span>
@@ -137,13 +137,13 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Schema Registry and Data Contracts: Avro, Compatibility Modes, and CI Enforcement</h2>
-          <p class="article-list__excerpt">Avro schema design for pacs.008 with decimal logicalType and PDPL classification metadata, schema-registry-maven-plugin CI compatibility checks, schema evolution patterns, and the governance model that keeps 60 Kafka topics from becoming a fragile mesh of implicit contracts.</p>
+          <p class="article-list__excerpt">Avro schema design for industry-standard messages (ISO 20022 as the worked example) with decimal logicalType and data-classification metadata, schema-registry-maven-plugin CI compatibility checks, schema evolution patterns, and the governance model that keeps dozens of Kafka topics from becoming a fragile mesh of implicit contracts.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Confluent Schema Registry</span>
             <span class="skill-tag">Avro</span>
             <span class="skill-tag">Kafka</span>
             <span class="skill-tag">OpenShift</span>
-            <span class="skill-tag">PDPL</span>
+            <span class="skill-tag">Data Governance</span>
           </div>
           <div class="article-list__arrow">Read article &rarr;</div>
         </a>
@@ -157,7 +157,7 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Stateful Stream Processing: Kafka Streams Interactive Queries and Flink Exactly-Once</h2>
-          <p class="article-list__excerpt">Flink VelocityCheckFunction with RocksDB state and TTL, exactly-once Kafka sink configuration, Kafka Streams interactive query REST endpoint, tumbling and session window semantics, and the checkpoint sizing guidance that keeps RocksDB from stalling payment detection pipelines.</p>
+          <p class="article-list__excerpt">Flink VelocityCheckFunction with RocksDB state and TTL, exactly-once Kafka sink configuration, Kafka Streams interactive query REST endpoint, tumbling and session window semantics, and the checkpoint sizing guidance that keeps RocksDB from stalling real-time detection pipelines.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Apache Flink</span>
             <span class="skill-tag">Kafka Streams</span>

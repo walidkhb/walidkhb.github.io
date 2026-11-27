@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Streaming &mdash; Real-Time Fraud Detection Pipeline &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="End-to-end design of a real-time fraud detection pipeline: feature store, sliding-window velocity checks, Apache Flink model scoring, feedback loops, and the operational patterns that keep sub-100ms latency SLAs intact in a KSA bank environment.">
+  <meta name="description" content="End-to-end design of a real-time fraud detection pipeline: feature store, sliding-window velocity checks, Apache Flink model scoring, feedback loops, and the operational patterns that keep sub-100ms latency SLAs intact at high transaction volumes.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Data Streaming &mdash; Real-Time Fraud Detection Pipeline &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Feature store, sliding-window aggregates, Flink model scoring, and feedback loops for fraud detection at a regulated bank.">
+  <meta property="og:description" content="Feature store, sliding-window aggregates, Flink model scoring, and feedback loops for fraud detection in high-volume payment and commerce platforms.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/real-time-fraud-detection.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Real-Time Fraud Detection Pipeline &mdash; Production Patterns">
-  <meta name="twitter:description" content="Feature store, Flink scoring, and feedback loops for fraud at a KSA bank.">
+  <meta name="twitter:description" content="Feature store, Flink scoring, and feedback loops for real-time fraud detection.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/real-time-fraud-detection.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Data Streaming: Real-Time Fraud Detection Pipeline",
-    "description": "End-to-end design of a real-time fraud detection pipeline: feature store, sliding-window velocity checks, Apache Flink model scoring, feedback loops, and operational patterns for sub-100ms latency SLAs in a KSA bank.",
+    "description": "End-to-end design of a real-time fraud detection pipeline: feature store, sliding-window velocity checks, Apache Flink model scoring, feedback loops, and operational patterns for sub-100ms latency SLAs at high transaction volumes.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-08-01",
     "author": {
@@ -58,7 +58,7 @@
       "url": "https://www.wbadawi.info/lab/data-streaming.html"
     },
     "proficiencyLevel": "Expert",
-    "dependencies": "Apache Flink 1.19, Kafka Streams 3.7, Feast 0.38, Redis 7.2, IBM Event Streams"
+    "dependencies": "Apache Flink 1.19, Kafka Streams 3.7, Feast 0.38, Redis 7.2, Apache Kafka"
   }
   </script>
 </head>
@@ -91,7 +91,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>Real-Time Fraud Detection</div>
           <span class="overline">Lab Article</span>
           <h1>Data Streaming: Real-Time Fraud Detection Pipeline</h1>
-          <p class="lead">An end-to-end production design: feature store architecture, sliding-window velocity checks, Apache Flink model scoring on the event stream, feedback loops that close the training cycle, and the operational discipline that keeps sub-100&nbsp;ms latency SLAs intact when transaction volumes spike &mdash; grounded in KSA card and IPS payment environments.</p>
+          <p class="lead">An end-to-end production design: feature store architecture, sliding-window velocity checks, Apache Flink model scoring on the event stream, feedback loops that close the training cycle, and the operational discipline that keeps sub-100&nbsp;ms latency SLAs intact when transaction volumes spike &mdash; illustrated with card and instant-payment flows, but applicable to any high-volume transaction stream: e-commerce orders, account logins, insurance claims or telecom top-ups.</p>
         </div>
       </div>
     </div>
@@ -121,7 +121,7 @@
         <article class="lab-article__body">
 
           <div class="article-meta">
-            <span class="article-meta__item"><strong>Stack:</strong> Apache Flink 1.19 &middot; Kafka Streams 3.7 &middot; Feast 0.38 &middot; Redis 7.2 &middot; IBM Event Streams</span>
+            <span class="article-meta__item"><strong>Stack:</strong> Apache Flink 1.19 &middot; Kafka Streams 3.7 &middot; Feast 0.38 &middot; Redis 7.2 &middot; Apache Kafka</span>
             <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
             <span class="article-meta__item"><strong>Read:</strong> ~14 min</span>
             <span class="article-meta__item"><strong>Published:</strong> Aug 1, 2026</span>
@@ -129,12 +129,12 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Fraud detection in a KSA bank is not one pipeline &mdash; it is a set of overlapping pipelines operating on different event streams at different latency budgets. Card authorisations must be screened in under 80&nbsp;ms (Mada network SLA). IPS credit transfers can tolerate 1&ndash;2 seconds before SAMA expects a status response. SADAD bill payments sit in the middle. Each stream has different feature requirements, different false-positive costs, and different consequences of being wrong.</p>
-          <p>What they share is the same structural problem: the signal for fraud lives in the <em>pattern across events</em>, not in any single event. A &pound;200 card transaction is not suspicious; five &pound;200 transactions in eight minutes across three cities is. The pipeline exists to materialise those patterns in real time so a scoring model can evaluate them before the payment instruction leaves the bank.</p>
+          <p>Fraud detection on a high-volume transaction platform is not one pipeline &mdash; it is a set of overlapping pipelines operating on different event streams at different latency budgets. In payments, card authorisations typically must be screened in under 80&nbsp;ms to fit inside the card network&rsquo;s authorisation window. Instant credit transfers can tolerate 1&ndash;2 seconds before the scheme expects a status response. Bill payments sit in the middle. The same layering appears outside finance: a checkout, a login attempt and a refund request on an e-commerce platform each carry their own budget. Each stream has different feature requirements, different false-positive costs, and different consequences of being wrong.</p>
+          <p>What they share is the same structural problem: the signal for fraud lives in the <em>pattern across events</em>, not in any single event. A &pound;200 card transaction is not suspicious; five &pound;200 transactions in eight minutes across three cities is. The pipeline exists to materialise those patterns in real time so a scoring model can evaluate them before the transaction is committed.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">The cost asymmetry is not what you think</div>
-            <p>Most teams focus on reducing false negatives (missed fraud). In a KSA card environment, false positives are equally costly: a wrongly declined Mada transaction generates a SAMA complaint category with a mandated resolution window. The model threshold is a business decision about where on the precision-recall curve the bank sits &mdash; engineering cannot set it alone.</p>
+            <p>Most teams focus on reducing false negatives (missed fraud). In card payments, false positives are equally costly: a wrongly declined transaction loses the sale, generates a customer complaint and, in many regulated markets, starts a mandated resolution clock. The model threshold is a business decision about where on the precision-recall curve the organisation sits &mdash; engineering cannot set it alone.</p>
           </div>
 
           <h2 id="architecture">Architecture decisions</h2>
@@ -142,7 +142,7 @@
 
           <table>
             <thead>
-              <tr><th>Decision</th><th>Option A</th><th>Option B</th><th>KSA card verdict</th></tr>
+              <tr><th>Decision</th><th>Option A</th><th>Option B</th><th>Verdict at card scale</th></tr>
             </thead>
             <tbody>
               <tr><td>Stream engine</td><td>Kafka Streams (in-process, per-microservice)</td><td>Apache Flink (dedicated cluster)</td><td>Flink &mdash; cross-stream joins and large state</td></tr>
@@ -171,7 +171,7 @@
                 <text x="65" y="64" text-anchor="middle" fill="#71717a" font-size="8">Kafka topic</text>
 
                 <rect x="10" y="90" width="110" height="44" rx="5" fill="#16161f" stroke="#c8a660"/>
-                <text x="65" y="110" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">ips-transfer</text>
+                <text x="65" y="110" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">instant-transfer</text>
                 <text x="65" y="124" text-anchor="middle" fill="#71717a" font-size="8">Kafka topic</text>
 
                 <rect x="10" y="150" width="110" height="44" rx="5" fill="#16161f" stroke="#c8a660"/>
@@ -257,7 +257,7 @@
 card_entity = Entity(name=<span class="tok-s">"card_id"</span>, join_keys=[<span class="tok-s">"card_id"</span>])
 
 card_velocity_source = FileSource(
-    path=<span class="tok-s">"s3://acmebank-features/card-velocity/</span><span class="tok-n">**</span><span class="tok-s">/*.parquet"</span>,
+    path=<span class="tok-s">"s3://example-features/card-velocity/</span><span class="tok-n">**</span><span class="tok-s">/*.parquet"</span>,
     timestamp_field=<span class="tok-s">"event_timestamp"</span>,
 )
 
@@ -447,7 +447,7 @@ card_velocity_fv = FeatureView(
           <ol class="step-list">
             <li>
               <h4>Define Kafka topic layout</h4>
-              <p>One topic per event type (<code>card-auth</code>, <code>ips-transfer</code>, <code>dispute-event</code>, <code>fraud-decisions</code>). Over-partition upfront: 48 partitions on card-auth handles 3x projected peak throughput with room to scale Flink parallelism. Co-partition <code>card-auth</code> and the customer master KTable by <code>card_id</code> with the same partition count &mdash; stream-table joins require it.</p>
+              <p>One topic per event type (<code>card-auth</code>, <code>instant-transfer</code>, <code>dispute-event</code>, <code>fraud-decisions</code>). Over-partition upfront: 48 partitions on card-auth handles 3x projected peak throughput with room to scale Flink parallelism. Co-partition <code>card-auth</code> and the customer master KTable by <code>card_id</code> with the same partition count &mdash; stream-table joins require it.</p>
             </li>
             <li>
               <h4>Bootstrap the online feature store</h4>
@@ -476,7 +476,7 @@ card_velocity_fv = FeatureView(
           </ol>
 
           <h2 id="exactly-once">Exactly-once in fraud</h2>
-          <p>In most stream processing, &ldquo;at least once&rdquo; is acceptable because downstream systems are idempotent. In a fraud pipeline, a duplicated BLOCK decision can create two chargeback records against the same transaction, visible to the customer and reportable to SAMA. Exactly-once delivery from Flink to Kafka is achievable at a throughput cost of roughly 5&ndash;8%.</p>
+          <p>In most stream processing, &ldquo;at least once&rdquo; is acceptable because downstream systems are idempotent. In a fraud pipeline, a duplicated BLOCK decision can create two chargeback records against the same transaction, visible to the customer and potentially reportable to the regulator. Exactly-once delivery from Flink to Kafka is achievable at a throughput cost of roughly 5&ndash;8%.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>flink-job.yaml</span><span class="code-block__lang">yaml</span></div>
@@ -489,7 +489,7 @@ card_velocity_fv = FeatureView(
     <span class="tok-k">max-concurrent-checkpoints</span>: <span class="tok-n">1</span>
   <span class="tok-k">state-backend</span>: <span class="tok-s">rocksdb</span>
   <span class="tok-k">state-backend-incremental</span>: <span class="tok-k">true</span>
-  <span class="tok-k">savepoint-dir</span>: <span class="tok-s">s3://acmebank-flink/savepoints/fraud-scorer</span>
+  <span class="tok-k">savepoint-dir</span>: <span class="tok-s">s3://example-flink/savepoints/fraud-scorer</span>
 
 <span class="tok-k">kafka-sink</span>:
   <span class="tok-k">semantic</span>: <span class="tok-s">EXACTLY_ONCE</span>
@@ -524,15 +524,15 @@ card_velocity_fv = FeatureView(
           </div>
 
           <div class="callout callout--warn">
-            <div class="callout__title">Watermark lateness tuning for IPS</div>
-            <p>IPS credit transfers sometimes arrive out of order when the sending bank retransmits after a timeout. The default watermark allowed lateness of zero drops these events silently. Set <code>WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10))</code> for the IPS source and route late events to a <code>sideOutput</code> for manual review rather than dropping them.</p>
+            <div class="callout__title">Watermark lateness tuning for partner feeds</div>
+            <p>Instant-payment transfers and other partner feeds sometimes arrive out of order when the sending participant retransmits after a timeout. The default watermark allowed lateness of zero drops these events silently. Set <code>WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10))</code> for such sources and route late events to a <code>sideOutput</code> for manual review rather than dropping them.</p>
           </div>
 
           <h2 id="when-not">When not to stream</h2>
           <p>Not every fraud detection requirement belongs in a streaming pipeline. Three cases where batch or rule-engine approaches are clearly better:</p>
           <ul>
             <li><strong>Account-level pattern analysis.</strong> Detecting a slow-burn account takeover that spans 90 days does not need sub-second latency. A nightly SQL job over the data warehouse is simpler, cheaper, and produces the same alert 24 hours after the pattern completes &mdash; fast enough for account fraud where the loss accumulates over days, not milliseconds.</li>
-            <li><strong>AML transaction monitoring.</strong> SAMA&rsquo;s AML monitoring requirements for CTR/STR filings operate on daily aggregates and multi-day patterns. Running AML logic in Flink adds operational complexity without reducing the regulatory response time. Use a purpose-built AML platform (Actimize, NICE Actimize, Quantexa) that is pre-certified for SAMA reporting.</li>
+            <li><strong>AML transaction monitoring.</strong> Anti-money-laundering monitoring for regulatory filings (currency-transaction and suspicious-activity reports) operates on daily aggregates and multi-day patterns. Running AML logic in Flink adds operational complexity without reducing the regulatory response time. Use a purpose-built AML platform that already supports your regulator&rsquo;s reporting formats.</li>
             <li><strong>Startup pipelines with under 1&nbsp;M transactions/day.</strong> Below that volume, a Kafka consumer plus PostgreSQL with window aggregation functions in SQL delivers the same velocity features at a fraction of the operational complexity. Reserve Flink for the scale where SQL aggregation latency becomes the bottleneck.</li>
           </ul>
 

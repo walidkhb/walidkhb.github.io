@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Distributed Caching: Distributed Session Management &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Redis-backed distributed session management for Spring Boot on OpenShift &mdash; SAMA-compliant timeout configuration, FAPI 2.0 OAuth2 session lifecycle, session fixation prevention, and the security pitfalls of storing sensitive data in shared Redis keyspace.">
+  <meta name="description" content="Redis-backed distributed session management for Spring Boot on OpenShift &mdash; regulator-grade timeout configuration, FAPI 2.0 OAuth2 session lifecycle, session fixation prevention, and the security pitfalls of storing sensitive data in shared Redis keyspace.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Distributed Caching: Distributed Session Management &mdash; Lab">
-  <meta property="og:description" content="Spring Session with Redis on OpenShift: SAMA session timeout compliance, FAPI 2.0 OAuth2 integration, and production security patterns.">
+  <meta property="og:description" content="Spring Session with Redis on OpenShift: regulatory session timeout compliance, FAPI 2.0 OAuth2 integration, and production security patterns.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/distributed-caching/distributed-session-management.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed Session Management &mdash; Lab">
-  <meta name="twitter:description" content="Redis-backed distributed sessions for SAMA-compliant banking applications on OpenShift.">
+  <meta name="twitter:description" content="Redis-backed distributed sessions for regulated customer portals on OpenShift.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/distributed-caching/distributed-session-management.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Distributed Session Management",
-    "description": "Redis-backed distributed session management for Spring Boot on OpenShift with SAMA compliance and FAPI 2.0 OAuth2 integration.",
+    "description": "Redis-backed distributed session management for Spring Boot on OpenShift with regulatory timeout compliance and FAPI 2.0 OAuth2 integration.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
     "author": {
@@ -91,7 +91,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Distributed Session Management</div>
           <span class="overline">Lab Article</span>
           <h1>Distributed Caching: Distributed Session Management</h1>
-          <p class="lead">Sticky sessions are a load-balancer hack that breaks on every pod restart. Redis-backed distributed sessions are pod-agnostic, SAMA-compliant, and the correct foundation for an OAuth2 banking portal &mdash; if you configure them correctly and understand what you must never store in shared Redis keyspace.</p>
+          <p class="lead">Sticky sessions are a load-balancer hack that breaks on every pod restart. Redis-backed distributed sessions are pod-agnostic, audit-friendly, and the correct foundation for an OAuth2 customer portal &mdash; if you configure them correctly and understand what you must never store in shared Redis keyspace.</p>
         </div>
       </div>
     </div>
@@ -108,7 +108,7 @@
             <li><a href="#sticky-vs-distributed">Sticky vs distributed</a></li>
             <li><a href="#spring-session">Spring Session with Redis</a></li>
             <li><a href="#oauth2-sessions">OAuth2 / OIDC sessions</a></li>
-            <li><a href="#sama-timeout">SAMA timeout requirements</a></li>
+            <li><a href="#regulatory-timeout">Regulatory timeout requirements</a></li>
             <li><a href="#redis-session-config">Redis session config</a></li>
             <li><a href="#session-fixation">Session fixation &amp; CSRF</a></li>
             <li><a href="#multi-app">Multi-application SSO</a></li>
@@ -128,13 +128,13 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>A banking portal on OpenShift runs behind a load balancer that distributes requests across multiple pods. HTTP is stateless. Somewhere between the load balancer and the database, the platform must maintain the notion of a logged-in user &mdash; their identity, their active authorizations, and the state of any in-progress workflow (an IBAN lookup, an incomplete payment form, a pending PKCE authorization code exchange). This is the session problem.</p>
+          <p>A customer portal on OpenShift &mdash; online banking, insurance self-service, a retailer&rsquo;s account area, a government e-service &mdash; runs behind a load balancer that distributes requests across multiple pods. HTTP is stateless. Somewhere between the load balancer and the database, the platform must maintain the notion of a logged-in user &mdash; their identity, their active authorizations, and the state of any in-progress workflow (a beneficiary or address lookup, an incomplete payment or checkout form, a pending PKCE authorization code exchange). This is the session problem.</p>
           <p>In a single-pod deployment there is no session problem: session state lives in the pod&rsquo;s memory, and every request goes to the same pod. In a multi-pod deployment the problem appears the moment a second pod starts. The original pod&rsquo;s in-memory session store knows about the logged-in user; the second pod does not. Without a solution, a request routed to the second pod arrives as an anonymous user, and the customer is logged out.</p>
-          <p>Three solutions exist. The first is to do nothing and rely on the load balancer to route each customer&rsquo;s requests to the same pod forever &mdash; sticky sessions. The second is to store session state in a shared store that every pod can read &mdash; distributed sessions. The third is to eliminate server-side session state entirely by encoding all state in the access token &mdash; stateless JWT sessions. In practice, a banking portal needs all three patterns applied to different parts of the system: JWT for API-to-API calls, distributed sessions for the web portal, and sticky sessions as a fallback for legacy integration points that cannot be refactored.</p>
+          <p>Three solutions exist. The first is to do nothing and rely on the load balancer to route each customer&rsquo;s requests to the same pod forever &mdash; sticky sessions. The second is to store session state in a shared store that every pod can read &mdash; distributed sessions. The third is to eliminate server-side session state entirely by encoding all state in the access token &mdash; stateless JWT sessions. In practice, a regulated customer portal needs all three patterns applied to different parts of the system: JWT for API-to-API calls, distributed sessions for the web portal, and sticky sessions as a fallback for legacy integration points that cannot be refactored.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">If you are using OAuth2 correctly, the access token IS your session</div>
-            <p>In a FAPI 2.0-compliant authorization architecture, the resource server (your banking API) is stateless: it validates the access token on every request, derives the subject identity and scopes from the token, and needs no session store. The session exists at the authorization server (Keycloak, PingFederate, or the bank&rsquo;s IAM layer) &mdash; not at the API tier. Server-side session state in the API layer is a sign that the authorization architecture is incomplete. Only store what the token cannot carry: multi-step workflow state, PKCE parameters during the auth flow, and CSRF tokens.</p>
+            <p>In a FAPI 2.0-compliant authorization architecture, the resource server (your API) is stateless: it validates the access token on every request, derives the subject identity and scopes from the token, and needs no session store. The session exists at the authorization server (Keycloak, PingFederate, or the organisation&rsquo;s IAM layer) &mdash; not at the API tier. Server-side session state in the API layer is a sign that the authorization architecture is incomplete. Only store what the token cannot carry: multi-step workflow state, PKCE parameters during the auth flow, and CSRF tokens.</p>
           </div>
 
           <h2 id="sticky-vs-distributed">Sticky Sessions vs Distributed Session</h2>
@@ -265,7 +265,7 @@
     <span class="tok-k">redis</span>:
       <span class="tok-c"># Namespace prefix for all session keys in Redis.</span>
       <span class="tok-c"># Allows multiple applications to share one Redis cluster safely.</span>
-      <span class="tok-k">namespace</span>: <span class="tok-s">bank:portal:session</span>
+      <span class="tok-k">namespace</span>: <span class="tok-s">portal:session</span>
       <span class="tok-c"># flush-mode: on-save (default) writes session to Redis only at response end;</span>
       <span class="tok-c"># immediate writes on every attribute change &mdash; slower but safer for payment flows.</span>
       <span class="tok-k">flush-mode</span>: <span class="tok-s">on-save</span>
@@ -273,7 +273,7 @@
       <span class="tok-c"># keyspace notifications on startup &mdash; required if Redis is a managed service</span>
       <span class="tok-c"># where CONFIG SET is not permitted.</span>
       <span class="tok-k">configure-action</span>: <span class="tok-s">notify-keyspace-events</span>
-    <span class="tok-c"># Idle session timeout. SAMA: 900 seconds (15 minutes) for retail banking portal.</span>
+    <span class="tok-c"># Idle session timeout: 900 seconds (15 minutes), a common regulatory baseline for customer portals.</span>
     <span class="tok-k">timeout</span>: <span class="tok-s">900s</span>
 
   <span class="tok-k">data</span>:
@@ -308,31 +308,31 @@
     <span class="tok-k">@Bean</span>
     <span class="tok-k">public</span> <span class="tok-t">CookieSerializer</span> cookieSerializer() {
         <span class="tok-t">DefaultCookieSerializer</span> serializer = <span class="tok-k">new</span> DefaultCookieSerializer();
-        serializer.setCookieName(<span class="tok-s">"BANK_SESS"</span>);
+        serializer.setCookieName(<span class="tok-s">"PORTAL_SESS"</span>);
         serializer.setSameSite(<span class="tok-s">"Strict"</span>);
         serializer.setUseSecureCookie(<span class="tok-s">true</span>);
         serializer.setUseHttpOnlyCookie(<span class="tok-s">true</span>);
-        serializer.setDomainName(<span class="tok-s">"portal.bank.example"</span>);
+        serializer.setDomainName(<span class="tok-s">"portal.example.com"</span>);
         <span class="tok-k">return</span> serializer;
     }
 }</code></pre>
           </div>
 
           <h2 id="oauth2-sessions">OAuth2 / OIDC Session Management</h2>
-          <p>In a FAPI 2.0-compliant banking portal, the authorization flow introduces specific session requirements. PKCE (Proof Key for Code Exchange) generates a <code>code_verifier</code> on the client before redirecting to the authorization server. The <code>code_challenge</code> (a SHA-256 hash of the verifier) is sent to the authorization server. When the authorization code returns, the client sends the original <code>code_verifier</code> to prove it initiated the flow. Both values, along with the OAuth2 <code>state</code> parameter and <code>nonce</code>, must survive the redirect round trip &mdash; which means they must be stored somewhere between the initial redirect and the callback. That somewhere is the session.</p>
-          <p>What must NOT be in the session: the access token, the refresh token, or the ID token. Tokens belong in a secure HttpOnly cookie (for single-page applications) or in the application&rsquo;s server-side token store (keyed by session ID, separate from the session data). Storing raw tokens in the Redis session keyspace means any engineer with Redis access can read them. Under SAMA&rsquo;s Technology Risk Management framework, that is a privilege access control failure.</p>
+          <p>In a FAPI 2.0-compliant portal (FAPI originated in open banking but suits any high-value API), the authorization flow introduces specific session requirements. PKCE (Proof Key for Code Exchange) generates a <code>code_verifier</code> on the client before redirecting to the authorization server. The <code>code_challenge</code> (a SHA-256 hash of the verifier) is sent to the authorization server. When the authorization code returns, the client sends the original <code>code_verifier</code> to prove it initiated the flow. Both values, along with the OAuth2 <code>state</code> parameter and <code>nonce</code>, must survive the redirect round trip &mdash; which means they must be stored somewhere between the initial redirect and the callback. That somewhere is the session.</p>
+          <p>What must NOT be in the session: the access token, the refresh token, or the ID token. Tokens belong in a secure HttpOnly cookie (for single-page applications) or in the application&rsquo;s server-side token store (keyed by session ID, separate from the session data). Storing raw tokens in the Redis session keyspace means any engineer with Redis access can read them. Under most regulatory technology-risk frameworks, that is a privileged-access control failure.</p>
 
-          <h2 id="sama-timeout">SAMA Session Timeout Requirements</h2>
-          <p>SAMA&rsquo;s retail banking and payment service guidelines specify session lifetime constraints that must be enforced at the platform level, not left to application discretion. These are examination items: an examiner will test idle timeout by opening a session, waiting, and attempting to transact.</p>
+          <h2 id="regulatory-timeout">Regulatory Session Timeout Requirements</h2>
+          <p>Financial regulators, PCI DSS, and many healthcare and government security standards specify session lifetime constraints that must be enforced at the platform level, not left to application discretion. These are examination items: an auditor will test idle timeout by opening a session, waiting, and attempting to transact. The values below are a typical baseline; confirm the exact figures against the standards that apply to you.</p>
 
           <table>
             <thead>
-              <tr><th>Session type</th><th>SAMA idle timeout</th><th>Absolute timeout</th><th>Re-auth trigger</th></tr>
+              <tr><th>Session type</th><th>Typical idle timeout</th><th>Absolute timeout</th><th>Re-auth trigger</th></tr>
             </thead>
             <tbody>
-              <tr><td>Retail banking portal (read)</td><td>15 minutes (900 s)</td><td>8 hours</td><td>At absolute timeout</td></tr>
-              <tr><td>Payment initiation</td><td>5 minutes (300 s)</td><td>8 hours</td><td>Before payment confirmation</td></tr>
-              <tr><td>High-value transfer (&gt;SAR 5,000)</td><td>5 minutes</td><td>8 hours</td><td>Every high-value transaction</td></tr>
+              <tr><td>Customer portal (read)</td><td>15 minutes (900 s)</td><td>8 hours</td><td>At absolute timeout</td></tr>
+              <tr><td>Payment or checkout initiation</td><td>5 minutes (300 s)</td><td>8 hours</td><td>Before payment confirmation</td></tr>
+              <tr><td>High-value or sensitive action (large transfer, profile change)</td><td>5 minutes</td><td>8 hours</td><td>Every high-value action</td></tr>
               <tr><td>Admin / operations portal</td><td>10 minutes (600 s)</td><td>4 hours</td><td>At absolute timeout</td></tr>
             </tbody>
           </table>
@@ -353,7 +353,7 @@
                 <span class="tok-c">// migrateSession copies attributes to the new session; newSession discards them.</span>
                 .sessionFixation().migrateSession()
                 <span class="tok-c">// One session per user. A second login invalidates the first.</span>
-                <span class="tok-c">// Required under SAMA concurrent-session controls.</span>
+                <span class="tok-c">// A common regulatory concurrent-session control.</span>
                 .maximumSessions(<span class="tok-n">1</span>)
                 .maxSessionsPreventsLogin(<span class="tok-s">false</span>) <span class="tok-c">// new login wins; old session invalidated</span>
                 .expiredUrl(<span class="tok-s">"/session-expired"</span>)
@@ -379,11 +379,11 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">Redis session store without replication is a SPOF for authentication</div>
-            <p>If the session Redis instance fails, every active session is lost. Every logged-in user is immediately logged out. On a retail banking platform, a Redis session store failure during peak hours is an authentication outage, not a performance degradation. Run Redis Sentinel (3 nodes: 1 primary, 1 replica, 1 sentinel with a separate witness) or Redis Cluster for session data. Sentinel is usually sufficient for session stores where the total dataset is small (&lt;1 GB); Cluster is appropriate when you have 100k+ concurrent sessions. Never run a single Redis node for session storage in a production banking environment.</p>
+            <p>If the session Redis instance fails, every active session is lost. Every logged-in user is immediately logged out. On a high-traffic customer platform, a Redis session store failure during peak hours is an authentication outage, not a performance degradation. Run Redis Sentinel (3 nodes: 1 primary, 1 replica, 1 sentinel with a separate witness) or Redis Cluster for session data. Sentinel is usually sufficient for session stores where the total dataset is small (&lt;1 GB); Cluster is appropriate when you have 100k+ concurrent sessions. Never run a single Redis node for session storage in a production customer-facing environment.</p>
           </div>
 
-          <p>Key sizing: a Spring Session entry serialised to JSON for a banking portal session typically runs 2&ndash;8 KB &mdash; user identity, CSRF token, OAuth2 state/nonce, navigation state. Budget 10 KB per session as a ceiling. At 100,000 concurrent sessions, that is 1 GB of session data &mdash; comfortably within a single Redis instance but large enough that you need a memory monitoring alert.</p>
-          <p>The Redis key structure Spring Session uses: <code>bank:portal:session:sessions:{sessionId}</code> (the Hash containing session attributes) and <code>bank:portal:session:sessions:expires:{sessionId}</code> (a String key used for TTL-based expiry notification). Do not manually modify these keys outside of the Spring Session lifecycle; the expiry notification mechanism relies on the TTL of the expires key.</p>
+          <p>Key sizing: a Spring Session entry serialised to JSON for a typical portal session runs 2&ndash;8 KB &mdash; user identity, CSRF token, OAuth2 state/nonce, navigation state. Budget 10 KB per session as a ceiling. At 100,000 concurrent sessions, that is 1 GB of session data &mdash; comfortably within a single Redis instance but large enough that you need a memory monitoring alert.</p>
+          <p>The Redis key structure Spring Session uses: <code>portal:session:sessions:{sessionId}</code> (the Hash containing session attributes) and <code>portal:session:sessions:expires:{sessionId}</code> (a String key used for TTL-based expiry notification). Do not manually modify these keys outside of the Spring Session lifecycle; the expiry notification mechanism relies on the TTL of the expires key.</p>
 
           <h2 id="session-fixation">Session Fixation and CSRF</h2>
           <p>Session fixation is an attack where an adversary pre-sets a session ID (by getting the victim to click a crafted link) and then authenticates as a legitimate user &mdash; at which point the adversary owns the now-authenticated session. The defence is to issue a new session ID after every authentication. Spring Security&rsquo;s <code>sessionFixation().migrateSession()</code> does exactly this: on successful login, it creates a new session, copies all pre-authentication attributes (CSRF token, PKCE state), and invalidates the old session. The session cookie in the browser is updated to the new ID.</p>
@@ -391,12 +391,12 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">Never store sensitive data in the session unencrypted</div>
-            <p>The Redis session keyspace is accessible to every engineer who has Redis access &mdash; which in most platform teams includes DevOps, DBA support, and on-call engineers who need to debug session issues. Storing account numbers, IBANs, full card numbers, or payment details in the session as plaintext strings means they are visible in <code>HGETALL spring:session:sessions:{id}</code>. Under SAMA&rsquo;s Data Classification Policy and Saudi Arabia&rsquo;s Personal Data Protection Law (PDPL), this is a data exposure incident. Store only what is strictly necessary: user ID, role, session creation timestamp, OAuth2 state parameters. If you must store a reference to a payment in progress, store a reference ID &mdash; not the payment details.</p>
+            <p>The Redis session keyspace is accessible to every engineer who has Redis access &mdash; which in most platform teams includes DevOps, DBA support, and on-call engineers who need to debug session issues. Storing account numbers, IBANs, full card numbers, or payment details in the session as plaintext strings means they are visible in <code>HGETALL spring:session:sessions:{id}</code>. Under data-classification policies, PCI DSS and data-protection laws such as GDPR, this is a data exposure incident. Store only what is strictly necessary: user ID, role, session creation timestamp, OAuth2 state parameters. If you must store a reference to a payment in progress, store a reference ID &mdash; not the payment details.</p>
           </div>
 
           <h2 id="multi-app">Multi-Application Session Sharing</h2>
-          <p>A Saudi bank&rsquo;s digital portal typically spans multiple subdomains: <code>app.bank.example</code> (retail banking), <code>biz.bank.example</code> (corporate banking), <code>api.bank.example</code> (API portal). A customer authenticated on the retail portal should not be forced to re-authenticate on the corporate portal if they have access to both &mdash; single sign-on should handle the session continuation.</p>
-          <p>SSO across subdomains using Redis-backed sessions requires a shared Redis keyspace (all applications read the same session data) and a session cookie scoped to the parent domain (<code>.bank.example</code>). Each application accesses the same session record using its own namespace prefix (to avoid key collisions) but reads the user identity attributes written by the SSO authentication service. In practice, this is complex to implement correctly &mdash; a shared session format, a shared attribute naming convention, and version-compatible serialization across all applications. For most banks, the cleaner architecture is to not share the Redis session across applications and instead rely on the OAuth2 authorization server (Keycloak or PingFederate) for SSO &mdash; each application has its own session, but the user only authenticates once at the IAM layer.</p>
+          <p>A large organisation&rsquo;s digital estate typically spans multiple subdomains: <code>app.example.com</code> (consumer portal), <code>biz.example.com</code> (business portal), <code>api.example.com</code> (developer portal). A customer authenticated on the consumer portal should not be forced to re-authenticate on the business portal if they have access to both &mdash; single sign-on should handle the session continuation.</p>
+          <p>SSO across subdomains using Redis-backed sessions requires a shared Redis keyspace (all applications read the same session data) and a session cookie scoped to the parent domain (<code>.example.com</code>). Each application accesses the same session record using its own namespace prefix (to avoid key collisions) but reads the user identity attributes written by the SSO authentication service. In practice, this is complex to implement correctly &mdash; a shared session format, a shared attribute naming convention, and version-compatible serialization across all applications. For most organisations, the cleaner architecture is to not share the Redis session across applications and instead rely on the OAuth2 authorization server (Keycloak or PingFederate) for SSO &mdash; each application has its own session, but the user only authenticates once at the IAM layer.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>openshift-route-affinity.yaml</span><span class="code-block__lang">yaml</span></div>
@@ -428,7 +428,7 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">Session not invalidated on logout</div>
-            <p>The most common session security defect in banking portals: the application revokes the OAuth2 token (via the authorization server&rsquo;s revocation endpoint) but does not invalidate the server-side session. The session cookie in the browser is still valid. If an attacker captured the session cookie (via XSS or network interception), they can continue to use the session after the user has &ldquo;logged out.&rdquo; Correct logout requires both: <code>session.invalidate()</code> in Spring (which deletes the Redis session key) AND a call to the authorization server&rsquo;s token revocation endpoint. Test this explicitly in your security regression suite.</p>
+            <p>The most common session security defect in customer portals: the application revokes the OAuth2 token (via the authorization server&rsquo;s revocation endpoint) but does not invalidate the server-side session. The session cookie in the browser is still valid. If an attacker captured the session cookie (via XSS or network interception), they can continue to use the session after the user has &ldquo;logged out.&rdquo; Correct logout requires both: <code>session.invalidate()</code> in Spring (which deletes the Redis session key) AND a call to the authorization server&rsquo;s token revocation endpoint. Test this explicitly in your security regression suite.</p>
           </div>
 
           <h2 id="checklist">Steps to Migrate from Sticky Sessions to Redis-Backed Distributed Sessions</h2>
@@ -451,7 +451,7 @@
               <p>Delete the <code>router.openshift.io/cookie_name</code> annotation from the Route (or set <code>haproxy.router.openshift.io/disable_cookies: "true"</code>). The Route will now distribute requests round-robin. Verify that existing sessions survive routing to different pods.</p>
             </li>
             <li>
-              <h4>Implement SAMA-compliant timeout enforcement</h4>
+              <h4>Implement regulatory timeout enforcement</h4>
               <p>Set <code>maxInactiveIntervalInSeconds=900</code> for the idle timeout. Add a <code>HandlerInterceptor</code> that reads the session creation timestamp and invalidates sessions older than 8 hours. Test with a session aged to the limit in a staging environment.</p>
             </li>
             <li>
@@ -462,13 +462,13 @@
 
           <table>
             <thead>
-              <tr><th>Session approach</th><th>Pod-agnostic</th><th>SAMA compliance ease</th><th>Logout correctness</th><th>Failure impact</th></tr>
+              <tr><th>Session approach</th><th>Pod-agnostic</th><th>Regulatory compliance ease</th><th>Logout correctness</th><th>Failure impact</th></tr>
             </thead>
             <tbody>
               <tr><td><strong>Sticky sessions</strong></td><td>No &mdash; pod-bound</td><td>Hard &mdash; absolute timeout requires custom logic</td><td>Simple &mdash; clear in-memory</td><td>Session loss on pod restart; silent, immediate</td></tr>
               <tr><td><strong>Redis server-side</strong></td><td>Yes &mdash; any pod reads any session</td><td>Good &mdash; TTL maps to idle timeout</td><td>Requires explicit Redis DEL + token revocation</td><td>Redis failure = auth outage; requires HA Redis</td></tr>
               <tr><td><strong>JWT stateless</strong></td><td>Yes &mdash; no server state</td><td>Hard &mdash; cannot revoke a JWT before expiry</td><td>Difficult &mdash; requires token blocklist</td><td>Lowest failure impact; no session store dependency</td></tr>
-              <tr><td><strong>OIDC session management</strong></td><td>Yes &mdash; IAM layer owns session</td><td>Best &mdash; SAMA timeout at IAM layer, applied uniformly</td><td>Correct &mdash; IAM handles token + session lifecycle</td><td>IAM outage = auth outage; mitigated by IAM HA</td></tr>
+              <tr><td><strong>OIDC session management</strong></td><td>Yes &mdash; IAM layer owns session</td><td>Best &mdash; timeout policy at IAM layer, applied uniformly</td><td>Correct &mdash; IAM handles token + session lifecycle</td><td>IAM outage = auth outage; mitigated by IAM HA</td></tr>
             </tbody>
           </table>
 

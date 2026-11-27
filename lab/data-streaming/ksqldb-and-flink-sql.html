@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Streaming &mdash; ksqlDB &amp; Flink SQL for Stream Analytics &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="SQL on streams for financial services: ksqlDB and Flink SQL compared, stateful aggregations, schema management, windowing, stream-table joins, and the operational trade-offs that decide which engine fits your architecture.">
+  <meta name="description" content="SQL on streams: ksqlDB and Flink SQL compared, stateful aggregations, schema management, windowing, stream-table joins, and the operational trade-offs that decide which engine fits your architecture.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Data Streaming &mdash; ksqlDB &amp; Flink SQL &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="SQL on streams: stateful aggregations, windowing, joins, and what holds up in production financial-services environments.">
+  <meta property="og:description" content="SQL on streams: stateful aggregations, windowing, joins, and what holds up in production, regulated environments.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/data-streaming/ksqldb-and-flink-sql.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ksqlDB &amp; Flink SQL &mdash; Stream Analytics in Production">
-  <meta name="twitter:description" content="SQL on streams for financial services: windowing, joins, schema, and operational trade-offs.">
+  <meta name="twitter:description" content="SQL on streams: windowing, joins, schema, and operational trade-offs.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-streaming/ksqldb-and-flink-sql.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Data Streaming: ksqlDB & Flink SQL for Stream Analytics",
-    "description": "SQL on streams for financial services: ksqlDB and Flink SQL compared, stateful aggregations, schema management, windowing, stream-table joins, and operational production patterns.",
+    "description": "SQL on streams: ksqlDB and Flink SQL compared, stateful aggregations, schema management, windowing, stream-table joins, and operational production patterns.",
     "datePublished": "2026-05-23",
     "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
     "publisher": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
@@ -85,7 +85,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-streaming.html">Data Streaming</a><span>/</span>ksqlDB &amp; Flink SQL</div>
           <span class="overline">Lab Article</span>
           <h1>Data Streaming: ksqlDB &amp; Flink SQL for Stream Analytics</h1>
-          <p class="lead">SQL on streams is a genuine productivity leap for financial-services teams&mdash;it lowers the barrier to building stateful real-time pipelines, but it does not eliminate the complexity of running them. This article covers the trade-offs between ksqlDB and Flink SQL, stateful aggregations, schema management, windowing in SQL, stream-table joins, and the production concerns that surface after go-live.</p>
+          <p class="lead">SQL on streams is a genuine productivity leap for data and integration teams&mdash;it lowers the barrier to building stateful real-time pipelines, but it does not eliminate the complexity of running them. This article covers the trade-offs between ksqlDB and Flink SQL, stateful aggregations, schema management, windowing in SQL, stream-table joins, and the production concerns that surface after go-live.</p>
         </div>
       </div>
     </div>
@@ -125,7 +125,7 @@
 
           <h2 id="overview">Overview</h2>
           <p>The Kafka ecosystem learned an early lesson from Hadoop: SQL dialects dramatically widen the population of engineers who can build production pipelines. ksqlDB and Flink SQL are the two mainstream answers to &ldquo;I want to query a stream without writing Java topology code.&rdquo; Both can produce correct results on unbounded data. The difference is in ownership model, operational surface, and what happens when you need to go off-script.</p>
-          <p>For a Saudi bank running on IBM Event Streams (Kafka 3.x) or Confluent, the deployment picture is asymmetric: ksqlDB runs inside the Kafka ecosystem with minimal new infrastructure; Flink SQL requires a Flink cluster that needs its own cluster management, scaling strategy, and checkpointing store. That is a legitimate operational cost. But Flink SQL also offers SQL semantics the ksqlDB team openly describes as a future target, not a shipped feature&mdash;complex multi-stream joins, MATCH_RECOGNIZE pattern detection, savepoints, and first-class SQL DDL for state management.</p>
+          <p>For an organisation running a managed Kafka distribution (IBM Event Streams, Amazon MSK, Confluent or a self-managed Kafka 3.x), the deployment picture is asymmetric: ksqlDB runs inside the Kafka ecosystem with minimal new infrastructure; Flink SQL requires a Flink cluster that needs its own cluster management, scaling strategy, and checkpointing store. That is a legitimate operational cost. But Flink SQL also offers SQL semantics the ksqlDB team openly describes as a future target, not a shipped feature&mdash;complex multi-stream joins, MATCH_RECOGNIZE pattern detection, savepoints, and first-class SQL DDL for state management.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">This article assumes you understand Kafka Streams basics</div>
@@ -147,7 +147,7 @@
               <tr><td>Operational surface</td><td>One ksqlDB server binary; REST API for DDL/DML</td><td>Separate cluster + checkpointing store; Flink UI; savepoint management</td></tr>
               <tr><td>Scaling</td><td>Horizontal: add ksqlDB servers; partitioned by query topic</td><td>Horizontal: TaskManager slots; fine-grained parallelism per operator</td></tr>
               <tr><td>Best fit</td><td>Enrichment, filtering, per-topic transformations; smaller teams</td><td>Complex multi-stream analytics, regulatory reporting, ML feature pipelines</td></tr>
-              <tr><td>KSA regulatory fit</td><td>Simpler SAMA sandbox testing; fewer moving parts for audit</td><td>Richer lineage and checkpointing for SOX/SAMA evidence chains</td></tr>
+              <tr><td>Regulated-environment fit</td><td>Simpler sandbox testing; fewer moving parts to evidence for audit</td><td>Richer lineage and checkpointing for SOX-style evidence chains</td></tr>
             </tbody>
           </table>
 
@@ -177,7 +177,7 @@
 
                 <rect x="30" y="50" width="140" height="44" rx="5" fill="#16161f" stroke="#4a9eff"/>
                 <text x="100" y="69" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Kafka Cluster</text>
-                <text x="100" y="83" text-anchor="middle" fill="#71717a" font-size="9">IBM Event Streams</text>
+                <text x="100" y="83" text-anchor="middle" fill="#71717a" font-size="9">Apache Kafka / Confluent</text>
 
                 <rect x="190" y="50" width="160" height="44" rx="5" fill="#16161f" stroke="#4a9eff"/>
                 <text x="270" y="69" text-anchor="middle" fill="#e4e4e7" font-size="10" font-weight="600">Schema Registry</text>
@@ -338,12 +338,12 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">EMIT CHANGES vs EMIT FINAL</div>
-            <p><code>EMIT CHANGES</code> sends a row to the output topic every time a partial result updates&mdash;up to one row per input event. For fraud detection dashboards this is fine. For downstream database inserts or ISO 20022 message generation, use <code>EMIT FINAL</code> to wait until the window closes. Mixing semantics between producers and consumers of derived topics is the most common ksqlDB data quality bug.</p>
+            <p><code>EMIT CHANGES</code> sends a row to the output topic every time a partial result updates&mdash;up to one row per input event. For fraud detection dashboards this is fine. For downstream database inserts or outbound message generation (ISO 20022 payments, EDI orders, billing records), use <code>EMIT FINAL</code> to wait until the window closes. Mixing semantics between producers and consumers of derived topics is the most common ksqlDB data quality bug.</p>
           </div>
 
           <h2 id="schema">Schema management</h2>
           <p>Schema Registry is non-negotiable in production. It enforces Avro or Protobuf compatibility on every topic, which prevents a schema change in one pipeline from silently breaking all downstream consumers. Both ksqlDB and Flink SQL integrate with the Confluent Schema Registry API.</p>
-          <p>Two compatibility modes matter for financial data:</p>
+          <p>Two compatibility modes matter for business-critical data:</p>
           <ul>
             <li><strong>BACKWARD</strong> &mdash; new readers can read old messages. Safe for adding nullable fields. The default for most transaction topics.</li>
             <li><strong>FULL</strong> &mdash; new readers can read old messages and old readers can read new messages. Required when you have long-running consumers (like compliance archives) that cannot be redeployed quickly.</li>
@@ -359,20 +359,20 @@
 
           <table>
             <thead>
-              <tr><th>Window type</th><th>SQL function (Flink)</th><th>Financial use case</th></tr>
+              <tr><th>Window type</th><th>SQL function (Flink)</th><th>Example use case</th></tr>
             </thead>
             <tbody>
-              <tr><td>Tumbling</td><td><code>TUMBLE(ts, INTERVAL '10' MINUTE)</code></td><td>Hourly settlement batches, transaction count thresholds</td></tr>
+              <tr><td>Tumbling</td><td><code>TUMBLE(ts, INTERVAL '10' MINUTE)</code></td><td>Hourly settlement or billing batches, event-count thresholds</td></tr>
               <tr><td>Hopping (sliding)</td><td><code>HOP(ts, INTERVAL '1' MINUTE, INTERVAL '10' MINUTE)</code></td><td>Rolling 10-minute velocity: transactions in last 10 min, updated each minute</td></tr>
-              <tr><td>Session</td><td><code>SESSION(ts, INTERVAL '30' MINUTE)</code></td><td>Customer session aggregation; ATM sequence detection</td></tr>
-              <tr><td>Cumulate</td><td><code>CUMULATE(ts, INTERVAL '1' MINUTE, INTERVAL '1' DAY)</code></td><td>Daily spend running total for limit enforcement; SAMA daily limits</td></tr>
+              <tr><td>Session</td><td><code>SESSION(ts, INTERVAL '30' MINUTE)</code></td><td>Customer session aggregation; device, kiosk or ATM sequence detection</td></tr>
+              <tr><td>Cumulate</td><td><code>CUMULATE(ts, INTERVAL '1' MINUTE, INTERVAL '1' DAY)</code></td><td>Daily running total for limit or quota enforcement</td></tr>
               <tr><td>Over (ksqlDB)</td><td><code>WINDOW HOPPING (SIZE 10 MIN, ADVANCE BY 1 MIN)</code></td><td>Sliding fraud velocity; merchant spend concentration</td></tr>
             </tbody>
           </table>
 
           <div class="callout callout--note">
-            <div class="callout__title">Cumulate windows for SAMA daily limits</div>
-            <p>SAMA&rsquo;s IPS framework sets per-day transaction limits for individuals and SMEs. A cumulate window lets you compute the running spend from midnight every 1-minute interval without waiting until end-of-day. This is operationally simpler than a session window and better than a tumbling window because the result is always &ldquo;amount spent since midnight&rdquo; rather than &ldquo;amount spent in the last X minutes.&rdquo;</p>
+            <div class="callout__title">Cumulate windows for daily limits and quotas</div>
+            <p>Per-day limits are everywhere: instant-payment schemes cap daily transfers per customer, telecoms cap daily spend or data, API platforms cap calls per tenant per day. A cumulate window lets you compute the running total from midnight every 1-minute interval without waiting until end-of-day. This is operationally simpler than a session window and better than a tumbling window because the result is always &ldquo;amount spent since midnight&rdquo; rather than &ldquo;amount spent in the last X minutes.&rdquo;</p>
           </div>
 
           <h2 id="joins">Stream-table joins</h2>
@@ -456,7 +456,7 @@
           </div>
 
           <h2 id="batch-fit">Fit alongside batch warehouses</h2>
-          <p>Streaming SQL and batch SQL are complementary, not competing. The operational pattern that works in regulated banking is a <strong>lambda-adjacent architecture</strong>: the streaming layer handles operational decisions (real-time fraud scoring, limit enforcement) while the batch layer handles the analytical workloads that regulators care about (end-of-day reconciliation, daily transaction file to SAMA, SOX reports).</p>
+          <p>Streaming SQL and batch SQL are complementary, not competing. The operational pattern that works in regulated industries is a <strong>lambda-adjacent architecture</strong>: the streaming layer handles operational decisions (real-time fraud scoring, limit enforcement) while the batch layer handles the analytical workloads that auditors and regulators care about (end-of-day reconciliation, daily regulatory submissions, SOX reports).</p>
           <p>The bridge between the two is the data lake. Flink SQL has a first-class <code>PRINT</code> sink and a Hudi/Iceberg/Delta connector that writes streaming data into a table format that batch engines (Spark, Trino, BigQuery) can query. ksqlDB can sink to Kafka Connect, which in turn writes to S3 for batch consumption. Neither replaces the other.</p>
 
           <table>
@@ -465,9 +465,9 @@
             </thead>
             <tbody>
               <tr><td>Card fraud scoring</td><td>Streaming SQL</td><td>&lt; 300 ms</td></tr>
-              <tr><td>IPS payment limit check</td><td>Streaming SQL (cumulate window)</td><td>&lt; 100 ms</td></tr>
+              <tr><td>Daily limit / quota check</td><td>Streaming SQL (cumulate window)</td><td>&lt; 100 ms</td></tr>
               <tr><td>Sanctions screening</td><td>Streaming SQL (temporal join)</td><td>&lt; 200 ms</td></tr>
-              <tr><td>Daily reconciliation to SAMA</td><td>Batch (Spark / scheduled job)</td><td>T+0 before 23:59</td></tr>
+              <tr><td>Daily regulatory reconciliation</td><td>Batch (Spark / scheduled job)</td><td>T+0 before 23:59</td></tr>
               <tr><td>SOX financial close reporting</td><td>Batch (data warehouse query)</td><td>T+1 morning</td></tr>
               <tr><td>Customer 360 feature store</td><td>Both (streaming pre-aggregation, batch refresh)</td><td>5-minute window</td></tr>
             </tbody>

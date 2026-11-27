@@ -127,7 +127,7 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Integration teams in financial services operate under a peculiar kind of friction. Spinning up a new integration service requires a Jira ticket to request a namespace, another to get a Kafka topic created, a third to have the MQ queue configured, a fourth for the Vault secret path, and then a wait &mdash; often measured in days &mdash; while each team processes the request in sequence. By the time the integration engineer has an environment they can write code against, three of them have switched to other work and the original deadline has moved.</p>
+          <p>Integration teams in large regulated enterprises operate under a peculiar kind of friction. Spinning up a new integration service requires a Jira ticket to request a namespace, another to get a Kafka topic created, a third to have the MQ queue configured, a fourth for the Vault secret path, and then a wait &mdash; often measured in days &mdash; while each team processes the request in sequence. By the time the integration engineer has an environment they can write code against, three of them have switched to other work and the original deadline has moved.</p>
           <p>An Internal Developer Platform (IDP) collapses that queue. The developer fills out a form, the scaffolder creates the repo from a template, the Tekton pipeline wires up CI, and Crossplane provisions the Kafka topic and namespace in a single reconcile loop. The platform team&rsquo;s job is to build and maintain the paved path; the integration team&rsquo;s job is to write the integration logic, not the scaffolding around it.</p>
           <p>The trade-off that most teams underestimate: building an IDP is a significant engineering investment with delayed payback. The first three months feel like you are solving the wrong problem. The payback arrives at scale &mdash; when 15 teams are onboarding simultaneously and none of them are filing tickets.</p>
 
@@ -233,16 +233,16 @@
 
           <h2 id="backstage">Backstage portal</h2>
           <p>Backstage is Spotify&rsquo;s open-source developer portal, now a CNCF incubating project. Its three core capabilities for integration teams are the <strong>Software Catalog</strong> (a registry of all services, APIs, and integrations), the <strong>Scaffolder</strong> (a form-based service generator backed by git templates), and <strong>TechDocs</strong> (documentation pulled from the repo and rendered in the portal).</p>
-          <p>Running Backstage on OpenShift requires a PostgreSQL instance (the catalog backend), a Kubernetes service account with read access to the cluster, and OAuth integration with your IdP (Entra ID or Keycloak). The Red Hat Developer Hub, which is the supported downstream of Backstage, ships as an Operator on OpenShift and is the supported path for production use under a SAMA audit.</p>
+          <p>Running Backstage on OpenShift requires a PostgreSQL instance (the catalog backend), a Kubernetes service account with read access to the cluster, and OAuth integration with your IdP (Entra ID or Keycloak). The Red Hat Developer Hub, which is the supported downstream of Backstage, ships as an Operator on OpenShift and is the supported path for production use under a regulatory audit.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>app-config.yaml</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-k">app</span>:
-  <span class="tok-k">title</span>: <span class="tok-s">Bank Integration Platform</span>
-  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.bank.internal</span>
+  <span class="tok-k">title</span>: <span class="tok-s">Integration Platform</span>
+  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.example.com</span>
 
 <span class="tok-k">backend</span>:
-  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.integration.bank.internal</span>
+  <span class="tok-k">baseUrl</span>: <span class="tok-s">https://idp.example.com</span>
   <span class="tok-k">database</span>:
     <span class="tok-k">client</span>: <span class="tok-s">pg</span>
     <span class="tok-k">connection</span>:
@@ -264,7 +264,7 @@
   <span class="tok-k">providers</span>:
     <span class="tok-k">github</span>:
       <span class="tok-k">integrationOrg</span>:
-        <span class="tok-k">organization</span>: <span class="tok-s">bank-integration</span>
+        <span class="tok-k">organization</span>: <span class="tok-s">example-org</span>
         <span class="tok-k">catalogPath</span>: <span class="tok-s">/catalog-info.yaml</span>
         <span class="tok-k">filters</span>:
           <span class="tok-k">branch</span>: <span class="tok-s">main</span>
@@ -276,7 +276,7 @@
 
           <div class="callout callout--note">
             <div class="callout__title">Red Hat Developer Hub vs. upstream Backstage</div>
-            <p>Upstream Backstage upgrades weekly and community plugins break on every minor release. For a bank environment where every dependency change needs a vulnerability scan, use Red Hat Developer Hub (RHDH). It bundles a curated, tested set of plugins, upgrades quarterly, and carries enterprise support. The plugin catalog is smaller but everything in it works together. Accept the constraint; the operational stability is worth more than the bleeding-edge plugin choice.</p>
+            <p>Upstream Backstage upgrades weekly and community plugins break on every minor release. For a regulated environment where every dependency change needs a vulnerability scan, use Red Hat Developer Hub (RHDH). It bundles a curated, tested set of plugins, upgrades quarterly, and carries enterprise support. The plugin catalog is smaller but everything in it works together. Accept the constraint; the operational stability is worth more than the bleeding-edge plugin choice.</p>
           </div>
 
           <h2 id="scaffolders">Scaffolder templates</h2>
@@ -306,7 +306,7 @@
         <span class="tok-k">domain</span>:
           <span class="tok-k">title</span>: <span class="tok-s">Business domain</span>
           <span class="tok-k">type</span>: <span class="tok-s">string</span>
-          <span class="tok-k">enum</span>: [<span class="tok-s">payments</span>, <span class="tok-s">lending</span>, <span class="tok-s">treasury</span>, <span class="tok-s">retail</span>, <span class="tok-s">corporate</span>]
+          <span class="tok-k">enum</span>: [<span class="tok-s">payments</span>, <span class="tok-s">orders</span>, <span class="tok-s">customer</span>, <span class="tok-s">finance</span>, <span class="tok-s">operations</span>]
         <span class="tok-k">owner</span>:
           <span class="tok-k">title</span>: <span class="tok-s">Team</span>
           <span class="tok-k">type</span>: <span class="tok-s">string</span>
@@ -327,7 +327,7 @@
       <span class="tok-k">name</span>: <span class="tok-s">Create repository</span>
       <span class="tok-k">action</span>: <span class="tok-s">publish:github</span>
       <span class="tok-k">input</span>:
-        <span class="tok-k">repoUrl</span>: <span class="tok-s">github.com?owner=bank-integration&repo=${{ parameters.name }}-integration</span>
+        <span class="tok-k">repoUrl</span>: <span class="tok-s">github.com?owner=example-org&amp;repo=${{ parameters.name }}-integration</span>
         <span class="tok-k">defaultBranch</span>: <span class="tok-s">main</span>
         <span class="tok-k">repoVisibility</span>: <span class="tok-s">private</span>
         <span class="tok-k">topics</span>: [<span class="tok-s">integration</span>, <span class="tok-s">${{ parameters.domain }}</span>, <span class="tok-s">ace</span>]
@@ -380,18 +380,18 @@
 <pre><code><span class="tok-k">apiVersion</span>: <span class="tok-s">backstage.io/v1alpha1</span>
 <span class="tok-k">kind</span>: <span class="tok-s">Component</span>
 <span class="tok-k">metadata</span>:
-  <span class="tok-k">name</span>: <span class="tok-s">payments-ips-adapter</span>
-  <span class="tok-k">description</span>: <span class="tok-s">IPS payment instruction adapter — ISO 20022 to ACH transform</span>
+  <span class="tok-k">name</span>: <span class="tok-s">payments-adapter</span>
+  <span class="tok-k">description</span>: <span class="tok-s">Payment instruction adapter — ISO 20022 to ACH transform</span>
   <span class="tok-k">annotations</span>:
     <span class="tok-k">backstage.io/techdocs-ref</span>: <span class="tok-s">dir:.</span>
-    <span class="tok-k">github.com/project-slug</span>: <span class="tok-s">bank-integration/payments-ips-adapter-integration</span>
-    <span class="tok-k">argocd/app-name</span>: <span class="tok-s">payments-ips-adapter-prod</span>
-  <span class="tok-k">tags</span>: [<span class="tok-s">payments</span>, <span class="tok-s">iso20022</span>, <span class="tok-s">ace</span>, <span class="tok-s">ips</span>]
+    <span class="tok-k">github.com/project-slug</span>: <span class="tok-s">example-org/payments-adapter-integration</span>
+    <span class="tok-k">argocd/app-name</span>: <span class="tok-s">payments-adapter-prod</span>
+  <span class="tok-k">tags</span>: [<span class="tok-s">payments</span>, <span class="tok-s">iso20022</span>, <span class="tok-s">ace</span>, <span class="tok-s">ach</span>]
   <span class="tok-k">links</span>:
-    - <span class="tok-k">url</span>: <span class="tok-s">https://wiki.bank.internal/runbooks/payments-ips-adapter</span>
+    - <span class="tok-k">url</span>: <span class="tok-s">https://wiki.example.com/runbooks/payments-adapter</span>
       <span class="tok-k">title</span>: <span class="tok-s">Runbook</span>
       <span class="tok-k">icon</span>: <span class="tok-s">docs</span>
-    - <span class="tok-k">url</span>: <span class="tok-s">https://monitoring.bank.internal/d/payments-ips</span>
+    - <span class="tok-k">url</span>: <span class="tok-s">https://grafana.example.com/d/payments-adapter</span>
       <span class="tok-k">title</span>: <span class="tok-s">Dashboard</span>
       <span class="tok-k">icon</span>: <span class="tok-s">dashboard</span>
 <span class="tok-k">spec</span>:
@@ -400,17 +400,17 @@
   <span class="tok-k">owner</span>: <span class="tok-s">group:payments-integration-team</span>
   <span class="tok-k">system</span>: <span class="tok-s">payments-platform</span>
   <span class="tok-k">dependsOn</span>:
-    - <span class="tok-s">component:ips-clearing-api</span>
+    - <span class="tok-s">component:clearing-api</span>
     - <span class="tok-s">resource:mq-payments-cluster</span>
   <span class="tok-k">providesApis</span>:
-    - <span class="tok-s">payments-ips-adapter-api</span></code></pre>
+    - <span class="tok-s">payments-adapter-api</span></code></pre>
           </div>
 
           <p>Catalog data quality degrades if teams see it as bureaucracy. The platform team&rsquo;s job is to make the catalog useful enough that teams fill it in because it helps them, not because they are told to. Wiring the ArgoCD sync status, the Tekton pipeline status, and the last deploy date into the catalog entity page is usually enough to tip the balance &mdash; teams start maintaining the catalog to get the operational view for free.</p>
 
           <h2 id="crossplane">Infrastructure on demand</h2>
           <p>Crossplane is the Kubernetes-native infrastructure provisioner. Rather than filing a ticket to the Kafka admin team, an integration team submits a <code>KafkaTopic</code> claim; the Crossplane composition resolves it to the correct Strimzi cluster, creates the topic with the right partition count and retention policy, and writes the connection details to a Vault secret that the service can consume.</p>
-          <p>The key abstraction is the <strong>Composite Resource Definition (XRD)</strong>: the platform team defines what the claim looks like and what the provisioning rules are; the service team only sees the claim API. They do not need to know which Strimzi cluster is the target, what the naming convention for topic names is, or what retention policy SAMA requires for financial event data.</p>
+          <p>The key abstraction is the <strong>Composite Resource Definition (XRD)</strong>: the platform team defines what the claim looks like and what the provisioning rules are; the service team only sees the claim API. They do not need to know which Strimzi cluster is the target, what the naming convention for topic names is, or what retention policy the regulator requires for financial event data.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>xrd-integration-env.yaml</span><span class="code-block__lang">yaml</span></div>
@@ -418,9 +418,9 @@
 <span class="tok-k">apiVersion</span>: <span class="tok-s">apiextensions.crossplane.io/v1</span>
 <span class="tok-k">kind</span>: <span class="tok-s">CompositeResourceDefinition</span>
 <span class="tok-k">metadata</span>:
-  <span class="tok-k">name</span>: <span class="tok-s">xintegrationenvironments.platform.bank.internal</span>
+  <span class="tok-k">name</span>: <span class="tok-s">xintegrationenvironments.platform.example.com</span>
 <span class="tok-k">spec</span>:
-  <span class="tok-k">group</span>: <span class="tok-s">platform.bank.internal</span>
+  <span class="tok-k">group</span>: <span class="tok-s">platform.example.com</span>
   <span class="tok-k">names</span>:
     <span class="tok-k">kind</span>: <span class="tok-s">XIntegrationEnvironment</span>
     <span class="tok-k">plural</span>: <span class="tok-s">xintegrationenvironments</span>
@@ -442,7 +442,7 @@
                 <span class="tok-k">serviceName</span>: { <span class="tok-k">type</span>: <span class="tok-s">string</span> }
                 <span class="tok-k">domain</span>:
                   <span class="tok-k">type</span>: <span class="tok-s">string</span>
-                  <span class="tok-k">enum</span>: [<span class="tok-s">payments</span>, <span class="tok-s">lending</span>, <span class="tok-s">treasury</span>, <span class="tok-s">retail</span>, <span class="tok-s">corporate</span>]
+                  <span class="tok-k">enum</span>: [<span class="tok-s">payments</span>, <span class="tok-s">orders</span>, <span class="tok-s">customer</span>, <span class="tok-s">finance</span>, <span class="tok-s">operations</span>]
                 <span class="tok-k">tier</span>:
                   <span class="tok-k">type</span>: <span class="tok-s">string</span>
                   <span class="tok-k">enum</span>: [<span class="tok-s">dev</span>, <span class="tok-s">test</span>, <span class="tok-s">prod</span>]
@@ -465,19 +465,19 @@
           </div>
 
           <h2 id="rbac">RBAC &amp; multi-tenancy</h2>
-          <p>Integration teams in a bank are not equal in their trust level. The payments team&rsquo;s namespace has PCI-DSS classification; the retail banking team&rsquo;s namespace does not. Both use the same IDP, but the Crossplane composition that provisions a payments-domain service must enforce stricter NetworkPolicy (deny all egress except to known payment system CIDRs), a more restrictive ResourceQuota, and a Vault policy that limits which secret paths the service account can read.</p>
+          <p>Integration teams in a large organisation are not equal in their trust level. The payments team&rsquo;s namespace carries PCI DSS scope; the operations team&rsquo;s namespace does not. Both use the same IDP, but the Crossplane composition that provisions a payments-domain service must enforce stricter NetworkPolicy (deny all egress except to known payment system CIDRs), a more restrictive ResourceQuota, and a Vault policy that limits which secret paths the service account can read.</p>
 
           <p>The approach that scales: encode the classification in the claim schema (<code>domain: payments</code>), and use the composition to inject domain-specific constraints. The service team never writes NetworkPolicy; the composition injects the correct policy based on domain. Auditors can then verify that every namespace in the payments domain has the required NetworkPolicy by querying the Crossplane composite resources rather than inspecting 40 namespaces individually.</p>
 
           <ol class="step-list">
             <li>
-              <strong>Define domain groups in Backstage.</strong> Each business domain (payments, lending, treasury, retail, corporate) maps to a Backstage Group entity. Users belong to one or more groups. The group membership drives which scaffolder templates they can access and which domains their claims can target.
+              <strong>Define domain groups in Backstage.</strong> Each business domain (payments, orders, customer, finance, operations) maps to a Backstage Group entity. Users belong to one or more groups. The group membership drives which scaffolder templates they can access and which domains their claims can target.
             </li>
             <li>
-              <strong>Enforce claim namespace via OPA / Kyverno.</strong> A Kyverno policy validates that every <code>IntegrationEnvironment</code> claim is submitted from a namespace owned by the declaring team. A claim targeting <code>domain: payments</code> submitted from the lending team&rsquo;s namespace is rejected at admission.
+              <strong>Enforce claim namespace via OPA / Kyverno.</strong> A Kyverno policy validates that every <code>IntegrationEnvironment</code> claim is submitted from a namespace owned by the declaring team. A claim targeting <code>domain: payments</code> submitted from the orders team&rsquo;s namespace is rejected at admission.
             </li>
             <li>
-              <strong>Map domain to Vault policy in the composition.</strong> The composition reads the <code>domain</code> field and applies the corresponding Vault policy to the generated service account. The payments domain policy allows reads from <code>secret/payments/*</code>; it does not allow reads from <code>secret/treasury/*</code>.
+              <strong>Map domain to Vault policy in the composition.</strong> The composition reads the <code>domain</code> field and applies the corresponding Vault policy to the generated service account. The payments domain policy allows reads from <code>secret/payments/*</code>; it does not allow reads from <code>secret/finance/*</code>.
             </li>
             <li>
               <strong>Inject NetworkPolicy from the composition.</strong> Each domain has a baseline NetworkPolicy stored in a ConfigMap in the crossplane namespace. The composition patches the correct policy into the provisioned namespace. Override policies require a platform team PR and a change record.

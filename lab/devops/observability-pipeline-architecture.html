@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Observability Pipeline Architecture: OTel, Prometheus, Loki &amp; Tempo &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="End-to-end observability for integration platforms: OpenTelemetry collector pipelines, Prometheus metrics, Loki logs, Tempo distributed traces, and Grafana &mdash; production patterns for regulated financial services.">
+  <meta name="description" content="End-to-end observability for integration platforms: OpenTelemetry collector pipelines, Prometheus metrics, Loki logs, Tempo distributed traces, and Grafana &mdash; production patterns for regulated industries.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Observability Pipeline Architecture: OTel, Prometheus, Loki &amp; Tempo &mdash; Lab">
-  <meta property="og:description" content="OTel collector pipelines, Prometheus, Loki, Tempo, and Grafana for integration platform observability at regulated banks.">
+  <meta property="og:description" content="OTel collector pipelines, Prometheus, Loki, Tempo, and Grafana for integration platform observability in regulated enterprises.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/devops/observability-pipeline-architecture.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Observability Pipeline Architecture: OpenTelemetry, Prometheus, Loki & Tempo",
-    "description": "End-to-end observability for integration platforms: OpenTelemetry collector pipelines, Prometheus metrics, Loki logs, Tempo distributed traces, and Grafana — production patterns for regulated financial services.",
+    "description": "End-to-end observability for integration platforms: OpenTelemetry collector pipelines, Prometheus metrics, Loki logs, Tempo distributed traces, and Grafana — production patterns for regulated industries.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
     "author": {
@@ -89,7 +89,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../devops.html">DevOps &amp; Platform</a><span>/</span>Observability Pipeline</div>
           <span class="overline">Lab Article</span>
           <h1>Observability Pipeline Architecture</h1>
-          <p class="lead">OpenTelemetry collectors, Prometheus for metrics, Loki for logs, Tempo for distributed traces &mdash; an end-to-end observability platform for an integration estate at scale, grounded in regulated financial services constraints.</p>
+          <p class="lead">OpenTelemetry collectors, Prometheus for metrics, Loki for logs, Tempo for distributed traces &mdash; an end-to-end observability platform for an integration estate at scale, grounded in the constraints of regulated industries.</p>
         </div>
       </div>
     </div>
@@ -128,12 +128,12 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Observability in integration platforms is harder than in microservice applications because the signals cross more system boundaries. A payment message enters an IBM ACE integration server, publishes to IBM MQ, is consumed by a Kafka Streams processor, triggers an ISO 20022 transformation, calls a core banking REST endpoint, and writes the result to an Oracle database &mdash; all within a single business transaction. If end-to-end latency is 2.3 seconds instead of 400 milliseconds, you need to know which hop is slow and why. Logs from each system alone don&rsquo;t answer that. Metrics alone don&rsquo;t either. Only correlated traces, enriched with metrics and logs, do.</p>
-          <p>The stack that holds in production: <strong>OTel everywhere for instrumentation and collection, Prometheus for metrics, Loki for logs, Tempo for traces, Grafana as the unified query and dashboard layer</strong>. This is not a Grafana Labs advocacy article &mdash; it is the stack that works on OpenShift without a cloud-managed backend, without license cost per node, and without sending regulated data to a SaaS endpoint outside the SAMA regulatory perimeter.</p>
+          <p>Observability in integration platforms is harder than in microservice applications because the signals cross more system boundaries. A payment message enters an IBM ACE integration server, publishes to IBM MQ, is consumed by a Kafka Streams processor, triggers an ISO 20022 transformation, calls a backend system-of-record REST endpoint, and writes the result to an Oracle database &mdash; all within a single business transaction. If end-to-end latency is 2.3 seconds instead of 400 milliseconds, you need to know which hop is slow and why. Logs from each system alone don&rsquo;t answer that. Metrics alone don&rsquo;t either. Only correlated traces, enriched with metrics and logs, do.</p>
+          <p>The stack that holds in production: <strong>OTel everywhere for instrumentation and collection, Prometheus for metrics, Loki for logs, Tempo for traces, Grafana as the unified query and dashboard layer</strong>. This is not a Grafana Labs advocacy article &mdash; it is the stack that works on OpenShift without a cloud-managed backend, without license cost per node, and without sending regulated data to a SaaS endpoint outside your regulatory or data-residency perimeter.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">OpenTelemetry is the instrumentation standard, not a product</div>
-            <p>OpenTelemetry (OTel) defines APIs, SDKs, and a wire protocol (OTLP). It does not store data &mdash; the Collector routes signals to storage backends. Adopting OTel means your instrumentation is backend-agnostic: swap Prometheus for Thanos, Loki for Elastic, or Tempo for Jaeger without touching application code. This portability matters when SAMA or internal security requirements force a backend change mid-programme.</p>
+            <p>OpenTelemetry (OTel) defines APIs, SDKs, and a wire protocol (OTLP). It does not store data &mdash; the Collector routes signals to storage backends. Adopting OTel means your instrumentation is backend-agnostic: swap Prometheus for Thanos, Loki for Elastic, or Tempo for Jaeger without touching application code. This portability matters when regulatory or internal security requirements force a backend change mid-programme.</p>
           </div>
 
           <h2 id="three-signals">Three Signals</h2>
@@ -278,7 +278,7 @@
           <span class="tok-k">severity</span>: <span class="tok-s">warning</span>
         <span class="tok-k">annotations</span>:
           <span class="tok-k">summary</span>: <span class="tok-s">'MQ {{ $labels.queue }} on {{ $labels.qmgr }}: {{ $value }} msgs'</span>
-          <span class="tok-k">runbook_url</span>: <span class="tok-s">"https://wiki.internal/runbooks/mq-queue-depth"</span>
+          <span class="tok-k">runbook_url</span>: <span class="tok-s">"https://wiki.example.com/runbooks/mq-queue-depth"</span>
 
       <span class="tok-c"># Kafka consumer lag for payments bridge</span>
       - <span class="tok-k">alert</span>: <span class="tok-s">KafkaConsumerLagCritical</span>
@@ -288,7 +288,7 @@
           <span class="tok-k">severity</span>: <span class="tok-s">critical</span>
         <span class="tok-k">annotations</span>:
           <span class="tok-k">summary</span>: <span class="tok-s">'payments-bridge lag {{ $value }} msgs on {{ $labels.topic }}'</span>
-          <span class="tok-k">runbook_url</span>: <span class="tok-s">"https://wiki.internal/runbooks/kafka-consumer-lag"</span></code></pre>
+          <span class="tok-k">runbook_url</span>: <span class="tok-s">"https://wiki.example.com/runbooks/kafka-consumer-lag"</span></code></pre>
           </div>
 
           <div class="callout callout--warn">
@@ -356,7 +356,7 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">PII in span attributes is a data classification incident</div>
-            <p>The OTel Java Agent captures HTTP request headers, query parameters, and JDBC statement parameters by default &mdash; all of which may carry customer IDs, account numbers, or IBANs. Before enabling any integration service for tracing in production, audit and configure attribute sanitisation. Suppress <code>db.statement</code>, <code>http.url</code> query strings, and any custom attribute that carries personal data. Under SAMA&rsquo;s data classification policy and Saudi Arabia&rsquo;s PDPL, a trace buffer containing IBANs that is accessible to operations engineers is a breach, not an acceptable operational trade-off.</p>
+            <p>The OTel Java Agent captures HTTP request headers, query parameters, and JDBC statement parameters by default &mdash; all of which may carry customer IDs, account numbers, or IBANs. Before enabling any integration service for tracing in production, audit and configure attribute sanitisation. Suppress <code>db.statement</code>, <code>http.url</code> query strings, and any custom attribute that carries personal data. Under data-classification policies and data-protection laws such as GDPR, a trace buffer containing account numbers or IBANs that is accessible to operations engineers is a breach, not an acceptable operational trade-off.</p>
           </div>
 
           <p>Use <strong>head-based sampling</strong> at 10% for high-volume services and <strong>tail-based sampling</strong> to keep 100% of error traces, regardless of head sample decision. The OTel Collector&rsquo;s <code>tail_sampling</code> processor implements this by buffering spans for a configurable window (10&ndash;30 s) before evaluating policies.</p>
@@ -423,7 +423,7 @@
           <p>Three dashboard types cover 80% of operational use on an integration platform:</p>
           <ul>
             <li><strong>Platform SLO dashboard.</strong> One row per integration domain: traffic rate, error rate, latency p99, and SLO burn rate. The burn rate panel alerts before the SLO window expires &mdash; not after the SLO has already been breached for the week.</li>
-            <li><strong>Service map.</strong> Tempo&rsquo;s service-graph processor emits inter-service call metrics that Grafana renders as a live dependency graph. Essential for understanding blast radius when a downstream core banking system degrades.</li>
+            <li><strong>Service map.</strong> Tempo&rsquo;s service-graph processor emits inter-service call metrics that Grafana renders as a live dependency graph. Essential for understanding blast radius when a downstream system of record degrades.</li>
             <li><strong>Runbook-linked alerts.</strong> Every Prometheus alert annotation carries a <code>runbook_url</code>. Grafana renders the link in the alert detail panel; on-call engineers don&rsquo;t need to remember the procedure under pressure.</li>
           </ul>
 
@@ -445,9 +445,9 @@
           </ol>
 
           <h2 id="compliance">Compliance and Data Governance</h2>
-          <p>In a Saudi bank regulated by SAMA and subject to the Personal Data Protection Law (PDPL), the observability pipeline is a data processor. It receives, stores, and potentially exposes customer-adjacent data. Design compliance in from the start; retrofitting access control onto a 90-day log corpus after a SAMA examination request is neither fast nor cheap.</p>
+          <p>In any organisation subject to a sector regulator and a data-protection law (GDPR or its national equivalents), the observability pipeline is a data processor. It receives, stores, and potentially exposes customer-adjacent data. Design compliance in from the start; retrofitting access control onto a 90-day log corpus after a regulatory examination request is neither fast nor cheap.</p>
           <ul>
-            <li><strong>Data residency.</strong> All backends must run on infrastructure within Saudi Arabia. Do not route OTLP to a SaaS collector, even temporarily for testing. ODF/Ceph object storage backing Loki and Tempo must be on-premise or in a SAMA-approved cloud region.</li>
+            <li><strong>Data residency.</strong> Where data-residency rules apply, all backends must run on infrastructure within the required jurisdiction. Do not route OTLP to a SaaS collector, even temporarily for testing. ODF/Ceph object storage backing Loki and Tempo must be on-premise or in a regulator-approved cloud region.</li>
             <li><strong>Datasource scoping in Grafana.</strong> Use Grafana&rsquo;s organisation/team model and Loki multi-tenancy (<code>X-Scope-OrgID</code> header) to enforce namespace isolation: the payments team can query the payments namespace; they cannot query the treasury namespace. Prometheus has no built-in authorization &mdash; enforce it at the Grafana datasource proxy layer.</li>
             <li><strong>Audit log for queries.</strong> Grafana&rsquo;s audit log (or Nginx access log in front of Grafana) captures every dashboard view and data query. Alert on any Loki query returning more than 10 000 log lines &mdash; it is a likely data harvesting pattern rather than legitimate troubleshooting.</li>
             <li><strong>Compactor verification.</strong> Add a Prometheus rule that alerts if Loki/Tempo object store usage grows faster than net ingestion rate &mdash; it means the compactor&rsquo;s retention job is not deleting expired chunks. Verify compaction on a quarterly schedule, not just at initial deployment.</li>

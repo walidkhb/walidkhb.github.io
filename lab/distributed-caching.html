@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Distributed Caching &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Articles on cache topology, consistency models, invalidation strategies, and distributed state management for low-latency financial applications: Redis Cluster, Sentinel, cache patterns, and stampede protection.">
+  <meta name="description" content="Articles on cache topology, consistency models, invalidation strategies, and distributed state management for low-latency, high-traffic applications: Redis Cluster, Sentinel, Hazelcast, cache patterns, and stampede protection.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Distributed Caching &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Production cache patterns for low-latency financial applications.">
+  <meta property="og:description" content="Production cache patterns for low-latency, high-traffic applications.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.wbadawi.info/lab/distributed-caching.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed Caching &mdash; Lab &mdash; Waleed Albadawi">
-  <meta name="twitter:description" content="Redis Cluster and Sentinel patterns for financial services.">
+  <meta name="twitter:description" content="Redis, Hazelcast and multi-tier caching patterns for production systems.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/distributed-caching.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,7 +60,7 @@
       <div class="breadcrumb"><a href="../technical.html">Lab</a><span>/</span>Distributed Caching</div>
       <span class="overline">Lab Topic</span>
       <h1>Distributed Caching</h1>
-      <p class="lead">Cache topology, consistency models, invalidation strategies, and distributed state management for low-latency financial applications. The patterns that keep p99 latency in the millisecond range and survive cache stampedes.</p>
+      <p class="lead">Cache topology, consistency models, invalidation strategies, and distributed state management for low-latency, high-traffic applications &mdash; banking, retail, telecoms or SaaS. The patterns that keep p99 latency in the millisecond range and survive cache stampedes.</p>
     </div>
   </section>
 
@@ -77,7 +77,7 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Distributed Caching: Redis Cluster &amp; Sentinel</h2>
-          <p class="article-list__excerpt">Cache patterns (cache-aside, write-through, write-behind), Redis topology (Cluster vs Sentinel), invalidation strategies, the cache stampede that has felled more banking platforms than any disk failure, and operational patterns for sub-millisecond latency.</p>
+          <p class="article-list__excerpt">Cache patterns (cache-aside, write-through, write-behind), Redis topology (Cluster vs Sentinel), invalidation strategies, the cache stampede that has felled more high-traffic platforms than any disk failure, and operational patterns for sub-millisecond latency.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Redis 7</span>
             <span class="skill-tag">Lettuce</span>
@@ -97,7 +97,7 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Distributed Caching: Hazelcast IMDG for In-Process State</h2>
-          <p class="article-list__excerpt">Embedded grid topology, partition awareness, near-cache configuration, and the stateful financial workloads where collapsing the network hop between your JVM and its data beats a shared Redis cluster &mdash; plus the real costs of embedding state inside application pods.</p>
+          <p class="article-list__excerpt">Embedded grid topology, partition awareness, near-cache configuration, and the stateful, compute-heavy workloads where collapsing the network hop between your JVM and its data beats a shared Redis cluster &mdash; plus the real costs of embedding state inside application pods.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Hazelcast 5.4</span>
             <span class="skill-tag">EntryProcessor</span>
@@ -117,7 +117,7 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Cache Invalidation via CDC: Debezium-Driven Redis Invalidation</h2>
-          <p class="article-list__excerpt">Driving cache invalidation from a Debezium DB2 stream: connector config, Redis consumer with Lua tag-invalidation, SAMA audit continuity, and the only pattern that survives DBA-level schema changes the application doesn&rsquo;t know about.</p>
+          <p class="article-list__excerpt">Driving cache invalidation from a Debezium DB2 change stream: connector config, Redis consumer with Lua tag-invalidation, safety-net TTLs, and the only pattern that survives DBA-level schema changes the application doesn&rsquo;t know about.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Debezium</span>
             <span class="skill-tag">Redis</span>
@@ -137,13 +137,13 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Distributed Session Management: Spring Session, Redis &amp; FAPI 2.0</h2>
-          <p class="article-list__excerpt">Spring Session + Redis for stateless banking apps, OAuth2/FAPI 2.0 PKCE session lifecycle, SAMA timeout requirements, concurrent session control, and the session fixation and CSRF patterns that survive a regulator examination.</p>
+          <p class="article-list__excerpt">Spring Session + Redis for stateless customer portals, OAuth2/FAPI 2.0 PKCE session lifecycle, regulatory timeout requirements, concurrent session control, and the session fixation and CSRF patterns that survive a regulator examination.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Spring Session</span>
             <span class="skill-tag">Redis</span>
             <span class="skill-tag">FAPI 2.0</span>
             <span class="skill-tag">PKCE</span>
-            <span class="skill-tag">SAMA Compliance</span>
+            <span class="skill-tag">Regulatory Compliance</span>
           </div>
           <div class="article-list__arrow">Read article &rarr;</div>
         </a>
@@ -157,7 +157,7 @@
             <span>~14 min read</span>
           </div>
           <h2 class="article-list__title">Multi-Tier Caching Strategies: Caffeine L1 + Redis L2 for Sub-Millisecond APIs</h2>
-          <p class="article-list__excerpt">Caffeine L1 and Redis L2 CompositeCacheManager, keyspace notification for L1 coherence across pods, cache warming on startup, TTL budget allocation, and the stampede prevention patterns that keep p99 latency under 5&nbsp;ms at banking scale.</p>
+          <p class="article-list__excerpt">Caffeine L1 and Redis L2 CompositeCacheManager, keyspace notification for L1 coherence across pods, cache warming on startup, TTL budget allocation, and the stampede prevention patterns that keep p99 latency under 5&nbsp;ms at high request volumes.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Caffeine</span>
             <span class="skill-tag">Redis</span>
@@ -176,14 +176,14 @@
             <span class="article-list__meta-divider">&middot;</span>
             <span>~14 min read</span>
           </div>
-          <h2 class="article-list__title">Near-Cache &amp; Read-Replica Topologies: Redis Read-Scaling for High-Frequency Settlement APIs</h2>
-          <p class="article-list__excerpt">REPLICA_PREFERRED routing in Lettuce, replica lag budgets per data type, Caffeine near-cache with keyspace notification coherence, Hazelcast Near Cache configuration, SARIE settlement window patterns, and the failure modes that cause stale balances during Redis failover.</p>
+          <h2 class="article-list__title">Near-Cache &amp; Read-Replica Topologies: Redis Read-Scaling for High-Frequency, Peak-Load APIs</h2>
+          <p class="article-list__excerpt">REPLICA_PREFERRED routing in Lettuce, replica lag budgets per data type, Caffeine near-cache with keyspace notification coherence, Hazelcast Near Cache configuration, peak-window patterns for settlement runs and flash sales, and the failure modes that cause stale balances during Redis failover.</p>
           <div class="article-list__tags">
             <span class="skill-tag">Redis 7.2</span>
             <span class="skill-tag">Lettuce</span>
             <span class="skill-tag">Near-Cache</span>
             <span class="skill-tag">Read Replicas</span>
-            <span class="skill-tag">SARIE</span>
+            <span class="skill-tag">Read Scaling</span>
           </div>
           <div class="article-list__arrow">Read article &rarr;</div>
         </a>

@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Distributed Caching: Near-Cache &amp; Read-Replica Topologies &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Redis read replicas and client-side near-cache patterns for high-frequency settlement APIs: REPLICA_PREFERRED routing, replica lag budgets, Hazelcast Near Cache, SARIE/RTGS read-scaling, and the failure modes that cause stale balances in production.">
+  <meta name="description" content="Redis read replicas and client-side near-cache patterns for high-frequency, peak-load APIs: REPLICA_PREFERRED routing, replica lag budgets, Hazelcast Near Cache, read-scaling through settlement windows, flash sales and other predictable peaks, and the failure modes that cause stale balances or stock levels in production.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Distributed Caching: Near-Cache &amp; Read-Replica Topologies &mdash; Lab">
-  <meta property="og:description" content="Redis read replicas and near-cache for settlement APIs: REPLICA_PREFERRED routing, lag budgets, Hazelcast Near Cache, and the failure modes that bite in production.">
+  <meta property="og:description" content="Redis read replicas and near-cache for peak-load APIs: REPLICA_PREFERRED routing, lag budgets, Hazelcast Near Cache, and the failure modes that bite in production.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/distributed-caching/near-cache-and-read-replicas.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Near-Cache &amp; Read-Replica Topologies &mdash; Lab">
-  <meta name="twitter:description" content="Redis read replicas + near-cache for high-frequency settlement APIs. REPLICA_PREFERRED routing, replica lag, Hazelcast Near Cache.">
+  <meta name="twitter:description" content="Redis read replicas + near-cache for high-frequency, peak-load APIs. REPLICA_PREFERRED routing, replica lag, Hazelcast Near Cache.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/distributed-caching/near-cache-and-read-replicas.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,8 +37,8 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Near-Cache & Read-Replica Topologies: Redis Read-Scaling for High-Frequency Settlement APIs",
-    "description": "Redis read replicas and client-side near-cache patterns for high-frequency settlement APIs: REPLICA_PREFERRED routing, replica lag budgets, Hazelcast Near Cache, SARIE/RTGS read-scaling, and the failure modes that cause stale balances in production.",
+    "headline": "Near-Cache & Read-Replica Topologies: Redis Read-Scaling for High-Frequency, Peak-Load APIs",
+    "description": "Redis read replicas and client-side near-cache patterns for high-frequency, peak-load APIs: REPLICA_PREFERRED routing, replica lag budgets, Hazelcast Near Cache, read-scaling through settlement windows, flash sales and other predictable peaks, and the failure modes that cause stale balances or stock levels in production.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-11-07",
     "author": {
@@ -91,7 +91,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../distributed-caching.html">Distributed Caching</a><span>/</span>Near-Cache &amp; Read-Replica Topologies</div>
           <span class="overline">Lab Article</span>
           <h1>Distributed Caching: Near-Cache &amp; Read-Replica Topologies</h1>
-          <p class="lead">Redis Cluster gives you horizontal write capacity and high availability. What it does not give you automatically is horizontal read capacity. When a settlement API serves 50,000 balance pre-checks per second, all reads land on the primary shard for each key. Near-cache and read-replica topologies change that &mdash; at the cost of a replica lag budget you must model explicitly for every data type that touches a regulated ledger.</p>
+          <p class="lead">Redis Cluster gives you horizontal write capacity and high availability. What it does not give you automatically is horizontal read capacity. When a payments, checkout or settlement API serves 50,000 balance or stock pre-checks per second, all reads land on the primary shard for each key. Near-cache and read-replica topologies change that &mdash; at the cost of a replica lag budget you must model explicitly for every data type that touches an authoritative ledger or inventory.</p>
         </div>
       </div>
     </div>
@@ -110,7 +110,7 @@
             <li><a href="#near-cache-pattern">Near-cache pattern</a></li>
             <li><a href="#spring-data-routing">Spring Data routing</a></li>
             <li><a href="#hazelcast-near-cache">Hazelcast Near Cache</a></li>
-            <li><a href="#settlement-patterns">Settlement API patterns</a></li>
+            <li><a href="#peak-window-patterns">Peak-window patterns</a></li>
             <li><a href="#monitoring">Monitoring &amp; observability</a></li>
             <li><a href="#failure-modes">Failure modes</a></li>
             <li><a href="#checklist">Production checklist</a></li>
@@ -128,10 +128,10 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>A Redis Cluster with six nodes (three primaries, three replicas) is not a read-scaled system out of the box. By default, all reads go to the primary of the slot that owns the key. The replicas exist for failover, not for load distribution. If your settlement API issues 50,000 GET commands per second, all 50,000 go to the three primary nodes. The replicas idle while the primaries saturate.</p>
+          <p>A Redis Cluster with six nodes (three primaries, three replicas) is not a read-scaled system out of the box. By default, all reads go to the primary of the slot that owns the key. The replicas exist for failover, not for load distribution. If your API issues 50,000 GET commands per second, all 50,000 go to the three primary nodes. The replicas idle while the primaries saturate.</p>
           <p>Two complementary patterns address this. <strong>Read replicas</strong> route eligible reads to replica nodes using <code>REPLICA_PREFERRED</code> (Lettuce) or <code>SLAVE_PREFERRED</code> (Jedis). The read load spreads across both primary and replica shards at the cost of replica lag &mdash; replicas are asynchronously replicated and may lag the primary by 1&ndash;20 ms under normal conditions and 100&ndash;500 ms under a primary CPU spike. <strong>Near-cache</strong> moves a subset of frequently read, slowly changing data into the application pod&rsquo;s own memory, eliminating the Redis network hop entirely for those reads &mdash; at the cost of a client-side invalidation protocol and additional JVM heap.</p>
           <p>The two patterns are not interchangeable. Use read replicas for data that must be consistent across all pods within the replica lag window and whose staleness budget is measured in milliseconds. Use near-cache for data where staleness can be measured in seconds and where the read-to-write ratio is so high that eliminating the network hop pays for the heap overhead.</p>
-          <p>In a Saudi Arabian banking context, the primary use cases are: exchange rate reads during SARIE settlement windows (high read frequency, 60-second staleness budget), BIC/IBAN routing tables during SWIFT cut-off (very high frequency, 24-hour staleness acceptable), and limit-matrix pre-checks before payment authorisation (high frequency, 30-second staleness budget under SAMA internal controls policy).</p>
+          <p>The use cases that benefit share one shape: reference data read at very high frequency during a predictable peak. In payments, that means exchange-rate reads during a settlement window (60-second staleness budget), routing tables such as BIC directories around a cut-off (24-hour staleness acceptable), and limit-matrix pre-checks before authorisation (30-second budget set by internal controls). In retail it is price and promotion lookups during a flash sale; in telecoms, tariff and plan lookups during a billing run. The examples below use the payments case because its staleness budgets are the strictest.</p>
 
           <div class="diagram" role="img" aria-label="Read replica and near-cache topology for a settlement API cluster">
             <div class="diagram__inner">
@@ -262,16 +262,16 @@
 
           <h2 id="replica-lag">Replica Lag Budget</h2>
           <p>Every read-replica and near-cache strategy requires an explicit <strong>replica lag budget</strong> for each data type: the maximum acceptable difference between what a replica returns and what the primary holds. This is not a Redis configuration parameter &mdash; it is a business requirement that must be signed off by the data owner before you route reads to replicas or near-cache.</p>
-          <p>Replica lag has two components. <strong>Replication lag</strong> is the delay between a write completing on the primary and the replica applying that write. Under normal conditions with a well-provisioned primary, this is 1&ndash;5 ms. Under primary CPU saturation (common during SARIE settlement windows when write throughput spikes), it can reach 100&ndash;500 ms. <strong>Near-cache lag</strong> is the TTL you set on the Caffeine L1 cache, which determines how stale the in-JVM copy can be before it expires and is refreshed from Redis.</p>
+          <p>Replica lag has two components. <strong>Replication lag</strong> is the delay between a write completing on the primary and the replica applying that write. Under normal conditions with a well-provisioned primary, this is 1&ndash;5 ms. Under primary CPU saturation (common during settlement windows, flash sales or batch runs when write throughput spikes), it can reach 100&ndash;500 ms. <strong>Near-cache lag</strong> is the TTL you set on the Caffeine L1 cache, which determines how stale the in-JVM copy can be before it expires and is refreshed from Redis.</p>
 
           <table>
             <thead>
-              <tr><th>Data type</th><th>Acceptable lag</th><th>Read strategy</th><th>SAMA / regulatory constraint</th></tr>
+              <tr><th>Data type</th><th>Acceptable lag</th><th>Read strategy</th><th>Business / regulatory constraint</th></tr>
             </thead>
             <tbody>
-              <tr><td><strong>Account balance</strong></td><td>Zero &mdash; always primary</td><td>PRIMARY only</td><td>Must reflect the last committed transaction; any staleness is a correctness error under SAMA Circular 44/2023</td></tr>
+              <tr><td><strong>Account balance</strong></td><td>Zero &mdash; always primary</td><td>PRIMARY only</td><td>Must reflect the last committed transaction; any staleness is a correctness error and, in regulated sectors, a compliance finding</td></tr>
               <tr><td><strong>Payment authorisation state</strong></td><td>Zero &mdash; always primary</td><td>PRIMARY only</td><td>Idempotency checks must read from primary; a stale replica read may allow a duplicate payment</td></tr>
-              <tr><td><strong>Exchange rates (SARIE)</strong></td><td>60 seconds</td><td>Near-cache (60 s TTL) &rarr; REPLICA_PREFERRED</td><td>SARIE clears at a fixed daily window; 60-second staleness acceptable within the settlement session</td></tr>
+              <tr><td><strong>Exchange rates</strong></td><td>60 seconds</td><td>Near-cache (60 s TTL) &rarr; REPLICA_PREFERRED</td><td>Settlement runs in fixed daily windows; 60-second staleness acceptable within a session</td></tr>
               <tr><td><strong>BIC/IBAN routing table</strong></td><td>24 hours</td><td>Near-cache (1 h TTL) &rarr; REPLICA_PREFERRED</td><td>SWIFT BIC changes published at day start; 24-hour staleness standard industry practice</td></tr>
               <tr><td><strong>Limit matrix</strong></td><td>30 seconds</td><td>REPLICA_PREFERRED (no near-cache)</td><td>Limit changes by ops must propagate within 30 s; near-cache introduces additional lag beyond replica lag</td></tr>
               <tr><td><strong>Product configuration</strong></td><td>5 minutes</td><td>Near-cache (5 min TTL) &rarr; REPLICA_PREFERRED</td><td>No real-time requirement; product changes go through a release pipeline with hours of lead time</td></tr>
@@ -280,12 +280,12 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">Account balances must NEVER be read from a replica or near-cache</div>
-            <p>The most dangerous misapplication of read replicas in banking is routing balance reads to replicas to reduce primary load. A replica serving a balance read during a settlement window may lag by 100&ndash;500 ms &mdash; enough time for a debit to have cleared on the primary but not yet propagated to the replica. The API serves a pre-debit balance. The customer sees incorrect available funds. Under SAMA Circular 44/2023 on payment accuracy obligations, serving a stale balance that leads to an incorrect payment decision is a material compliance event. Configure your Lettuce routing explicitly to never use <code>REPLICA_PREFERRED</code> for balance cache keys.</p>
+            <p>The most dangerous misapplication of read replicas in any balance-bearing system is routing balance reads to replicas to reduce primary load. A replica serving a balance read during a settlement window may lag by 100&ndash;500 ms &mdash; enough time for a debit to have cleared on the primary but not yet propagated to the replica. The API serves a pre-debit balance. The customer sees incorrect available funds. In a regulated payments business, serving a stale balance that leads to an incorrect payment decision is a material compliance event; in retail, the equivalent is overselling stock you do not have. Configure your Lettuce routing explicitly to never use <code>REPLICA_PREFERRED</code> for balance cache keys.</p>
           </div>
 
           <h2 id="read-replicas">Read-Replica Topology</h2>
           <p>A Redis Cluster with read replicas has two read modes, controlled per-connection or per-command in Lettuce: <code>MASTER</code> (primary only, default), <code>SLAVE</code> (replica only &mdash; not recommended; fails if replica unavailable), <code>MASTER_PREFERRED</code> (primary preferred, falls back to replica), <code>SLAVE_PREFERRED</code> (deprecated name), and <code>REPLICA_PREFERRED</code> (replica preferred, falls back to primary when no replica is available).</p>
-          <p>For a settlement API, the topology decision is: use <code>REPLICA_PREFERRED</code> at the connection level for a dedicated read connection factory, and use <code>MASTER</code> for the write and balance-read connection factory. Never use a single connection factory with alternating read modes &mdash; the per-request mode switching in Lettuce introduces routing inconsistencies under connection pool pressure.</p>
+          <p>For a peak-load API, the topology decision is: use <code>REPLICA_PREFERRED</code> at the connection level for a dedicated read connection factory, and use <code>MASTER</code> for the write and balance-read connection factory. Never use a single connection factory with alternating read modes &mdash; the per-request mode switching in Lettuce introduces routing inconsistencies under connection pool pressure.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>RedisTopologyConfig.java</span><span class="code-block__lang">java</span></div>
@@ -460,7 +460,7 @@
           <div class="code-block">
             <div class="code-block__header"><span>hazelcast.yaml</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-k">hazelcast-client:</span>
-  <span class="tok-k">cluster-name:</span> <span class="tok-s">bank-integration-prod</span>
+  <span class="tok-k">cluster-name:</span> <span class="tok-s">integration-prod</span>
   <span class="tok-k">network:</span>
     <span class="tok-k">cluster-members:</span>
       <span class="tok-p">-</span> <span class="tok-s">hz-node-0.hazelcast-svc.integration.svc.cluster.local:5701</span>
@@ -496,29 +496,29 @@
       <span class="tok-k">local-update-policy:</span> <span class="tok-s">INVALIDATE</span></code></pre>
           </div>
 
-          <h2 id="settlement-patterns">Settlement API Patterns</h2>
-          <p>A Saudi bank&rsquo;s SARIE integration typically involves a settlement window during which the volume of balance pre-checks, exchange rate lookups, and BIC routing queries spikes significantly above the daily baseline. Near-cache and read-replica topologies are most valuable during this window precisely because they occur together: high read throughput and high write throughput (settlement confirmations updating account state). The read-replica pattern offloads the reference-data reads from primaries that are simultaneously absorbing settlement writes.</p>
-          <p>Three patterns hold up in production during SARIE windows:</p>
+          <h2 id="peak-window-patterns">Peak-Window API Patterns</h2>
+          <p>Many read-heavy APIs face a predictable peak: a payment scheme&rsquo;s settlement window, a retailer&rsquo;s flash sale, a broker&rsquo;s market open, a utility&rsquo;s month-end billing run. During that window the volume of balance or stock pre-checks, rate or price lookups, and routing queries spikes significantly above the daily baseline. Near-cache and read-replica topologies are most valuable during this window precisely because two loads occur together: high read throughput and high write throughput (settlement confirmations or orders updating account state). The read-replica pattern offloads the reference-data reads from primaries that are simultaneously absorbing settlement writes.</p>
+          <p>Five patterns hold up in production during such windows:</p>
           <ol class="step-list">
             <li>
               <h4>Separate read and write connection pools</h4>
-              <p>Use two connection pool configurations: a write pool (default: 10 connections per node, timeout 200 ms) targeting primaries, and a read pool (default: 20 connections per node, timeout 150 ms) targeting replicas via <code>REPLICA_PREFERRED</code>. The read pool is larger because reference-data reads are more numerous and shorter-lived than writes. Tune pool sizes based on the connection count observed in <code>redis-cli CLIENT LIST</code> during a settlement window load test.</p>
+              <p>Use two connection pool configurations: a write pool (default: 10 connections per node, timeout 200 ms) targeting primaries, and a read pool (default: 20 connections per node, timeout 150 ms) targeting replicas via <code>REPLICA_PREFERRED</code>. The read pool is larger because reference-data reads are more numerous and shorter-lived than writes. Tune pool sizes based on the connection count observed in <code>redis-cli CLIENT LIST</code> during a peak-window load test.</p>
             </li>
             <li>
-              <h4>Preheat the near-cache before the settlement window opens</h4>
-              <p>SARIE settlement windows open at a known time each business day. Schedule a cache-warm job 10 minutes before the window opens to populate the near-cache for exchange rates and BIC routing tables. This ensures the near-cache is fully populated before the spike hits, eliminating DB fallback reads during the window. The warm job reads from Redis replicas, not from the database &mdash; it only touches the DB if the Redis near-cache is cold (e.g., after a Redis cluster failover).</p>
+              <h4>Preheat the near-cache before the peak window opens</h4>
+              <p>Settlement sessions, scheduled sales and batch runs open at a known time. Schedule a cache-warm job 10 minutes before the window opens to populate the near-cache for exchange rates and BIC routing tables. This ensures the near-cache is fully populated before the spike hits, eliminating DB fallback reads during the window. The warm job reads from Redis replicas, not from the database &mdash; it only touches the DB if the Redis near-cache is cold (e.g., after a Redis cluster failover).</p>
             </li>
             <li>
               <h4>Promote replicas during primary failover without routing stale balance reads</h4>
               <p>When a Redis primary fails, Redis Sentinel or Redis Cluster promotes a replica to primary. During the promotion (typically 10&ndash;30 seconds), the near-cache TTLs provide continuity for reference data reads. For balance and payment-state reads, implement a circuit breaker: if the primary is unavailable and the read-from-replica fallback is not configured for that key type, return a <code>503</code> rather than serving a potentially stale balance. A <code>503</code> is recoverable; a stale balance that authorises an overdraft is not.</p>
             </li>
             <li>
-              <h4>Monitor replica lag explicitly during the settlement window</h4>
+              <h4>Monitor replica lag explicitly during the peak window</h4>
               <p>Instrument the Lettuce connection factory to emit <code>redis.replica.lag.ms</code> metrics for each replica node. Alert when lag exceeds 100 ms &mdash; that is the threshold at which limit-matrix reads from replicas start producing values that have missed recent limit-change operations. If lag exceeds 100 ms on any replica, temporarily switch that key type back to primary-only reads and alert the operations team.</p>
             </li>
             <li>
               <h4>ISO 20022 pacs.008 enrichment: near-cache for BIC/LEI resolution</h4>
-              <p>SWIFT MT-to-MX migration requires BIC-to-LEI resolution at message transformation time. The ISO 20022 BIC/LEI resolution table is a classic near-cache candidate: 10,000&ndash;50,000 entries, updated once per business day at the SWIFT open time, read on every international payment. Configure a 1-hour near-cache TTL with Hazelcast <code>invalidate-on-change: true</code>. The near-cache eliminates the Redis hop for every enrichment operation, cutting p99 enrichment latency from 2 ms to &lt;0.1 ms at 10,000 pacs.008 messages per hour.</p>
+              <p>SWIFT MT-to-MX migration requires BIC-to-LEI resolution at message transformation time. The ISO 20022 BIC/LEI resolution table is a classic near-cache candidate: 10,000&ndash;50,000 entries, updated once per business day at the SWIFT open time, read on every international payment. The same reasoning applies to any per-message enrichment lookup, such as SKU-to-supplier or postcode-to-region mapping. Configure a 1-hour near-cache TTL with Hazelcast <code>invalidate-on-change: true</code>. The near-cache eliminates the Redis hop for every enrichment operation, cutting p99 enrichment latency from 2 ms to &lt;0.1 ms at 10,000 pacs.008 messages per hour.</p>
             </li>
           </ol>
 
@@ -583,7 +583,7 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">REPLICA_PREFERRED fallback during replica unavailability increases primary load</div>
-            <p>When a replica is unavailable (failover in progress, replica pod restarted in OpenShift), Lettuce&rsquo;s <code>REPLICA_PREFERRED</code> falls back to the primary for all reads that would have gone to that replica. At 50,000 reference-data reads per second normally distributed across primaries and replicas, losing one of three replicas during a settlement window can increase primary read load by 30&ndash;50%. If the primary is already near its throughput limit due to settlement writes, this additional read load can push it into CPU saturation, increasing replication lag on the remaining replicas &mdash; which further reduces their read-availability, creating a feedback loop. Mitigation: size primaries for the scenario of all replicas being unavailable simultaneously. This is a worst-case sizing exercise, not a normal-operation sizing. For SARIE-coupled workloads, the worst-case scenario occurs precisely during the peak settlement window.</p>
+            <p>When a replica is unavailable (failover in progress, replica pod restarted in OpenShift), Lettuce&rsquo;s <code>REPLICA_PREFERRED</code> falls back to the primary for all reads that would have gone to that replica. At 50,000 reference-data reads per second normally distributed across primaries and replicas, losing one of three replicas during a peak window can increase primary read load by 30&ndash;50%. If the primary is already near its throughput limit due to settlement writes, this additional read load can push it into CPU saturation, increasing replication lag on the remaining replicas &mdash; which further reduces their read-availability, creating a feedback loop. Mitigation: size primaries for the scenario of all replicas being unavailable simultaneously. This is a worst-case sizing exercise, not a normal-operation sizing. For workloads tied to a settlement window or scheduled sale, the worst case occurs precisely during the peak.</p>
           </div>
 
           <div class="callout callout--warn">
@@ -619,8 +619,8 @@
               <p>Register a Lettuce <code>ClusterTopologyChangedEvent</code> listener. On topology change (primary failover, replica added/removed), flush all near-caches that use keyspace notification coherence. Log the flush event with the topology change details. This handles the near-cache divergence risk during failover described in the failure modes section.</p>
             </li>
             <li>
-              <h4>Load test at settlement-window scale before go-live</h4>
-              <p>Run a load test at 1.5x peak SARIE settlement window RPS. Verify replica lag stays below 20 ms under write load. Verify near-cache hit rates stay above 95% for exchange rates and 98% for BIC routing. Verify that a simulated primary failover (stop the Redis primary pod) triggers the near-cache flush and does not route balance reads to the promoted replica.</p>
+              <h4>Load test at peak-window scale before go-live</h4>
+              <p>Run a load test at 1.5x peak-window RPS. Verify replica lag stays below 20 ms under write load. Verify near-cache hit rates stay above 95% for exchange rates and 98% for BIC routing. Verify that a simulated primary failover (stop the Redis primary pod) triggers the near-cache flush and does not route balance reads to the promoted replica.</p>
             </li>
           </ol>
 
