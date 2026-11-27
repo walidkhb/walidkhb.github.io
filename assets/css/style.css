@@ -1060,6 +1060,88 @@ section {
   margin-bottom: 0;
 }
 
+/* --- Signature Programme Cards (home) --- */
+.programme-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  transition: all var(--transition);
+}
+
+.programme-card:hover {
+  border-color: var(--color-accent-border);
+  box-shadow: var(--shadow-glow);
+}
+
+.programme-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.programme-card__kicker {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.programme-card__metric {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.programme-card__title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-text);
+  margin-bottom: 0.75rem;
+}
+
+.programme-card__vision {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.programme-card__text {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.programme-card__text:last-child {
+  margin-bottom: 0;
+}
+
+.programme-card__text strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .programme-card { padding: 1.5rem; }
+  .programme-card__title { font-size: 1.1875rem; }
+}
+
 /* --- Principle List --- */
 .principle {
   padding: 1.25rem 0;
