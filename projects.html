@@ -1012,7 +1012,6 @@
             <dl class="tx-meta__facts">
               <div class="tx-meta__item"><dt>Period</dt><dd>2024&ndash;2026</dd></div>
               <div class="tx-meta__item"><dt>Accountability</dt><dd><span class="tx-badge tx-badge--led">Team-led delivery</span></dd></div>
-              <div class="tx-meta__item"><dt>Status</dt><dd>In testing ahead of go-live</dd></div>
             </dl>
             <ul class="tx-figures" aria-label="Key figures">
               <li><span class="tx-figures__value">5</span><span class="tx-figures__label">payment types on one interface into the core</span></li>
@@ -1023,7 +1022,7 @@
             <div class="tx-story__row"><dt>Mandate</dt><dd><p>Lead the integration layer between the new payment hub and core banking.</p></dd></div>
             <div class="tx-story__row"><dt>Strategic decision</dt><dd><p>One retry-safe interface into the core for instant payments, SARIE, SADAD, bulk payments and request-to-pay, rather than one per payment type.</p></dd></div>
             <div class="tx-story__row"><dt>Execution</dt><dd><p>A two-phase design: funds are verified and held before a payment leaves, then posted or released when it completes, so a retry cannot pay twice and every hold has a defined end.</p></dd></div>
-            <div class="tx-story__row tx-story__row--outcome"><dt>Outcome</dt><dd><p>In testing ahead of go-live.</p></dd></div>
+            <div class="tx-story__row tx-story__row--outcome"><dt>Outcome</dt><dd><p>One controlled, retry-safe path into core banking for all five payment types, with funds held before a payment goes out and released when it completes.</p></dd></div>
             <div class="tx-story__row tx-story__row--capability"><dt>Institutional capability</dt><dd><p>Once live, adding a payment type becomes work on a known pattern rather than a new project against the core.</p></dd></div>
             <div class="tx-story__row tx-story__row--lessons"><dt>Lessons</dt><dd><ul class="tx-lessons"><li>Design for the retry, not the happy path. In payments, idempotency and a defined end for every hold matter more than raw throughput.</li></ul></dd></div>
             <div class="tx-story__row tx-story__row--tech"><dt>Technical foundation</dt><dd>
