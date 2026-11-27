@@ -32,6 +32,7 @@ BANNED = {
     r'\bMurex\b|\bTarabut\b|\bDXC\b|\bEquation core\b': 'internal vendor or system name',
     r'[Zz]ero-[Tt]ouch [Ii]ntegration|fully automated to production': 'overstated automation claim',
     r'CTO, CIO|Open to executive': 'explicit role targeting',
+    r'\b129 (?:integration )?services|\b392 (?:production )?releases|142 repositories|278 API products|49 new API products|12 integration platforms': 'delivery counts (state value to the organisation instead)',
 }
 
 errors = []
