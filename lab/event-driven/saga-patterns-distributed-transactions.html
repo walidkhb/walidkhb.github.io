@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Saga Patterns for Distributed Transactions &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Choreography vs orchestration sagas, compensating transactions, and recovery patterns for multi-step financial workflows in a regulated KSA bank environment. What holds up in production.">
+  <meta name="description" content="Choreography vs orchestration sagas, compensating transactions, and recovery patterns for multi-step workflows in regulated environments, worked through an instant-payment flow and equally applicable to order fulfilment, bookings and service provisioning. What holds up in production.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Saga Patterns for Distributed Transactions &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Choreography vs orchestration sagas, compensating actions, and recovery patterns for multi-step financial workflows.">
+  <meta property="og:description" content="Choreography vs orchestration sagas, compensating actions, and recovery patterns for multi-step distributed workflows.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/saga-patterns-distributed-transactions.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Saga Patterns for Distributed Transactions &mdash; Lab">
-  <meta name="twitter:description" content="Choreography vs orchestration sagas, compensating transactions, and recovery for financial workflows that hold up in production.">
+  <meta name="twitter:description" content="Choreography vs orchestration sagas, compensating transactions, and recovery for distributed workflows that hold up in production.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/saga-patterns-distributed-transactions.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Saga Patterns for Distributed Transactions",
-    "description": "Choreography vs orchestration sagas, compensating transactions, and recovery patterns for multi-step financial workflows in a regulated KSA bank environment.",
+    "description": "Choreography vs orchestration sagas, compensating transactions, and recovery patterns for multi-step workflows in regulated environments, worked through an instant-payment flow and equally applicable to order fulfilment, bookings and service provisioning.",
     "url": "https://www.wbadawi.info/lab/event-driven/saga-patterns-distributed-transactions.html",
     "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
     "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
@@ -75,7 +75,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Saga Patterns</div>
           <span class="overline">Lab Article</span>
           <h1>Saga Patterns for Distributed Transactions</h1>
-          <p class="lead">Choreography vs orchestration sagas, compensating actions, idempotent saga steps, and recovery patterns for multi-step financial workflows &mdash; grounded in the IPS payment lifecycle at a KSA bank where partial failures are not hypothetical edge cases.</p>
+          <p class="lead">Choreography vs orchestration sagas, compensating actions, idempotent saga steps, and recovery patterns for multi-step distributed workflows &mdash; worked through an instant-payment lifecycle, where partial failures are not hypothetical edge cases, and equally applicable to order fulfilment, travel booking and service provisioning.</p>
         </div>
       </div>
     </div>
@@ -93,7 +93,7 @@
             <li><a href="#orchestration">Orchestration sagas</a></li>
             <li><a href="#choosing">Choosing between the two</a></li>
             <li><a href="#compensating">Compensating transactions</a></li>
-            <li><a href="#ips-example">IPS payment saga end-to-end</a></li>
+            <li><a href="#payment-example">Instant-payment saga end-to-end</a></li>
             <li><a href="#failure-recovery">Failure &amp; recovery patterns</a></li>
             <li><a href="#idempotency">Idempotency in saga steps</a></li>
             <li><a href="#testing">Testing sagas</a></li>
@@ -112,8 +112,8 @@
           </div>
 
           <h2 id="why-sagas">Why sagas, not 2PC</h2>
-          <p>A payment initiation at a bank typically crosses at least four bounded contexts before it settles: fraud screening, liquidity reservation, IPS network submission, and notification delivery. Each context has its own database, its own team, and its own deployment cadence. They cannot share a transaction boundary.</p>
-          <p>Two-phase commit (2PC) was the industry answer to this problem for two decades. The XA protocol locks resources across participants during the prepare phase and releases them on commit or rollback. At the scale and latency profile of a modern payment system, 2PC has two fatal problems. First, it holds locks across network calls &mdash; if the IPS network submission times out at 800ms, every row touched in the fraud and liquidity contexts is locked for those 800ms, blocking concurrent payments. Second, XA requires all participants to implement the XA protocol, which eliminates Kafka, most REST services, and any external party. In practice, IPS is a SAMA-operated network with a SWIFT-style asynchronous API. It cannot participate in a synchronous XA commit.</p>
+          <p>A business transaction that spans services rarely fits in one database. A payment initiation typically crosses at least four bounded contexts before it settles: fraud screening, liquidity reservation, submission to an external payment scheme, and notification delivery. An e-commerce order crosses inventory, payment capture, shipping and notification; a travel booking crosses flights, hotels and payment. Each context has its own database, its own team, and its own deployment cadence. They cannot share a transaction boundary.</p>
+          <p>Two-phase commit (2PC) was the industry answer to this problem for two decades. The XA protocol locks resources across participants during the prepare phase and releases them on commit or rollback. At the scale and latency profile of a modern payment system, 2PC has two fatal problems. First, it holds locks across network calls &mdash; if the scheme submission times out at 800ms, every row touched in the fraud and liquidity contexts is locked for those 800ms, blocking concurrent payments. Second, XA requires all participants to implement the XA protocol, which eliminates Kafka, most REST services, and any external party. In practice, a national instant-payment scheme, a card network or a carrier&rsquo;s booking API is an external party with an asynchronous message interface. It cannot participate in a synchronous XA commit.</p>
           <p>The saga pattern replaces the distributed transaction with a sequence of local transactions, each of which publishes an event or sends a command that triggers the next step. Failures are handled by compensating transactions &mdash; explicit, designed rollback actions for each step. The trade-off is clear: you give up atomicity and get availability and decoupling in return. For a payment system, that is the right trade-off. A payment that partially fails and rolls back cleanly is better than a payment system that deadlocks under load.</p>
 
           <div class="callout callout--note">
@@ -124,7 +124,7 @@
           <h2 id="choreography">Choreography sagas</h2>
           <p>In a choreography saga, each service listens for events and reacts autonomously. There is no central coordinator. The workflow emerges from the sequence of events and reactions.</p>
 
-          <div class="diagram" role="img" aria-label="Choreography saga: payment-svc emits PaymentInitiated, fraud-svc reacts and emits FraudCleared, liquidity-svc reacts and emits LiquidityReserved, ips-svc submits to IPS, notification-svc sends customer alert">
+          <div class="diagram" role="img" aria-label="Choreography saga: payment-svc emits PaymentInitiated, fraud-svc reacts and emits FraudCleared, liquidity-svc reacts and emits LiquidityReserved, scheme-svc submits to the payment scheme, notification-svc sends customer alert">
             <div class="diagram__inner">
               <svg width="780" height="360" viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
@@ -158,9 +158,9 @@
                 <text x="380" y="74" text-anchor="middle" fill="#71717a" font-size="8">from nostro</text>
 
                 <rect x="470" y="20" width="120" height="60" rx="4" fill="#1c1c28" stroke="#c8a660"/>
-                <text x="530" y="45" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">ips-svc</text>
+                <text x="530" y="45" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">scheme-svc</text>
                 <text x="530" y="62" text-anchor="middle" fill="#71717a" font-size="8">submits pacs.008</text>
-                <text x="530" y="74" text-anchor="middle" fill="#71717a" font-size="8">to SAMA IPS</text>
+                <text x="530" y="74" text-anchor="middle" fill="#71717a" font-size="8">to the scheme</text>
 
                 <rect x="620" y="20" width="120" height="60" rx="4" fill="#1c1c28" stroke="#ef4444"/>
                 <text x="680" y="45" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">notify-svc</text>
@@ -195,8 +195,8 @@
 
                 <rect x="455" y="280" width="150" height="55" rx="4" fill="#0f0f16" stroke="#c8a660" stroke-dasharray="3 2"/>
                 <text x="530" y="300" text-anchor="middle" fill="#c8a660" font-size="8" font-weight="600">listens: LiquidityReserved</text>
-                <text x="530" y="314" text-anchor="middle" fill="#e4e4e7" font-size="7.5">emits: IPSSubmitted</text>
-                <text x="530" y="328" text-anchor="middle" fill="#ef4444" font-size="7.5">or: IPSRejected</text>
+                <text x="530" y="314" text-anchor="middle" fill="#e4e4e7" font-size="7.5">emits: SchemeSubmitted</text>
+                <text x="530" y="328" text-anchor="middle" fill="#ef4444" font-size="7.5">or: SchemeRejected</text>
 
                 <rect x="605" y="280" width="150" height="55" rx="4" fill="#0f0f16" stroke="#ef4444" stroke-dasharray="3 2"/>
                 <text x="680" y="300" text-anchor="middle" fill="#ef4444" font-size="8" font-weight="600">listens: PaymentSettled</text>
@@ -208,7 +208,7 @@
           </div>
 
           <p>The choreography model has significant appeal at the start of a project: no new infrastructure, no coordinator service to build and operate, no single point of failure in the workflow. Each team owns their slice of the workflow and their event contract. The complexity is distributed, not centralised.</p>
-          <p>The catch surfaces as the saga grows. When a payment fails at the IPS submission step and requires a compensating liquidity release, which service is responsible for emitting the compensation trigger? In a choreography model, the answer is the <code>ips-svc</code> emits an <code>IPSRejected</code> event, and the <code>liquidity-svc</code> listens for it and releases the reservation. This works as long as the logic is simple. When you add a third failure path &mdash; a SAMA regulatory hold that can arrive after liquidity is reserved but before IPS submission &mdash; the event graph gains a new edge, and every service that might need to react must be updated. In a choreography saga, the implicit workflow is encoded in the event subscriptions of dozens of services. It is untraceable without distributed tracing, and it cannot be changed without coordinating changes across multiple teams simultaneously.</p>
+          <p>The catch surfaces as the saga grows. When a payment fails at the scheme submission step and requires a compensating liquidity release, which service is responsible for emitting the compensation trigger? In a choreography model, the answer is the <code>scheme-svc</code> emits a <code>SchemeRejected</code> event, and the <code>liquidity-svc</code> listens for it and releases the reservation. This works as long as the logic is simple. When you add a third failure path &mdash; a compliance or sanctions hold that can arrive after liquidity is reserved but before scheme submission &mdash; the event graph gains a new edge, and every service that might need to react must be updated. In a choreography saga, the implicit workflow is encoded in the event subscriptions of dozens of services. It is untraceable without distributed tracing, and it cannot be changed without coordinating changes across multiple teams simultaneously.</p>
 
           <h2 id="orchestration">Orchestration sagas</h2>
           <p>In an orchestration saga, a dedicated coordinator service drives the workflow by issuing commands to participant services and reacting to their responses. The workflow state lives in the coordinator, not distributed across the event stream.</p>
@@ -252,8 +252,8 @@
     <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
     <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">LiquidityReservedEvent</span> e) {
         reservationRef = e.getReservationRef();
-        <span class="tok-c">// Step 3: submit to IPS</span>
-        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">SubmitToIPSCommand</span>(paymentId, amount, debtorIban, e.getCreditorIban()));
+        <span class="tok-c">// Step 3: submit to the payment scheme</span>
+        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">SubmitToSchemeCommand</span>(paymentId, amount, debtorIban, e.getCreditorIban()));
     }
 
     <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
@@ -264,15 +264,15 @@
     }
 
     <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
-    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">IPSRejectedEvent</span> e) {
-        <span class="tok-c">// IPS rejected: must release the liquidity reservation</span>
-        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">ReleaseLiquidityCommand</span>(paymentId, reservationRef, <span class="tok-s">"IPS_REJECTED"</span>));
+    <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">SchemeRejectedEvent</span> e) {
+        <span class="tok-c">// Scheme rejected: must release the liquidity reservation</span>
+        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">ReleaseLiquidityCommand</span>(paymentId, reservationRef, <span class="tok-s">"SCHEME_REJECTED"</span>));
     }
 
     <span class="tok-k">@SagaEventHandler</span>(associationProperty = <span class="tok-s">"paymentId"</span>)
     <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">LiquidityReleasedEvent</span> e) {
         <span class="tok-c">// Compensation complete &mdash; mark payment failed</span>
-        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">FailPaymentCommand</span>(paymentId, <span class="tok-s">"IPS_REJECTED"</span>, e.getReason()));
+        commandGateway.send(<span class="tok-t">new</span> <span class="tok-n">FailPaymentCommand</span>(paymentId, <span class="tok-s">"SCHEME_REJECTED"</span>, e.getReason()));
         <span class="tok-n">SagaLifecycle</span>.end();
     }
 
@@ -284,7 +284,7 @@
 }</code></pre>
           </div>
 
-          <p>The saga state &mdash; the <code>reservationRef</code> field &mdash; is serialised by Axon and stored in the saga store (a <code>saga_entry</code> table in PostgreSQL). If the coordinator restarts between steps, Axon reloads the saga state and continues from where it left off. The workflow is durable: a JVM crash between the <code>LiquidityReservedEvent</code> and the <code>SubmitToIPSCommand</code> does not orphan a reserved liquidity position &mdash; the saga resumes and reissues the command on restart.</p>
+          <p>The saga state &mdash; the <code>reservationRef</code> field &mdash; is serialised by Axon and stored in the saga store (a <code>saga_entry</code> table in PostgreSQL). If the coordinator restarts between steps, Axon reloads the saga state and continues from where it left off. The workflow is durable: a JVM crash between the <code>LiquidityReservedEvent</code> and the <code>SubmitToSchemeCommand</code> does not orphan a reserved liquidity position &mdash; the saga resumes and reissues the command on restart.</p>
 
           <h2 id="choosing">Choosing between the two</h2>
 
@@ -303,7 +303,7 @@
             </tbody>
           </table>
 
-          <p>For payment workflows in a regulated environment, the recommendation is orchestration. The SAMA audit requirement alone tips the balance: a single <code>saga_entry</code> table that records every state transition of every payment saga &mdash; with timestamps &mdash; satisfies the &ldquo;reconstruct any transaction at time T&rdquo; requirement without stitching together distributed traces from five different services. The coordinator is also easier to explain to an examiner than &ldquo;the workflow is implicit in the event subscriptions across twelve microservices.&rdquo;</p>
+          <p>For payment workflows &mdash; and any workflow in a regulated environment &mdash; the recommendation is orchestration. The audit requirement alone tips the balance: a single <code>saga_entry</code> table that records every state transition of every payment saga &mdash; with timestamps &mdash; satisfies the &ldquo;reconstruct any transaction at time T&rdquo; requirement without stitching together distributed traces from five different services. The coordinator is also easier to explain to an examiner than &ldquo;the workflow is implicit in the event subscriptions across twelve microservices.&rdquo;</p>
 
           <h2 id="compensating">Compensating transactions</h2>
           <p>A compensating transaction is not a rollback. A database rollback undoes a local transaction atomically &mdash; as if it never happened. A saga compensation acknowledges that the prior step <em>did</em> happen and applies an explicit corrective action. The prior step&rsquo;s effects may have been visible to other parts of the system during the window between the step completing and the compensation completing. Design compensations accordingly.</p>
@@ -323,27 +323,27 @@
             </li>
             <li>
               <h4>Order compensations in reverse saga order</h4>
-              <p>If steps A &rarr; B &rarr; C all succeeded and step D failed, compensate in the order C&prime; &rarr; B&prime; &rarr; A&prime;. Do not compensate A before compensating C &mdash; earlier steps may have created dependencies that the later steps rely on. In a typical IPS integration, the IPS submission acknowledgement contains the IPS reference number that the liquidity compensation uses; releasing liquidity before the IPS rejection is confirmed loses that reference.</p>
+              <p>If steps A &rarr; B &rarr; C all succeeded and step D failed, compensate in the order C&prime; &rarr; B&prime; &rarr; A&prime;. Do not compensate A before compensating C &mdash; earlier steps may have created dependencies that the later steps rely on. In a typical scheme integration, the submission acknowledgement contains the scheme reference that the liquidity compensation uses; releasing liquidity before the rejection is confirmed loses that reference.</p>
             </li>
             <li>
               <h4>Compensations are business events, not technical housekeeping</h4>
-              <p>A <code>LiquidityReleasedEvent</code> is a business event that fraud analytics, the customer notification service, and the SAMA audit trail all care about. Emit it as a first-class domain event through the same Kafka topic as the forward events. Do not treat compensations as internal plumbing that bypasses the event log.</p>
+              <p>A <code>LiquidityReleasedEvent</code> is a business event that fraud analytics, the customer notification service, and the audit trail all care about. Emit it as a first-class domain event through the same Kafka topic as the forward events. Do not treat compensations as internal plumbing that bypasses the event log.</p>
             </li>
             <li>
               <h4>Some steps are non-compensable</h4>
-              <p>Once a <code>pacs.008</code> is submitted to the IPS network, it cannot be withdrawn &mdash; only returned via a <code>pacs.004</code> payment return, which is a new forward transaction, not a compensation. Model this correctly: the saga compensates by <em>initiating a payment return</em>, not by &ldquo;undoing&rdquo; the IPS submission. The IPS submission is a pivot point &mdash; steps before it can be compensated cleanly; steps after it require a new forward flow.</p>
+              <p>Once a <code>pacs.008</code> is submitted to an instant-payment scheme, it cannot be withdrawn &mdash; only returned via a <code>pacs.004</code> payment return, which is a new forward transaction, not a compensation. Model this correctly: the saga compensates by <em>initiating a payment return</em>, not by &ldquo;undoing&rdquo; the submission. The scheme submission is a pivot point &mdash; steps before it can be compensated cleanly; steps after it require a new forward flow. The same holds outside payments: once a parcel is handed to the carrier or a ticket is issued, compensation means a return or a refund, not an undo.</p>
             </li>
           </ol>
 
           <div class="callout callout--warn">
             <div class="callout__title">Pivot points change the compensation design</div>
-            <p>Identify the pivot point in your saga &mdash; the step after which compensations become forward transactions &mdash; and document it explicitly. For a KSA IPS payment, the pivot is the moment the <code>pacs.008</code> is accepted by the IPS network. Before the pivot: cancel and release. After the pivot: initiate a return. The <code>PaymentSaga</code> needs different code paths for pre-pivot and post-pivot failures.</p>
+            <p>Identify the pivot point in your saga &mdash; the step after which compensations become forward transactions &mdash; and document it explicitly. For an instant payment, the pivot is the moment the <code>pacs.008</code> is accepted by the scheme; for an e-commerce order it is often the moment the parcel leaves the warehouse. Before the pivot: cancel and release. After the pivot: initiate a return. The <code>PaymentSaga</code> needs different code paths for pre-pivot and post-pivot failures.</p>
           </div>
 
-          <h2 id="ips-example">IPS payment saga end-to-end</h2>
-          <p>A concrete walkthrough of the happy path and the two most common failure paths for an outbound IPS credit transfer.</p>
+          <h2 id="payment-example">Instant-payment saga end-to-end</h2>
+          <p>A concrete walkthrough of the happy path and the most common failure paths for an outbound instant credit transfer.</p>
 
-          <div class="diagram" role="img" aria-label="Orchestration saga state machine for IPS payment: PaymentInitiated → FraudCheckPassed → LiquidityReserved → IPSSubmitted → PaymentSettled with failure paths to compensation states">
+          <div class="diagram" role="img" aria-label="Orchestration saga state machine for an instant payment: PaymentInitiated &rarr; FraudCheckPassed &rarr; LiquidityReserved &rarr; SchemeSubmitted &rarr; PaymentSettled with failure paths to compensation states">
             <div class="diagram__inner">
               <svg width="780" height="340" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
                 <defs>
@@ -372,8 +372,8 @@
                 <text x="387" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">LiquidityReserved</text>
 
                 <rect x="493" y="50" width="110" height="48" rx="6" fill="#1c1c28" stroke="#c8a660"/>
-                <text x="548" y="70" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">IPS_SUBMITTED</text>
-                <text x="548" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">IPSSubmitted</text>
+                <text x="548" y="70" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">SCHEME_SUBMITTED</text>
+                <text x="548" y="85" text-anchor="middle" fill="#71717a" font-size="7.5">SchemeSubmitted</text>
 
                 <rect x="650" y="50" width="110" height="48" rx="6" fill="#1c1c28" stroke="#c8a660" stroke-width="2"/>
                 <text x="705" y="70" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">SETTLED ✓</text>
@@ -398,10 +398,10 @@
                 <text x="387" y="185" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">INSUF_FUNDS</text>
                 <text x="387" y="200" text-anchor="middle" fill="#71717a" font-size="7.5">terminal, no compensation</text>
 
-                <!-- IPS rejection with compensation -->
+                <!-- Scheme rejection with compensation -->
                 <line x1="548" y1="98" x2="548" y2="165" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#sm3)"/>
                 <rect x="473" y="165" width="150" height="48" rx="4" fill="#1a0d00" stroke="#fbbf24"/>
-                <text x="548" y="185" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">IPS_REJECTED</text>
+                <text x="548" y="185" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">SCHEME_REJECTED</text>
                 <text x="548" y="200" text-anchor="middle" fill="#71717a" font-size="7.5">triggers compensation</text>
 
                 <!-- Compensation flow -->
@@ -419,10 +419,10 @@
                 <text x="390" y="281" fill="#a78bfa" font-size="7.5">complete</text>
               </svg>
             </div>
-            <div class="diagram__caption">Figure 2 &mdash; IPS payment saga state machine: happy path (top), fraud decline (terminal), insufficient funds (terminal), IPS rejection with liquidity compensation</div>
+            <div class="diagram__caption">Figure 2 &mdash; Instant-payment saga state machine: happy path (top), fraud decline (terminal), insufficient funds (terminal), scheme rejection with liquidity compensation</div>
           </div>
 
-          <p>The IPS rejection path is the one that matters most operationally. An IPS rejection arrives asynchronously &mdash; the <code>pacs.002</code> rejection response from SAMA can arrive seconds to minutes after the <code>pacs.008</code> submission. The saga must hold state (the <code>reservationRef</code>) across that window and act correctly when the rejection arrives. This is the case that synchronous, stateless approaches cannot handle without a polling loop against the IPS network, which introduces its own failure modes.</p>
+          <p>The scheme rejection path is the one that matters most operationally. A rejection arrives asynchronously &mdash; the <code>pacs.002</code> status report from the scheme can arrive seconds to minutes after the <code>pacs.008</code> submission. The saga must hold state (the <code>reservationRef</code>) across that window and act correctly when the rejection arrives. This is the case that synchronous, stateless approaches cannot handle without a polling loop against the scheme, which introduces its own failure modes.</p>
 
           <h2 id="failure-recovery">Failure &amp; recovery patterns</h2>
           <p>Three failure scenarios have distinct handling requirements. Get them wrong and you either orphan resources (reserved funds that are never released) or create phantom payments (payments recorded as settled that were actually rejected).</p>
@@ -433,42 +433,42 @@
           </div>
 
           <div class="code-block">
-            <div class="code-block__header"><span>saga-config.yaml &mdash; Axon deadline for IPS acknowledgement timeout</span><span class="code-block__lang">yaml</span></div>
+            <div class="code-block__header"><span>saga-config.yaml &mdash; Axon deadline for scheme acknowledgement timeout</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-k">axon</span>:
   <span class="tok-k">deadline</span>:
     <span class="tok-k">enabled</span>: <span class="tok-n">true</span>
   <span class="tok-k">serializer</span>:
     <span class="tok-k">general</span>: <span class="tok-s">xstream</span>
 
-<span class="tok-c"># In PaymentSaga.java — schedule a deadline after IPS submission</span>
-<span class="tok-c"># If IPSAcknowledgedEvent not received in 90s, fire the deadline handler</span>
+<span class="tok-c"># In PaymentSaga.java — schedule a deadline after scheme submission</span>
+<span class="tok-c"># If SchemeAcknowledgedEvent not received in 90s, fire the deadline handler</span>
 <span class="tok-k">deadlineManager</span>.<span class="tok-n">schedule</span>(
     <span class="tok-n">Duration</span>.ofSeconds(<span class="tok-n">90</span>),
-    <span class="tok-s">"ipsSubmissionTimeout"</span>,
-    <span class="tok-t">new</span> <span class="tok-n">IPSSubmissionDeadline</span>(paymentId)
+    <span class="tok-s">"schemeSubmissionTimeout"</span>,
+    <span class="tok-t">new</span> <span class="tok-n">SchemeSubmissionDeadline</span>(paymentId)
 );
 
-<span class="tok-c"># Handler: query IPS status, compensate or extend depending on result</span>
-<span class="tok-k">@DeadlineHandler</span>(deadlineName = <span class="tok-s">"ipsSubmissionTimeout"</span>)
-<span class="tok-t">public void</span> <span class="tok-n">onIPSTimeout</span>(<span class="tok-n">IPSSubmissionDeadline</span> deadline) {
-    <span class="tok-n">IPSStatus</span> status = ipsQueryService.<span class="tok-n">checkStatus</span>(deadline.<span class="tok-n">getPaymentId</span>());
-    <span class="tok-t">if</span> (status == <span class="tok-n">IPSStatus</span>.PENDING) {
-        <span class="tok-c">// Extend: IPS is slow, reschedule</span>
-        deadlineManager.<span class="tok-n">schedule</span>(<span class="tok-n">Duration</span>.ofSeconds(<span class="tok-n">30</span>), <span class="tok-s">"ipsSubmissionTimeout"</span>, deadline);
-    } <span class="tok-t">else if</span> (status == <span class="tok-n">IPSStatus</span>.REJECTED) {
-        <span class="tok-n">AggregateLifecycle</span>.<span class="tok-n">apply</span>(<span class="tok-t">new</span> <span class="tok-n">IPSRejectedEvent</span>(paymentId, <span class="tok-s">"TIMEOUT_CONFIRMED_REJECTED"</span>));
-    } <span class="tok-t">else if</span> (status == <span class="tok-n">IPSStatus</span>.UNKNOWN) {
+<span class="tok-c"># Handler: query scheme status, compensate or extend depending on result</span>
+<span class="tok-k">@DeadlineHandler</span>(deadlineName = <span class="tok-s">"schemeSubmissionTimeout"</span>)
+<span class="tok-t">public void</span> <span class="tok-n">onSchemeTimeout</span>(<span class="tok-n">SchemeSubmissionDeadline</span> deadline) {
+    <span class="tok-n">SchemeStatus</span> status = schemeQueryService.<span class="tok-n">checkStatus</span>(deadline.<span class="tok-n">getPaymentId</span>());
+    <span class="tok-t">if</span> (status == <span class="tok-n">SchemeStatus</span>.PENDING) {
+        <span class="tok-c">// Extend: scheme is slow, reschedule</span>
+        deadlineManager.<span class="tok-n">schedule</span>(<span class="tok-n">Duration</span>.ofSeconds(<span class="tok-n">30</span>), <span class="tok-s">"schemeSubmissionTimeout"</span>, deadline);
+    } <span class="tok-t">else if</span> (status == <span class="tok-n">SchemeStatus</span>.REJECTED) {
+        <span class="tok-n">AggregateLifecycle</span>.<span class="tok-n">apply</span>(<span class="tok-t">new</span> <span class="tok-n">SchemeRejectedEvent</span>(paymentId, <span class="tok-s">"TIMEOUT_CONFIRMED_REJECTED"</span>));
+    } <span class="tok-t">else if</span> (status == <span class="tok-n">SchemeStatus</span>.UNKNOWN) {
         <span class="tok-c">// Escalate to ops dead-letter queue</span>
-        deadLetterQueue.<span class="tok-n">park</span>(paymentId, <span class="tok-s">"IPS_STATUS_UNKNOWN"</span>);
+        deadLetterQueue.<span class="tok-n">park</span>(paymentId, <span class="tok-s">"SCHEME_STATUS_UNKNOWN"</span>);
     }
 }</code></pre>
           </div>
 
-          <p>The <code>UNKNOWN</code> status branch is the one that requires an operational process. When the IPS network is unreachable and the coordinator cannot determine whether the submission was received, the payment cannot be compensated automatically &mdash; compensating an IPS-received submission would abandon the funds in transit. These cases go to a dead-letter queue monitored by the payments operations team, who reconcile directly with SAMA&rsquo;s IPS participant portal before acting.</p>
+          <p>The <code>UNKNOWN</code> status branch is the one that requires an operational process. When the scheme is unreachable and the coordinator cannot determine whether the submission was received, the payment cannot be compensated automatically &mdash; compensating a submission the scheme did receive would abandon the funds in transit. These cases go to a dead-letter queue monitored by an operations team, who confirm the outcome with the scheme operator or the counterparty before acting.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">The dead-letter queue is a design requirement, not a failure mode</div>
-            <p>Every saga implementation that touches an external network must design for the <code>UNKNOWN</code> state. Build the dead-letter queue, the operational dashboard, and the resolution workflow before the system goes live. A typical target: the IPS operations team has a reconciliation SLA of 15 minutes for unknown-state payments during business hours. That SLA is achievable only if the tooling was built ahead of go-live.</p>
+            <p>Every saga implementation that touches an external network must design for the <code>UNKNOWN</code> state. Build the dead-letter queue, the operational dashboard, and the resolution workflow before the system goes live. A typical target: operations resolves unknown-state transactions within 15 minutes during business hours. That SLA is achievable only if the tooling was built ahead of go-live.</p>
           </div>
 
           <h2 id="idempotency">Idempotency in saga steps</h2>
@@ -533,27 +533,27 @@
     <span class="tok-t">private</span> <span class="tok-n">PaymentStatusRepository</span> statusRepo;
 
     <span class="tok-k">@Test</span>
-    <span class="tok-t">void</span> <span class="tok-n">ipsRejection_shouldReleaseLiquidityAndFailPayment</span>() <span class="tok-t">throws</span> <span class="tok-n">Exception</span> {
+    <span class="tok-t">void</span> <span class="tok-n">schemeRejection_shouldReleaseLiquidityAndFailPayment</span>() <span class="tok-t">throws</span> <span class="tok-n">Exception</span> {
         <span class="tok-n">String</span> paymentId = <span class="tok-n">UUID</span>.<span class="tok-n">randomUUID</span>().<span class="tok-n">toString</span>();
 
-        <span class="tok-c">// Configure stub IPS service to return rejection</span>
-        ipsStub.<span class="tok-n">willReturn</span>(<span class="tok-s">"REJECTED"</span>, <span class="tok-s">"AC04"</span>);  <span class="tok-c">// AC04 = closed creditor account</span>
+        <span class="tok-c">// Configure the stub scheme gateway to return a rejection</span>
+        schemeStub.<span class="tok-n">willReturn</span>(<span class="tok-s">"REJECTED"</span>, <span class="tok-s">"AC04"</span>);  <span class="tok-c">// AC04 = closed creditor account</span>
 
         <span class="tok-n">CompletableFuture</span>&lt;?&gt; result = commandGateway.<span class="tok-n">send</span>(<span class="tok-t">new</span> <span class="tok-n">InitiatePaymentCommand</span>(
-            paymentId, <span class="tok-s">"SA4420000001234567891234"</span>, <span class="tok-s">"SA7710000000012345678901"</span>,
-            <span class="tok-t">new</span> <span class="tok-n">BigDecimal</span>(<span class="tok-s">"5000.00"</span>), <span class="tok-s">"SAR"</span>,
+            paymentId, <span class="tok-s">"DE89370400440532013000"</span>, <span class="tok-s">"GB82WEST12345698765432"</span>,  <span class="tok-c">// documentation-example IBANs</span>
+            <span class="tok-t">new</span> <span class="tok-n">BigDecimal</span>(<span class="tok-s">"5000.00"</span>), <span class="tok-s">"EUR"</span>,
             <span class="tok-s">"E2E-20260808-001"</span>, <span class="tok-n">LocalDate</span>.<span class="tok-n">now</span>()
         ));
         result.<span class="tok-n">get</span>();
 
-        <span class="tok-c">// Wait for saga to complete (async: IPS rejection → compensation → terminal)</span>
+        <span class="tok-c">// Wait for saga to complete (async: scheme rejection → compensation → terminal)</span>
         <span class="tok-n">Awaitility</span>.<span class="tok-n">await</span>().<span class="tok-n">atMost</span>(<span class="tok-n">Duration</span>.<span class="tok-n">ofSeconds</span>(<span class="tok-n">10</span>))
             .<span class="tok-n">until</span>(() -&gt; statusRepo.<span class="tok-n">findByPaymentId</span>(paymentId)
                 .<span class="tok-n">map</span>(s -&gt; <span class="tok-n">PaymentStatus</span>.FAILED == s.getStatus())
                 .<span class="tok-n">orElse</span>(<span class="tok-t">false</span>));
 
         <span class="tok-n">PaymentStatus</span> status = statusRepo.<span class="tok-n">findByPaymentId</span>(paymentId).<span class="tok-n">orElseThrow</span>();
-        <span class="tok-n">assertThat</span>(status.getFailureReason()).<span class="tok-n">isEqualTo</span>(<span class="tok-s">"IPS_REJECTED"</span>);
+        <span class="tok-n">assertThat</span>(status.getFailureReason()).<span class="tok-n">isEqualTo</span>(<span class="tok-s">"SCHEME_REJECTED"</span>);
 
         <span class="tok-c">// Verify liquidity was released</span>
         <span class="tok-n">assertThat</span>(reservationRepo.<span class="tok-n">findByPaymentId</span>(paymentId).<span class="tok-n">get</span>().<span class="tok-n">getStatus</span>())
@@ -578,7 +578,7 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">Choreography for workflows that need auditability</div>
-            <p>A choreography saga that spans five services produces an audit trail distributed across five event streams and five databases. Reconstructing the complete history of a single payment requires joining those streams on <code>paymentId</code> across five different data stores &mdash; which may have different retention policies, different access controls, and different log formats. For SAMA audit purposes, an orchestration saga with a centralised saga state table is significantly easier to present to an examiner. If you are already using choreography, invest in a correlation-ID-based event correlation service that aggregates the per-payment audit trail into a single queryable view.</p>
+            <p>A choreography saga that spans five services produces an audit trail distributed across five event streams and five databases. Reconstructing the complete history of a single payment requires joining those streams on <code>paymentId</code> across five different data stores &mdash; which may have different retention policies, different access controls, and different log formats. For audit purposes, an orchestration saga with a centralised saga state table is significantly easier to present to an auditor or examiner. If you are already using choreography, invest in a correlation-ID-based event correlation service that aggregates the per-payment audit trail into a single queryable view.</p>
           </div>
 
           <nav class="article-nav">

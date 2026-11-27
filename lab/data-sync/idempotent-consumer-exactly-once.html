@@ -6,7 +6,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Synchronisation &mdash; Idempotent Consumers &amp; Exactly-Once Semantics &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="How to guarantee at-most-once processing for payment messages in a Kafka-based financial services platform: deduplication keys, database idempotency tables, Redis atomic dedup, Kafka EOS, ISO 20022 EndToEndId, and the monitoring that proves it works in production.">
+  <meta name="description" content="How to guarantee effectively-once processing for business-critical messages on Kafka, with payments as the worked example: deduplication keys, database idempotency tables, Redis atomic dedup, Kafka EOS, ISO 20022 EndToEndId, and the monitoring that proves it works in production.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Idempotent Consumers &amp; Exactly-Once Semantics &mdash; Lab &mdash; Waleed Albadawi">
   <meta property="og:description" content="Payment deduplication at scale: DB idempotency tables, Redis atomic dedup, Kafka EOS, and ISO 20022 EndToEndId patterns.">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Idempotent Consumers &amp; Exactly-Once Semantics &mdash; Payment Deduplication at Scale">
-  <meta name="twitter:description" content="DB idempotency tables, Redis atomic dedup, Kafka EOS, and ISO 20022 EndToEndId for financial services.">
+  <meta name="twitter:description" content="DB idempotency tables, Redis atomic dedup, Kafka EOS, and ISO 20022 EndToEndId for payments, orders and other business-critical flows.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/idempotent-consumer-exactly-once.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,7 +39,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Idempotent Consumers & Exactly-Once Semantics: Payment Deduplication at Scale",
-    "description": "How to guarantee at-most-once processing for payment messages in a Kafka-based financial services platform: deduplication keys, database idempotency tables, Redis atomic dedup, Kafka EOS, ISO 20022 EndToEndId, and the monitoring that proves it works in production.",
+    "description": "How to guarantee effectively-once processing for business-critical messages on Kafka, with payments as the worked example: deduplication keys, database idempotency tables, Redis atomic dedup, Kafka EOS, ISO 20022 EndToEndId, and the monitoring that proves it works in production.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-10-24",
     "author": {
@@ -90,7 +90,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Idempotent Consumers &amp; Exactly-Once</div>
           <span class="overline">Lab Article</span>
           <h1>Idempotent Consumers &amp; Exactly-Once Semantics: Payment Deduplication at Scale</h1>
-          <p class="lead">At-least-once delivery is the honest default for every message bus you will ever run. The question is not whether duplicates arrive&mdash;they will&mdash;but whether your consumers handle them correctly. In financial services, the cost of getting this wrong is a duplicate debit.</p>
+          <p class="lead">At-least-once delivery is the honest default for every message bus you will ever run. The question is not whether duplicates arrive&mdash;they will&mdash;but whether your consumers handle them correctly. In payments, the cost of getting this wrong is a duplicate debit; in e-commerce, a double shipment; in telecoms, a double charge.</p>
         </div>
       </div>
     </div>
@@ -129,12 +129,12 @@
 
           <h2 id="overview">Overview</h2>
           <p>Every message broker guarantees at-least-once delivery if you configure retries. That guarantee has a corollary: messages will arrive more than once under failure conditions. A network partition clears, a consumer pod restarts mid-commit, a rebalance fires at the worst moment&mdash;any of these produces a re-delivered message that your consumer has already processed.</p>
-          <p>In most domains, a duplicate log entry or a replayed analytics event is an irritant. In payment processing, a duplicate execution is a regulatory incident: a double credit to a beneficiary, a double debit from a customer, a duplicate SWIFT pacs.008 submitted to SARIE. The Saudi Payments Network (SARIE) has reconciliation windows that will catch the discrepancy, but they will not catch it fast enough to prevent the debit going through. Your idempotency layer has to catch it before that.</p>
-          <p>This article covers the full deduplication stack: the key design problem, three implementation tiers (database, Redis, Kafka EOS), their interaction with ISO 20022 message identifiers, and the monitoring that lets you prove to an auditor that duplicates are being caught.</p>
+          <p>For some data, a duplicate log entry or a replayed analytics event is an irritant. For business transactions it is not. In payment processing, a duplicate execution is a regulatory incident: a double credit to a beneficiary, a double debit from a customer, a duplicate pacs.008 submitted to a clearing system. Clearing and settlement systems run reconciliations that will eventually catch the discrepancy, but not fast enough to prevent the debit going through. The same is true of an order fulfilled twice or a usage record billed twice. Your idempotency layer has to catch it before that.</p>
+          <p>This article covers the full deduplication stack: the key design problem, three implementation tiers (database, Redis, Kafka EOS), their interaction with ISO 20022 message identifiers, and the monitoring that lets you prove to an auditor that duplicates are being caught. The worked examples use payments, but the same design applies to order numbers, booking references or telecom call-detail records.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Trade-off summary up front</div>
-            <p>Database deduplication is the simplest and most durable approach; it adds one SQL write per event. Redis deduplication adds 1&ndash;3 ms and is appropriate when the database write is not acceptable on the hot path. Kafka EOS is the most complete guarantee, but it constrains your consumer topology and introduces latency that most financial services teams underestimate. You will almost certainly need all three at different points in your pipeline.</p>
+            <p>Database deduplication is the simplest and most durable approach; it adds one SQL write per event. Redis deduplication adds 1&ndash;3 ms and is appropriate when the database write is not acceptable on the hot path. Kafka EOS is the most complete guarantee, but it constrains your consumer topology and introduces latency that most teams underestimate. You will almost certainly need all three at different points in your pipeline.</p>
           </div>
 
           <h2 id="at-least-once">At-least-once delivery: what it actually means</h2>
@@ -513,23 +513,23 @@ spring:
 <pre><code><span class="tok-k">&lt;CdtTrfTxInf&gt;</span>
   <span class="tok-k">&lt;PmtId&gt;</span>
     <span class="tok-c">&lt;!-- EndToEndId: originator-assigned; MUST be preserved end-to-end --&gt;</span>
-    <span class="tok-k">&lt;EndToEndId&gt;</span><span class="tok-s">BANK20261024001PAY</span><span class="tok-k">&lt;/EndToEndId&gt;</span>
-    <span class="tok-c">&lt;!-- TxId: bank-assigned; can change at each processing hop --&gt;</span>
-    <span class="tok-k">&lt;TxId&gt;</span><span class="tok-s">BNK-TXN-8823040</span><span class="tok-k">&lt;/TxId&gt;</span>
-    <span class="tok-c">&lt;!-- UETR: SWIFT-assigned; universally unique end-to-end --&gt;</span>
+    <span class="tok-k">&lt;EndToEndId&gt;</span><span class="tok-s">E2E-20261024-000123</span><span class="tok-k">&lt;/EndToEndId&gt;</span>
+    <span class="tok-c">&lt;!-- TxId: assigned by the instructing agent; can change at each interbank hop --&gt;</span>
+    <span class="tok-k">&lt;TxId&gt;</span><span class="tok-s">TX-20261024-0001</span><span class="tok-k">&lt;/TxId&gt;</span>
+    <span class="tok-c">&lt;!-- UETR: UUIDv4 generated once at origination; universally unique end-to-end --&gt;</span>
     <span class="tok-k">&lt;UETR&gt;</span><span class="tok-s">a23cc4f5-7e8b-4c12-a9d1-3f4e5b6c7d8e</span><span class="tok-k">&lt;/UETR&gt;</span>
   <span class="tok-k">&lt;/PmtId&gt;</span>
-  <span class="tok-k">&lt;IntrBkSttlmAmt Ccy=&quot;SAR&quot;&gt;</span><span class="tok-s">5000.00</span><span class="tok-k">&lt;/IntrBkSttlmAmt&gt;</span>
+  <span class="tok-k">&lt;IntrBkSttlmAmt Ccy=&quot;EUR&quot;&gt;</span><span class="tok-s">5000.00</span><span class="tok-k">&lt;/IntrBkSttlmAmt&gt;</span>
   <span class="tok-c">&lt;!-- ... --&gt;</span>
 <span class="tok-k">&lt;/CdtTrfTxInf&gt;</span>
 </code></pre>
           </div>
 
-          <p>For SARIE (Saudi Arabia&rsquo;s RTGS), the UETR is the authoritative deduplication key at the network level. Within a bank&rsquo;s internal Kafka pipeline, use the UETR as the primary idempotency key and the EndToEndId as a secondary key for customer-facing tracing. Do not conflate the two: the TxId changes at each bank leg, so using it as an idempotency key will fail for any multi-hop payment.</p>
+          <p>For SWIFT cross-border payments, and for the market infrastructures that have adopted it, the UETR is the authoritative end-to-end reference at the network level. Within an institution&rsquo;s internal Kafka pipeline, use the UETR as the primary idempotency key and the EndToEndId as a secondary key for customer-facing tracing. Do not confuse either with the TxId: the TxId changes at each interbank leg, so using it as an idempotency key will fail for any multi-hop payment.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">UETR format and generation</div>
-            <p>A UETR is a UUIDv4 in lowercase hyphenated form (8-4-4-4-12). Generate it once, at the originating system, and treat it as immutable. The SWIFT gpi tracker uses it as the primary key across all correspondent banks in the payment chain. In the context of Saudi domestic payments via SARIE, SAMA&rsquo;s connectivity rules require UETR uniqueness within a 24-hour window per originating BIC. Include it in every event envelope your Kafka topics carry for ISO 20022 payment flows.</p>
+            <p>A UETR is a UUIDv4 in lowercase hyphenated form (8-4-4-4-12). Generate it once, at the originating system, and treat it as immutable. The SWIFT gpi tracker uses it as the primary key across all correspondent banks in the payment chain. Domestic schemes and market infrastructures publish their own rules on UETR usage and uniqueness; check the rulebook for each scheme you connect to and enforce the stricter rule in your dedup store. Include it in every event envelope your Kafka topics carry for ISO 20022 payment flows.</p>
           </div>
 
           <h2 id="monitoring">Monitoring deduplication</h2>
@@ -584,7 +584,7 @@ groups:
           <p>Three additional scenarios where application-level idempotency alone is insufficient:</p>
           <ul>
             <li><strong>Long-running sagas.</strong> A multi-step payment saga (authorise &rarr; reserve funds &rarr; execute &rarr; confirm) involves events across multiple topics. Deduplication on each topic independently does not prevent a saga that completed step 3 from being replayed from step 1 if the saga coordinator crashes. Use a saga state machine with its own idempotency table keyed on the saga ID.</li>
-            <li><strong>External system calls inside the consumer.</strong> An HTTP call to a core banking system, an SMS notification, a SWIFT message dispatch&mdash;none of these can participate in a Kafka transaction or a database transaction. For these side-effects, use a dedicated outbox table to track whether the external call was made, and call the external system only once per idempotency key, checking the outbox before each call.</li>
+            <li><strong>External system calls inside the consumer.</strong> An HTTP call to a legacy system of record, an SMS notification, a SWIFT message dispatch&mdash;none of these can participate in a Kafka transaction or a database transaction. For these side-effects, use a dedicated outbox table to track whether the external call was made, and call the external system only once per idempotency key, checking the outbox before each call.</li>
             <li><strong>Consumer group topic resets.</strong> An operations team manually resets the consumer group offset to replay a production incident. Without an idempotency layer, every downstream system re-receives every event from the reset point. With a database idempotency table and a sufficiently long retention window, the replayed events are silently discarded. If the retention window has elapsed, the table has been pruned and the events will be reprocessed. Size your retention window to the maximum credible reset window: for a production payment pipeline, 7 days is a reasonable minimum.</li>
           </ul>
 

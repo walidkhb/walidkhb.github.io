@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Event-Driven Architecture &mdash; Kafka &amp; IBM MQ &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="A practical, production-grade walkthrough of event-driven architecture for financial services: Kafka and IBM MQ, event modelling, schema evolution, idempotent consumers, exactly-once semantics, HA topology, and the operational patterns behind real-time payment and trading platforms.">
+  <meta name="description" content="A practical, production-grade walkthrough of event-driven architecture for regulated, high-volume enterprises: Kafka and IBM MQ, event modelling, schema evolution, idempotent consumers, exactly-once semantics, HA topology, and the operational patterns behind real-time transaction platforms.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Event-Driven Architecture &mdash; Kafka &amp; IBM MQ &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Production patterns for event-driven systems on Kafka and IBM MQ in regulated financial services.">
+  <meta property="og:description" content="Production patterns for event-driven systems on Kafka and IBM MQ in regulated, high-volume enterprises.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/kafka-and-mq.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Event-Driven Architecture &mdash; Production Patterns">
-  <meta name="twitter:description" content="Kafka and IBM MQ patterns for regulated financial services.">
+  <meta name="twitter:description" content="Kafka and IBM MQ patterns for regulated, high-volume enterprises.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/kafka-and-mq.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Event-Driven Architecture &mdash; Kafka & IBM MQ",
-    "description": "Production-grade event-driven architecture patterns for financial services on Kafka and IBM MQ.",
+    "description": "Production-grade event-driven architecture patterns for regulated, high-volume enterprises on Kafka and IBM MQ.",
     "url": "https://www.wbadawi.info/lab/event-driven/kafka-and-mq.html",
     "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
     "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
@@ -75,7 +75,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Kafka &amp; IBM MQ</div>
           <span class="overline">Lab Article</span>
           <h1>Event-Driven Architecture: Kafka &amp; IBM MQ</h1>
-          <p class="lead">Event modelling, broker topology, schema evolution, idempotent consumers, exactly-once semantics, and the operational patterns behind real-time payment, trading, and core-banking event flows. Where Kafka fits, where MQ still wins, and how to run them side by side.</p>
+          <p class="lead">Event modelling, broker topology, schema evolution, idempotent consumers, exactly-once semantics, and the operational patterns behind real-time payment, order, telemetry and legacy system-of-record event flows. Where Kafka fits, where MQ still wins, and how to run them side by side.</p>
         </div>
       </div>
     </div>
@@ -113,8 +113,8 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Event-driven architecture (EDA) is the architectural style where state changes are published as discrete, immutable facts and consumers react asynchronously. In financial services it underpins three classes of system: <strong>real-time payments</strong> (faster payments, instant transfers), <strong>trading and risk</strong> (order events, position updates), and <strong>core banking integration</strong> (CDC streams from a system of record into downstream products).</p>
-          <p>Two brokers dominate this space: <strong>Apache Kafka</strong> for high-throughput, replayable event streams, and <strong>IBM MQ</strong> for guaranteed-once messaging with strong transactional semantics. They solve different problems and most banks run both.</p>
+          <p>Event-driven architecture (EDA) is the architectural style where state changes are published as discrete, immutable facts and consumers react asynchronously. In regulated, high-volume enterprises &mdash; banks and payment firms, insurers, telecom operators, retailers, logistics networks &mdash; it underpins three classes of system: <strong>real-time transactions</strong> (instant payments, order capture, usage rating), <strong>operational risk and analytics</strong> (fraud signals, position or stock updates, telemetry), and <strong>legacy system-of-record integration</strong> (CDC streams from a mainframe or packaged core platform into downstream products).</p>
+          <p>Two brokers dominate this space in large enterprises: <strong>Apache Kafka</strong> for high-throughput, replayable event streams, and <strong>IBM MQ</strong> for assured, once-only messaging with strong transactional semantics. They solve different problems and many large organisations run both.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Event vs Message</div>
@@ -159,11 +159,11 @@
                 <text x="80" y="78" text-anchor="middle" fill="#71717a" font-size="9">producer</text>
 
                 <rect x="20" y="110" width="120" height="50" rx="6" fill="#16161f" stroke="#c8a660"/>
-                <text x="80" y="132" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Core ledger</text>
+                <text x="80" y="132" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">System of record</text>
                 <text x="80" y="148" text-anchor="middle" fill="#71717a" font-size="9">CDC source</text>
 
                 <rect x="20" y="180" width="120" height="50" rx="6" fill="#16161f" stroke="#c8a660"/>
-                <text x="80" y="202" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Trade booking</text>
+                <text x="80" y="202" text-anchor="middle" fill="#e4e4e7" font-size="11" font-weight="600">Order service</text>
                 <text x="80" y="218" text-anchor="middle" fill="#71717a" font-size="9">producer</text>
 
                 <rect x="240" y="20" width="300" height="240" rx="8" fill="#0f0f16" stroke="#c8a660" stroke-width="2"/>
@@ -328,7 +328,7 @@ kafka-topics --bootstrap-server <span class="tok-s">kafka:9092</span> --create \
 <pre><code>{
   <span class="tok-k">"type"</span>: <span class="tok-s">"record"</span>,
   <span class="tok-k">"name"</span>: <span class="tok-s">"PaymentSubmitted"</span>,
-  <span class="tok-k">"namespace"</span>: <span class="tok-s">"com.acmebank.payments.events"</span>,
+  <span class="tok-k">"namespace"</span>: <span class="tok-s">"com.example.payments.events"</span>,
   <span class="tok-k">"fields"</span>: [
     { <span class="tok-k">"name"</span>: <span class="tok-s">"paymentId"</span>,    <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
     { <span class="tok-k">"name"</span>: <span class="tok-s">"originator"</span>,   <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
@@ -401,7 +401,7 @@ state.dir=<span class="tok-s">/var/lib/kafka-streams</span></code></pre>
           <p>For Kafka-to-database flows (the common case), the transactional outbox is the correct pattern: write the event into an <code>outbox</code> table inside the same transaction as the business write, then a CDC connector (Debezium) ships outbox rows to Kafka. This is covered in detail in the <a href="../data-sync.html">Data Synchronisation</a> article.</p>
 
           <h2 id="ha">HA &amp; DR</h2>
-          <p>Production Kafka clusters in financial services run with three brokers per data centre and two data centres. The cluster spans within a DC; replication across DCs uses <strong>MirrorMaker 2</strong> or <strong>Cluster Linking</strong> for active/passive DR.</p>
+          <p>Production Kafka clusters in regulated environments commonly run with three brokers per data centre and two data centres. The cluster spans within a DC; replication across DCs uses <strong>MirrorMaker 2</strong> or <strong>Cluster Linking</strong> for active/passive DR.</p>
 
           <div class="diagram" role="img" aria-label="HA topology with active Kafka cluster in DC1 and passive cluster in DC2 connected by MirrorMaker 2">
             <div class="diagram__inner">
@@ -463,7 +463,7 @@ state.dir=<span class="tok-s">/var/lib/kafka-streams</span></code></pre>
 
           <div class="callout callout--danger">
             <div class="callout__title">Hot partition by key choice</div>
-            <p>If 80% of traffic is for one customer (the bank&rsquo;s biggest corporate client), keying by <code>customerId</code> sends 80% of events to one partition &mdash; one consumer thread &mdash; one CPU. Use a composite key (<code>customerId + transactionId</code>) when distribution matters more than per-customer ordering.</p>
+            <p>If 80% of traffic is for one customer (your biggest corporate client or marketplace seller), keying by <code>customerId</code> sends 80% of events to one partition &mdash; one consumer thread &mdash; one CPU. Use a composite key (<code>customerId + transactionId</code>) when distribution matters more than per-customer ordering.</p>
           </div>
 
           <div class="callout callout--danger">
@@ -490,7 +490,7 @@ state.dir=<span class="tok-s">/var/lib/kafka-streams</span></code></pre>
             <li><strong>Audit-first command flows.</strong> When the business needs every command to be acknowledged synchronously and traced individually, IBM MQ with XA still beats Kafka. Kafka is a stream; MQ is a transaction.</li>
           </ul>
 
-          <p>Where event-driven wins: when the same fact must reach multiple consumers, when replay is a regulatory requirement, when downstream systems evolve at different speeds, and when peak throughput exceeds what a synchronous call chain can absorb. That&rsquo;s most modern banking platforms &mdash; but not all of them.</p>
+          <p>Where event-driven wins: when the same fact must reach multiple consumers, when replay is a regulatory requirement, when downstream systems evolve at different speeds, and when peak throughput exceeds what a synchronous call chain can absorb. That&rsquo;s most modern transactional platforms &mdash; but not all of them.</p>
 
           <nav class="article-nav">
             <a href="../api-gateway.html">

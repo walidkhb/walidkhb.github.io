@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Synchronisation &mdash; Conflict Resolution in Multi-Master Replication &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Conflict resolution strategies for multi-master replication in a SAMA-regulated bank: LWW, CRDTs, vector clocks, CockroachDB geo-partitioning, and active-active BCP design for Tier 1 payment systems.">
+  <meta name="description" content="Conflict resolution strategies for multi-master replication in regulated, business-critical systems: LWW, CRDTs, vector clocks, CockroachDB geo-partitioning, and active-active BCP design for critical-tier payment, order and ledger systems.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Data Synchronisation &mdash; Conflict Resolution in Multi-Master Replication">
-  <meta property="og:description" content="LWW, CRDTs, vector clocks, CockroachDB/YugabyteDB conflict handling, and SAMA BCP-compliant active-active design for financial systems.">
+  <meta property="og:description" content="LWW, CRDTs, vector clocks, CockroachDB/YugabyteDB conflict handling, and BCP-ready active-active design for business-critical systems.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/data-sync/conflict-resolution-multi-master.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Conflict Resolution in Multi-Master Replication">
-  <meta name="twitter:description" content="SAMA BCP active-active design, LWW risks, CRDTs for banking, and why account balances need distributed transactions, not eventual consistency.">
+  <meta name="twitter:description" content="Active-active BCP design, LWW risks, where CRDTs fit, and why balances and stock levels need distributed transactions, not eventual consistency.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/conflict-resolution-multi-master.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,7 +39,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Data Synchronisation: Conflict Resolution in Multi-Master Replication",
-    "description": "Conflict resolution strategies for multi-master replication in a SAMA-regulated bank: LWW, CRDTs, vector clocks, CockroachDB geo-partitioning, and active-active BCP design for Tier 1 payment systems.",
+    "description": "Conflict resolution strategies for multi-master replication in regulated, business-critical systems: LWW, CRDTs, vector clocks, CockroachDB geo-partitioning, and active-active BCP design for critical-tier payment, order and ledger systems.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-09-05",
     "author": {
@@ -90,7 +90,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Conflict Resolution in Multi-Master Replication</div>
           <span class="overline">Lab Article</span>
           <h1>Data Synchronisation: Conflict Resolution in Multi-Master Replication</h1>
-          <p class="lead">Active-active deployments for SAMA BCP compliance, the four types of write conflicts that arise when two data centers both accept writes, and the resolution strategies that are safe for financial data versus those that only look safe until a network partition proves otherwise.</p>
+          <p class="lead">Active-active deployments for business-continuity compliance, the four types of write conflicts that arise when two data centers both accept writes, and the resolution strategies that are safe for balances, ledgers and stock levels versus those that only look safe until a network partition proves otherwise.</p>
         </div>
       </div>
     </div>
@@ -110,7 +110,7 @@
             <li><a href="#vector-clocks">Vector clocks</a></li>
             <li><a href="#cockroach-yugabyte">CockroachDB &amp; YugabyteDB</a></li>
             <li><a href="#application-resolution">Application-level resolution</a></li>
-            <li><a href="#sama-bcp">SAMA BCP requirements</a></li>
+            <li><a href="#bcp-requirements">Regulatory BCP expectations</a></li>
             <li><a href="#pitfalls">Pitfalls</a></li>
             <li><a href="#checklist">Production checklist</a></li>
           </ul>
@@ -128,7 +128,7 @@
 
           <h2 id="overview">Overview</h2>
           <p>Multi-master replication &mdash; also called active-active replication &mdash; means two or more database nodes each accept writes simultaneously. When the network is healthy, writes replicate between nodes and the state converges. When a network partition occurs, both nodes continue accepting writes independently. When the partition heals, the nodes have diverged and must reconcile. The reconciliation step, and the question of which write wins when two writes conflict, is what this article addresses.</p>
-          <p>SAMA&rsquo;s Business Continuity Planning framework requires Tier 1 systems &mdash; systems that process payments or hold customer balances &mdash; to meet an RTO of less than 4 hours and an RPO of less than 1 hour. Active-active is the architecture that achieves an RPO of zero for synchronous replication: both data centers are always current, so a failover is instantaneous for the data layer. The alternative &mdash; single-master with a standby replica &mdash; is often the safer choice for financial data, precisely because it avoids the conflict problem entirely. The question is whether the operational simplicity of single-master is worth the RPO and RTO cost, given SAMA&rsquo;s requirements.</p>
+          <p>Business-continuity rules in most regulated sectors require critical-tier systems &mdash; systems that process payments, hold customer balances, or run order and stock management &mdash; to meet tight RTO and RPO targets. Active-active is the architecture that achieves an RPO of zero for synchronous replication: both data centers are always current, so a failover is instantaneous for the data layer. The alternative &mdash; single-master with a standby replica &mdash; is often the safer choice for a system of record, precisely because it avoids the conflict problem entirely. The question is whether the operational simplicity of single-master is worth the RPO and RTO cost, given your regulator&rsquo;s requirements.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Serializable isolation in CockroachDB and YugabyteDB resolves most conflicts automatically</div>
@@ -155,34 +155,34 @@
 
                 <!-- DC1 -->
                 <rect x="10" y="30" width="310" height="130" rx="8" fill="#16161f" stroke="#4a9eff" stroke-width="1.5"/>
-                <text x="165" y="52" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">Data Centre 1 &mdash; Riyadh</text>
+                <text x="165" y="52" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">Data Centre 1 &mdash; Site A</text>
 
                 <rect x="30" y="62" width="125" height="80" rx="6" fill="#1c1c28" stroke="#4a9eff"/>
                 <text x="92" y="82" text-anchor="middle" fill="#4a9eff" font-size="10" font-weight="600">DB Master 1</text>
                 <text x="92" y="98" text-anchor="middle" fill="#71717a" font-size="9">CockroachDB / PG</text>
-                <text x="92" y="114" text-anchor="middle" fill="#71717a" font-size="9">Balance: 10,000 SAR</text>
-                <text x="92" y="130" text-anchor="middle" fill="#c8a660" font-size="9">Write: &minus;3,000 SAR</text>
+                <text x="92" y="114" text-anchor="middle" fill="#71717a" font-size="9">Balance: 10,000</text>
+                <text x="92" y="130" text-anchor="middle" fill="#c8a660" font-size="9">Write: &minus;3,000</text>
 
                 <rect x="170" y="62" width="135" height="80" rx="6" fill="#1c1c28" stroke="#c8a660"/>
                 <text x="237" y="82" text-anchor="middle" fill="#c8a660" font-size="10" font-weight="600">Application 1</text>
                 <text x="237" y="98" text-anchor="middle" fill="#71717a" font-size="9">reads balance = 10k</text>
-                <text x="237" y="114" text-anchor="middle" fill="#71717a" font-size="9">debit 3,000 SAR</text>
+                <text x="237" y="114" text-anchor="middle" fill="#71717a" font-size="9">debit 3,000</text>
                 <text x="237" y="130" text-anchor="middle" fill="#c8a660" font-size="9">T=1ms</text>
 
                 <!-- DC2 -->
                 <rect x="460" y="30" width="310" height="130" rx="8" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
-                <text x="615" y="52" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Data Centre 2 &mdash; Jeddah</text>
+                <text x="615" y="52" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Data Centre 2 &mdash; Site B</text>
 
                 <rect x="480" y="62" width="125" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
                 <text x="542" y="82" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">DB Master 2</text>
                 <text x="542" y="98" text-anchor="middle" fill="#71717a" font-size="9">CockroachDB / PG</text>
-                <text x="542" y="114" text-anchor="middle" fill="#71717a" font-size="9">Balance: 10,000 SAR</text>
-                <text x="542" y="130" text-anchor="middle" fill="#ef4444" font-size="9">Write: &minus;8,000 SAR</text>
+                <text x="542" y="114" text-anchor="middle" fill="#71717a" font-size="9">Balance: 10,000</text>
+                <text x="542" y="130" text-anchor="middle" fill="#ef4444" font-size="9">Write: &minus;8,000</text>
 
                 <rect x="620" y="62" width="135" height="80" rx="6" fill="#1c1c28" stroke="#a78bfa"/>
                 <text x="687" y="82" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Application 2</text>
                 <text x="687" y="98" text-anchor="middle" fill="#71717a" font-size="9">reads balance = 10k</text>
-                <text x="687" y="114" text-anchor="middle" fill="#71717a" font-size="9">debit 8,000 SAR</text>
+                <text x="687" y="114" text-anchor="middle" fill="#71717a" font-size="9">debit 8,000</text>
                 <text x="687" y="130" text-anchor="middle" fill="#a78bfa" font-size="9">T=2ms</text>
 
                 <!-- Network partition -->
@@ -203,7 +203,7 @@
                 <rect x="25" y="245" width="175" height="68" rx="5" fill="#1c1c28" stroke="#c8a660"/>
                 <text x="112" y="262" text-anchor="middle" fill="#c8a660" font-size="9" font-weight="600">Last Write Wins (LWW)</text>
                 <text x="112" y="276" text-anchor="middle" fill="#71717a" font-size="8">T=2ms (DC2) wins over T=1ms</text>
-                <text x="112" y="289" text-anchor="middle" fill="#71717a" font-size="8">Result: balance = 2,000 SAR</text>
+                <text x="112" y="289" text-anchor="middle" fill="#71717a" font-size="8">Result: balance = 2,000</text>
                 <text x="112" y="302" text-anchor="middle" fill="#ef4444" font-size="8">DC1 debit SILENTLY LOST</text>
 
                 <!-- Vector clock box -->
@@ -228,7 +228,7 @@
                 <text x="680" y="302" text-anchor="middle" fill="#71717a" font-size="8">Business rule enforcement</text>
               </svg>
             </div>
-            <div class="diagram__caption">Figure 1 &mdash; Two data centers each accept writes during a network partition; on heal, four resolution strategies apply with different correctness guarantees; for financial account balances only distributed transactions or application-level resolution with causal ordering produce correct results</div>
+            <div class="diagram__caption">Figure 1 &mdash; Two data centers each accept writes during a network partition; on heal, four resolution strategies apply with different correctness guarantees; for balances and other bounded quantities only distributed transactions or application-level resolution with causal ordering produce correct results</div>
           </div>
 
           <h2 id="conflict-types">Types of Conflicts</h2>
@@ -241,36 +241,36 @@
           </ul>
 
           <h2 id="lww">Last Write Wins (LWW)</h2>
-          <p>Last Write Wins resolves write-write conflicts by comparing timestamps: the write with the latest timestamp is the winner, and the other write is discarded. It is the simplest conflict resolution strategy to implement and the most dangerous for financial data.</p>
+          <p>Last Write Wins resolves write-write conflicts by comparing timestamps: the write with the latest timestamp is the winner, and the other write is discarded. It is the simplest conflict resolution strategy to implement and the most dangerous for balances and other monetary state.</p>
           <p>The problem is clock skew. Servers in different data centers run on different hardware clocks. Even with NTP synchronisation, wall-clock timestamps on different nodes can differ by tens of milliseconds. If a write on DC1 at T=100ms is logically later than a write on DC2 at T=102ms (because the DC2 write was initiated first but arrived second due to network latency), LWW selects the DC2 write as the winner based on timestamp. The DC1 write &mdash; which was the logical successor &mdash; is silently discarded.</p>
           <p>Hybrid Logical Clocks (HLC) address clock skew by combining physical time with a logical counter. The HLC on each node advances both when the physical clock advances and when a message is received that carries a higher logical timestamp. This creates a partial order that is consistent with causality even when physical clocks diverge. CockroachDB uses HLC internally for its MVCC timestamps.</p>
 
           <table>
             <thead>
-              <tr><th>Strategy</th><th>Impl. complexity</th><th>Clock dependency</th><th>Banking applicability</th><th>SAMA BCP suitability</th></tr>
+              <tr><th>Strategy</th><th>Impl. complexity</th><th>Clock dependency</th><th>Typical applicability</th><th>Critical-tier suitability</th></tr>
             </thead>
             <tbody>
-              <tr><td>LWW (wall clock)</td><td>Low</td><td>High &mdash; clock skew silently loses writes</td><td>Reference data only (idempotent)</td><td>Not acceptable for financial state</td></tr>
+              <tr><td>LWW (wall clock)</td><td>Low</td><td>High &mdash; clock skew silently loses writes</td><td>Reference data only (idempotent)</td><td>Not acceptable for monetary or stock state</td></tr>
               <tr><td>CRDT</td><td>Medium</td><td>None &mdash; merge-based</td><td>Counters, flags, permission sets</td><td>Acceptable for non-balance state</td></tr>
               <tr><td>Vector Clocks</td><td>High</td><td>None &mdash; logical clocks</td><td>Sibling detection; needs app resolution</td><td>Acceptable with app resolution layer</td></tr>
               <tr><td>App-level resolution</td><td>High</td><td>Causal ordering required</td><td>Balance merge, saga compensation</td><td>Acceptable; requires saga design</td></tr>
-              <tr><td>DB-level serializable</td><td>Low (app) / High (infra)</td><td>HLC (CockroachDB) &mdash; bounded skew</td><td>All financial operations</td><td>Preferred for Tier 1 systems</td></tr>
+              <tr><td>DB-level serializable</td><td>Low (app) / High (infra)</td><td>HLC (CockroachDB) &mdash; bounded skew</td><td>Balances, ledgers, stock</td><td>Preferred for critical-tier systems</td></tr>
             </tbody>
           </table>
 
           <h2 id="crdts">CRDTs (Conflict-free Replicated Data Types)</h2>
           <p>CRDTs are data structures designed to merge without conflict. The merge operation is commutative, associative, and idempotent &mdash; the same set of updates applied in any order produces the same result. This means CRDTs eliminate the conflict resolution problem for the data types they model.</p>
-          <p>Four CRDT types are relevant in a banking context:</p>
+          <p>Four CRDT types are relevant for transactional systems:</p>
           <ul>
             <li><strong>G-Counter (grow-only counter).</strong> Each node maintains its own counter. The global value is the sum of all node counters. Increments never conflict because each node only increments its own counter. Applicable for: login attempt counts, API call counters, event occurrence counts. Not applicable for anything that decrements.</li>
-            <li><strong>PN-Counter (positive-negative counter).</strong> A pair of G-Counters: one for additions, one for subtractions. The global value is the sum of all P-counters minus the sum of all N-counters. Applicable for: inventory counts, not for account balances (because a PN-Counter cannot enforce a lower bound constraint &mdash; the balance cannot go negative).</li>
+            <li><strong>PN-Counter (positive-negative counter).</strong> A pair of G-Counters: one for additions, one for subtractions. The global value is the sum of all P-counters minus the sum of all N-counters. Applicable for: approximate counters and stock counts where a brief oversell is tolerable; not for account balances or hard stock limits (because a PN-Counter cannot enforce a lower bound constraint &mdash; the balance cannot go negative).</li>
             <li><strong>OR-Set (observed-remove set).</strong> An add-wins set: if two nodes concurrently add and remove the same element, the add wins. Applicable for: permission lists, feature flag assignments, approved consumer lists. The add-wins semantics must match the business rule (it does for permissions; it may not for revocations).</li>
             <li><strong>LWW-Register (per-field LWW register).</strong> Each field has its own LWW timestamp. Concurrent updates to different fields on the same record do not conflict; concurrent updates to the same field resolve by timestamp. Applicable for: user profile data (notification preferences, display settings). Subject to the same clock skew risk as LWW.</li>
           </ul>
 
           <div class="callout callout--warn">
             <div class="callout__title">LWW with wall clock timestamps is dangerous when clock skew exceeds your conflict window</div>
-            <p>A conflict window of 10 milliseconds and an NTP synchronisation accuracy of 50 milliseconds means LWW with wall clock timestamps will silently discard the logically correct write on every conflict where the two writes occurred within 50ms of each other. Use Hybrid Logical Clocks, or design the data type to avoid LWW entirely for any state where silent data loss is unacceptable. For financial systems, silent data loss is always unacceptable.</p>
+            <p>A conflict window of 10 milliseconds and an NTP synchronisation accuracy of 50 milliseconds means LWW with wall clock timestamps will silently discard the logically correct write on every conflict where the two writes occurred within 50ms of each other. Use Hybrid Logical Clocks, or design the data type to avoid LWW entirely for any state where silent data loss is unacceptable. For a system of record, silent data loss is always unacceptable.</p>
           </div>
 
           <h2 id="vector-clocks">Vector Clocks</h2>
@@ -284,22 +284,22 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>cockroachdb-geo-partition.sql</span><span class="code-block__lang">sql</span></div>
-<pre><code><span class="tok-c">-- CockroachDB geo-partition configuration for SAMA data residency</span>
-<span class="tok-c">-- All customer financial data must reside within Saudi Arabia</span>
+<pre><code><span class="tok-c">-- CockroachDB geo-partition configuration for in-jurisdiction data residency</span>
+<span class="tok-c">-- All regulated customer data must stay inside the jurisdiction</span>
 
-<span class="tok-c">-- Step 1: Create multi-region database with Saudi regions</span>
-<span class="tok-k">ALTER DATABASE</span> bank_core
-  <span class="tok-k">SET PRIMARY REGION</span> = <span class="tok-s">'sa-riyadh'</span>;
+<span class="tok-c">-- Step 1: Create multi-region database with in-country regions</span>
+<span class="tok-k">ALTER DATABASE</span> ledger_db
+  <span class="tok-k">SET PRIMARY REGION</span> = <span class="tok-s">'region-a'</span>;
 
-<span class="tok-k">ALTER DATABASE</span> bank_core
-  <span class="tok-k">ADD REGION</span> <span class="tok-s">'sa-jeddah'</span>;
+<span class="tok-k">ALTER DATABASE</span> ledger_db
+  <span class="tok-k">ADD REGION</span> <span class="tok-s">'region-b'</span>;
 
 <span class="tok-c">-- Step 2: Geo-partition payments table by account_region</span>
-<span class="tok-c">-- Rows for Saudi accounts are pinned to Saudi regions</span>
+<span class="tok-c">-- Each row is pinned to the region named in account_region</span>
 <span class="tok-k">ALTER TABLE</span> payments
   <span class="tok-k">SET LOCALITY REGIONAL BY ROW AS</span> account_region;
 
-<span class="tok-c">-- Step 3: Verify leaseholder placement stays within Saudi Arabia</span>
+<span class="tok-c">-- Step 3: Verify leaseholder placement stays within the permitted regions</span>
 <span class="tok-k">SHOW</span> ranges <span class="tok-k">FROM TABLE</span> payments <span class="tok-k">WITH</span> details;
 
 <span class="tok-c">-- Step 4: Configure max_offset for clock uncertainty interval</span>
@@ -308,8 +308,8 @@
 <span class="tok-k">SET CLUSTER SETTING</span> kv.clock.max_offset = <span class="tok-s">'250ms'</span>;
 
 <span class="tok-c">-- Step 5: Enable survival goal for zone failure (not region failure)</span>
-<span class="tok-c">-- REGION FAILURE survival requires 3+ regions; for 2 Saudi DCs use ZONE</span>
-<span class="tok-k">ALTER DATABASE</span> bank_core
+<span class="tok-c">-- REGION FAILURE survival requires 3+ regions; for 2 in-country DCs use ZONE</span>
+<span class="tok-k">ALTER DATABASE</span> ledger_db
   <span class="tok-k">SURVIVE</span> <span class="tok-s">ZONE FAILURE</span>;
 
 <span class="tok-c">-- Step 6: Create a serializable read-modify-write pattern</span>
@@ -390,7 +390,7 @@ $$ <span class="tok-k">LANGUAGE</span> plpgsql;
 <span class="tok-c">--              counter:{entity_id}:n:{node_id} (negative decrements)</span>
 <span class="tok-c">-- Global value = sum(p:*) - sum(n:*)</span>
 
-<span class="tok-k">local</span> key     = KEYS[1]          <span class="tok-c">-- e.g. "counter:account:SA123"</span>
+<span class="tok-k">local</span> key     = KEYS[1]          <span class="tok-c">-- e.g. "counter:account:ACC-123"</span>
 <span class="tok-k">local</span> node_id = ARGV[1]          <span class="tok-c">-- e.g. "dc1"</span>
 <span class="tok-k">local</span> delta   = tonumber(ARGV[2]) <span class="tok-c">-- positive for credit, negative for debit</span>
 
@@ -421,21 +421,21 @@ $$ <span class="tok-k">LANGUAGE</span> plpgsql;
 <span class="tok-k">return</span> tostring(total_p - total_n)</code></pre>
           </div>
 
-          <h2 id="sama-bcp">SAMA BCP Requirements</h2>
-          <p>SAMA&rsquo;s Business Continuity Planning framework classifies systems by criticality tier. Tier 1 systems &mdash; those that process IPS payments, hold customer deposits, or support core banking operations &mdash; must meet the strictest requirements:</p>
+          <h2 id="bcp-requirements">Regulatory BCP Expectations</h2>
+          <p>Business-continuity and operational-resilience frameworks &mdash; SAMA&rsquo;s Business Continuity Management Framework, DORA and the EBA guidelines in the EU, the FCA&rsquo;s impact tolerances in the UK, and their equivalents for insurers, utilities and telecom operators &mdash; differ in detail but converge on the same shape. Systems are classified by criticality, and the most critical tier &mdash; systems that move money, hold customer balances or stock, or run an essential service &mdash; carries the strictest requirements. The exact numbers come from your regulator and your own impact assessment; the expectations below are typical:</p>
           <ul>
-            <li><strong>RTO &lt; 4 hours.</strong> The system must resume full operational capacity within 4 hours of a failure event. For a payment processing system, this means both data center failover and application stack recovery within that window.</li>
-            <li><strong>RPO &lt; 1 hour for most systems; RPO = 0 for financial data.</strong> SAMA&rsquo;s guidance on financial data specifically requires synchronous replication: no committed transaction should be lost in a failover. An RPO of 1 hour for a payment system means up to 1 hour of payment records could be lost &mdash; which is not acceptable under any interpretation of prudent banking practice.</li>
-            <li><strong>Data centre separation of &ge; 30 km.</strong> The two data centers must be geographically separated to withstand a localised disaster (power grid failure, flooding, fire). This separation also means the synchronous replication round-trip adds latency proportional to the distance &mdash; approximately 0.1ms per km of fibre at the speed of light, plus switching overhead.</li>
-            <li><strong>Synchronous replication for financial data; asynchronous acceptable for analytics.</strong> SAMA distinguishes between data that, if lost, constitutes a financial loss (payment records, account balances) and data that supports operational decisions (reporting data, audit logs that are captured separately). Synchronous replication is required for the former; asynchronous replication with a documented RPO is acceptable for the latter.</li>
-            <li><strong>Annual BCP test with documented results.</strong> The examination team does not accept a DR plan document as evidence. They require test results showing that the failover was executed, the RTO was met, and the data integrity of the recovery was verified. Untested BCP plans are treated as equivalent to no BCP plan.</li>
+            <li><strong>A tight RTO for the critical tier.</strong> Commonly measured in hours, sometimes less. For a payment or order-processing system, the RTO must cover both data center failover and application stack recovery within that window.</li>
+            <li><strong>An RPO at or near zero for the system of record.</strong> Losing committed transactions is rarely acceptable for financial or contractual records, which in practice means synchronous replication for the system of record: no committed transaction should be lost in a failover. An RPO of 1 hour for a payment ledger means up to 1 hour of payment records could be lost &mdash; which is not acceptable under any interpretation of prudent practice.</li>
+            <li><strong>Geographic separation of sites.</strong> The two data centers must be far enough apart to withstand a localised disaster (power grid failure, flooding, fire); tens of kilometres is a common minimum. This separation also means the synchronous replication round-trip adds latency proportional to the distance &mdash; roughly 10 microseconds of round-trip time per km of fibre, plus switching and protocol overhead.</li>
+            <li><strong>Synchronous replication for the system of record; asynchronous acceptable for analytics.</strong> Regulators and auditors distinguish between data whose loss is a financial or contractual loss (payment records, account balances, orders) and data that supports operational decisions (reporting data, audit logs that are captured separately). Synchronous replication is required for the former; asynchronous replication with a documented RPO is acceptable for the latter.</li>
+            <li><strong>Periodic BCP tests with documented results.</strong> The examination team does not accept a DR plan document as evidence. They require test results showing that the failover was executed, the RTO was met, and the data integrity of the recovery was verified. Untested BCP plans are treated as equivalent to no BCP plan.</li>
           </ul>
 
           <h2 id="pitfalls">Pitfalls</h2>
 
           <div class="callout callout--danger">
-            <div class="callout__title">Active-active for account balances without synchronous replication is not SAMA-acceptable</div>
-            <p>An active-active deployment where both masters accept balance debits without a synchronous cross-datacenter commit is a configuration that allows the &ldquo;pay twice&rdquo; scenario: a customer with a 10,000 SAR balance debits 8,000 SAR on DC1 and 7,000 SAR on DC2 simultaneously during a network partition. Both checks pass locally (10,000 &gt; 8,000; 10,000 &gt; 7,000); both debits commit locally. The result is a negative balance of &minus;5,000 SAR when the partition heals. This is not a data inconsistency that can be reconciled &mdash; it is a financial loss. SAMA will treat it as a regulatory breach, not a technical incident. The only safe design for account balance writes is synchronous replication with distributed transactions.</p>
+            <div class="callout__title">Active-active for account balances without synchronous replication will not pass regulatory scrutiny</div>
+            <p>An active-active deployment where both masters accept balance debits without a synchronous cross-datacenter commit is a configuration that allows the &ldquo;pay twice&rdquo; scenario: a customer with a 10,000 balance debits 8,000 on DC1 and 7,000 on DC2 simultaneously during a network partition. Both checks pass locally (10,000 &gt; 8,000; 10,000 &gt; 7,000); both debits commit locally. The result is a negative balance of &minus;5,000 when the partition heals. This is not a data inconsistency that can be reconciled &mdash; it is a financial loss, and the same arithmetic oversells stock in an active-active inventory system. A regulator will treat it as a control failure, not a technical incident. The only safe design for account balance writes is synchronous replication with distributed transactions.</p>
           </div>
 
           <div class="callout callout--warn">
@@ -445,19 +445,19 @@ $$ <span class="tok-k">LANGUAGE</span> plpgsql;
 
           <div class="callout callout--danger">
             <div class="callout__title">Clock skew causing LWW to silently discard the correct write</div>
-            <p>This is not a theoretical failure mode. In a 2024 production incident at a multi-master deployment, a 40ms NTP drift between two data center nodes caused LWW to discard a debit transaction that arrived at the logically-later node 35ms after the conflicting credit. The credit committed; the debit was silently lost. The balance was incorrect for 14 hours before the daily reconciliation caught the discrepancy. The remediation was a full account balance audit for the affected customer pool. Use Hybrid Logical Clocks or eliminate LWW for any state where silent discard is unacceptable.</p>
+            <p>This is not a theoretical failure mode. Consider a multi-master deployment with 40ms of NTP drift between two data center nodes: LWW discards a debit that arrived at the logically-later node 35ms after a conflicting credit. The credit commits; the debit is silently lost. If the next control is a daily reconciliation, the balance stays wrong for most of a day, and the remediation is a full balance audit across the affected customer pool. Use Hybrid Logical Clocks or eliminate LWW for any state where silent discard is unacceptable.</p>
           </div>
 
-          <h2 id="checklist">Production Checklist: Conflict-Free Active-Active Payment Service</h2>
+          <h2 id="checklist">Production Checklist: Conflict-Free Active-Active Transactional Service</h2>
 
           <ol class="step-list">
             <li>
               <h4>Classify every data entity by conflict sensitivity</h4>
-              <p>Before designing the replication topology, categorise every table: Can this entity tolerate LWW? (Reference data, idempotent configuration.) Does it need CRDT semantics? (Counters, flags.) Does it require distributed transactions? (Account balances, payment records, ledger entries.) The classification drives every subsequent design decision.</p>
+              <p>Before designing the replication topology, categorise every table: Can this entity tolerate LWW? (Reference data, idempotent configuration.) Does it need CRDT semantics? (Counters, flags.) Does it require distributed transactions? (Account balances, payment records, ledger entries, stock reservations.) The classification drives every subsequent design decision.</p>
             </li>
             <li>
-              <h4>Choose synchronous replication for Tier 1 financial entities</h4>
-              <p>Account balances and payment records must replicate synchronously. Use CockroachDB or YugabyteDB with Raft-based consensus, or configure PostgreSQL streaming replication with <code>synchronous_commit = on</code> and <code>synchronous_standby_names</code> pointing to the DR replica. Measure the added write latency (typically 1&ndash;3ms for a 30km fibre link) and size your application timeouts accordingly.</p>
+              <h4>Choose synchronous replication for critical-tier system-of-record entities</h4>
+              <p>Balances, payment records and order records must replicate synchronously. Use CockroachDB or YugabyteDB with Raft-based consensus, or configure PostgreSQL streaming replication with <code>synchronous_commit = on</code> and <code>synchronous_standby_names</code> pointing to the DR replica. Measure the added write latency (typically 1&ndash;3ms for a 30km fibre link) and size your application timeouts accordingly.</p>
             </li>
             <li>
               <h4>Design the partition detection and quorum mechanism</h4>
@@ -465,7 +465,7 @@ $$ <span class="tok-k">LANGUAGE</span> plpgsql;
             </li>
             <li>
               <h4>Implement the conflict detection and logging layer</h4>
-              <p>Even with synchronous replication and distributed transactions, application-layer conflicts can occur (concurrent saga steps, compensating transactions that race). Implement a conflict log table with every detected conflict, the resolution applied, and the entities involved. This table is a SAMA audit artefact.</p>
+              <p>Even with synchronous replication and distributed transactions, application-layer conflicts can occur (concurrent saga steps, compensating transactions that race). Implement a conflict log table with every detected conflict, the resolution applied, and the entities involved. This table is an audit artefact.</p>
             </li>
             <li>
               <h4>Test the partition and heal scenario end-to-end</h4>
@@ -476,8 +476,8 @@ $$ <span class="tok-k">LANGUAGE</span> plpgsql;
               <p>The daily reconciliation pipeline described in the companion article should include a check against the conflict log: every resolved conflict must have a corresponding reconciliation verification pass confirming that the resolved state matches the correct business state. Conflicts that cannot be automatically verified must generate an OPEN_BREAK in the break investigation table.</p>
             </li>
             <li>
-              <h4>Document and test the SAMA BCP scenario</h4>
-              <p>Produce the BCP test plan that SAMA will examine: which data center fails, which traffic is failed over, what the application failover procedure is, what the data integrity verification step is, and what the expected RTO and RPO are. Execute the test annually, record the actual RTO and RPO achieved, and file the results as a governance artefact. The test is not complete until data integrity has been verified by running the reconciliation pipeline over the failover window.</p>
+              <h4>Document and test the regulatory BCP scenario</h4>
+              <p>Produce the BCP test plan that your regulator will examine: which data center fails, which traffic is failed over, what the application failover procedure is, what the data integrity verification step is, and what the expected RTO and RPO are. Execute the test annually, record the actual RTO and RPO achieved, and file the results as a governance artefact. The test is not complete until data integrity has been verified by running the reconciliation pipeline over the failover window.</p>
             </li>
           </ol>
 

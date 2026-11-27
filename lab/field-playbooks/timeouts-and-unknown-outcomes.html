@@ -127,7 +127,7 @@
           </div>
 
           <h2 id="problem">The problem</h2>
-          <p>A channel sends a transfer. The integration layer forwards it. The backend takes too long, and the caller gives up after its timeout. Nobody on the calling side knows whether the money moved.</p>
+          <p>A channel sends a transfer. The integration layer forwards it. The backend takes too long, and the caller gives up after its timeout. Nobody on the calling side knows whether the money moved. Swap the transfer for an order, a booking or a policy change and the problem is the same: nobody knows whether the write landed.</p>
           <p>Most duplicate postings start here. The caller treats the timeout as a failure and sends the request again. The first request had in fact succeeded, a little late. The customer is debited twice.</p>
           <p>A timeout is not a failure. It is a third outcome: <strong>unknown</strong>. The tactics below make that outcome explicit and give every team the same way to resolve it.</p>
 

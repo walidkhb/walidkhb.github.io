@@ -6,18 +6,18 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Synchronisation &mdash; Cross-Region Replication Patterns &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="Active/active vs active/passive multi-region data replication in financial services: conflict resolution, Kafka MirrorMaker 2, Postgres streaming and logical replication, IBM Db2 HADR, SAMA data-residency constraints, and the trade-offs that survive production failover.">
+  <meta name="description" content="Active/active vs active/passive multi-region data replication for regulated, business-critical systems: conflict resolution, Kafka MirrorMaker 2, Postgres streaming and logical replication, IBM Db2 HADR, data-residency constraints, and the trade-offs that survive production failover.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Data Synchronisation &mdash; Cross-Region Replication Patterns">
-  <meta property="og:description" content="Active/active vs active/passive, conflict resolution, MirrorMaker 2, and the replication patterns that hold up in a SAMA-regulated multi-region deployment.">
+  <meta property="og:description" content="Active/active vs active/passive, conflict resolution, MirrorMaker 2, and the replication patterns that hold up in a regulated multi-region deployment.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/data-sync/cross-region-replication.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Cross-Region Replication Patterns for Financial Data">
-  <meta name="twitter:description" content="Active/active vs active/passive, conflict resolution, MirrorMaker 2, and Postgres replication for SAMA-regulated banks.">
+  <meta name="twitter:title" content="Cross-Region Replication Patterns for Regulated Data">
+  <meta name="twitter:description" content="Active/active vs active/passive, conflict resolution, MirrorMaker 2, and Postgres replication for regulated enterprises.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/data-sync/cross-region-replication.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,8 +37,8 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Cross-Region Replication Patterns for Financial Data",
-    "description": "Active/active vs active/passive multi-region data replication in financial services: conflict resolution, Kafka MirrorMaker 2, Postgres streaming and logical replication, IBM Db2 HADR, SAMA data-residency constraints, and the trade-offs that survive production failover.",
+    "headline": "Cross-Region Replication Patterns for Regulated Data",
+    "description": "Active/active vs active/passive multi-region data replication for regulated, business-critical systems: conflict resolution, Kafka MirrorMaker 2, Postgres streaming and logical replication, IBM Db2 HADR, data-residency constraints, and the trade-offs that survive production failover.",
     "image": "https://www.wbadawi.info/assets/img/og-image.png",
     "datePublished": "2026-07-18",
     "author": {
@@ -94,7 +94,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../data-sync.html">Data Synchronisation</a><span>/</span>Cross-Region Replication</div>
           <span class="overline">Lab Article</span>
           <h1>Data Synchronisation: Cross-Region Replication Patterns</h1>
-          <p class="lead">Active/active vs active/passive, conflict resolution strategies, MirrorMaker 2 for Kafka, Postgres logical replication, IBM Db2 HADR &mdash; and the specific trade-offs that matter when your data has to stay inside the Kingdom and still survive a regional outage.</p>
+          <p class="lead">Active/active vs active/passive, conflict resolution strategies, MirrorMaker 2 for Kafka, Postgres logical replication, IBM Db2 HADR &mdash; and the specific trade-offs that matter when your data has to stay inside one jurisdiction and still survive a regional outage.</p>
         </div>
       </div>
     </div>
@@ -114,7 +114,7 @@
             <li><a href="#db-replication">Database replication</a></li>
             <li><a href="#consistency">Consistency &amp; RPO/RTO</a></li>
             <li><a href="#failover">Failover &amp; failback</a></li>
-            <li><a href="#data-residency">SAMA data residency</a></li>
+            <li><a href="#data-residency">Data residency</a></li>
             <li><a href="#observability">Observability</a></li>
             <li><a href="#decision">Decision guide</a></li>
           </ul>
@@ -131,12 +131,12 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>A single-region financial platform fails in two ways: a regional outage takes everything down, and the regulator starts asking about your business continuity plan before the all-clear. In KSA, SAMA&rsquo;s Technology Risk Management (TRM) framework is explicit: critical systems must have recovery capabilities that deliver defined RPO and RTO targets across a declared secondary site. Most banks start by deploying a warm standby in a second availability zone or data centre. The engineering question &mdash; which almost always surfaces too late &mdash; is what &ldquo;in sync&rdquo; actually means when you have two live copies of financial data separated by 20 milliseconds of WAN latency.</p>
-          <p>This article walks through the three main topologies, the conflict problem that every active/active deployment eventually hits, the specific configuration paths for Kafka and Postgres (the two platforms most commonly encountered alongside IBM MQ and Db2 in KSA bank estates), and the observability you need to detect drift before it becomes a reconciliation incident.</p>
+          <p>A single-region transactional platform fails in two ways: a regional outage takes everything down, and the regulator or the board starts asking about your business continuity plan before the all-clear. Resilience rules for critical services &mdash; DORA and the EBA guidelines in the EU, the FCA&rsquo;s operational resilience regime, SAMA&rsquo;s business continuity framework, and sector equivalents in energy, telecoms and healthcare &mdash; converge on the same expectation: critical systems must have recovery capabilities that deliver defined RPO and RTO targets across a declared secondary site. Most organisations start by deploying a warm standby in a second availability zone or data centre. The engineering question &mdash; which almost always surfaces too late &mdash; is what &ldquo;in sync&rdquo; actually means when you have two live copies of business-critical data separated by 20 milliseconds of WAN latency.</p>
+          <p>This article walks through the three main topologies, the conflict problem that every active/active deployment eventually hits, the specific configuration paths for Kafka and Postgres (the two platforms most commonly found alongside IBM MQ and Db2 in large enterprise estates), and the observability you need to detect drift before it becomes a reconciliation incident.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Replication is not backup</div>
-            <p>A replicated second site copies deletes. If a buggy process or a runaway batch drops rows, the replica follows. Replication and backup solve different problems; you need both, with different retention horizons and independent restore paths. A SAMA business continuity audit will ask for both.</p>
+            <p>A replicated second site copies deletes. If a buggy process or a runaway batch drops rows, the replica follows. Replication and backup solve different problems; you need both, with different retention horizons and independent restore paths. A business continuity audit will ask for both.</p>
           </div>
 
           <h2 id="topology">Topology choice</h2>
@@ -221,7 +221,7 @@
                 <text x="200" y="288" fill="#e4e4e7" font-size="9">&lt; 1 second (sync)</text>
                 <text x="340" y="288" fill="#e4e4e7" font-size="9">seconds (Patroni)</text>
                 <text x="480" y="288" fill="#e4e4e7" font-size="9">none</text>
-                <text x="620" y="288" fill="#71717a" font-size="9">Most FS workloads</text>
+                <text x="620" y="288" fill="#71717a" font-size="9">Most OLTP workloads</text>
 
                 <text x="40" y="308" fill="#a78bfa" font-size="9">Active/Active</text>
                 <text x="200" y="308" fill="#e4e4e7" font-size="9">zero</text>
@@ -229,7 +229,7 @@
                 <text x="480" y="308" fill="#ef4444" font-size="9">HIGH if not partitioned</text>
                 <text x="620" y="308" fill="#71717a" font-size="9">Global reads, careful writes</text>
 
-                <text x="390" y="345" text-anchor="middle" fill="#71717a" font-size="9">For payments and ledger data: hot-standby is almost always the right starting point. Active/active is earned, not assumed.</text>
+                <text x="390" y="345" text-anchor="middle" fill="#71717a" font-size="9">For payments, orders and ledger data: hot-standby is almost always the right starting point. Active/active is earned, not assumed.</text>
               </svg>
             </div>
             <div class="diagram__caption">Figure 1 &mdash; Multi-region topology comparison: pick before you configure</div>
@@ -279,10 +279,10 @@
 
           <div class="callout callout--danger">
             <div class="callout__title">LWW destroys balances</div>
-            <p>Last-write-wins on a balance field silently drops concurrent credit and debit operations. If Region A processes a credit of SAR 500 at 14:00:01.001 and Region B processes a debit of SAR 200 at 14:00:01.003, the Region B write wins and the credit disappears from the customer&rsquo;s ledger. This is not a corner case &mdash; it is the normal operating condition of an active/active payment platform under load. Never use LWW on monetary fields.</p>
+            <p>Last-write-wins on a balance field silently drops concurrent credit and debit operations. If Region A processes a credit of 500 at 14:00:01.001 and Region B processes a debit of 200 at 14:00:01.003, the Region B write wins and the credit disappears from the customer&rsquo;s ledger. This is not a corner case &mdash; it is the normal operating condition of an active/active payment platform under load. Never use LWW on monetary fields.</p>
           </div>
 
-          <p>The most reliable pattern for financial data in active/active is <strong>write partitioning by entity</strong>: each entity (account, customer, transaction) is owned by exactly one region for writes, regardless of where reads are served. Conflicts become structurally impossible because the owning region is the single writer. The complexity shifts to routing: the application must know which region owns a given entity and route write requests accordingly &mdash; across regional boundaries if necessary.</p>
+          <p>The most reliable pattern for balances, ledgers and stock levels in active/active is <strong>write partitioning by entity</strong>: each entity (account, customer, order, SKU) is owned by exactly one region for writes, regardless of where reads are served. Conflicts become structurally impossible because the owning region is the single writer. The complexity shifts to routing: the application must know which region owns a given entity and route write requests accordingly &mdash; across regional boundaries if necessary.</p>
 
           <h2 id="kafka-mirror">Kafka MirrorMaker 2</h2>
           <p>MirrorMaker 2 (MM2) is the Kafka-native solution for cross-cluster topic replication. It runs inside Kafka Connect and supports bidirectional replication with offset translation &mdash; the critical feature that lets consumers in Region B resume at the correct offset after a failover, rather than replaying from the beginning of the mirrored topic.</p>
@@ -363,63 +363,63 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>mm2-config.properties</span><span class="code-block__lang">properties</span></div>
-<pre><code><span class="tok-c"># MirrorMaker 2 — bidirectional between Riyadh and Jeddah clusters</span>
-<span class="tok-k">clusters</span> = <span class="tok-s">riyadh, jeddah</span>
+<pre><code><span class="tok-c"># MirrorMaker 2 — bidirectional between east and west clusters</span>
+<span class="tok-k">clusters</span> = <span class="tok-s">east, west</span>
 
-<span class="tok-k">riyadh.bootstrap.servers</span>  = <span class="tok-s">kafka-riyadh.svc.internal:9093</span>
-<span class="tok-k">jeddah.bootstrap.servers</span>  = <span class="tok-s">kafka-jeddah.svc.internal:9093</span>
+<span class="tok-k">east.bootstrap.servers</span>  = <span class="tok-s">kafka-east.svc.internal:9093</span>
+<span class="tok-k">west.bootstrap.servers</span>  = <span class="tok-s">kafka-west.svc.internal:9093</span>
 
-<span class="tok-c"># TLS between regions — mandatory for financial data in transit</span>
-<span class="tok-k">riyadh.security.protocol</span>  = <span class="tok-s">SSL</span>
-<span class="tok-k">jeddah.security.protocol</span>  = <span class="tok-s">SSL</span>
-<span class="tok-k">riyadh.ssl.keystore.location</span>  = <span class="tok-s">/certs/riyadh.keystore.jks</span>
-<span class="tok-k">jeddah.ssl.keystore.location</span>  = <span class="tok-s">/certs/jeddah.keystore.jks</span>
+<span class="tok-c"># TLS between regions — mandatory for regulated data in transit</span>
+<span class="tok-k">east.security.protocol</span>  = <span class="tok-s">SSL</span>
+<span class="tok-k">west.security.protocol</span>  = <span class="tok-s">SSL</span>
+<span class="tok-k">east.ssl.keystore.location</span>  = <span class="tok-s">/certs/east.keystore.jks</span>
+<span class="tok-k">west.ssl.keystore.location</span>  = <span class="tok-s">/certs/west.keystore.jks</span>
 
 <span class="tok-c"># Enable both directions</span>
-<span class="tok-k">riyadh->jeddah.enabled</span>  = <span class="tok-s">true</span>
-<span class="tok-k">jeddah->riyadh.enabled</span>  = <span class="tok-s">true</span>
+<span class="tok-k">east->west.enabled</span>  = <span class="tok-s">true</span>
+<span class="tok-k">west->east.enabled</span>  = <span class="tok-s">true</span>
 
-<span class="tok-c"># Topics to replicate — whitelist beats blacklist for financial data</span>
-<span class="tok-k">riyadh->jeddah.topics</span>  = <span class="tok-s">payment\.events, customer\.events, limit\.events</span>
-<span class="tok-k">jeddah->riyadh.topics</span>  = <span class="tok-s">payment\.events, customer\.events, limit\.events</span>
+<span class="tok-c"># Topics to replicate — an explicit allow-list beats a deny-list for regulated data</span>
+<span class="tok-k">east->west.topics</span>  = <span class="tok-s">payment\.events, customer\.events, limit\.events</span>
+<span class="tok-k">west->east.topics</span>  = <span class="tok-s">payment\.events, customer\.events, limit\.events</span>
 
 <span class="tok-c"># Offset translation — critical for failover without replay</span>
-<span class="tok-k">riyadh->jeddah.sync.group.offsets.enabled</span>   = <span class="tok-s">true</span>
-<span class="tok-k">jeddah->riyadh.sync.group.offsets.enabled</span>   = <span class="tok-s">true</span>
-<span class="tok-k">riyadh->jeddah.emit.checkpoints.enabled</span>      = <span class="tok-s">true</span>
-<span class="tok-k">jeddah->riyadh.emit.checkpoints.enabled</span>      = <span class="tok-s">true</span>
-<span class="tok-k">riyadh->jeddah.emit.heartbeats.enabled</span>       = <span class="tok-s">true</span>
+<span class="tok-k">east->west.sync.group.offsets.enabled</span>   = <span class="tok-s">true</span>
+<span class="tok-k">west->east.sync.group.offsets.enabled</span>   = <span class="tok-s">true</span>
+<span class="tok-k">east->west.emit.checkpoints.enabled</span>      = <span class="tok-s">true</span>
+<span class="tok-k">west->east.emit.checkpoints.enabled</span>      = <span class="tok-s">true</span>
+<span class="tok-k">east->west.emit.heartbeats.enabled</span>       = <span class="tok-s">true</span>
 
 <span class="tok-c"># Replication factor for mirrored topics in the target cluster</span>
-<span class="tok-k">riyadh->jeddah.replication.factor</span>  = <span class="tok-n">3</span>
+<span class="tok-k">east->west.replication.factor</span>  = <span class="tok-n">3</span>
 
-<span class="tok-c"># Consumer lag limit before connector throttles; keep below 30 s for IPS flows</span>
-<span class="tok-k">riyadh->jeddah.consumer.lag.threshold.ms</span>  = <span class="tok-n">20000</span></code></pre>
+<span class="tok-c"># Consumer lag limit before connector throttles; keep below 30 s for instant-payment flows</span>
+<span class="tok-k">east->west.consumer.lag.threshold.ms</span>  = <span class="tok-n">20000</span></code></pre>
           </div>
 
           <div class="callout callout--warn">
             <div class="callout__title">Cyclic replication loop</div>
-            <p>MM2 uses a topic-name prefix convention (<code>riyadh.payment.events</code> in the Jeddah cluster) to avoid replicating a mirror back to its origin. This only works if your topic allow-list is an exact whitelist, not a regex that also matches the prefixed names. A <code>.*</code> replication pattern will cause every message to loop endlessly between clusters. Confirm the pattern excludes the prefix before going live.</p>
+            <p>MM2 uses a topic-name prefix convention (<code>east.payment.events</code> in the west cluster) to avoid replicating a mirror back to its origin. This only works if your topic allow-list is an exact whitelist, not a regex that also matches the prefixed names. A <code>.*</code> replication pattern will cause every message to loop endlessly between clusters. Confirm the pattern excludes the prefix before going live.</p>
           </div>
 
           <h2 id="db-replication">Database replication</h2>
-          <p>Kafka handles event streams. The relational database holding the ledger, account state, and customer master needs its own cross-region strategy. The two platforms most common in KSA bank estates are PostgreSQL (for newer microservices) and IBM Db2 (for core banking). Each has a distinct replication path.</p>
+          <p>Kafka handles event streams. The relational database holding the ledger, account state, and customer master needs its own cross-region strategy. Two platforms common in large enterprise estates are PostgreSQL (for newer microservices) and IBM Db2 (often underneath legacy systems of record). Each has a distinct replication path.</p>
 
           <p><strong>PostgreSQL streaming replication</strong> is the default HA mechanism: the primary streams WAL to one or more standbys in real time. Standbys are read-only until promoted. For cross-region hot-standby, use <code>synchronous_commit = remote_apply</code> on the primary for zero-RPO commits at the cost of a WAN-round-trip on every write. For async replication with a small RPO lag, use <code>synchronous_commit = off</code> on the inter-region standby and measure the lag via <code>pg_stat_replication.replay_lag</code>.</p>
 
           <div class="code-block">
-            <div class="code-block__header"><span>postgresql.conf — primary (Riyadh)</span><span class="code-block__lang">ini</span></div>
+            <div class="code-block__header"><span>postgresql.conf — primary (east region)</span><span class="code-block__lang">ini</span></div>
 <pre><code><span class="tok-k">wal_level</span>                = <span class="tok-s">replica</span>
 <span class="tok-k">max_wal_senders</span>          = <span class="tok-n">5</span>
 <span class="tok-k">wal_keep_size</span>            = <span class="tok-n">1024</span>MB
 
 <span class="tok-c"># Synchronous replication to local HA standby; async to cross-region standby</span>
-<span class="tok-k">synchronous_standby_names</span> = <span class="tok-s">FIRST 1 (standby-local, standby-jeddah)</span>
+<span class="tok-k">synchronous_standby_names</span> = <span class="tok-s">FIRST 1 (standby-local, standby-west)</span>
 <span class="tok-c"># standby-local: sync, same DC — zero RPO within region</span>
-<span class="tok-c"># standby-jeddah: async by position (FIRST 1 means only local must ack)</span>
+<span class="tok-c"># standby-west: async by position (FIRST 1 means only local must ack)</span>
 
 <span class="tok-k">recovery_target_timeline</span> = <span class="tok-s">latest</span>    <span class="tok-c"># follow timeline switches on failover</span>
-<span class="tok-k">hot_standby</span>              = <span class="tok-s">on</span>        <span class="tok-c"># allow reads from jeddah standby</span>
+<span class="tok-k">hot_standby</span>              = <span class="tok-s">on</span>        <span class="tok-c"># allow reads from west standby</span>
 <span class="tok-k">hot_standby_feedback</span>     = <span class="tok-s">on</span>        <span class="tok-c"># prevent query conflicts from bloat vacuum</span></code></pre>
           </div>
 
@@ -429,11 +429,11 @@
 
           <div class="code-block">
             <div class="code-block__header"><span>db2 — configure HADR</span><span class="code-block__lang">shell</span></div>
-<pre><code><span class="tok-c"># On primary (Riyadh)</span>
+<pre><code><span class="tok-c"># On primary (east region)</span>
 <span class="tok-k">UPDATE</span> DB CFG FOR PAYMENTSDB USING
-  HADR_LOCAL_HOST    <span class="tok-s">'db2-primary.riyadh.svc.internal'</span>
+  HADR_LOCAL_HOST    <span class="tok-s">'db2-primary.east.svc.internal'</span>
   HADR_LOCAL_SVC     <span class="tok-n">50900</span>
-  HADR_REMOTE_HOST   <span class="tok-s">'db2-standby.jeddah.svc.internal'</span>
+  HADR_REMOTE_HOST   <span class="tok-s">'db2-standby.west.svc.internal'</span>
   HADR_REMOTE_SVC    <span class="tok-n">50901</span>
   HADR_REMOTE_INST   <span class="tok-s">'db2inst1'</span>
   HADR_SYNCMODE      <span class="tok-s">NEARSYNC</span>
@@ -449,7 +449,7 @@
           <ol class="step-list">
             <li>
               <h4>Enable cross-region connectivity</h4>
-              <p>Open the HADR port (Db2: TCP/50900–50901, Postgres: TCP/5432) between data centres. Use TLS/mTLS for the replication stream &mdash; unencrypted replication of financial data over a WAN is a SAMA TRM control failure.</p>
+              <p>Open the HADR port (Db2: TCP/50900–50901, Postgres: TCP/5432) between data centres. Use TLS/mTLS for the replication stream &mdash; unencrypted replication of regulated data over a WAN is a control failure under almost any regulatory framework.</p>
             </li>
             <li>
               <h4>Take a base backup to the standby</h4>
@@ -465,7 +465,7 @@
             </li>
             <li>
               <h4>Test failover end-to-end quarterly</h4>
-              <p>Perform a planned switchover, measure actual RTO, verify the application reconnects correctly, and walk the standby back to primary. Simulate network partition, not just a clean shutdown. SAMA expects evidence of tested DR procedures in the TRM review.</p>
+              <p>Perform a planned switchover, measure actual RTO, verify the application reconnects correctly, and walk the standby back to primary. Simulate network partition, not just a clean shutdown. Regulators and auditors expect evidence of tested DR procedures.</p>
             </li>
             <li>
               <h4>Document failback</h4>
@@ -474,10 +474,10 @@
           </ol>
 
           <h2 id="consistency">Consistency &amp; RPO/RTO</h2>
-          <p>CAP theorem in a WAN multi-region deployment resolves to: you either sacrifice <strong>consistency</strong> (allow stale reads or lost writes during a partition) or <strong>availability</strong> (wait for confirmation from the second region before committing). Financial services almost universally chooses the latter for write paths &mdash; the ledger must be correct &mdash; and tolerates brief unavailability over a wrong balance.</p>
+          <p>CAP theorem in a WAN multi-region deployment resolves to: you either sacrifice <strong>consistency</strong> (allow stale reads or lost writes during a partition) or <strong>availability</strong> (wait for confirmation from the second region before committing). Systems of record &mdash; ledgers, inventory, billing and policy systems &mdash; almost universally choose the latter for write paths: the record must be correct, and brief unavailability is preferable to a wrong balance or a double-sold item.</p>
           <p>Translate this into concrete targets:</p>
           <ul>
-            <li><strong>RPO (Recovery Point Objective)</strong> &mdash; how much data can be lost. For IPS-cleared payments: effectively zero (synchronous replication). For analytics and reporting replicas: seconds to minutes.</li>
+            <li><strong>RPO (Recovery Point Objective)</strong> &mdash; how much data can be lost. For instant payments and other system-of-record writes: effectively zero (synchronous replication). For analytics and reporting replicas: seconds to minutes.</li>
             <li><strong>RTO (Recovery Time Objective)</strong> &mdash; how long until the service is back. Patroni-managed Postgres: 10&ndash;30 seconds. Manual Db2 HADR takeover: minutes. Application-level reconnect logic adds another 10&ndash;60 seconds to the RTO you present to the business.</li>
           </ul>
 
@@ -489,15 +489,15 @@
           <h2 id="failover">Failover &amp; failback</h2>
           <p>Automated failover requires three things to be in place <em>before</em> the incident: a consensus mechanism that detects failure faster than the timeout, a promotion sequence that does not cause split-brain, and application-layer reconnection logic that handles the new primary endpoint without a restart.</p>
 
-          <p>The most common production failure in KSA multi-region deployments is the network partition that is not a real primary failure. The primary is up in Region A; the standby in Region B cannot see it due to a WAN link issue. If the standby promotes itself, both regions believe they are primary. Both write. Replication resumes when the link recovers, and the two divergent timelines must be reconciled manually &mdash; with potentially lost or duplicated payment records. The prevention is a <strong>peer window</strong> (Db2) or <strong>TTL-based fencing</strong> (Patroni + etcd): the standby will not promote until the peer window has expired <em>and</em> it has confirmed the old primary is fenced (e.g., its leader lock in etcd has expired).</p>
+          <p>The most common production failure in multi-region deployments is the network partition that is not a real primary failure. The primary is up in Region A; the standby in Region B cannot see it due to a WAN link issue. If the standby promotes itself, both regions believe they are primary. Both write. Replication resumes when the link recovers, and the two divergent timelines must be reconciled manually &mdash; with potentially lost or duplicated payment records. The prevention is a <strong>peer window</strong> (Db2) or <strong>TTL-based fencing</strong> (Patroni + etcd): the standby will not promote until the peer window has expired <em>and</em> it has confirmed the old primary is fenced (e.g., its leader lock in etcd has expired).</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>patroni.yaml &mdash; cross-region</span><span class="code-block__lang">yaml</span></div>
 <pre><code><span class="tok-k">scope</span>: <span class="tok-s">payments-cluster</span>
-<span class="tok-k">name</span>: <span class="tok-s">pg-jeddah-standby</span>
+<span class="tok-k">name</span>: <span class="tok-s">pg-west-standby</span>
 
 <span class="tok-k">etcd3</span>:
-  <span class="tok-k">hosts</span>: <span class="tok-s">etcd-r1.svc:2379,etcd-r2.svc:2379,etcd-jeddah.svc:2379</span>  <span class="tok-c"># 3 etcd across regions</span>
+  <span class="tok-k">hosts</span>: <span class="tok-s">etcd-east.svc:2379,etcd-west.svc:2379,etcd-witness.svc:2379</span>  <span class="tok-c"># one member per region + a witness site</span>
 
 <span class="tok-k">bootstrap</span>:
   <span class="tok-k">dcs</span>:
@@ -517,18 +517,18 @@
 
           <p><strong>Failback</strong> is the step most runbooks skip. After a failover, the old primary is stale. The fastest path back: use <code>pg_rewind</code> (configured in Patroni as <code>use_pg_rewind: true</code>) to re-sync it from the new primary&rsquo;s divergence point rather than running a full base backup. <code>pg_rewind</code> can only be used if the old primary was a sync standby at time of failure; otherwise a base backup is required. Either way, test failback in the DR exercise, not just failover.</p>
 
-          <h2 id="data-residency">SAMA data residency</h2>
-          <p>SAMA&rsquo;s Cloud Computing Regulatory Framework and TRM framework together impose three constraints on cross-region replication for regulated financial data:</p>
+          <h2 id="data-residency">Data residency</h2>
+          <p>Data-residency rules &mdash; financial-sector cloud frameworks such as SAMA&rsquo;s Cloud Computing Regulatory Framework, national data-protection laws, public-sector and health-data rules &mdash; typically impose three constraints on cross-region replication for regulated data:</p>
 
           <ul>
-            <li><strong>Data must remain within KSA.</strong> Both the primary and the replication target must sit in KSA data centres or a SAMA-approved cloud region in the Kingdom. Replicating to a region outside KSA &mdash; even as a cold DR copy &mdash; requires an explicit regulatory exemption.</li>
-            <li><strong>Encryption in transit is mandatory.</strong> All replication streams crossing any network segment &mdash; even private links between data centres &mdash; must use TLS 1.2+ with a certificate chain the bank controls. Certificate expiry on a replication channel has caused production incidents; automate rotation.</li>
+            <li><strong>Data must remain within the jurisdiction.</strong> Both the primary and the replication target must sit in in-country data centres or an approved cloud region inside the jurisdiction. Replicating to a region outside it &mdash; even as a cold DR copy &mdash; typically requires an explicit regulatory approval or exemption.</li>
+            <li><strong>Encryption in transit is mandatory.</strong> All replication streams crossing any network segment &mdash; even private links between data centres &mdash; must use TLS 1.2+ with a certificate chain the organisation controls. Certificate expiry on a replication channel has caused production incidents; automate rotation.</li>
             <li><strong>Audit trails must be replicated.</strong> If the primary fails, the regulator expects the audit log to survive with zero gaps. A separate replication stream for audit tables (or a Kafka topic used exclusively for audit events) with a stronger consistency guarantee than the main data replication is the correct design. Separating audit from operational data in the replication architecture also makes the compliance evidence cleaner.</li>
           </ul>
 
           <div class="callout callout--warn">
             <div class="callout__title">Approved cloud regions change</div>
-            <p>SAMA updates its list of approved cloud regions. If your DR site is in an approved cloud region, subscribe to SAMA&rsquo;s regulatory notifications and build a review step into your annual DR testing cycle to confirm the region is still approved. Cloud-hosted DR that relied on a region later removed from the approved list has created compliance findings at KSA banks.</p>
+            <p>Regulators and governments update their lists of approved cloud providers and regions. If your DR site is in an approved cloud region, track the relevant regulatory notifications and build a review step into your annual DR testing cycle to confirm the region is still approved. Cloud-hosted DR that relied on a region later removed from an approved list is a classic source of compliance findings.</p>
           </div>
 
           <h2 id="observability">Observability</h2>
@@ -541,7 +541,7 @@
     <span class="tok-k">rules</span>:
       <span class="tok-c"># Postgres streaming replication lag &gt; 30 s → page</span>
       - <span class="tok-k">alert</span>: <span class="tok-s">PostgresReplicationLagHigh</span>
-        <span class="tok-k">expr</span>: <span class="tok-s">pg_replication_lag_seconds{standby="jeddah"} &gt; 30</span>
+        <span class="tok-k">expr</span>: <span class="tok-s">pg_replication_lag_seconds{standby="west"} &gt; 30</span>
         <span class="tok-k">for</span>: <span class="tok-s">2m</span>
         <span class="tok-k">labels</span>:
           <span class="tok-k">severity</span>: <span class="tok-s">critical</span>
@@ -600,13 +600,13 @@
             </li>
             <li>
               <h4>Does the regulator require tested DR within a defined RTO?</h4>
-              <p>SAMA TRM specifies that banks must document and test business continuity plans. If your approved RTO is under 30 minutes, active/passive with manual failover is likely insufficient &mdash; Patroni-automated Postgres failover or a tested Db2 HADR takeover procedure is required.</p>
+              <p>Most regulators require regulated firms to document and test business continuity plans. If your approved RTO is under 30 minutes, active/passive with manual failover is likely insufficient &mdash; Patroni-automated Postgres failover or a tested Db2 HADR takeover procedure is required.</p>
             </li>
           </ol>
 
           <div class="callout callout--note">
             <div class="callout__title">Start with hot-standby, earn active/active</div>
-            <p>Every active/active deployment at a financial institution started as active/passive or active/hot-standby. The teams that shipped active/active reliably understood their write ownership model completely before they changed the topology. Teams that started with active/active as a design goal without that foundation spent years firefighting conflict incidents. The topology is not a statement of ambition; it is a consequence of operational readiness.</p>
+            <p>In practice, successful active/active deployments almost always start life as active/passive or active/hot-standby. The teams that shipped active/active reliably understood their write ownership model completely before they changed the topology. Teams that started with active/active as a design goal without that foundation spent years firefighting conflict incidents. The topology is not a statement of ambition; it is a consequence of operational readiness.</p>
           </div>
 
           <nav class="article-nav">

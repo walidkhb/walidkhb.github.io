@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Strimzi on Private OpenShift &mdash; Regulated Deployment &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="A practical, production-grade walkthrough of running Strimzi (and Red Hat AMQ Streams) Kafka on private OpenShift in a regulated financial services environment: operator topology, listeners, OAuth via internal IdP, mTLS, NetworkPolicies, storage, HA, and the constraints unique to air-gapped banking clusters.">
+  <meta name="description" content="A practical, production-grade walkthrough of running Strimzi (and Red Hat AMQ Streams) Kafka on private OpenShift in a regulated environment: operator topology, listeners, OAuth via internal IdP, mTLS, NetworkPolicies, storage, HA, and the constraints unique to private and air-gapped clusters.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Strimzi on Private OpenShift &mdash; Regulated Deployment">
-  <meta property="og:description" content="Production Kafka on private OCP for regulated financial services: Strimzi / AMQ Streams patterns.">
+  <meta property="og:description" content="Production Kafka on private OCP for regulated environments: Strimzi / AMQ Streams patterns.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/strimzi-on-private-ocp.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Strimzi on Private OpenShift &mdash; Regulated Deployment">
-  <meta name="twitter:description" content="Strimzi / AMQ Streams Kafka on private OCP for regulated banks.">
+  <meta name="twitter:description" content="Strimzi / AMQ Streams Kafka on private OCP for regulated enterprises.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/strimzi-on-private-ocp.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Strimzi on Private OpenShift &mdash; Regulated Deployment",
-    "description": "Production-grade Strimzi / AMQ Streams Kafka on private OpenShift for regulated financial services: components, listeners, OAuth, mTLS, NetworkPolicies, storage, HA, and DR.",
+    "description": "Production-grade Strimzi / AMQ Streams Kafka on private OpenShift for regulated environments: components, listeners, OAuth, mTLS, NetworkPolicies, storage, HA, and DR.",
     "url": "https://www.wbadawi.info/lab/event-driven/strimzi-on-private-ocp.html",
     "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
     "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
@@ -75,7 +75,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Strimzi on Private OpenShift</div>
           <span class="overline">Lab Article</span>
           <h1>Strimzi on Private OpenShift &mdash; Regulated</h1>
-          <p class="lead">Running Strimzi (and Red Hat AMQ Streams) on private, air-gapped OpenShift in a regulated bank: operator topology, listeners, OAuth via an internal IdP, mTLS with the internal CA, NetworkPolicies, storage, multi-AZ HA, MirrorMaker 2 for DR, and the constraints unique to regulated financial services that change every default.</p>
+          <p class="lead">Running Strimzi (and Red Hat AMQ Streams) on private, air-gapped OpenShift in a regulated enterprise: operator topology, listeners, OAuth via an internal IdP, mTLS with an internal CA, NetworkPolicies, storage, multi-AZ HA, MirrorMaker 2 for DR, and the constraints of regulated environments that change every default.</p>
         </div>
       </div>
     </div>
@@ -116,8 +116,8 @@
           </div>
 
           <h2 id="overview">Overview</h2>
-          <p>Strimzi is the operator that turns OpenShift into a managed Kafka platform. You declare a <code>Kafka</code> custom resource; the operator reconciles brokers, ZooKeeper or KRaft controllers, listeners, certificates, users, topics, and connectors. In a regulated bank running on private (often air-gapped) OpenShift, this declarative model is what makes Kafka tractable: every change is a Git commit, every reconcile leaves an audit trail, and there is no console to click through that the regulator can&rsquo;t reproduce.</p>
-          <p>This article covers the deployment as it actually runs in a regulated KSA bank: no internet egress, internal image registry, internal Keycloak as the IdP, internal CA for mTLS, FIPS-validated crypto, and SAMA-aligned audit logging. The patterns transfer to other private cloud and regulated environments &mdash; PSD2 banks in the EU, OSFI-regulated banks in Canada, federal-tier government clouds &mdash; but the examples are written from the bank perspective.</p>
+          <p>Strimzi is the operator that turns OpenShift into a managed Kafka platform. You declare a <code>Kafka</code> custom resource; the operator reconciles brokers, ZooKeeper or KRaft controllers, listeners, certificates, users, topics, and connectors. In a regulated organisation running on private (often air-gapped) OpenShift, this declarative model is what makes Kafka tractable: every change is a Git commit, every reconcile leaves an audit trail, and there is no console to click through that an auditor can&rsquo;t reproduce.</p>
+          <p>This article covers a typical deployment in a regulated organisation: no internet egress, an internal image registry, an internal Keycloak as the IdP, an internal CA for mTLS, FIPS-validated crypto, and audit logging aligned to the applicable regulator&rsquo;s expectations. The same constraints apply to banks and payment firms (under supervisors such as SAMA, the FCA or OSFI), healthcare providers, telecom operators and government clouds. The examples use a payments workload only because it is a familiar one.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Air-gapped vs private</div>
@@ -387,8 +387,8 @@
         <span class="tok-k">tls</span>: <span class="tok-n">true</span>
         <span class="tok-k">authentication</span>:
           <span class="tok-k">type</span>: <span class="tok-s">oauth</span>
-          <span class="tok-k">validIssuerUri</span>: <span class="tok-s">https://idp.acme-bank.svc/realms/prod</span>
-          <span class="tok-k">jwksEndpointUri</span>: <span class="tok-s">https://idp.acme-bank.svc/realms/prod/protocol/openid-connect/certs</span>
+          <span class="tok-k">validIssuerUri</span>: <span class="tok-s">https://keycloak.identity.svc/realms/prod</span>
+          <span class="tok-k">jwksEndpointUri</span>: <span class="tok-s">https://keycloak.identity.svc/realms/prod/protocol/openid-connect/certs</span>
           <span class="tok-k">userNameClaim</span>: <span class="tok-s">preferred_username</span>
           <span class="tok-k">checkAudience</span>: <span class="tok-n">true</span>
           <span class="tok-k">tlsTrustedCertificates</span>:
@@ -401,11 +401,11 @@
         <span class="tok-k">tls</span>: <span class="tok-n">true</span>
         <span class="tok-k">authentication</span>: { <span class="tok-k">type</span>: <span class="tok-s">tls</span> }
         <span class="tok-k">configuration</span>:
-          <span class="tok-k">bootstrap</span>: { <span class="tok-k">host</span>: <span class="tok-s">events.api.acme-bank.com</span> }
+          <span class="tok-k">bootstrap</span>: { <span class="tok-k">host</span>: <span class="tok-s">events.api.example.com</span> }
           <span class="tok-k">brokers</span>:
-            - { <span class="tok-k">broker</span>: <span class="tok-n">0</span>, <span class="tok-k">host</span>: <span class="tok-s">events-0.api.acme-bank.com</span> }
-            - { <span class="tok-k">broker</span>: <span class="tok-n">1</span>, <span class="tok-k">host</span>: <span class="tok-s">events-1.api.acme-bank.com</span> }
-            - { <span class="tok-k">broker</span>: <span class="tok-n">2</span>, <span class="tok-k">host</span>: <span class="tok-s">events-2.api.acme-bank.com</span> }
+            - { <span class="tok-k">broker</span>: <span class="tok-n">0</span>, <span class="tok-k">host</span>: <span class="tok-s">events-0.api.example.com</span> }
+            - { <span class="tok-k">broker</span>: <span class="tok-n">1</span>, <span class="tok-k">host</span>: <span class="tok-s">events-1.api.example.com</span> }
+            - { <span class="tok-k">broker</span>: <span class="tok-n">2</span>, <span class="tok-k">host</span>: <span class="tok-s">events-2.api.example.com</span> }
 
     <span class="tok-k">authorization</span>:
       <span class="tok-k">type</span>: <span class="tok-s">simple</span>
@@ -478,8 +478,8 @@
             </thead>
             <tbody>
               <tr><td><code>tls</code> (9093)</td><td>mTLS, internal CA</td><td>System clients: MirrorMaker 2, Kafka Connect, Cruise Control</td></tr>
-              <tr><td><code>oauth</code> (9094)</td><td>JWT bearer, Keycloak introspection or JWKS</td><td>Bank applications &mdash; producers and consumers</td></tr>
-              <tr><td><code>partner</code> (9095, route)</td><td>mTLS, partner CA bundle</td><td>External B2B partners and TPPs over OpenShift Routes</td></tr>
+              <tr><td><code>oauth</code> (9094)</td><td>JWT bearer, Keycloak introspection or JWKS</td><td>Internal applications &mdash; producers and consumers</td></tr>
+              <tr><td><code>partner</code> (9095, route)</td><td>mTLS, partner CA bundle</td><td>External B2B partners (suppliers, open-API third parties) over OpenShift Routes</td></tr>
             </tbody>
           </table>
 
@@ -569,7 +569,7 @@
   <span class="tok-k">ingress</span>:
     - <span class="tok-k">from</span>:
         - <span class="tok-k">namespaceSelector</span>:
-            <span class="tok-k">matchLabels</span>: { <span class="tok-k">acme.bank/kafka-client</span>: <span class="tok-s">"true"</span> }
+            <span class="tok-k">matchLabels</span>: { <span class="tok-k">example.com/kafka-client</span>: <span class="tok-s">"true"</span> }
       <span class="tok-k">ports</span>:
         - { <span class="tok-k">port</span>: <span class="tok-n">9094</span>, <span class="tok-k">protocol</span>: <span class="tok-s">TCP</span> }   <span class="tok-c"># OAuth listener only</span>
 ---
@@ -588,7 +588,7 @@
         - { <span class="tok-k">port</span>: <span class="tok-n">8443</span>, <span class="tok-k">protocol</span>: <span class="tok-s">TCP</span> }</code></pre>
           </div>
 
-          <p>App namespaces are labelled <code>acme.bank/kafka-client=true</code> at provisioning time. A namespace without that label cannot reach the brokers &mdash; even if a developer hard-codes the bootstrap URL.</p>
+          <p>App namespaces are labelled <code>example.com/kafka-client=true</code> at provisioning time. A namespace without that label cannot reach the brokers &mdash; even if a developer hard-codes the bootstrap URL.</p>
 
           <h2 id="ha">HA &amp; multi-AZ</h2>
           <p>Three brokers spread across three zones is the baseline. The properties that have to be true:</p>
@@ -651,7 +651,7 @@
             <li><strong>Cert expiry &lt; 30 days</strong> &mdash; CA renewal needed.</li>
           </ul>
 
-          <p>Audit logs (auth events, ACL denies) are forwarded to Splunk or QRadar via a Vector sidecar in the broker pods. The SAMA audit trail is the SIEM, not the broker disk.</p>
+          <p>Audit logs (auth events, ACL denies) are forwarded to Splunk or QRadar via a Vector sidecar in the broker pods. The regulatory audit trail is the SIEM, not the broker disk.</p>
 
           <h2 id="pitfalls">Common pitfalls</h2>
 
@@ -688,7 +688,7 @@
             <li><strong>The team has no Kafka operator experience.</strong> Strimzi simplifies day-2 only if the team understands Kafka itself. Without that, you trade one set of unknowns for another.</li>
           </ul>
 
-          <p>Where Strimzi on private OCP wins is the regulated bank case &mdash; data residency requirements, internal CA, internal IdP, FIPS-validated runtime, GitOps-managed configuration, audit-traceable changes &mdash; all the constraints that rule out managed Kafka and reward declarative platform engineering.</p>
+          <p>Where Strimzi on private OCP wins is the regulated-enterprise case &mdash; data residency requirements, internal CA, internal IdP, FIPS-validated runtime, GitOps-managed configuration, audit-traceable changes &mdash; all the constraints that rule out managed Kafka and reward declarative platform engineering.</p>
 
           <nav class="article-nav">
             <a href="../event-driven.html">

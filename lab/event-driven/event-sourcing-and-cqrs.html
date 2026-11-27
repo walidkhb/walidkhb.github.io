@@ -6,10 +6,10 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Event Sourcing &amp; CQRS in Payments &mdash; Lab &mdash; Waleed Albadawi</title>
-  <meta name="description" content="When event sourcing is worth the cost in payments: event store design, CQRS projection patterns, ISO 20022 schema alignment, snapshotting, idempotency, SAMA audit trail requirements, and the Kafka-backed read model that scales.">
+  <meta name="description" content="When event sourcing is worth the cost, worked through a payment lifecycle: event store design, CQRS projection patterns, aligning events with external message standards such as ISO 20022, snapshotting, idempotency, regulatory audit-trail requirements, and the Kafka-backed read model that scales.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Event Sourcing &amp; CQRS in Payments &mdash; Lab &mdash; Waleed Albadawi">
-  <meta property="og:description" content="Production event sourcing and CQRS patterns for regulated payment systems.">
+  <meta property="og:description" content="Production event sourcing and CQRS patterns for regulated, audit-critical transaction systems, with payments as the worked example.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.wbadawi.info/lab/event-driven/event-sourcing-and-cqrs.html">
   <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Waleed Albadawi">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Event Sourcing &amp; CQRS in Payments &mdash; Lab">
-  <meta name="twitter:description" content="Event sourcing and CQRS for regulated payment systems: patterns that hold up in production.">
+  <meta name="twitter:description" content="Event sourcing and CQRS for audit-critical transaction systems: patterns that hold up in production.">
   <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
   <link rel="canonical" href="https://www.wbadawi.info/lab/event-driven/event-sourcing-and-cqrs.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
     "@context": "https://schema.org",
     "@type": "TechArticle",
     "headline": "Event Sourcing &amp; CQRS in Payments",
-    "description": "When event sourcing is worth the cost in payments: event store design, CQRS projection patterns, ISO 20022 schema alignment, snapshotting, idempotency, SAMA audit trail requirements, and the Kafka-backed read model that scales.",
+    "description": "When event sourcing is worth the cost, worked through a payment lifecycle: event store design, CQRS projection patterns, aligning events with external message standards such as ISO 20022, snapshotting, idempotency, regulatory audit-trail requirements, and the Kafka-backed read model that scales.",
     "url": "https://www.wbadawi.info/lab/event-driven/event-sourcing-and-cqrs.html",
     "author": {"@type": "Person", "name": "Waleed Albadawi", "url": "https://www.wbadawi.info/"},
     "publisher": {"@type": "Person", "name": "Waleed Albadawi"},
@@ -75,7 +75,7 @@
           <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../event-driven.html">Event-Driven Architecture</a><span>/</span>Event Sourcing &amp; CQRS</div>
           <span class="overline">Lab Article</span>
           <h1>Event Sourcing &amp; CQRS in Payments</h1>
-          <p class="lead">When event sourcing is worth the cost, how to structure the write and read sides of a payment aggregate, ISO 20022 event schema alignment, snapshotting, idempotency guarantees, and the audit trail the regulator expects for free &mdash; without a commercial event-store vendor.</p>
+          <p class="lead">When event sourcing is worth the cost, how to structure the write and read sides of an aggregate, aligning events with external message standards, snapshotting, idempotency guarantees, and the audit trail regulators and auditors expect for free &mdash; without a commercial event-store vendor. The worked example is a payment, but the same model fits any audit-critical lifecycle: orders, insurance claims, bookings, shipments, case files.</p>
         </div>
       </div>
     </div>
@@ -96,7 +96,7 @@
             <li><a href="#iso20022">ISO 20022 schema alignment</a></li>
             <li><a href="#snapshotting">Snapshotting</a></li>
             <li><a href="#idempotency">Idempotency &amp; exactly-once</a></li>
-            <li><a href="#sama-audit">SAMA audit trail</a></li>
+            <li><a href="#audit-trail">Regulatory audit trail</a></li>
             <li><a href="#kafka-projectors">Kafka-backed projectors</a></li>
             <li><a href="#tradeoffs">ES vs CRUD trade-offs</a></li>
             <li><a href="#antipatterns">Anti-patterns</a></li>
@@ -115,17 +115,17 @@
 
           <h2 id="when-worth-it">When it&rsquo;s worth the cost</h2>
           <p>Event sourcing is not a default architecture. It carries real costs: a steeper learning curve than CRUD, eventual consistency in the read model, projection rebuild time when you add a new query view, and the operational overhead of managing a growing event stream. The question is whether the problem you are solving actually justifies those costs.</p>
-          <p>In banking payments, three properties tip the balance decisively in favour of event sourcing:</p>
+          <p>In audit-critical transaction domains &mdash; payments, insurance claims, order fulfilment, trading, public-sector case management &mdash; three properties tip the balance decisively in favour of event sourcing:</p>
           <ul>
-            <li><strong>Audit trail completeness.</strong> SAMA&rsquo;s Technology Risk Management framework requires a complete, tamper-evident record of every state change on a financial transaction. With CRUD, the audit trail is a side effect you bolt on &mdash; a trigger, a shadow table, a log line. With event sourcing, the audit trail <em>is</em> the data model. The events are the truth; the current state is a derived view.</li>
-            <li><strong>Business event explicitness.</strong> A payment moves through distinct, named states: <code>PaymentInitiated</code>, <code>FraudCheckPassed</code>, <code>LiquidityReserved</code>, <code>SettlementInstructed</code>, <code>Settled</code>, <code>Reversed</code>. These are business concepts, not database column transitions. Event sourcing forces the team to name every state transition, which eliminates the implicit &ldquo;what does <code>status = 3</code> mean?&rdquo; class of bugs.</li>
+            <li><strong>Audit trail completeness.</strong> Regulators and auditors in most regulated sectors expect a complete, tamper-evident record of every state change on a transaction; financial supervisors such as SAMA, the FCA and the EBA all set expectations along these lines. With CRUD, the audit trail is a side effect you bolt on &mdash; a trigger, a shadow table, a log line. With event sourcing, the audit trail <em>is</em> the data model. The events are the truth; the current state is a derived view.</li>
+            <li><strong>Business event explicitness.</strong> A payment moves through distinct, named states: <code>PaymentInitiated</code>, <code>FraudCheckPassed</code>, <code>LiquidityReserved</code>, <code>SettlementInstructed</code>, <code>Settled</code>, <code>Reversed</code>. These are business concepts, not database column transitions; an insurance claim or a customer order has its own equivalent list. Event sourcing forces the team to name every state transition, which eliminates the implicit &ldquo;what does <code>status = 3</code> mean?&rdquo; class of bugs.</li>
             <li><strong>Temporal queries.</strong> Regulators, auditors, and fraud teams all ask &ldquo;what did the system know at time T?&rdquo; With CRUD, that question requires a time-travel query against archive tables that may or may not exist. With event sourcing, the answer is replay up to the relevant event sequence number.</li>
           </ul>
           <p>Where event sourcing is <em>not</em> worth the cost: reference data services (account master, product catalogue), reporting aggregates with no audit requirement, any domain where every query is against the current state with no temporal dimension, and greenfield teams without event-driven discipline. Use CRUD there and save event sourcing for the transaction ledger.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Start with the right bounded context</div>
-            <p>Event sourcing a single bounded context &mdash; the payment lifecycle &mdash; is tractable. Event sourcing your entire bank is a project that will outlive your tenure. Start with the context where the audit trail and temporal query requirements are hardest to meet with CRUD, deliver it, then expand. The pattern proves itself or fails fast on a bounded surface area.</p>
+            <p>Event sourcing a single bounded context &mdash; the payment lifecycle &mdash; is tractable. Event sourcing your entire enterprise is a project that will outlive your tenure. Start with the context where the audit trail and temporal query requirements are hardest to meet with CRUD, deliver it, then expand. The pattern proves itself or fails fast on a bounded surface area.</p>
           </div>
 
           <h2 id="core-model">Core model</h2>
@@ -208,7 +208,7 @@
           </ul>
 
           <h2 id="payment-aggregate">Payment aggregate</h2>
-          <p>A payment in a KSA bank passes through a lifecycle governed by SAMA&rsquo;s IPS rules and the bank&rsquo;s internal fraud and liquidity controls. The aggregate encodes the lifecycle and enforces the invariants.</p>
+          <p>A payment passes through a lifecycle governed by the payment scheme&rsquo;s rules and the institution&rsquo;s own fraud and liquidity controls. The aggregate encodes the lifecycle and enforces the invariants. Swap the nouns and the same structure models a claim moving through notification, assessment, approval and settlement, or an order moving through placement, allocation, dispatch and delivery.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>PaymentAggregate.java</span><span class="code-block__lang">java</span></div>
@@ -263,7 +263,7 @@
         <span class="tok-n">Assert</span>.isTrue(liquidityReserved, <span class="tok-s">"Liquidity must be reserved before settlement"</span>);
         <span class="tok-n">Assert</span>.isTrue(status != <span class="tok-n">PaymentStatus</span>.SETTLED, <span class="tok-s">"Payment already settled"</span>);
         <span class="tok-n">AggregateLifecycle</span>.apply(<span class="tok-t">new</span> <span class="tok-n">SettlementInstructedEvent</span>(
-            paymentId, cmd.getIpsReference(), cmd.getSettlementDate()
+            paymentId, cmd.getSchemeReference(), cmd.getSettlementDate()
         ));
     }
 
@@ -322,7 +322,7 @@
           </div>
 
           <h2 id="projection-patterns">Projection patterns</h2>
-          <p>A projection is a query view built by consuming the event stream. Three projection shapes cover most payment query needs.</p>
+          <p>A projection is a query view built by consuming the event stream. A handful of projection shapes cover most query needs; for the payment example they look like this.</p>
 
           <table>
             <thead>
@@ -330,14 +330,14 @@
             </thead>
             <tbody>
               <tr><td>Payment status view</td><td>Current status, latest timestamps per transition</td><td>All events for aggregate ID</td><td>Seconds (ops dashboard)</td></tr>
-              <tr><td>Account ledger view</td><td>Balance, pending debits/credits, settled entries</td><td>LiquidityReserved + Settled + Reversed</td><td>Seconds (mobile banking)</td></tr>
-              <tr><td>SAMA audit view</td><td>Full event log per payment, immutable, WORM</td><td>All events, append-only insert</td><td>Zero: synchronous projection, before HTTP response</td></tr>
+              <tr><td>Account ledger view</td><td>Balance, pending debits/credits, settled entries</td><td>LiquidityReserved + Settled + Reversed</td><td>Seconds (customer channels)</td></tr>
+              <tr><td>Regulatory audit view</td><td>Full event log per payment, immutable, WORM</td><td>All events, append-only insert</td><td>Zero: synchronous projection, before HTTP response</td></tr>
               <tr><td>Fraud analytics view</td><td>Feature vector per payment attempt</td><td>Initiated + FraudCheckPassed/Failed</td><td>Minutes (batch scoring)</td></tr>
-              <tr><td>Settlement reconciliation</td><td>IPS reference mapped to internal payment</td><td>SettlementInstructed + Settled</td><td>Minutes (end-of-day)</td></tr>
+              <tr><td>Settlement reconciliation</td><td>Scheme reference mapped to internal payment</td><td>SettlementInstructed + Settled</td><td>Minutes (end-of-day)</td></tr>
             </tbody>
           </table>
 
-          <p>The SAMA audit view is the only projection that must be synchronous with the command. All others are eventual.</p>
+          <p>The regulatory audit view is the only projection that must be synchronous with the command. All others are eventual.</p>
 
           <div class="code-block">
             <div class="code-block__header"><span>PaymentStatusProjector.java</span><span class="code-block__lang">java</span></div>
@@ -366,13 +366,13 @@
     <span class="tok-k">@EventHandler</span>
     <span class="tok-t">public void</span> <span class="tok-n">on</span>(<span class="tok-n">PaymentSettledEvent</span> e, <span class="tok-k">@Timestamp</span> <span class="tok-n">Instant</span> ts) {
         repo.updateStatus(e.getPaymentId(), <span class="tok-s">"SETTLED"</span>, ts);
-        repo.recordSettledAt(e.getPaymentId(), ts, e.getIpsReference());
+        repo.recordSettledAt(e.getPaymentId(), ts, e.getSchemeReference());
     }
 }</code></pre>
           </div>
 
           <h2 id="iso20022">ISO 20022 schema alignment</h2>
-          <p>IPS payments in Saudi Arabia use ISO 20022 message schemas &mdash; <code>pacs.008</code> (credit transfer initiation), <code>pacs.004</code> (payment return), <code>camt.054</code> (settlement notification). The event store events do not need to be ISO 20022 payloads, but they must capture enough data to reconstruct any ISO 20022 message on demand.</p>
+          <p>Most instant and high-value payment schemes now exchange ISO 20022 messages &mdash; <code>pacs.008</code> (credit transfer initiation), <code>pacs.004</code> (payment return), <code>camt.054</code> (settlement notification). The event store events do not need to be ISO 20022 payloads, but they must capture enough data to reconstruct any ISO 20022 message on demand.</p>
 
           <div class="diagram" role="img" aria-label="ISO 20022 message types mapped to event sourcing events in the payment lifecycle">
             <div class="diagram__inner">
@@ -401,11 +401,11 @@
 
                 <circle cx="510" cy="140" r="8" fill="#fbbf24"/>
                 <text x="510" y="125" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">SettlementInstructed</text>
-                <text x="510" y="165" text-anchor="middle" fill="#4a9eff" font-size="8">pacs.008 out &rarr; IPS</text>
+                <text x="510" y="165" text-anchor="middle" fill="#4a9eff" font-size="8">pacs.008 out &rarr; scheme</text>
 
                 <circle cx="660" cy="140" r="8" fill="#c8a660"/>
                 <text x="660" y="125" text-anchor="middle" fill="#e4e4e7" font-size="9" font-weight="600">PaymentSettled</text>
-                <text x="660" y="165" text-anchor="middle" fill="#4a9eff" font-size="8">camt.054 from IPS</text>
+                <text x="660" y="165" text-anchor="middle" fill="#4a9eff" font-size="8">camt.054 from scheme</text>
 
                 <!-- Annotation boxes -->
                 <rect x="30" y="185" width="160" height="50" rx="4" fill="#0f0f16" stroke="#4a9eff" stroke-dasharray="3 2"/>
@@ -414,8 +414,8 @@
                 <text x="110" y="232" text-anchor="middle" fill="#71717a" font-size="8">debtor · amt · ccy · date</text>
 
                 <rect x="460" y="185" width="180" height="50" rx="4" fill="#0f0f16" stroke="#fbbf24" stroke-dasharray="3 2"/>
-                <text x="550" y="205" text-anchor="middle" fill="#fbbf24" font-size="9">IPS round-trip stored</text>
-                <text x="550" y="220" text-anchor="middle" fill="#71717a" font-size="8">ipsReference · settlementDate</text>
+                <text x="550" y="205" text-anchor="middle" fill="#fbbf24" font-size="9">Scheme round-trip stored</text>
+                <text x="550" y="220" text-anchor="middle" fill="#71717a" font-size="8">schemeRef · settlementDate</text>
                 <text x="550" y="232" text-anchor="middle" fill="#71717a" font-size="8">returnReason (on Reversed)</text>
 
                 <line x1="110" y1="185" x2="80" y2="150" stroke="#4a9eff" stroke-width="1" stroke-dasharray="2 2"/>
@@ -425,7 +425,7 @@
             <div class="diagram__caption">Figure 2 &mdash; ISO 20022 message type anchors on the payment event timeline</div>
           </div>
 
-          <p>The rule for schema alignment: capture the raw ISO 20022 identifiers (<code>endToEndId</code>, <code>instrId</code>, <code>txId</code>) as first-class fields in your events &mdash; not buried inside a serialised XML blob. This means you can reconstruct a <code>pacs.008</code> from <code>PaymentInitiatedEvent</code> at any point without parsing an archive file, and your reconciliation queries can join on <code>endToEndId</code> against the IPS settlement report without an intermediate transform step.</p>
+          <p>The rule for schema alignment: capture the raw ISO 20022 identifiers (<code>endToEndId</code>, <code>instrId</code>, <code>txId</code>) as first-class fields in your events &mdash; not buried inside a serialised XML blob. This means you can reconstruct a <code>pacs.008</code> from <code>PaymentInitiatedEvent</code> at any point without parsing an archive file, and your reconciliation queries can join on <code>endToEndId</code> against the scheme&rsquo;s settlement report without an intermediate transform step. The rule generalises to any external standard you exchange messages in &mdash; EDI in supply chains, HL7 FHIR in healthcare, ACORD in insurance: keep the external identifiers as first-class event fields.</p>
 
           <div class="callout callout--note">
             <div class="callout__title">Version your events from day one</div>
@@ -454,7 +454,7 @@
             </li>
             <li>
               <h4>Don&rsquo;t snapshot audit aggregates</h4>
-              <p>If you have a dedicated audit aggregate that captures every state transition for the SAMA trail, do not snapshot it. The entire value of that aggregate is its full event history; a snapshot collapses the history you are trying to preserve.</p>
+              <p>If you have a dedicated audit aggregate that captures every state transition for the regulatory trail, do not snapshot it. The entire value of that aggregate is its full event history; a snapshot collapses the history you are trying to preserve.</p>
             </li>
           </ol>
 
@@ -478,7 +478,7 @@
           <h2 id="idempotency">Idempotency &amp; exactly-once</h2>
           <p>Exactly-once command processing requires three things working together: an idempotency key on every command, a deduplication store, and a transaction boundary that spans the event-store append and the deduplication record creation.</p>
 
-          <p>The payment layer at a KSA bank processes IPS transactions where the IPS network may replay a <code>pacs.008</code> on network timeout. Without idempotency, a replayed initiation creates a duplicate payment. The end-to-end reference (<code>EndToEndId</code>) from the ISO 20022 message is the natural idempotency key &mdash; it is set by the originator and must be unique per transaction per day.</p>
+          <p>Payment networks commonly redeliver a <code>pacs.008</code> after a network timeout, and most message-based integrations behave the same way. Without idempotency, a replayed initiation creates a duplicate payment. The end-to-end reference (<code>EndToEndId</code>) from the ISO 20022 message is the natural idempotency key &mdash; it is set by the originator and must be unique per transaction per day.</p>
 
           <div class="callout callout--danger">
             <div class="callout__title">The duplicate payment trap</div>
@@ -511,8 +511,8 @@
 
           <p>The idempotency store is a <code>payment_idempotency</code> table with a unique constraint on <code>end_to_end_id</code>. The insert and the event-store append must run in the same database transaction. If the event store is PostgreSQL, this is straightforward. If the event store is a separate service (EventStoreDB), you need a saga-based idempotency pattern or an outbox on the event store commit.</p>
 
-          <h2 id="sama-audit">SAMA audit trail</h2>
-          <p>SAMA&rsquo;s Technology Risk Management framework requires financial institutions to maintain a tamper-evident record of all transactions with the ability to reconstruct any transaction state at any point in time, retained for at least ten years.</p>
+          <h2 id="audit-trail">Regulatory audit trail</h2>
+          <p>Financial supervisors (SAMA, the FCA and the EBA are public examples) and auditors in other regulated sectors commonly expect a tamper-evident record of all transactions, with the ability to reconstruct any transaction state at any point in time, retained for a period set by the jurisdiction &mdash; often five to ten years.</p>
           <p>Event sourcing satisfies this requirement structurally if &mdash; and only if &mdash; the event store is configured as append-only with no delete or update path. Two implementation decisions matter:</p>
 
           <ul>
@@ -584,7 +584,7 @@
 
                 <rect x="450" y="190" width="150" height="55" rx="4" fill="#1c1c28" stroke="#ef4444"/>
                 <text x="525" y="213" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">settlement-recon</text>
-                <text x="525" y="230" text-anchor="middle" fill="#71717a" font-size="8">IPS ref &harr; internal</text>
+                <text x="525" y="230" text-anchor="middle" fill="#71717a" font-size="8">scheme ref &harr; internal</text>
 
                 <!-- Arrows -->
                 <line x1="170" y1="145" x2="218" y2="145" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#k1)"/>
@@ -642,7 +642,7 @@
 
           <div class="callout callout--warn">
             <div class="callout__title">Projecting synchronously on the command path</div>
-            <p>With the exception of the SAMA audit projection, projecting to a read model synchronously on the command path couples the write latency to the read-model build latency. A slow projection (joining to an external service, building a complex denormalised view) makes every command slow. Project asynchronously, accept eventual consistency, and document the lag SLA for each query view.</p>
+            <p>With the exception of the regulatory audit projection, projecting to a read model synchronously on the command path couples the write latency to the read-model build latency. A slow projection (joining to an external service, building a complex denormalised view) makes every command slow. Project asynchronously, accept eventual consistency, and document the lag SLA for each query view.</p>
           </div>
 
           <nav class="article-nav">
