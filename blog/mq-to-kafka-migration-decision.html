@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MQ to Kafka: The Messaging Migration Decision That Banks Keep Getting Wrong &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Bridge vs big-bang retirement: why MQ-to-Kafka migration in regulated banking requires a phased bridge approach, what SAMA audit requirements mean for the migration window, and what VP-level decisions determine whether the migration succeeds.">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
+  <link rel="canonical" href="https://www.wbadawi.info/blog/mq-to-kafka-migration-decision.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MQ to Kafka: The Messaging Migration Decision &mdash; Waleed Albadawi">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <link rel="alternate" type="application/rss+xml" title="Waleed Albadawi &mdash; Insights" href="/feed.xml">
+
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2026-11-28">
+  <meta property="article:modified_time" content="2026-11-28">
+  <meta property="og:title" content="MQ to Kafka: The Messaging Migration Decision That Banks Keep Getting Wrong &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Bridge vs big-bang retirement. SAMA audit requirements apply to the bridge window. A poorly sequenced cutover strands consumer teams and risks a production messaging outage.">
+  <meta property="og:url" content="https://www.wbadawi.info/blog/mq-to-kafka-migration-decision.html">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MQ to Kafka: The Messaging Migration Decision That Banks Keep Getting Wrong">
+  <meta name="twitter:description" content="Bridge first, prove equivalence, migrate consumers queue by queue. The alternative is a production messaging outage that SAMA will ask about.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/img/favicon-192.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CM7GZQSLWB');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
+  <link rel="stylesheet" href="../assets/css/style.css?v=20261128e">
+
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+    .article-body p { font-size: 0.9375rem; color: var(--color-text-secondary); line-height: 1.8; }
+    .article-body p strong { color: var(--color-text); }
+    .article-body blockquote { border-left: 2px solid var(--color-accent); padding: 1rem 1.5rem; margin: 1.5rem 0; background: var(--color-surface); border-radius: 0 var(--radius) var(--radius) 0; }
+    .article-body blockquote p { color: var(--color-text); font-size: 1rem; margin-bottom: 0; font-style: italic; }
+    .article-section { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  </style>
+  <link rel="stylesheet" href="../assets/css/insights.css?v=20261128e">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "MQ to Kafka: The Messaging Migration Decision That Banks Keep Getting Wrong",
+    "description": "Bridge vs big-bang retirement: why MQ-to-Kafka migration in regulated banking requires a phased bridge approach, what SAMA audit requirements mean for the migration window, and what VP-level decisions determine whether the migration succeeds.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-28",
+    "dateModified": "2026-11-28",
+    "author": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "publisher": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/blog/mq-to-kafka-migration-decision.html"
+    },
+    "url": "https://www.wbadawi.info/blog/mq-to-kafka-migration-decision.html",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Insights — Waleed Albadawi",
+      "url": "https://www.wbadawi.info/blog.html"
+    },
+    "articleSection": "Decision briefs",
+    "inLanguage": "en",
+    "wordCount": 1200,
+    "timeRequired": "PT5M"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Insights",
+        "item": "https://www.wbadawi.info/blog.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Decision briefs",
+        "item": "https://www.wbadawi.info/blog.html#decision-briefs"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "MQ to Kafka: The Messaging Migration Decision That Banks Keep Getting Wrong",
+        "item": "https://www.wbadawi.info/blog/mq-to-kafka-migration-decision.html"
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" aria-label="Main navigation">
+        <a href="../about.html">About</a>
+        <a href="../experience.html">Experience</a>
+        <a href="../projects.html">Transformations</a>
+        <a href="../blog.html" class="active" aria-current="page">Insights</a>
+        <a href="../technical.html">Lab</a>
+        <a href="../resume.html">Resume</a>
+        <a href="../contact.html" class="site-nav__cta">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+
+  <section class="page-header">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../blog.html">Insights</a><span aria-hidden="true">/</span><a href="../blog.html#decision-briefs">Decision briefs</a></nav>
+      <h1 class="insights-title">MQ to Kafka: The Messaging Migration Decision That Banks Keep Getting Wrong</h1>
+      <div class="article-meta insights-meta">
+        <span class="article-meta__item">By <a href="../about.html" rel="author">Waleed Albadawi</a></span>
+        <span class="article-meta__item"><time datetime="2026-11-28">28 November 2026</time></span>
+        <span class="article-meta__item">5 min read</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--narrow">
+      <div class="article-body fade-in">
+
+        <p>Saudi banks carry an IBM MQ estate that has been accumulating for the better part of two decades. Payment events, trade-finance notifications, core banking callbacks, settlement confirmations &mdash; all of it flows through queues that run on hardened shared infrastructure with five-nines SLAs, byte-level auditability, and channel-level encryption that SAMA has had visibility of since the queue manager was first commissioned. The case for migrating to Kafka is not theoretical: event replay, schema-enforced contracts, horizontal consumer scaling, and a stream-processing layer that MQ cannot provide are real capabilities with real business value. What the case for Kafka does not change is the risk profile of removing MQ from the production messaging path in a regulated bank. That risk is managed through sequencing, not through speed.</p>
+
+        <h2 class="article-section">What the decision is</h2>
+
+        <p>The MQ-to-Kafka migration decision presents three options. <strong>Bridge and migrate:</strong> run Kafka alongside MQ, copy every message from MQ to Kafka via a bridge, migrate consumers to Kafka one team at a time, retire MQ queues as consumers complete their migration. <strong>Big-bang cutover:</strong> replace MQ with Kafka at a date certain, requiring all producers and consumers to be ready simultaneously. <strong>Hybrid coexistence:</strong> run both systems indefinitely, with some producers on MQ and others on Kafka, connected by permanent bridges.</p>
+
+        <p>The big-bang cutover is the option that banks most commonly plan for and least commonly succeed at. The coordination problem &mdash; every team that depends on MQ must be ready on the same day &mdash; grows super-linearly with the number of queues and consumer teams. Payment queues have FIFO ordering guarantees that require specific testing. Settlement consumers have regulatory reporting dependencies that require sign-off from compliance. Core banking callbacks have XA transaction semantics that do not translate directly to Kafka. A single team that is not ready on the cutover date either blocks the entire migration or accepts an unvalidated Kafka consumer into production under time pressure. Neither outcome is acceptable.</p>
+
+        <blockquote>
+          <p>The bridge is not a compromise &mdash; it is the only approach that lets each consuming team take ownership of their own cutover on a schedule that reflects their actual complexity. Teams that are ready move first; complex teams take longer without blocking anyone else.</p>
+        </blockquote>
+
+        <p>Hybrid coexistence is not a migration strategy. It is what happens when bridge-and-migrate is started without a decommission gate. A permanent bridge means two messaging systems to operate, two DLQ estates to monitor, two sets of channel certificates to rotate, and two platforms to include in every business continuity test. The bridge must have an exit condition: a named queue is retired when its last consumer has confirmed cutover and the queue has had zero traffic for 60 consecutive business days. Without that gate, the bridge becomes permanent infrastructure.</p>
+
+        <h2 class="article-section">The regulatory angle</h2>
+
+        <p>SAMA&rsquo;s operational resilience requirements mandate that every system component in the payment processing chain has a tested recovery path and that all state changes to payment transactions are auditable from initiation to settlement. IBM MQ satisfies both requirements natively: the queue manager maintains a full audit log of every message enqueue and dequeue operation, and the IBM MQ journal gives recovery-to-point-in-time capability that regulators can inspect. The migration to Kafka does not reduce this obligation &mdash; it transfers it to a different platform.</p>
+
+        <p>Kafka&rsquo;s audit capability is different from MQ&rsquo;s. Kafka retains the full message log for the configured retention period, and Kafka Streams or ksqlDB can produce audit trails derived from the event log. What Kafka does not provide out of the box is the per-message acknowledgement audit trail that MQ&rsquo;s queue manager journal gives: the timestamp at which each individual message was delivered to each consumer, with the consumer identity. That audit trail must be constructed at the application level on the Kafka consumer side &mdash; each consumer confirms message processing by writing an audit event to a dedicated audit topic. Building and testing this audit trail is a migration prerequisite, not a post-migration enhancement.</p>
+
+        <p>The ISO 20022 migration from SWIFT MT to MX is a concurrent forcing function that makes the bridge window more valuable, not less. Every payment queue that currently carries MT103 messages in proprietary MQMD structures will carry pacs.008 XML documents after the ISO 20022 cutover. The bridge is the natural place to perform this transformation &mdash; MQ receives MT103 from the legacy core, the bridge converts to pacs.008 Avro on the Kafka side, and new consumers see only the ISO 20022 format. The bridge becomes the ISO 20022 migration mechanism, eliminating a separate transformation project that would otherwise run in parallel.</p>
+
+        <h2 class="article-section">The business trade-off</h2>
+
+        <p>A 6-month dual-run &mdash; running MQ and Kafka simultaneously, with the bridge copying every message &mdash; has real costs: additional infrastructure (Kafka cluster, Schema Registry, Kafka Connect workers), engineering time for bridge configuration and monitoring, and operational overhead for two messaging systems. Those costs are real and should be budgeted honestly. They are also bounded: 6 months of dual-run ends when the last consumer migrates. The alternative cost is not theoretical either.</p>
+
+        <p>A failed big-bang MQ cutover during payment processing hours is an operational incident that affects every consumer simultaneously, is visible to SAMA as a payment availability event, and requires a rollback that itself carries risk (restoring the MQ queue depth from a Kafka-only state requires the bridge to run in reverse, which is a configuration that has not been tested under production load). The expected cost of a failed big-bang cutover &mdash; probability times consequence &mdash; is higher than the certain cost of a 6-month dual-run in every case where the number of consumer teams exceeds two and any of them processes payments.</p>
+
+        <p><strong>Stranded consumer teams</strong> are the other risk. A consumer team that was planning to migrate to Kafka on a given date but was not ready &mdash; because their XA transaction logic did not translate cleanly, or because their compliance sign-off was delayed, or because a dependency was not on the same timeline &mdash; in a big-bang cutover is forced to either rush an unsafe implementation or block the entire migration. In a bridge-and-migrate approach, they continue on MQ while other teams cut over, and they migrate when they are ready. The difference is whether a single team&rsquo;s complexity becomes everyone&rsquo;s problem.</p>
+
+        <h2 class="article-section">What leadership must own</h2>
+
+        <p>The MQ-to-Kafka migration has two governance decisions that require VP-level ownership and cannot be delegated to the integration engineering team.</p>
+
+        <p>The first is <strong>message ordering semantics</strong>. IBM MQ provides strict FIFO ordering per queue &mdash; every consumer that connects to a queue sees messages in the exact order they were enqueued. Apache Kafka provides per-partition ordering, not global FIFO. If a Kafka topic has 12 partitions, messages are ordered within each partition but not across partitions. Consumer teams that have been relying on MQ&rsquo;s global FIFO guarantee must be identified and must confirm, with their business owner, whether global ordering is a business requirement or an implementation assumption that could be relaxed. If it is a genuine business requirement (settlement batches, for example, where message n must be processed before message n+1 regardless of which partition each is on), then that queue must use a single-partition Kafka topic &mdash; a constraint with throughput implications that the team must accept before the cutover. This conversation requires a VP to own the business requirement decision. The integration team can tell them what the trade-off is; it cannot decide for them.</p>
+
+        <p>The second is the <strong>decommission gate and DLQ ownership transfer</strong>. The bridge DLQ is an integration team concern during the bridge phase: translation failures are caught, logged, and routed to a known place. The moment a consumer cuts over to Kafka, the DLQ for that consumer&rsquo;s events on the Kafka side becomes that consumer team&rsquo;s responsibility. This handover must be explicit: who owns the dead-letter topic, who is on-call for DLQ alerts, who has the authority to replay from the DLQ or accept the message loss. Without this handover, the DLQ accumulates silently, and a production incident surfaces the fact that hundreds of messages have been sitting in the DLQ for weeks without anyone acting on them &mdash; which is an audit finding, not just an operational gap. The VP who sponsors the migration must ensure that DLQ ownership is transferred and confirmed by each consumer team before their cutover is considered complete.</p>
+
+        <p style="margin-top:2rem;font-family:var(--font-mono);font-size:0.8rem;color:var(--color-text-muted);">For the engineering depth behind these decisions &mdash; Kafka Connect MQ Source Connector configuration with exactly-once semantics, ACE bridge flows with ESQL MQMD header mapping, ISO 20022 XML-to-Avro transformation on the bridge, the dual-consume shadow-run protocol, DLQ handling across the MQ/Kafka boundary, Prometheus observability for the bridge, and the full 6-step production checklist &mdash; see the companion Lab article: <a href="../lab/legacy-integration/mq-to-kafka-migration.html" style="color:var(--color-accent);">Legacy Integration: IBM MQ to Kafka Migration &mdash; Bridge, Mirror, and Cutover Patterns</a>.</p>
+
+      </div>
+
+        <!-- insights:end -->
+        <div class="insights-end">
+          <p class="insights-series-note">Part of the <a href="../blog.html#decision-briefs">Decision briefs</a> series: one architecture choice at a time, and the decisions that belong above it.</p>
+          <aside class="insights-author" aria-label="About the author">
+            <p class="insights-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <a class="insights-author__link" href="../about.html">About Waleed Albadawi &rarr;</a>
+          </aside>
+          <nav class="insights-related" aria-labelledby="related-heading">
+            <h2 id="related-heading" class="insights-related__heading">Related insights</h2>
+            <div class="insights-related__grid">
+              <a class="thinking-card" href="anti-corruption-layer-decision.html">
+                <span class="thinking-card__topic">Decision brief &middot; 6 min read</span>
+                <span class="thinking-card__title">Anti-Corruption Layer: The Domain Isolation Decision That Protects Your Core Banking Modernisation</span>
+              </a>
+              <a class="thinking-card" href="event-sourcing-cqrs-payments-decision.html">
+                <span class="thinking-card__topic">Decision brief &middot; 7 min read</span>
+                <span class="thinking-card__title">Event Sourcing &amp; CQRS in Payments: The Architecture Decision Behind Durable Audit Trails</span>
+              </a>
+              <a class="thinking-card" href="soap-to-rest-decision.html">
+                <span class="thinking-card__topic">Decision brief &middot; 6 min read</span>
+                <span class="thinking-card__title">SOAP-to-REST Modernisation: The API Architecture Decision That Lets You Retire the WSDL Without Rewriting the Backend</span>
+              </a>
+            </div>
+          </nav>
+        </div>
+        <!-- /insights:end -->
+    </div>
+  </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <a href="../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+          <p>Enterprise technology and transformation executive. Riyadh, Saudi Arabia.</p>
+        </div>
+        <nav class="site-footer__col" aria-label="Explore">
+          <p class="site-footer__title">Explore</p>
+          <ul>
+            <li><a href="../about.html">About</a></li>
+            <li><a href="../experience.html">Experience</a></li>
+            <li><a href="../projects.html">Transformations</a></li>
+            <li><a href="../expertise.html">Expertise</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Writing">
+          <p class="site-footer__title">Writing</p>
+          <ul>
+            <li><a href="../blog.html">Insights</a></li>
+            <li><a href="../technical.html">Technical Lab</a></li>
+            <li><a href="../feed.xml">RSS feed</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Connect">
+          <p class="site-footer__title">Connect</p>
+          <ul>
+            <li><a href="../contact.html">Contact</a></li>
+            <li><a href="https://www.linkedin.com/in/walidkhb" rel="me noopener" target="_blank">LinkedIn</a></li>
+            <li><a href="https://medium.com/@walidkhb" rel="me noopener" target="_blank">Medium</a></li>
+            <li><a href="https://github.com/walidkhb" rel="me noopener" target="_blank">GitHub</a></li>
+            <li><a href="../assets/Waleed-Albadawi-CV.pdf">Download CV</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="site-footer__base">
+        <span>&copy; 2026 Waleed Albadawi</span>
+        <span>Views are my own and do not represent my employer.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js?v=20261128e"></script>
+</body>
+</html>

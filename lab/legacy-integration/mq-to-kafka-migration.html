@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CM7GZQSLWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CM7GZQSLWB');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legacy Integration &mdash; IBM MQ to Kafka Migration: Bridge, Mirror, and Cutover Patterns &mdash; Lab &mdash; Waleed Albadawi</title>
+  <meta name="description" content="Kafka MQ Source Connector configuration, ACE bridge flows for JMS-to-Kafka header mapping, ISO 20022 XML-to-Avro translation on the bridge, dual-consume consumer cutover, DLQ handling across the MQ/Kafka boundary, and production observability for a live migration in a regulated bank.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Legacy Integration &mdash; IBM MQ to Kafka Migration &mdash; Lab &mdash; Waleed Albadawi">
+  <meta property="og:description" content="Bridge-first MQ-to-Kafka migration: Kafka Connect MQ Source Connector, ACE bridge flows, ISO 20022 XML-to-Avro, dual-consume cutover, and DLQ handling across the messaging boundary.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.wbadawi.info/lab/legacy-integration/mq-to-kafka-migration.html">
+  <meta property="og:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Waleed Albadawi">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="IBM MQ to Kafka Migration: Bridge, Mirror, and Cutover Patterns">
+  <meta name="twitter:description" content="Kafka MQ Source Connector, ACE bridge flows, ISO 20022 XML-to-Avro, dual-consume cutover. What holds up in production during a live bank messaging migration.">
+  <meta name="twitter:image" content="https://www.wbadawi.info/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Waleed Albadawi — Building technology organisations that scale">
+  <meta name="twitter:image:alt" content="Waleed Albadawi — technology executive, Riyadh">
+  <link rel="canonical" href="https://www.wbadawi.info/lab/legacy-integration/mq-to-kafka-migration.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="../../assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../../assets/img/favicon-192.png">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261128e">
+  <link rel="stylesheet" href="../../assets/css/lab.css?v=20261128e">
+  <style>
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Legacy Integration: IBM MQ to Kafka Migration — Bridge, Mirror, and Cutover Patterns",
+    "description": "Kafka MQ Source Connector configuration, ACE bridge flows for JMS-to-Kafka header mapping, ISO 20022 XML-to-Avro translation on the bridge, dual-consume consumer cutover, DLQ handling across the MQ/Kafka boundary, and production observability for a live migration in a regulated bank.",
+    "image": "https://www.wbadawi.info/assets/img/og-image.png",
+    "datePublished": "2026-11-28",
+    "dateModified": "2026-11-28",
+    "author": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "publisher": {
+      "@id": "https://www.wbadawi.info/#person",
+      "@type": "Person",
+      "name": "Waleed Albadawi"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.wbadawi.info/lab/legacy-integration/mq-to-kafka-migration.html"
+    },
+    "url": "https://www.wbadawi.info/lab/legacy-integration/mq-to-kafka-migration.html",
+    "inLanguage": "en",
+    "wordCount": 3400,
+    "isPartOf": {
+      "@type": "CollectionPage",
+      "name": "Legacy Integration — Technical Lab",
+      "url": "https://www.wbadawi.info/lab/legacy-integration.html"
+    },
+    "proficiencyLevel": "Expert"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wbadawi.info/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Technical Lab",
+        "item": "https://www.wbadawi.info/technical.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Legacy Integration",
+        "item": "https://www.wbadawi.info/lab/legacy-integration.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "IBM MQ to Kafka Migration: Bridge, Mirror, and Cutover Patterns",
+        "item": "https://www.wbadawi.info/lab/legacy-integration/mq-to-kafka-migration.html"
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="header">
+    <div class="site-header__inner">
+      <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+      <nav class="site-nav" id="nav" aria-label="Main navigation">
+        <a href="../../about.html">About</a>
+        <a href="../../experience.html">Experience</a>
+        <a href="../../projects.html">Transformations</a>
+        <a href="../../blog.html">Insights</a>
+        <a href="../../technical.html" class="active" aria-current="page">Lab</a>
+        <a href="../../resume.html">Resume</a>
+        <a href="../../contact.html" class="site-nav__cta">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+
+  <section class="page-header">
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+        <div></div>
+        <div>
+          <div class="breadcrumb"><a href="../../technical.html">Lab</a><span>/</span><a href="../legacy-integration.html">Legacy Integration</a><span>/</span>MQ-to-Kafka Migration</div>
+          <span class="overline">Lab Article</span>
+          <h1>Legacy Integration: IBM MQ to Kafka Migration &mdash; Bridge, Mirror, and Cutover Patterns</h1>
+          <div class="lab-byline">
+            <span>By <a href="../../about.html" rel="author">Waleed Albadawi</a></span>
+            <span>Published <time class="lab-byline__published" datetime="2026-11-28">28 November 2026</time></span>
+            <span>Updated <time datetime="2026-11-28">28 November 2026</time></span>
+            <span>14 min read</span>
+          </div>
+          <p class="lead">IBM MQ has carried the messaging backbone of Saudi banks for two decades &mdash; payment events, trade-finance notifications, core banking callbacks, and risk alerts all flow through queues that run on shared infrastructure with five-nines SLAs and byte-level auditability. The case for migrating to Kafka is real: event replay, consumer-group scaling, schema-registry-enforced contracts, and a stream-processing layer that MQ cannot provide. But a big-bang MQ retirement is a risk that no regulated bank should accept. The correct sequence is bridge first, prove equivalence, then migrate consumers queue by queue &mdash; never cut the wire before the new path is validated end-to-end in production.</p>
+          <p class="lab-disclaimer">Reference architecture with illustrative code &mdash; not a description of any specific organisation&rsquo;s production systems.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container container--wide">
+      <div class="lab-article__layout">
+
+        <nav class="lab-article__toc" aria-label="On this page">
+          <div class="lab-article__toc-title">On this page</div>
+          <ul class="lab-article__toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#bridge-vs-migrate">Bridge vs migrate</a></li>
+            <li><a href="#kafka-mq-connector">Kafka MQ Connector</a></li>
+            <li><a href="#ace-bridge-pattern">ACE bridge pattern</a></li>
+            <li><a href="#message-translation">Message translation</a></li>
+            <li><a href="#consumer-cutover">Consumer cutover</a></li>
+            <li><a href="#dead-letter-handling">Dead-letter handling</a></li>
+            <li><a href="#observability">Observability</a></li>
+            <li><a href="#production-checklist">Production checklist</a></li>
+            <li><a href="#comparison">Approach comparison</a></li>
+          </ul>
+        </nav>
+
+        <article class="lab-article__body">
+
+          <div class="article-meta">
+            <span class="article-meta__item"><strong>Stack:</strong> IBM MQ 9.3 &middot; Apache Kafka 3.7 &middot; Kafka Connect 3.7 &middot; IBM ACE 12.0.10 &middot; CloudEvents 1.0 &middot; Apache Avro</span>
+            <span class="article-meta__item"><strong>Audience:</strong> Engineers</span>
+          </div>
+
+          <h2 id="overview">Overview</h2>
+          <p>The IBM MQ estate at a mature Saudi bank typically spans dozens of queue managers, hundreds of queues, and consumers ranging from ACE integration flows to COBOL batch jobs reading directly off a local queue manager. MQ gives you: exactly-once delivery (with XA transactions), strict FIFO ordering within a queue, persistent storage with HA-replication via RDQM or Multi-Instance Queue Managers, and a 25-year track record of surviving everything a data-centre can throw at it. What it does not give you is consumer-group fan-out without duplicating queues, ordered replay from an arbitrary offset, schema enforcement at the broker, or the stream-processing layer that sits natively on Kafka via Kafka Streams or Apache Flink.</p>
+          <p>Kafka is not a replacement for MQ &mdash; it is a different tool for a different problem. MQ models <em>task queues</em>: each message has one logical owner, delivery is acknowledged, and the queue is a fifo buffer between producer and consumer. Kafka models <em>event logs</em>: each record is immutable, stored durably for a configurable retention window, and any number of consumer groups can read from any offset independently. The migration from MQ to Kafka is therefore a semantic migration as much as a technical one. Before moving the first message, the team must agree on what the queue was modelling and whether the event-log semantics are what the new consumers actually need.</p>
+          <p>This article covers the three bridging mechanisms available in the IBM stack &mdash; the IBM MQ Source Connector for Kafka Connect, ACE-based bridge flows, and the IBM Event Streams MQ bridge &mdash; and the operational discipline needed to run a live migration in a regulated banking environment without interrupting payment or settlement flows.</p>
+
+          <div class="callout callout--note">
+            <div class="callout__title">MQ and Kafka run in parallel during migration</div>
+            <p>The bridge does not replace MQ on day one. MQ continues to handle all existing consumers exactly as before. The bridge silently copies every message from MQ to Kafka. Only when a consumer team has verified that the Kafka path delivers equivalent messages &mdash; same content, same ordering semantics, within the agreed latency budget &mdash; does that consumer cut over. MQ is decommissioned only after every consumer has migrated and a 60-day zero-traffic window on the MQ path has been confirmed.</p>
+          </div>
+
+          <h2 id="bridge-vs-migrate">Bridge vs Migrate vs Rewrite</h2>
+          <p>Three options exist for moving from MQ to Kafka. The right choice depends on how tightly the queue semantics are coupled to the consumer implementation.</p>
+          <p><strong>Bridge (copy-and-forward):</strong> a connector or ACE flow reads every message from the MQ queue and publishes it to a Kafka topic. MQ and Kafka run in parallel. Consumers migrate one by one; MQ is retired last. This is the lowest-risk option because MQ remains the system of record throughout the migration. If a Kafka consumer has a bug, the team can discard the consumer group offset and re-read from the topic &mdash; and if the Kafka path fails entirely, the MQ path continues uninterrupted.</p>
+          <p><strong>Dual-write:</strong> the producer writes to both MQ and Kafka simultaneously. No bridge is needed; consumers migrate without coordination. The cost is two writes per message on the producer side, with the consistency question of what happens if one write succeeds and the other fails. Dual-write is appropriate only when the producer is already being modified as part of a broader modernisation &mdash; it adds unnecessary complexity if the producer team is not otherwise touched.</p>
+          <p><strong>Direct Kafka migration:</strong> the producer is rewritten to target Kafka; MQ queues are retired; existing MQ consumers must migrate before go-live. This is the high-risk option: all consumers must be ready simultaneously, the cutover is a flag-day event, and the rollback path requires either restoring MQ or replaying from a Kafka offset that existed before the cutover. Only viable for new services or for queue/consumer pairs where both sides are owned by the same team.</p>
+          <p>In a regulated bank, bridge is almost always correct. The bridge can be deployed and validated with zero impact on existing MQ flows. Consumer teams get months to migrate at their own pace. The only cost is the latency added by the bridge &mdash; typically 20&ndash;100 ms for the Kafka Connect MQ Source Connector, acceptable for most event-driven use cases. Payment STP flows with strict latency budgets may require the ACE bridge with a dedicated broker path instead.</p>
+
+          <h2 id="kafka-mq-connector">Kafka MQ Source Connector</h2>
+          <p>The IBM MQ Source Connector for Kafka Connect (available from IBM as a Jar or via the IBM Event Streams operator) reads messages from an IBM MQ queue using the JMS 2.0 API and publishes them to a Kafka topic. It supports exactly-once semantics (via Kafka Connect&rsquo;s exactly-once source connector framework with Kafka 3.3+), configurable message format conversion (bytes, string, or JSON), and dead-letter queue routing for messages that cannot be converted.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>mq-source-connector.json</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-k">"name"</span>: <span class="tok-s">"mq-payments-source"</span>,
+  <span class="tok-k">"config"</span>: {
+    <span class="tok-k">"connector.class"</span>: <span class="tok-s">"com.ibm.eventstreams.connect.mqsource.MQSourceConnector"</span>,
+    <span class="tok-k">"tasks.max"</span>: <span class="tok-s">"4"</span>,
+
+    <span class="tok-c">// IBM MQ connection</span>
+    <span class="tok-k">"mq.queue.manager"</span>:         <span class="tok-s">"PAYQM01"</span>,
+    <span class="tok-k">"mq.connection.mode"</span>:        <span class="tok-s">"client"</span>,
+    <span class="tok-k">"mq.connection.name.list"</span>:   <span class="tok-s">"mq-host-1(1414),mq-host-2(1414)"</span>,
+    <span class="tok-k">"mq.channel.name"</span>:           <span class="tok-s">"KAFKA.BRIDGE.SVRCONN"</span>,
+    <span class="tok-k">"mq.queue"</span>:                  <span class="tok-s">"PAYMENTS.EVENTS.OUT"</span>,
+    <span class="tok-k">"mq.user.authentication.mqcsp"</span>: <span class="tok-s">"true"</span>,
+    <span class="tok-k">"mq.username"</span>:              <span class="tok-s">"${file:/opt/kafka/connect-secret:mq-username}"</span>,
+    <span class="tok-k">"mq.password"</span>:              <span class="tok-s">"${file:/opt/kafka/connect-secret:mq-password}"</span>,
+    <span class="tok-k">"mq.ssl.cipher.suite"</span>:       <span class="tok-s">"TLS_AES_256_GCM_SHA384"</span>,
+    <span class="tok-k">"mq.ssl.peer.name"</span>:          <span class="tok-s">"CN=PAYQM01,O=AcmeBank,C=SA"</span>,
+
+    <span class="tok-c">// Message conversion</span>
+    <span class="tok-k">"mq.message.body.jms"</span>:       <span class="tok-s">"true"</span>,
+    <span class="tok-k">"mq.record.builder"</span>:         <span class="tok-s">"com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"</span>,
+    <span class="tok-k">"value.converter"</span>:           <span class="tok-s">"org.apache.kafka.connect.converters.ByteArrayConverter"</span>,
+    <span class="tok-k">"key.converter"</span>:             <span class="tok-s">"org.apache.kafka.connect.storage.StringConverter"</span>,
+
+    <span class="tok-c">// MQMD headers forwarded as Kafka headers</span>
+    <span class="tok-k">"mq.jms.properties.copy.to.kafka.headers"</span>: <span class="tok-s">"true"</span>,
+
+    <span class="tok-c">// Target Kafka topic</span>
+    <span class="tok-k">"topic"</span>: <span class="tok-s">"banking.payments.events.raw"</span>,
+
+    <span class="tok-c">// Exactly-once and ordering</span>
+    <span class="tok-k">"exactly.once.source.support"</span>: <span class="tok-s">"enabled"</span>,
+    <span class="tok-k">"mq.exactly.once.state.queue"</span>: <span class="tok-s">"KAFKA.BRIDGE.STATE"</span>,
+
+    <span class="tok-c">// Dead-letter queue for unconvertible messages</span>
+    <span class="tok-k">"mq.error.queue.put"</span>:        <span class="tok-s">"true"</span>,
+    <span class="tok-k">"errors.deadletterqueue.topic.name"</span>: <span class="tok-s">"banking.payments.events.dlq"</span>,
+    <span class="tok-k">"errors.tolerance"</span>:          <span class="tok-s">"all"</span>,
+    <span class="tok-k">"errors.log.enable"</span>:         <span class="tok-s">"true"</span>
+  }
+}</code></pre>
+          </div>
+
+          <p>Key configuration decisions: <strong>tasks.max</strong> controls parallelism. Each task gets an independent JMS session and reads from the same queue; MQ assigns messages to tasks in arrival order within the same session, so increasing tasks increases throughput at the cost of per-message ordering guarantees (messages from different tasks may land in different Kafka partitions in out-of-arrival-order). For payment events where ordering per account matters, use a single task with a key extractor that assigns the account number as the Kafka record key &mdash; Kafka then guarantees ordering within the partition for that account. <strong>mq.exactly.once.state.queue</strong> must be a persistent, non-transactional queue on the same queue manager that persists connector state across restarts; without it, the connector falls back to at-least-once.</p>
+
+          <div class="diagram" role="img" aria-label="MQ-to-Kafka bridge architecture: IBM MQ queue manager on the left with PAYMENTS.EVENTS.OUT queue; Kafka Connect MQ Source Connector in the middle bridging to Kafka cluster; legacy MQ consumers continue on the left side; new Kafka consumers read from the topic on the right; a DLQ path handles conversion failures.">
+            <div class="diagram__inner">
+              <svg width="780" height="380" viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+                <defs>
+                  <marker id="mq-arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+                  </marker>
+                  <marker id="mq-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#00d4aa"/>
+                  </marker>
+                  <marker id="mq-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+                  </marker>
+                  <marker id="mq-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+                  </marker>
+                  <marker id="mq-arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#4a9eff"/>
+                  </marker>
+                </defs>
+
+                <!-- IBM MQ side -->
+                <rect x="10" y="20" width="170" height="210" rx="6" fill="#16161f" stroke="#fbbf24" stroke-width="1.5"/>
+                <text x="95" y="42" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">IBM MQ 9.3</text>
+                <text x="95" y="56" text-anchor="middle" fill="#71717a" font-size="8">Queue Manager: PAYQM01</text>
+
+                <rect x="22" y="68" width="146" height="34" rx="4" fill="#1c1c28" stroke="#fbbf24"/>
+                <text x="95" y="84" text-anchor="middle" fill="#e4e4e7" font-size="8" font-weight="600">PAYMENTS.EVENTS.OUT</text>
+                <text x="95" y="96" text-anchor="middle" fill="#71717a" font-size="7">persistent &middot; FIFO</text>
+
+                <rect x="22" y="112" width="146" height="34" rx="4" fill="#1c1c28" stroke="#fbbf24" stroke-dasharray="4,3"/>
+                <text x="95" y="128" text-anchor="middle" fill="#fbbf24" font-size="8" font-weight="600">KAFKA.BRIDGE.STATE</text>
+                <text x="95" y="140" text-anchor="middle" fill="#71717a" font-size="7">exactly-once state</text>
+
+                <rect x="22" y="156" width="146" height="34" rx="4" fill="#1c1c28" stroke="#ef4444" stroke-dasharray="4,3"/>
+                <text x="95" y="172" text-anchor="middle" fill="#ef4444" font-size="8" font-weight="600">KAFKA.BRIDGE.DLQ</text>
+                <text x="95" y="184" text-anchor="middle" fill="#71717a" font-size="7">bridge error queue</text>
+
+                <!-- Legacy MQ consumers -->
+                <rect x="22" y="202" width="146" height="20" rx="4" fill="#1a1a2e" stroke="#71717a" stroke-dasharray="2,2"/>
+                <text x="95" y="216" text-anchor="middle" fill="#71717a" font-size="7">Legacy MQ consumers (unchanged)</text>
+
+                <!-- Kafka Connect Bridge -->
+                <rect x="225" y="55" width="160" height="120" rx="6" fill="#1c1c28" stroke="#00d4aa" stroke-width="1.5"/>
+                <text x="305" y="78" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="600">Kafka Connect</text>
+                <text x="305" y="92" text-anchor="middle" fill="#71717a" font-size="8">MQ Source Connector</text>
+                <text x="305" y="110" text-anchor="middle" fill="#a78bfa" font-size="8">mq-payments-source</text>
+                <text x="305" y="124" text-anchor="middle" fill="#71717a" font-size="7">tasks.max=4 (or 1 for FIFO)</text>
+                <text x="305" y="138" text-anchor="middle" fill="#71717a" font-size="7">exactly.once.source.support</text>
+                <text x="305" y="152" text-anchor="middle" fill="#71717a" font-size="7">JMS &rarr; bytes + headers</text>
+
+                <!-- Arrows MQ to Connector -->
+                <line x1="180" y1="85" x2="222" y2="100" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#mq-arr1)"/>
+                <text x="201" y="88" text-anchor="middle" fill="#fbbf24" font-size="7">JMS GET</text>
+
+                <!-- Kafka Cluster -->
+                <rect x="435" y="20" width="200" height="210" rx="6" fill="#16161f" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="535" y="42" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Apache Kafka 3.7</text>
+
+                <rect x="447" y="55" width="176" height="34" rx="4" fill="#1c1c28" stroke="#a78bfa"/>
+                <text x="535" y="71" text-anchor="middle" fill="#e4e4e7" font-size="8" font-weight="600">banking.payments.events.raw</text>
+                <text x="535" y="83" text-anchor="middle" fill="#71717a" font-size="7">retention: 30 days &middot; replication: 3</text>
+
+                <rect x="447" y="100" width="176" height="34" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="535" y="116" text-anchor="middle" fill="#00d4aa" font-size="8" font-weight="600">banking.payments.events.v1</text>
+                <text x="535" y="128" text-anchor="middle" fill="#71717a" font-size="7">Avro schema &middot; CloudEvents 1.0</text>
+
+                <rect x="447" y="145" width="176" height="34" rx="4" fill="#1c1c28" stroke="#ef4444" stroke-dasharray="4,3"/>
+                <text x="535" y="161" text-anchor="middle" fill="#ef4444" font-size="8" font-weight="600">banking.payments.events.dlq</text>
+                <text x="535" y="173" text-anchor="middle" fill="#71717a" font-size="7">conversion failures &middot; manual review</text>
+
+                <rect x="447" y="190" width="176" height="30" rx="4" fill="#1a1a2e" stroke="#71717a" stroke-dasharray="2,2"/>
+                <text x="535" y="208" text-anchor="middle" fill="#71717a" font-size="7">Schema Registry (Confluent-compatible)</text>
+
+                <!-- Arrow Connector to Kafka -->
+                <line x1="385" y1="100" x2="432" y2="85" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#mq-arr2)"/>
+                <text x="408" y="88" text-anchor="middle" fill="#00d4aa" font-size="7">produce</text>
+
+                <!-- Transform box -->
+                <rect x="225" y="210" width="160" height="50" rx="6" fill="#1c1c28" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="305" y="230" text-anchor="middle" fill="#4a9eff" font-size="9" font-weight="600">ACE Transform Flow</text>
+                <text x="305" y="244" text-anchor="middle" fill="#71717a" font-size="7">raw &rarr; Avro &middot; MQMD &rarr; CE attrs</text>
+                <text x="305" y="256" text-anchor="middle" fill="#71717a" font-size="7">ISO 20022 XML &rarr; canonical JSON</text>
+
+                <!-- Arrows to/from transform -->
+                <line x1="535" y1="90" x2="535" y2="262" stroke="#4a9eff" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#mq-arr5)"/>
+                <line x1="385" y1="240" x2="432" y2="128" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#mq-arr5)"/>
+
+                <!-- New Kafka consumers -->
+                <rect x="680" y="55" width="88" height="34" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="724" y="71" text-anchor="middle" fill="#00d4aa" font-size="8" font-weight="600">Kafka Consumer</text>
+                <text x="724" y="83" text-anchor="middle" fill="#71717a" font-size="7">group: fraud-detection</text>
+
+                <rect x="680" y="100" width="88" height="34" rx="4" fill="#1c1c28" stroke="#00d4aa"/>
+                <text x="724" y="116" text-anchor="middle" fill="#00d4aa" font-size="8" font-weight="600">Kafka Consumer</text>
+                <text x="724" y="128" text-anchor="middle" fill="#71717a" font-size="7">group: reporting-svc</text>
+
+                <rect x="680" y="145" width="88" height="34" rx="4" fill="#1c1c28" stroke="#4a9eff"/>
+                <text x="724" y="161" text-anchor="middle" fill="#4a9eff" font-size="8" font-weight="600">Flink Job</text>
+                <text x="724" y="173" text-anchor="middle" fill="#71717a" font-size="7">stream analytics</text>
+
+                <line x1="635" y1="72" x2="677" y2="72" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#mq-arr3)"/>
+                <line x1="635" y1="117" x2="677" y2="117" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#mq-arr3)"/>
+                <line x1="635" y1="162" x2="677" y2="162" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#mq-arr3)"/>
+
+                <!-- Legend -->
+                <text x="10" y="310" fill="#71717a" font-size="8">Legend:</text>
+                <line x1="55" y1="307" x2="80" y2="307" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#mq-arr1)"/>
+                <text x="83" y="310" fill="#fbbf24" font-size="7">MQ path (unchanged)</text>
+                <line x1="175" y1="307" x2="200" y2="307" stroke="#00d4aa" stroke-width="1.5" marker-end="url(#mq-arr2)"/>
+                <text x="203" y="310" fill="#00d4aa" font-size="7">Bridge path (new)</text>
+                <line x1="285" y1="307" x2="310" y2="307" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#mq-arr3)"/>
+                <text x="313" y="310" fill="#a78bfa" font-size="7">Kafka consumer path</text>
+                <line x1="415" y1="307" x2="440" y2="307" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#mq-arr4)"/>
+                <text x="443" y="310" fill="#ef4444" font-size="7">DLQ path</text>
+
+                <text x="390" y="360" text-anchor="middle" fill="#71717a" font-size="8">MQ consumers continue uninterrupted &middot; Kafka consumers added incrementally &middot; MQ retired only after 60-day zero-traffic window confirmed</text>
+              </svg>
+            </div>
+            <div class="diagram__caption">Figure 1 &mdash; Bridge architecture: MQ continues to serve legacy consumers unchanged while the Kafka Connect MQ Source Connector copies every message to Kafka topics. An optional ACE transform flow converts raw bytes to Avro/CloudEvents. New consumers read from Kafka and are validated in parallel before legacy consumers cut over.</div>
+          </div>
+
+          <h2 id="ace-bridge-pattern">ACE Bridge Pattern</h2>
+          <p>When the Kafka Connect MQ Source Connector&rsquo;s latency profile (20&ndash;100 ms) is too high for latency-sensitive flows &mdash; real-time fraud scoring, payment STP with a 500 ms SLA, intraday liquidity monitoring &mdash; use an ACE message flow as the bridge instead. ACE can deliver messages from an MQ queue to Kafka in under 10 ms end-to-end because the ACE runtime holds a persistent JMS session and a persistent Kafka producer in the same JVM, with no network round-trip between them.</p>
+          <p>The bridge flow pattern: <strong>MQInput node</strong> (auto-ack disabled; commits only after Kafka produce succeeds) &rarr; <strong>ESQL Compute node</strong> (extract MQMD headers, map to Kafka record headers, transform message body) &rarr; <strong>KafkaProducer node</strong> (synchronous send with acks=all; on failure, the exception flows to an error handler that moves the message to the ACE DLQ rather than leaving it uncommitted on the MQ queue). The reverse bridge (Kafka &rarr; MQ, for consumers that cannot be migrated) uses <strong>KafkaConsumer node</strong> &rarr; <strong>ESQL Compute</strong> &rarr; <strong>MQOutput node</strong>.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>MQToKafkaBridge.esql</span><span class="code-block__lang">sql</span></div>
+<pre><code><span class="tok-k">CREATE COMPUTE MODULE</span> MapMQHeadersToKafka
+
+  <span class="tok-k">CREATE FUNCTION</span> Main() <span class="tok-k">RETURNS BOOLEAN</span>
+  <span class="tok-k">BEGIN</span>
+
+    <span class="tok-c">-- Preserve MQMD correlation and message IDs as Kafka headers</span>
+    <span class="tok-k">DECLARE</span> mqmd <span class="tok-s">REFERENCE TO</span> InputRoot.MQMD;
+
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.mq.msgid       = mqmd.MsgId;
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.mq.correlid    = mqmd.CorrelId;
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.mq.format       = TRIM(mqmd.Format);
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.mq.accountid    = mqmd.AccountingToken;
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.mq.puttime      = mqmd.PutDateTime;
+
+    <span class="tok-c">-- Map to CloudEvents 1.0 required attributes</span>
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.ce-specversion = <span class="tok-s">'1.0'</span>;
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.ce-type        = <span class="tok-s">'com.acmebank.payments.initiated.v1'</span>;
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.ce-source      = <span class="tok-s">'/mq/PAYQM01/PAYMENTS.EVENTS.OUT'</span>;
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.ce-id          =
+        CAST(UUIDASCHAR AS CHARACTER);  <span class="tok-c">-- new event ID, not MQ message ID</span>
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.ce-time        =
+        CAST(mqmd.PutDateTime <span class="tok-s">AS CHARACTER</span> FORMAT <span class="tok-s">'yyyy-MM-dd''T''HH:mm:ss.SSSZ'</span>);
+
+    <span class="tok-c">-- Kafka partition key: account number extracted from ISO 20022 XML payload</span>
+    <span class="tok-c">-- (guarantees per-account ordering within a partition)</span>
+    <span class="tok-k">DECLARE</span> payNS <span class="tok-s">NAMESPACE</span> <span class="tok-s">'urn:iso:std:iso:20022:tech:xsd:pain.001.001.11'</span>;
+    <span class="tok-k">DECLARE</span> acctId <span class="tok-s">CHARACTER</span>
+        InputRoot.XMLNSC.(payNS)<span class="tok-s">Document</span>.(payNS)<span class="tok-s">CstmrCdtTrfInitn</span>
+                                .(payNS)<span class="tok-s">PmtInf</span>.(payNS)<span class="tok-s">DbtrAcct</span>.(payNS)<span class="tok-s">Id</span>.(payNS)<span class="tok-s">IBAN</span>;
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Key = acctId;
+
+    <span class="tok-c">-- Pass message body unchanged (raw XML bytes); transform to Avro happens</span>
+    <span class="tok-c">-- in a separate downstream ACE flow subscribing from the .raw topic</span>
+    <span class="tok-k">SET</span> OutputRoot.BLOB.BLOB = InputRoot.BLOB.BLOB;
+
+    <span class="tok-k">RETURN TRUE</span>;
+  <span class="tok-k">END</span>;
+
+<span class="tok-k">END MODULE</span>;</code></pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <div class="callout__title">Commit ordering: MQ ack after Kafka produce, never before</div>
+            <p>The ACE MQInput node must be configured with <code>Transaction mode: Yes</code> and the KafkaProducer node must use a synchronous send (acks=all, no fire-and-forget). If Kafka produce fails, the ACE transaction is rolled back and the MQ message is returned to the queue. If the MQ ack is sent before the Kafka produce completes &mdash; which happens if the KafkaProducer is in asynchronous mode &mdash; a Kafka produce failure causes the message to be lost from MQ but never land in Kafka. In a regulated bank, that is an unrecoverable audit gap.</p>
+          </div>
+
+          <h2 id="message-translation">Message Format Translation</h2>
+          <p>MQ messages in a banking environment are almost universally one of three formats: <strong>ISO 20022 XML</strong> (pain.001, pacs.008, camt.054 and their variants), <strong>ISO 8583</strong> binary or ASN.1 (card-network messages), or <strong>proprietary fixed-length or CSV</strong> (batch files from core banking or ERP). Kafka consumers &mdash; especially stream-processing jobs and analytics pipelines &mdash; expect Avro with a schema registered in the Schema Registry, or at minimum JSON with a declared schema.</p>
+          <p>The translation strategy depends on who owns the schema: if the ISO 20022 message already has an Avro mapping defined in the schema registry (as is increasingly the case with ISO 20022 MX adoption for SWIFT and SAMA RTGS integration), the bridge converts in-flight. If no Avro schema exists yet, publish the raw bytes to a <code>.raw</code> topic first, then run a separate transform consumer that converts and publishes to a versioned <code>.v1</code> topic. This decouples schema evolution from bridge operation &mdash; the bridge never needs to change when the schema is updated.</p>
+          <p>For ISO 20022 XML to Avro, the mapping is field-level: each XML element that maps to a business concept (debtor IBAN, creditor BIC, instructed amount, end-to-end reference) becomes a named Avro field. Fields with no Kafka consumer interest are omitted from the Avro schema but preserved in a catch-all <code>raw_xml</code> bytes field for auditability. The enrichment flow adds computed fields: a canonical <code>event_time</code> in epoch milliseconds (from MQMD PutDateTime, not from the XML &mdash; the XML timestamp may reflect the originating bank&rsquo;s clock, which may differ from the queue manager&rsquo;s clock by seconds), and a <code>source_queue</code> string for lineage.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>payment-event-v1.avsc</span><span class="code-block__lang">json</span></div>
+<pre><code>{
+  <span class="tok-k">"namespace"</span>: <span class="tok-s">"com.acmebank.payments"</span>,
+  <span class="tok-k">"type"</span>: <span class="tok-s">"record"</span>,
+  <span class="tok-k">"name"</span>: <span class="tok-s">"PaymentInitiated"</span>,
+  <span class="tok-k">"doc"</span>: <span class="tok-s">"ISO 20022 pain.001 bridged from MQ to Kafka. Schema v1."</span>,
+  <span class="tok-k">"fields"</span>: [
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"event_id"</span>,       <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"CloudEvents ce-id. UUID assigned at bridge time."</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"event_time"</span>,     <span class="tok-k">"type"</span>: <span class="tok-s">"long"</span>,
+      <span class="tok-k">"logicalType"</span>: <span class="tok-s">"timestamp-millis"</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"MQMD PutDateTime epoch ms. Authoritative timestamp for event ordering."</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"mq_msgid"</span>,       <span class="tok-k">"type"</span>: <span class="tok-s">"bytes"</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"Original MQMD MsgId for MQ/Kafka correlation and audit."</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"debtor_iban"</span>,    <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"creditor_bic"</span>,   <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"creditor_iban"</span>,  <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"amount"</span>,         <span class="tok-k">"type"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"bytes"</span>, <span class="tok-k">"logicalType"</span>: <span class="tok-s">"decimal"</span>,
+                              <span class="tok-k">"precision"</span>: <span class="tok-n">18</span>, <span class="tok-k">"scale"</span>: <span class="tok-n">2</span> } },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"currency"</span>,      <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"end_to_end_id"</span>, <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"source_queue"</span>,  <span class="tok-k">"type"</span>: <span class="tok-s">"string"</span>,
+      <span class="tok-k">"default"</span>: <span class="tok-s">"PAYQM01/PAYMENTS.EVENTS.OUT"</span> },
+    { <span class="tok-k">"name"</span>: <span class="tok-s">"raw_xml"</span>,        <span class="tok-k">"type"</span>: [<span class="tok-s">"null"</span>, <span class="tok-s">"bytes"</span>], <span class="tok-k">"default"</span>: <span class="tok-k">null</span>,
+      <span class="tok-k">"doc"</span>: <span class="tok-s">"Original ISO 20022 XML payload preserved for audit. Nullable after retention expires."</span> }
+  ]
+}</code></pre>
+          </div>
+
+          <div class="callout callout--note">
+            <div class="callout__title">Decimal amounts: never use float or double</div>
+            <p>ISO 20022 monetary amounts are fixed-point decimal values. Avro&rsquo;s <code>bytes</code> type with <code>logicalType: decimal</code> is the only correct representation &mdash; it stores the value as an unscaled integer in two&rsquo;s complement big-endian bytes, which round-trips without floating-point precision loss. Using Avro <code>float</code> or <code>double</code> for monetary amounts is a critical correctness bug that SAMA audit examiners will find in a schema review. Use Avro decimal at every hop from MQ to Kafka to Flink to the data warehouse.</p>
+          </div>
+
+          <h2 id="consumer-cutover">Consumer Group Cutover</h2>
+          <p>Consumer cutover is the controlled migration of an MQ message consumer to read from the Kafka topic instead. The dual-consume pattern runs both the MQ consumer and a new Kafka consumer in parallel, compares results for a validation window (typically 1&ndash;4 weeks), and then stops the MQ consumer after the Kafka consumer is confirmed correct. The MQ queue continues to receive messages from the bridge throughout; stopping the MQ consumer does not remove the queue or the bridge.</p>
+          <p>The cutover gate is binary: the consumer either reads from MQ or from Kafka, not both. Implement it with a configuration flag in the consumer&rsquo;s environment (a ConfigMap value in Kubernetes, a property in IBM App Connect, or an application-level feature flag). Never implement it in code as a conditional that branches at message processing time &mdash; the dual-processing footprint creates ordering anomalies when both paths produce output to a downstream system simultaneously.</p>
+
+          <div class="code-block">
+            <div class="code-block__header"><span>consumer-cutover.sh</span><span class="code-block__lang">shell</span></div>
+<pre><code><span class="tok-c">#!/usr/bin/env bash</span>
+<span class="tok-c"># Pre-cutover: validate Kafka consumer group lag is zero (caught up to live)</span>
+kafka-consumer-groups.sh \
+  --bootstrap-server kafka:9092 \
+  --describe \
+  --group fraud-detection-svc
+
+<span class="tok-c"># Expected output before cutover (all partitions at LAG=0):</span>
+<span class="tok-c"># GROUP                   TOPIC                           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG</span>
+<span class="tok-c"># fraud-detection-svc     banking.payments.events.v1      0          48201           48201           0</span>
+<span class="tok-c"># fraud-detection-svc     banking.payments.events.v1      1          51889           51889           0</span>
+<span class="tok-c"># fraud-detection-svc     banking.payments.events.v1      2          49703           49703           0</span>
+
+<span class="tok-c"># Cutover: set feature flag in consumer ConfigMap (zero-downtime rolling restart)</span>
+kubectl patch configmap fraud-detection-config \
+  -p '{"data":{"MESSAGING_BACKEND":"kafka","MQ_ENABLED":"false"}}'
+
+kubectl rollout restart deployment/fraud-detection-svc
+kubectl rollout status deployment/fraud-detection-svc
+
+<span class="tok-c"># Post-cutover: verify MQ queue depth drops to zero (no new MQ consumers reading)</span>
+<span class="tok-c"># MQ queue depth should remain at 0 for the bridge backlog; bridge continues to publish</span>
+echo "display qstatus(PAYMENTS.EVENTS.OUT) all" | \
+  runmqsc PAYQM01 | grep CURDEPTH</code></pre>
+          </div>
+
+          <p>Validation criteria before cutting over a consumer: (1) the Kafka consumer group lag for all partitions has been at zero for at least 72 continuous hours, (2) a sample of 1,000 messages has been shadow-processed by the Kafka consumer and the output compared to the MQ consumer output with zero discrepancy, (3) the Kafka consumer has processed at least one full day of peak traffic (Friday morning in KSA banking, the highest payment volume period), and (4) the consumer team has a rollback plan &mdash; resetting the config flag &mdash; documented and tested in a non-production environment.</p>
+
+          <h2 id="dead-letter-handling">Dead-Letter Handling Across the Boundary</h2>
+          <p>The bridge introduces a new DLQ topology. MQ already has a dead-letter queue (SYSTEM.DEAD.LETTER.QUEUE or a configured application DLQ) for messages that cannot be delivered. Kafka has its own DLQ topic convention (suffixed <code>.dlq</code> or <code>.dead-letter</code>). With a bridge, messages can fail at multiple points: in the MQ-to-Kafka bridge (conversion failure), in the Kafka consumer (processing failure), or in the ACE transform flow (schema validation failure). Each failure point must have a named DLQ and an owner.</p>
+          <p>The bridge DLQ topology: <strong>MQ KAFKA.BRIDGE.DLQ</strong> receives messages that the Kafka Connect connector or ACE bridge cannot convert or publish (network failure after retry exhaustion, malformed XML, schema mismatch that blocks serialisation). <strong>banking.payments.events.dlq</strong> Kafka topic receives records that the Kafka consumer rejects after retry exhaustion. The two DLQs are intentionally separate &mdash; a message in the MQ DLQ was never published to Kafka; a message in the Kafka DLQ was published but not processed. The remediation workflow differs for each.</p>
+          <p>Poison-pill detection on the bridge: a message that fails conversion consistently across retries is a poison pill. The connector&rsquo;s <code>errors.retry.timeout</code> must be bounded (default is infinite; set to 300,000 ms in production). After the timeout, the message is moved to the bridge DLQ with error headers (the exception type, the stack trace summary, and the original MQMD fields) appended. Never let a single poison pill stall the entire bridge; configure <code>errors.tolerance: all</code> to skip the failing message after the retry timeout, with a mandatory alert on the DLQ metric.</p>
+
+          <div class="callout callout--danger">
+            <div class="callout__title">Unmonitored DLQs cause silent data loss in regulated payment flows</div>
+            <p>An MQ DLQ that fills silently means payment events are being dropped from the bridge. SAMA&rsquo;s operational resilience guidelines and ISO 20022 reconciliation requirements mean that every missed payment event must be detectable and recoverable. Alert on MQ queue depth for <code>KAFKA.BRIDGE.DLQ</code> with a threshold of 1 &mdash; any message in the bridge DLQ is an incident. Alert on the Kafka DLQ topic consumer-group lag with a threshold of 10. Neither DLQ should ever be silent for more than the agreed SLA for incident detection.</p>
+          </div>
+
+          <h2 id="observability">Observability During Migration</h2>
+          <p>Running MQ and Kafka in parallel creates an observability gap: a message can be in-flight on either path, in a DLQ on either side, or delayed by bridge latency, without any single dashboard showing the complete picture. The minimum viable observability stack during migration consists of three layers: MQ queue depth metrics, Kafka consumer-group lag metrics, and end-to-end message correlation traces.</p>
+          <p><strong>MQ metrics</strong>: expose queue depth (<code>CURDEPTH</code>), put rate, and get rate for every queue involved in the migration via the IBM MQ Exporter for Prometheus (available from the IBM MQ GitHub repository). Scrape at 30-second intervals. Alert on: source queue depth above the 95th-percentile baseline (indicating bridge backpressure), DLQ depth above 0 (indicating conversion failures), and state queue depth growth (indicating the exactly-once connector is falling behind).</p>
+          <p><strong>Kafka metrics</strong>: expose consumer-group lag per topic partition via the standard <code>kafka_consumer_group_lag</code> JMX metric or via the Kafka Exporter for Prometheus. Alert on: aggregate lag above 10,000 records for payment event topics (indicating consumer backpressure or consumer failure), DLQ topic record count growth, and schema registry compatibility check failures (indicating a producer is publishing a message that breaks the registered schema).</p>
+          <p><strong>End-to-end correlation</strong>: the MQMD <code>CorrelId</code> and the CloudEvents <code>ce-id</code> must both be logged at every processing hop. A payment event that enters MQ as message ID <code>AMQ1234</code> must be traceable to a Kafka record by its <code>mq.msgid</code> header, to the ACE transform output by the CloudEvents <code>ce-id</code>, and to the downstream consumer output by whatever correlation ID the consumer propagates. Without this chain, a missing payment event cannot be located across the boundary during a production incident.</p>
+
+          <h2 id="production-checklist">Steps to Bridge IBM MQ to Kafka in a Regulated Bank</h2>
+
+          <ol class="step-list">
+            <li>
+              <h3>Pre-flight: inventory and risk assessment</h3>
+              <p>List every queue to be bridged with its current message rate (put/s and get/s), peak queue depth, message size distribution, and the list of consuming applications. Identify queues with XA transactional consumers &mdash; these cannot be bridged with the Kafka Connect connector alone and require an ACE bridge with two-phase commit. Identify queues used by COBOL batch consumers that read in deferred mode &mdash; these cannot migrate to Kafka without a code change on the consumer side, and may need a Kafka-to-MQ reverse bridge to continue operating. Document the migration as a phased plan with explicit go/no-go gates for each queue.</p>
+            </li>
+            <li>
+              <h3>Deploy bridge infrastructure</h3>
+              <p>Deploy Kafka Connect workers on the same network segment as the IBM MQ queue manager to minimise bridge latency. Configure the Kafka Connect worker with 4&ndash;8 worker threads per instance and at least two instances for HA. Create the Kafka topics with appropriate partition counts (match the expected peak throughput divided by the target per-partition throughput) and replication factor 3. Deploy the Schema Registry. Configure monitoring and alerting for bridge DLQ, source queue depth, and Kafka lag before the first connector is deployed.</p>
+            </li>
+            <li>
+              <h3>Shadow run: bridge without Kafka consumers</h3>
+              <p>Deploy the Kafka Connect MQ Source Connector in production against the first queue. Verify that messages flow from MQ to Kafka with correct content, correct headers (MQMD fields preserved), and correct partition assignment (key-based partitioning working as expected). Run the shadow for a minimum of 5 business days. Compare MQ put rate to Kafka produce rate &mdash; they must match within 0.1%. Confirm no bridge DLQ growth. Confirm exactly-once state queue remains stable. Only proceed when shadow run is clean.</p>
+            </li>
+            <li>
+              <h3>Consumer validation: dual-consume</h3>
+              <p>Deploy new Kafka consumers in shadow mode: they read from the Kafka topic but write their output to a validation store rather than to production. The existing MQ consumers continue to run unchanged. Compare Kafka consumer output to MQ consumer output for a validation window of 10 business days. Any discrepancy in message content, ordering within an account, or completeness (message counts must match between MQ and Kafka consumers) blocks cutover for that consumer. Fix the bridge configuration, transform flow, or consumer logic before proceeding.</p>
+            </li>
+            <li>
+              <h3>Consumer cutover</h3>
+              <p>Execute the cutover for each consumer team in a planned maintenance window (not during peak payment hours: avoid 09:00&ndash;11:00 KSA local time on Sunday&ndash;Thursday). Update the consumer configuration flag to <code>MESSAGING_BACKEND=kafka</code>. Restart the consumer service. Monitor for 30 minutes: Kafka consumer lag must remain near zero, error rates must not increase, downstream system outputs must continue to arrive with the expected frequency. If any indicator degrades, roll back by resetting the configuration flag. Do not cut over more than one consumer team per day.</p>
+            </li>
+            <li>
+              <h3>MQ decommission gate</h3>
+              <p>An MQ queue is eligible for decommission only when: (a) all consumer teams have confirmed cutover and their Kafka consumers have been in production for at least 60 calendar days, (b) the MQ queue depth has been zero for the entire 60-day window (monitored at 5-minute intervals, no exceptions), (c) the SAMA audit log for the queue shows no get operations from any application other than the bridge connector during the 60-day window, and (d) a named approver at VP level has signed off the decommission checklist. Remove the bridge connector only after the queue is confirmed decommissioned.</p>
+            </li>
+          </ol>
+
+          <h2 id="comparison">Approach Comparison</h2>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Approach</th>
+                <th>Latency</th>
+                <th>Exactly-once</th>
+                <th>Ordering</th>
+                <th>Effort</th>
+                <th>Best for</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Kafka Connect MQ Source</strong></td>
+                <td>20&ndash;100 ms</td>
+                <td>Yes (Kafka 3.3+ with state queue)</td>
+                <td>Per-partition, key-based</td>
+                <td>Low &mdash; JSON config, no code</td>
+                <td>Most event and notification queues; analytics pipelines</td>
+              </tr>
+              <tr>
+                <td><strong>ACE bridge flow</strong></td>
+                <td>5&ndash;15 ms</td>
+                <td>Yes (ACE XA + Kafka acks=all)</td>
+                <td>Strict FIFO within ACE worker thread</td>
+                <td>Medium &mdash; ACE flow + ESQL</td>
+                <td>Low-latency STP paths; ISO 20022 XML transform; XA consumers</td>
+              </tr>
+              <tr>
+                <td><strong>IBM Event Streams MQ bridge</strong></td>
+                <td>10&ndash;50 ms</td>
+                <td>At-least-once; no state queue</td>
+                <td>Arrival order; no key-based partitioning</td>
+                <td>Low &mdash; operator-managed; IBM support included</td>
+                <td>IBM Event Streams-managed Kafka; teams without Kafka Connect expertise</td>
+              </tr>
+              <tr>
+                <td><strong>Direct Kafka migration</strong></td>
+                <td>Native Kafka (1&ndash;5 ms)</td>
+                <td>Yes (idempotent producer + transactional consumers)</td>
+                <td>Per-partition, key-based</td>
+                <td>High &mdash; producer and all consumers rewritten</td>
+                <td>New services; queues where both producer and all consumers are owned by one team</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- lab-meta:start -->
+          <aside class="lab-author" aria-label="About the author">
+            <p class="lab-author__label">About the author</p>
+            <p class="lab-author__text">Waleed Albadawi is an enterprise technology and transformation executive in regulated banking who connects business strategy with engineering execution, turning fragmented technology delivery into governed, resilient, reusable institutional capability.</p>
+            <p class="lab-author__more"><a href="../../about.html">More about Waleed &rarr;</a></p>
+          </aside>
+
+          <aside class="lab-related" aria-label="Related reading">
+            <h2 class="lab-related__heading">Related reading</h2>
+            <ul class="lab-related__list">
+              <li><a class="lab-related__link" href="anti-corruption-layer-core-banking.html"><span class="lab-related__kicker">Lab &middot; Legacy Integration</span><span class="lab-related__name">Anti-Corruption Layer: Isolating Modern Domains from Legacy Systems of Record</span></a></li>
+              <li><a class="lab-related__link" href="../event-driven/kafka-and-mq.html"><span class="lab-related__kicker">Lab &middot; Event-Driven</span><span class="lab-related__name">Kafka and IBM MQ: Unified Event Backbone for Regulated Banking</span></a></li>
+              <li><a class="lab-related__link" href="../data-sync/debezium-and-outbox.html"><span class="lab-related__kicker">Lab &middot; Data Sync</span><span class="lab-related__name">Debezium and the Outbox Pattern: CDC-Driven Event Publishing Without Dual Writes</span></a></li>
+              <li><a class="lab-related__link lab-related__link--insights" href="../../blog/mq-to-kafka-migration-decision.html"><span class="lab-related__kicker">Insights &middot; the leadership decision</span><span class="lab-related__name">MQ to Kafka: The Messaging Migration Decision That Banks Keep Getting Wrong</span></a></li>
+            </ul>
+          </aside>
+          <!-- lab-meta:end -->
+
+          <nav class="article-nav">
+            <a href="anti-corruption-layer-core-banking.html">
+              <div class="article-nav__label">&larr; Previous</div>
+              <div class="article-nav__title">Anti-Corruption Layer: Isolating Modern Domains</div>
+            </a>
+            <a href="../legacy-integration.html" class="article-nav__next">
+              <div class="article-nav__label">Back to topic</div>
+              <div class="article-nav__title">Legacy Integration &rarr;</div>
+            </a>
+          </nav>
+
+        </article>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <a href="../../index.html" class="site-logo">W<span>.</span> Albadawi</a>
+          <p>Enterprise technology and transformation executive. Riyadh, Saudi Arabia.</p>
+        </div>
+        <nav class="site-footer__col" aria-label="Explore">
+          <p class="site-footer__title">Explore</p>
+          <ul>
+            <li><a href="../../about.html">About</a></li>
+            <li><a href="../../experience.html">Experience</a></li>
+            <li><a href="../../projects.html">Transformations</a></li>
+            <li><a href="../../expertise.html">Expertise</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Writing">
+          <p class="site-footer__title">Writing</p>
+          <ul>
+            <li><a href="../../blog.html">Insights</a></li>
+            <li><a href="../../technical.html">Technical Lab</a></li>
+            <li><a href="../../feed.xml">RSS feed</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Connect">
+          <p class="site-footer__title">Connect</p>
+          <ul>
+            <li><a href="../../contact.html">Contact</a></li>
+            <li><a href="https://www.linkedin.com/in/walidkhb" rel="me noopener" target="_blank">LinkedIn</a></li>
+            <li><a href="https://medium.com/@walidkhb" rel="me noopener" target="_blank">Medium</a></li>
+            <li><a href="https://github.com/walidkhb" rel="me noopener" target="_blank">GitHub</a></li>
+            <li><a href="../../assets/Waleed-Albadawi-CV.pdf">Download CV</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="site-footer__base">
+        <span>&copy; 2026 Waleed Albadawi</span>
+        <span>Views are my own and do not represent my employer.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js?v=20261128e"></script>
+  <script>
+    (function(){
+      var sections = document.querySelectorAll('.lab-article__body h2[id]');
+      var links = document.querySelectorAll('.lab-article__toc-list a');
+      if (!sections.length || !links.length) return;
+      function onScroll(){
+        var fromTop = window.scrollY + 120;
+        var current = sections[0].id;
+        sections.forEach(function(s){ if (s.offsetTop <= fromTop) current = s.id; });
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#' + current); });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
