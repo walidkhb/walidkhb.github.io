@@ -216,7 +216,7 @@
     <span class="tok-k">"mq.username"</span>:              <span class="tok-s">"${file:/opt/kafka/connect-secret:mq-username}"</span>,
     <span class="tok-k">"mq.password"</span>:              <span class="tok-s">"${file:/opt/kafka/connect-secret:mq-password}"</span>,
     <span class="tok-k">"mq.ssl.cipher.suite"</span>:       <span class="tok-s">"TLS_AES_256_GCM_SHA384"</span>,
-    <span class="tok-k">"mq.ssl.peer.name"</span>:          <span class="tok-s">"CN=PAYQM01,O=AcmeBank,C=SA"</span>,
+    <span class="tok-k">"mq.ssl.peer.name"</span>:          <span class="tok-s">"CN=PAYQM01,O=Example Org,C=XX"</span>,
 
     <span class="tok-c">// Message conversion</span>
     <span class="tok-k">"mq.message.body.jms"</span>:       <span class="tok-s">"true"</span>,
@@ -389,7 +389,7 @@
 
     <span class="tok-c">-- Map to CloudEvents 1.0 required attributes</span>
     <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.ce-specversion = <span class="tok-s">'1.0'</span>;
-    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.ce-type        = <span class="tok-s">'com.acmebank.payments.initiated.v1'</span>;
+    <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.ce-type        = <span class="tok-s">'com.example.payments.initiated.v1'</span>;
     <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.ce-source      = <span class="tok-s">'/mq/PAYQM01/PAYMENTS.EVENTS.OUT'</span>;
     <span class="tok-k">SET</span> OutputLocalEnvironment.Kafka.Output.Headers.ce-id          =
         CAST(UUIDASCHAR AS CHARACTER);  <span class="tok-c">-- new event ID, not MQ message ID</span>
@@ -427,7 +427,7 @@
           <div class="code-block">
             <div class="code-block__header"><span>payment-event-v1.avsc</span><span class="code-block__lang">json</span></div>
 <pre><code>{
-  <span class="tok-k">"namespace"</span>: <span class="tok-s">"com.acmebank.payments"</span>,
+  <span class="tok-k">"namespace"</span>: <span class="tok-s">"com.example.payments"</span>,
   <span class="tok-k">"type"</span>: <span class="tok-s">"record"</span>,
   <span class="tok-k">"name"</span>: <span class="tok-s">"PaymentInitiated"</span>,
   <span class="tok-k">"doc"</span>: <span class="tok-s">"ISO 20022 pain.001 bridged from MQ to Kafka. Schema v1."</span>,
